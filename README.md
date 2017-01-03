@@ -5,7 +5,9 @@
 ### Features
 1.  ## Boss Tracking
 
-    ### *Recommended user level:* **member**
+    #### *Recommended user level:* **member** & **moderator** *(for specific commands)*
+
+    ##### Purpose: to allow `members` to record bosses
     ___
 
     Tired of manually tracking bosses? Say no more with this feature.
@@ -19,45 +21,75 @@
     ---
     Syntax:
 
-        $boss BossName|"boss name" died|anchored ChN 00:00 [Map|"Map"]
+        $boss BossName|"boss name" died|anchored time [chN] [Map|"Map"]
+        $boss BossName|"boss name" verified|erase [chN]
+        $boss BossName|"boss name" list [chN]
+        $boss all list
+
 
     Arguments
     ---
-    1.  Boss Name **(required)**
-        Either part of, or full name; if spaced, enclose in double quotes, `"`
-    2.  Died/Anchored **(required)**
-        Either one or the other to signify usage
-    3.  *Channel* `N` **(required)**
-        You may omit `Ch`, but fill in the `N` which is valid from 1 to 4 inclusive.
-    4.  Time **(required)**
-        You may go with short format (24H default) or specify A(m) or P(m). i.e. 13:00, 1:00a, 1:00AM, etc.
+    1.  Boss Name or `all` **(required)**
+
+        Either part of, or full name; if spaced, enclose in double-quotes (`"`)
+
+        `all` when used with `list` will display all valid entries.
+
+    2.  `died`, `anchored`, `verified`, `erase`, or `list` **(required)**
+
+        + `died` to represent a *kill*
+        + `anchored` to represent an *initial spawn*
+        + `verified` to represent a *confirmation of last known entry*
+        + `erase` to remove an entry - **suggestion: moderator and higher only**
+        + `list` to display all entries for *Argument 1*
+
+    3.  `time` **(required *for*** `died` ***and*** `anchored`**)**
+
+        You may go with short format (24H default) or specify A(m) or P(m). e.g. `13:00`, `1:00a`, `1:00AM`, etc.
+
+        This *must* be recorded in server time.
+
+    4.  *Channel* `N` *(optional)*
+
+        + Field bosses: do not list a channel - it will be stripped regardless.
+        + World bosses: default `N` is `1`.
+
+        You may omit `Ch`, but fill in the `N` which is valid from 1 to 4 inclusive, or less depending on boss.
+
     5.  Map *(optional)*
-        Handy for field bosses only. World bosses don't move across maps.
 
----
+        Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.
 
-2.  ## Reminders.
 
-    ### *Recommended user level:* **all**
-    ___    
+2.  ## Reminders
 
-    For individual members to use; general purpose.
-    ---
+    #### *Recommended user level:* **all**
+
+    ##### Purpose: for individual members to have reminders by a certain time
+    
+    ___
 
     Syntax:
 
         $remind "comment" time [date]
-        Vaivora, note "comment" time [date] 
+        Vaivora, record "comment" time [date] 
 
     Arguments
     ---
     1.  comment **(required)**
-        The reminder in comment form, enclosed in quotes.
+
+        The reminder in comment form, enclosed in double-quotes.
+
     2.  time **(required)**
-        Examples: `13:00`, `1:11PM`, `6:00a`
+
+        e.g. `13:00`, `1:11PM`, `6:00a`
+
     3.  date *(optional)*
+
         The date you want to be reminded. Defaults to today's date.
+
         Format like so: \[YY\]YY/MM/DD -
+
         + two or four digit year accepted;
         + delimiter optional, but restricted to:
             + slash, `/`
@@ -65,51 +97,58 @@
             + dot, `.`
         + month and day may be single digit but *must* be delimited if so.
 
----
+    `Vaivora` command
+    ---
+    `Vaivora, record`
+
 
 3.  ## Talt Tracking.
 
     ### *Recommended user level:* **varies**
+
+    ##### Purpose: to record and verify Talt donations, and to approve permissions of verifiers
+    
     ___
 
-    Wings of Vaivora has two primary functions for Talt, plus one auxiliary function for permissions:
-    ---
 
     1.  ### Donation Tracking (user)
 
-        #### *Recommended user level:* **guild member**
-        ___
+        #### *Recommended user level:* **member**
 
-        For users to submit their Talt donations.
-        ---
+        ##### Purpose: for users to submit their Talt donations.
+        
+        ___
 
         Syntax:
 
-            $talt @user N [talt|points]
-            Vaivora, credit @user N [talt|points]
+            $talt N [units] [@user]
+            Vaivora, credit N [units] [@user]
 
         Arguments
         ---
-        1.  `@user` **(required)**
-            Mention the user.
-        2.  `N` **(required)**
-            The value to use.
-        3. units *(optional)*
-            The units to use. Default is `talt`.
+        1.  `N` **(required)**
 
-        Vaivora command
+            The value to use.
+
+        2. units *(optional)*
+
+            The units to use, among `talt` and `points`. Default is `talt`.
+
+        3. `@user` *(optional)*
+
+
+        `Vaivora` command
         ---
         `Vaivora, credit`
 
-    ---
 
     2.  ### Donation Validation
 
         #### *Recommended user level:* **moderator**
-        ___
 
-        For moderators (or similar role) to approve and verify user records.
-        ---
+        ##### Purpose: for moderators (or similar role) to approve and verify user records.
+        
+        ___
 
         Syntax:
 
@@ -119,40 +158,88 @@
         Arguments
         ---
         1.  `validated` **(required)**
+
             Do not use any other word here.
+
         2.  `@user` **(one *or more* required)**
+
             Mention the user.
 
-        Vaivora command
+
+        `Vaivora` command
         ---
         `Vaivora, validated`
 
+
+4.  ## Permission Management.
+
+    #### *Recommended user level:* **administrator**
+
+    ##### Purpose: for administrators to add roles to users for `Wings of Vaivora` specifically. Does not affect Discord Server permissions.
+
+    ___
+
+    ### Abstract Permissions Structure
+
+    #### role *(synonym)*
+
+    1.  `administrator` *(admin)*
+
+        + Top of the server
+        + Grants roles
+        + All permissions
+
+    2.  `moderator` *(mod)*
+
+        + Below `administrator`
+        + Cannot make role changes
+        + Elevated permissions for settings
+
+    3.  `guild member` *(member)*
+
+        + Guild member as personally defined by `moderator`s or `administrator`s
+        + Below `administrator` 
+        + Can use most functions
+        + Cannot make role changes
+        + Cannot change settings
+
+    4.  `all` *(all)*
+
+        + Everyone else
+        + Cannot use most functions
+        + Cannot make role changes
+        + Cannot change settings
+        + Least permissions *(or almost none)*
+    ___
+
+    Syntax:
+
+        $vaivora grant|revoke role @user [@user ...]
+        Vaivora, grant|revoke role @user [@user ...]
+
+    Arguments
     ---
+    1.  `grant` or `revoke` **(required)**
 
-    3.  ### Setup for Permissions
+        This command can go in both ways: privilege granting and removing.
 
-        #### *Recommended user level:* **administrator**
-        ___
+        For `revoke`, you only need to specify the users. Upon `revoke`ing, the associated users become `all`.
 
-        For administrators to add moderators for Talt contribution verification.
-        ---
+    2.  `role` **(required *for*** `grant`**)**
 
-        Syntax:
+        Use only one role at a time. Users may only have one role, which is *separate* from the Discord server's roles. (Strictly for `Wings of Vaivora`.)
 
-            $talt approve|revoke @user [@user ...]
-            Vaivora, approve|revoke @user [@user ...]
+    2.  `@user` **(one *or more* required)**
 
-        Arguments
-        ---
-        1.  `approve` or `revoke` **(required)**
-            This command can go in both ways: privilege granting and removing.
-        2.  `@user` **(one *or more* required)**
-            You may approve as many as possible.
+        You may approve as many as possible.
 
-        Vaivora command
-        ---
-        `Vaivora, approve`
-        `Vaivora, revoke`
+    `Vaivora` command
+    ---
+    `Vaivora, approve`
+
+    `Vaivora, revoke`
+
+    
 
 ### *Work in progress.*
 ---
