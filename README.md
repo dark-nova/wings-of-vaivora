@@ -63,6 +63,9 @@
     #### *Vaivora* command:
         Vaivora, boss
 
+---
+---
+
 +   ### Reminders
 
     #### *Recommended user level:* **all**
@@ -102,6 +105,8 @@
     #### *Vaivora* command:
         Vaivora, record
 
+---
+---
 
 +   ### Talt Tracking.
 
@@ -141,6 +146,7 @@
         #### *Vaivora* command:
             Vaivora, credit
 
+    ___
 
     +   ### Donation Validation
 
@@ -168,12 +174,16 @@
         #### *Vaivora* command:
             Vaivora, validated
 
+---
+---
 
 +   ### Permission Management.
 
     #### *Recommended user level:* **administrator**
 
     ##### Purpose: for administrators to add roles to users for `Wings of Vaivora` specifically. Does not affect Discord Server permissions.
+
+    ___
 
     +   ### Abstract Permissions Structure
 
@@ -203,6 +213,7 @@
             + Cannot change settings
             + Least permissions *(or almost none)*
 
+    ___
 
     ### Syntax:
 
@@ -230,10 +241,14 @@
         Vaivora, approve
         Vaivora, revoke
 
-    
-
-### In development.
 ---
+---
+    
+### In development.
+#### Last modified: 2017-01-03 15:47 (UTC-8)
+
+---
+
 
 [tos]: https://treeofsavior.com/    "'TOS'"
 [discord]: https://discordapp.com/  "Chatting app and platform"
