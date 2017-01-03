@@ -9,16 +9,15 @@
 
     ```
     $boss "Earth Canceril" died ch1 12:59am "Royal Mausoleum Workers' Chapel"
-
     Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage"
-    ```
+    ```  
 
-    ---
+    ---  
     Syntax:  
 
     ```
-    $boss BossName|"boss name" died|anchored ChannelN 00:00AM [Map|"Map"]
-    ```
+    $boss BossName|"boss name" died|anchored ChN 00:00 [Map|"Map"]
+    ```  
 
     Arguments  
     ---
@@ -26,8 +25,8 @@
         Either part of, or full name; if spaced, enclose in double quotes `"`  
     2.  Died/Anchored (required)  
         Either one or the other to signify usage  
-    3.  Channel "N" (required)  
-        You may omit "ch", but fill in the "N" which is valid from 1 to 4 inclusive.  
+    3.  Channel `N` (required)  
+        You may omit `Ch`, but fill in the `N` which is valid from 1 to 4 inclusive.  
     4.  Time (required)  
         You may go with short format (24H default) or specify A(m) or P(m). i.e. 13:00, 1:00a, 1:00AM, etc.  
     5.  Map (optional)  
@@ -35,17 +34,17 @@
 
 2.  ## Reminders.  
     For individual members to use; general purpose.  
-    ---
+    ---  
 
     Syntax:  
 
     ```
     $remind "comment" time [date]
     Vaivora, note "comment" time [date]
-    ```
+    ```  
 
     Arguments  
-    ---
+    ---  
     1.  comment (required)  
         The reminder in comment form, enclosed in quotes.  
     2.  time (required)  
@@ -54,8 +53,11 @@
         The date you want to be reminded. Defaults to today's date.  
         Format like so: \[YY\]YY/MM/DD -  
         + two or four digit year accepted;  
-        + delimiter optional but restricted to slash `/`, hyphen `-`, or dot `.`;  
-        + month and day may be single digit but must be delimited if so.  
+        + delimiter optional, but restricted to:  
+            + slash, `/`  
+            + hyphen, `-`  
+            + dot, `.`  
+        + month and day may be single digit but *must* be delimited if so.  
 
 3.  ## Talt Tracking.  
     Wings of Vaivora has two primary functions for Talt, plus one auxiliary function for permissions:
@@ -70,7 +72,6 @@
 
         ```
         $talt @user N [talt|points]
-
         Vaivora, credit @user N [talt|points]
         ```
 
@@ -95,7 +96,6 @@
 
         ```
         $talt @user validate
-
         Vaivora, validated @user
         ```
 
@@ -118,7 +118,6 @@
 
         ```
         $talt approve|revoke @user [@user ...]
-
         Vaivora, approve|revoke @user [@user ...]
         ```
 
