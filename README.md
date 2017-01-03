@@ -18,7 +18,7 @@
         Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage" 
 
     ---
-    
+
     ### Syntax:
 
         $boss BossName|"boss name" died|anchored time [chN] [Map|"Map"]
@@ -175,9 +175,9 @@
 
     ##### Purpose: for administrators to add roles to users for `Wings of Vaivora` specifically. Does not affect Discord Server permissions.
 
-        ### Abstract Permissions Structure
+    +   ### Abstract Permissions Structure
 
-        #### role *(synonym)*
+        +   #### role *(synonym)*
 
         1.  `administrator` *(admin)*
             + Top of the server
