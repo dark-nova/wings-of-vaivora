@@ -18,6 +18,7 @@
         Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage" 
 
     ---
+    
     ### Syntax:
 
         $boss BossName|"boss name" died|anchored time [chN] [Map|"Map"]
@@ -25,9 +26,8 @@
         $boss BossName|"boss name" list [chN]
         $boss all list
 
-
     ### Arguments
-    ---
+
     1.  Boss Name or `all` **(required)**
 
         Either part of, or full name; if spaced, enclose in double-quotes (`"`)
@@ -60,6 +60,8 @@
 
         Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.
 
+    #### *Vaivora* command:
+        Vaivora, boss
 
 +   ### Reminders
 
@@ -74,8 +76,8 @@
         $remind "comment" time [date]
         Vaivora, record "comment" time [date] 
 
-    ### Arguments
-    ---
+    ### Arguments:
+
     1.  comment **(required)**
 
         The reminder in comment form, enclosed in double-quotes.
@@ -97,9 +99,8 @@
             + dot, `.`
         + month and day may be single digit but *must* be delimited if so.
 
-    #### *Vaivora* command
-    ---
-    `Vaivora, record`
+    #### *Vaivora* command:
+        Vaivora, record
 
 
 +   ### Talt Tracking.
@@ -124,8 +125,8 @@
             $talt N [units] [@user]
             Vaivora, credit N [units] [@user]
 
-        ### Arguments
-        ---
+        ### Arguments:
+
         1.  `N` **(required)**
 
             The value to use.
@@ -137,9 +138,8 @@
         3. `@user` *(optional)*
 
 
-        #### *Vaivora* command
-        ---
-        `Vaivora, credit`
+        #### *Vaivora* command:
+            Vaivora, credit
 
 
     +   ### Donation Validation
@@ -155,8 +155,8 @@
             $talt validated @user [@user ...]
             Vaivora, validated @user [@user ...]
       
-        ### Arguments
-        ---
+        ### Arguments:
+
         1.  `validated` **(required)**
 
             Do not use any other word here.
@@ -165,10 +165,8 @@
 
             Mention the user.
 
-
-        #### *Vaivora* command
-        ---
-        `Vaivora, validated`
+        #### *Vaivora* command:
+            Vaivora, validated
 
 
 +   ### Permission Management.
@@ -177,52 +175,42 @@
 
     ##### Purpose: for administrators to add roles to users for `Wings of Vaivora` specifically. Does not affect Discord Server permissions.
 
-    ___
+        ### Abstract Permissions Structure
 
-    ### Abstract Permissions Structure
+        #### role *(synonym)*
 
-    #### role *(synonym)*
+        1.  `administrator` *(admin)*
+            + Top of the server
+            + Grants roles
+            + All permissions
 
-    1.  `administrator` *(admin)*
+        2.  `moderator` *(mod)*
+            + Below `administrator`
+            + Cannot make role changes
+            + Elevated permissions for settings
 
-        + Top of the server
-        + Grants roles
-        + All permissions
+        3.  `guild member` *(member)*
+            + Guild member as personally defined by `moderator`s or `administrator`s
+            + Below `administrator` 
+            + Can use most functions
+            + Cannot make role changes
+            + Cannot change settings
 
+        4.  `all` *(all)*
+            + Everyone else
+            + Cannot use most functions
+            + Cannot make role changes
+            + Cannot change settings
+            + Least permissions *(or almost none)*
 
-    2.  `moderator` *(mod)*
-
-        + Below `administrator`
-        + Cannot make role changes
-        + Elevated permissions for settings
-
-
-    3.  `guild member` *(member)*
-
-        + Guild member as personally defined by `moderator`s or `administrator`s
-        + Below `administrator` 
-        + Can use most functions
-        + Cannot make role changes
-        + Cannot change settings
-
-
-    4.  `all` *(all)*
-
-        + Everyone else
-        + Cannot use most functions
-        + Cannot make role changes
-        + Cannot change settings
-        + Least permissions *(or almost none)*
-
-    ___
 
     ### Syntax:
 
         $vaivora grant|revoke role @user [@user ...]
         Vaivora, grant|revoke role @user [@user ...]
 
-    ### Arguments
-    ---
+    ### Arguments: 
+
     1.  `grant` or `revoke` **(required)**
 
         This command can go in both ways: privilege granting and removing.
@@ -237,11 +225,10 @@
 
         You may approve as many as possible.
 
-    #### *Vaivora* command
-    ---
-    `Vaivora, approve`
+    #### *Vaivora* command::
 
-    `Vaivora, revoke`
+        Vaivora, approve
+        Vaivora, revoke
 
     
 
