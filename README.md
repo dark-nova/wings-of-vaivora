@@ -11,7 +11,7 @@
     $boss "Earth Canceril" died ch1 12:59am "Royal Mausoleum Workers' Chapel"
     Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage"
     ```
-    ---  
+    ---
     Syntax:  
 
     ```
@@ -19,7 +19,7 @@
     ```
 
     Arguments  
-    ---  
+    ---
     1.  Boss Name (required)  
         Either part of, or full name; if spaced, enclose in double quotes `"`  
     2.  Died/Anchored (required)  
@@ -33,7 +33,7 @@
 
 2.  Reminders.  
     For individual members to use; general purpose.  
-    ---  
+    ---
     Syntax:  
 
     ```
@@ -42,7 +42,7 @@
     ```
 
     Arguments  
-    ---  
+    ---
     1.  comment (required)  
         The reminder in comment form, enclosed in quotes.  
     2.  time (required)  
@@ -61,7 +61,7 @@
 
     1.  Donation Tracking (user)  
         For users to submit their Talt donations.  
-        ---  
+        ---
         Syntax:  
 
         ```
@@ -70,8 +70,8 @@
         ```
 
         Arguments  
-        ---  
-        1.  \@user (required)  
+        ---
+        1.  `@user` (required)  
             Mention the user.  
         2.  N (required)  
             The value to use.  
@@ -79,12 +79,12 @@
             The units to use. Default is Talt.  
 
         Vaivora command  
-        ---  
+        ---
         `Vaivora, credit`  
 
     2. Donation Validation (mods+)  
         For moderators (general role) to approve and verify user records.  
-        ---  
+        ---
         Syntax:  
 
         ```
@@ -93,19 +93,19 @@
         ```
 
         Arguments  
-        ---  
-        1.  \@user (required)  
+        ---
+        1.  `@user` (required)  
             Mention the user.  
         2.  validate (required)  
             Do not use any other word here.  
 
         Vaivora command  
-        ---  
+        ---
         `Vaivora, validated`  
 
     X. Setup for Permissions (admins+)  
         For administrators to add moderators for Talt contribution verification.  
-        ---  
+        ---
         Syntax:
 
         ```
@@ -117,7 +117,7 @@
         ---
         1.  approve or revoke (required)  
             This command can go in both ways: privilege granting and removing.  
-        2.  \@user (at least one required)  
+        2.  `@user`(at least one required)  
             You may approve as many as possible.  
 
 ### Work in progress.
