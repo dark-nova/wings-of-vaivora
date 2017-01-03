@@ -6,14 +6,18 @@
 1.  Boss Tracking
     Tired of manually tracking bosses? Say no more with this feature.
     Prefix your command with `$boss` or `Vaivora, boss`, like:
-```
-$boss "Earth Canceril" died ch1 12:59am "Royal Mausoleum Workers' Chapel"
-Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage"
-```
+
+    ```
+    $boss "Earth Canceril" died ch1 12:59am "Royal Mausoleum Workers' Chapel"
+    Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage"
+    ```
+    ---
     Syntax:
-```
-$boss BossName|"boss name" died|anchored ChannelN 00:00AM [Map|"Map"]
-```
+
+    ```
+    $boss BossName|"boss name" died|anchored ChannelN 00:00AM [Map|"Map"]
+    ```
+
     Arguments
     ---
     1.  Boss Name (required)  
@@ -29,11 +33,14 @@ $boss BossName|"boss name" died|anchored ChannelN 00:00AM [Map|"Map"]
 
 2.  Reminders.
     For individual members to use; general purpose.
+    ---
     Syntax:
-```
-$remind "comment" time [date]
-Vaivora, note "comment" time [date]
-```
+
+    ```
+    $remind "comment" time [date]
+    Vaivora, note "comment" time [date]
+    ```
+
     Arguments
     ---
     1.  comment (required)
@@ -48,13 +55,20 @@ Vaivora, note "comment" time [date]
         + month and day may be single digit but must be delimited if so.
 
 3.  Talt Tracking.
+    ---
+
     Wings of Vaivora has two primary functions for Talt:
+
     1.  Donation Tracking (user)
+        For users to submit their Talt donations.
+        ---
         Syntax:
-```
-$talt @user N [talt|points]
-Vaivora, credit @user N [talt|points]
-```
+
+        ```
+        $talt @user N [talt|points]
+        Vaivora, credit @user N [talt|points]
+        ```
+
         Arguments
         ---
         1.  @user (required)
@@ -69,11 +83,15 @@ Vaivora, credit @user N [talt|points]
         `Vaivora, credit`
 
     2. Donation Validation (mods+)
+        For moderators (general role) to approve and verify user records.
+        ---
         Syntax:
-```
-$talt @user validate
-Vaivora, validated @user
-```
+
+        ```
+        $talt @user validate
+        Vaivora, validated @user
+        ```
+
         Arguments
         ---
         1.  @user (required)
@@ -86,11 +104,15 @@ Vaivora, validated @user
         `Vaivora, validated`
 
     X. Setup for Permissions (admins+)
+        For administrators to add moderators for Talt contribution verification.
+        ---
         Syntax:
-```
-$talt approve|revoke @user [@user ...]
-Vaivora, approve|revoke @user [@user ...]
-```
+
+        ```
+        $talt approve|revoke @user [@user ...]
+        Vaivora, approve|revoke @user [@user ...]
+        ```
+
         Arguments
         ---
         1.  approve or revoke (required)
