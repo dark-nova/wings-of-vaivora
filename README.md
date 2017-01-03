@@ -3,14 +3,16 @@
 ---
 
 ### Features
-1.  Boss Tracking  
+1.  ## Boss Tracking  
     Tired of manually tracking bosses? Say no more with this feature.  
     Prefix your command with `$boss` or `Vaivora, boss`, like:  
 
     ```
     $boss "Earth Canceril" died ch1 12:59am "Royal Mausoleum Workers' Chapel"
+
     Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage"
     ```
+
     ---
     Syntax:  
 
@@ -31,9 +33,13 @@
     5.  Map (optional)  
         Handy for field bosses only. World bosses don't move across maps.  
 
-2.  Reminders.  
+
+2.  ## Reminders.  
+    ___
+
     For individual members to use; general purpose.  
     ---
+    
     Syntax:  
 
     ```
@@ -54,18 +60,24 @@
         + delimiter optional but restricted to slash `/`, hyphen `-`, or dot `.`;  
         + month and day may be single digit but must be delimited if so.  
 
-3.  Talt Tracking.
+
+3.  ## Talt Tracking.
+    ___
+    Wings of Vaivora has two primary functions for Talt, plus one auxiliary function for permissions:
     ---
 
-    Wings of Vaivora has two primary functions for Talt:
 
-    1.  Donation Tracking (user)  
+    1.  ### Donation Tracking (user)  
+        ___
+
         For users to submit their Talt donations.  
         ---
+
         Syntax:  
 
         ```
         $talt @user N [talt|points]
+
         Vaivora, credit @user N [talt|points]
         ```
 
@@ -82,13 +94,18 @@
         ---
         `Vaivora, credit`  
 
-    2. Donation Validation (mods+)  
+
+    2.  ### Donation Validation (mods+)  
+        ___
+
         For moderators (general role) to approve and verify user records.  
         ---
+
         Syntax:  
 
         ```
         $talt @user validate
+
         Vaivora, validated @user
         ```
 
@@ -103,13 +120,17 @@
         ---
         `Vaivora, validated`  
 
-    X. Setup for Permissions (admins+)  
+    3.  ### Setup for Permissions (admins+)  
+        ___
+
         For administrators to add moderators for Talt contribution verification.  
         ---
+
         Syntax:
 
         ```
         $talt approve|revoke @user [@user ...]
+
         Vaivora, approve|revoke @user [@user ...]
         ```
 
