@@ -33,13 +33,14 @@
     5.  Map (optional)  
         Handy for field bosses only. World bosses don't move across maps.  
 
+___
 
 2.  ## Reminders.  
     ___
 
     For individual members to use; general purpose.  
     ---
-    
+
     Syntax:  
 
     ```
@@ -60,9 +61,11 @@
         + delimiter optional but restricted to slash `/`, hyphen `-`, or dot `.`;  
         + month and day may be single digit but must be delimited if so.  
 
+___
 
 3.  ## Talt Tracking.
     ___
+
     Wings of Vaivora has two primary functions for Talt, plus one auxiliary function for permissions:
     ---
 
@@ -94,6 +97,7 @@
         ---
         `Vaivora, credit`  
 
+    ***
 
     2.  ### Donation Validation (mods+)  
         ___
@@ -119,6 +123,8 @@
         Vaivora command  
         ---
         `Vaivora, validated`  
+
+    ***
 
     3.  ### Setup for Permissions (admins+)  
         ___
