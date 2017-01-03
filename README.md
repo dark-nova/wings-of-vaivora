@@ -34,6 +34,8 @@
     5.  Map *(optional)*
         Handy for field bosses only. World bosses don't move across maps.
 
+---
+
 2.  ## Reminders.
 
     ### *Recommended user level:* **all**
@@ -63,7 +65,11 @@
             + dot, `.`
         + month and day may be single digit but *must* be delimited if so.
 
+---
+
 3.  ## Talt Tracking.
+
+    ### *Recommended user level:* **varies**
     ___
 
     Wings of Vaivora has two primary functions for Talt, plus one auxiliary function for permissions:
@@ -95,6 +101,8 @@
         ---
         `Vaivora, credit`
 
+    ---
+
     2.  ### Donation Validation
 
         #### *Recommended user level:* **moderator**
@@ -118,6 +126,8 @@
         Vaivora command
         ---
         `Vaivora, validated`
+
+    ---
 
     3.  ### Setup for Permissions
 
