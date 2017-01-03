@@ -4,6 +4,8 @@
 
 ### Features
 1.  ## Boss Tracking
+
+    ### *Recommended user level:* **member**
     ___
 
     Tired of manually tracking bosses? Say no more with this feature.
@@ -33,7 +35,9 @@
         Handy for field bosses only. World bosses don't move across maps.
 
 2.  ## Reminders.
-    ___
+
+    ### *Recommended user level:* **all**
+    ___    
 
     For individual members to use; general purpose.
     ---
@@ -66,7 +70,8 @@
     ---
 
     1.  ### Donation Tracking (user)
-        #### Recommended user level: guild member
+
+        #### *Recommended user level:* **guild member**
         ___
 
         For users to submit their Talt donations.
@@ -91,7 +96,8 @@
         `Vaivora, credit`
 
     2.  ### Donation Validation
-        #### Recommended user level: moderator
+
+        #### *Recommended user level:* **moderator**
         ___
 
         For moderators (or similar role) to approve and verify user records.
@@ -106,7 +112,7 @@
         ---
         1.  `validated` **(required)**
             Do not use any other word here.
-        2.  `@user` (one or more required)
+        2.  `@user` **(one *or more* required)**
             Mention the user.
 
         Vaivora command
@@ -114,7 +120,8 @@
         `Vaivora, validated`
 
     3.  ### Setup for Permissions
-        #### Recommended user level: administrator
+
+        #### *Recommended user level:* **administrator**
         ___
 
         For administrators to add moderators for Talt contribution verification.
@@ -129,7 +136,7 @@
         ---
         1.  `approve` or `revoke` **(required)**
             This command can go in both ways: privilege granting and removing.
-        2.  `@user`(one or more required)
+        2.  `@user` **(one *or more* required)**
             You may approve as many as possible.
 
         Vaivora command
