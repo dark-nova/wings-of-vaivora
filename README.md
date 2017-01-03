@@ -7,17 +7,13 @@
     Tired of manually tracking bosses? Say no more with this feature.  
     Prefix your command with `$boss` or `Vaivora, boss`, like:  
 
-    ~~~
-    $boss "Earth Canceril" died ch1 12:59am "Royal Mausoleum Workers' Chapel"
-    Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage"
-    ~~~  
+        $boss "Earth Canceril" died ch1 12:59am "Royal Mausoleum Workers' Chapel"
+        Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage" 
 
     ---  
     Syntax:  
 
-    ~~~
-    $boss BossName|"boss name" died|anchored ChN 00:00 [Map|"Map"]
-    ~~~  
+        $boss BossName|"boss name" died|anchored ChN 00:00 [Map|"Map"]
 
     Arguments  
     ---
@@ -38,10 +34,8 @@
 
     Syntax:  
 
-    ~~~
-    $remind "comment" time [date]
-    Vaivora, note "comment" time [date]
-    ~~~  
+        $remind "comment" time [date]
+        Vaivora, note "comment" time [date] 
 
     Arguments  
     ---  
@@ -70,10 +64,8 @@
 
         Syntax:  
 
-        ~~~
-        $talt @user N [talt|points]
-        Vaivora, credit @user N [talt|points]
-        ~~~
+            $talt @user N [talt|points]
+            Vaivora, credit @user N [talt|points]
 
         Arguments  
         ---
@@ -94,11 +86,9 @@
 
         Syntax:  
 
-        ~~~
-        $talt @user validate
-        Vaivora, validated @user
-        ~~~
-
+            $talt @user validate
+            Vaivora, validated @user
+        
         Arguments  
         ---
         1.  `@user` (required)  
@@ -116,10 +106,8 @@
 
         Syntax:
 
-        ~~~
-        $talt approve|revoke @user [@user ...]
-        Vaivora, approve|revoke @user [@user ...]
-        ~~~
+            $talt approve|revoke @user [@user ...]
+            Vaivora, approve|revoke @user [@user ...]
 
         Arguments
         ---
