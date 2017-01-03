@@ -11,7 +11,6 @@
     ___
 
     Tired of manually tracking bosses? Say no more with this feature.
-    ---
 
     Prefix your command with `$boss` or `Vaivora, boss`, like:
 
@@ -98,7 +97,7 @@
             + dot, `.`
         + month and day may be single digit but *must* be delimited if so.
 
-    *Vaivora* command
+    #### *Vaivora* command
     ---
     `Vaivora, record`
 
@@ -138,7 +137,7 @@
         3. `@user` *(optional)*
 
 
-        *Vaivora* command
+        #### *Vaivora* command
         ---
         `Vaivora, credit`
 
@@ -156,7 +155,7 @@
             $talt validated @user [@user ...]
             Vaivora, validated @user [@user ...]
       
-        Arguments
+        ### Arguments
         ---
         1.  `validated` **(required)**
 
@@ -167,7 +166,7 @@
             Mention the user.
 
 
-        *Vaivora* command
+        #### *Vaivora* command
         ---
         `Vaivora, validated`
 
@@ -222,7 +221,7 @@
         $vaivora grant|revoke role @user [@user ...]
         Vaivora, grant|revoke role @user [@user ...]
 
-    Arguments
+    ### Arguments
     ---
     1.  `grant` or `revoke` **(required)**
 
@@ -238,7 +237,7 @@
 
         You may approve as many as possible.
 
-    *Vaivora* command
+    #### *Vaivora* command
     ---
     `Vaivora, approve`
 
@@ -246,8 +245,8 @@
 
     
 
-### *Work in progress.*
+### In development.
 ---
 
-[tos]: https://treeofsavior.com/    ""TOS""
+[tos]: https://treeofsavior.com/    "'TOS'"
 [discord]: https://discordapp.com/  "Chatting app and platform"
