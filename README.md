@@ -1,9 +1,9 @@
 # Wings of Vaivora
- _A_ [`Tree of Savior`][tos] [`Discord`][discord] _bot project._
+#### _A_ [`Tree of Savior`][tos] [`Discord`][discord] _bot project._
 ---
 
-### Features
-1.  ## Boss Tracking
+# Features
++   ### Boss Tracking
 
     #### *Recommended user level:* **member** & **moderator** *(for specific commands)*
 
@@ -19,7 +19,7 @@
         Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage" 
 
     ---
-    Syntax:
+    ### Syntax:
 
         $boss BossName|"boss name" died|anchored time [chN] [Map|"Map"]
         $boss BossName|"boss name" verified|erase [chN]
@@ -27,7 +27,7 @@
         $boss all list
 
 
-    Arguments
+    ### Arguments
     ---
     1.  Boss Name or `all` **(required)**
 
@@ -43,7 +43,8 @@
         + `erase` to remove an entry - **suggestion: moderator and higher only**
         + `list` to display all entries for *Argument 1*
 
-    3.  `time` **(required *for*** `died` ***and*** `anchored`**)**
+
+    3.  time **(required *for* ** `died` ***and*** `anchored` **)**
 
         You may go with short format (24H default) or specify A(m) or P(m). e.g. `13:00`, `1:00a`, `1:00AM`, etc.
 
@@ -61,7 +62,7 @@
         Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.
 
 
-2.  ## Reminders
++   ### Reminders
 
     #### *Recommended user level:* **all**
 
@@ -69,12 +70,12 @@
     
     ___
 
-    Syntax:
+    ### Syntax:
 
         $remind "comment" time [date]
         Vaivora, record "comment" time [date] 
 
-    Arguments
+    ### Arguments
     ---
     1.  comment **(required)**
 
@@ -97,21 +98,21 @@
             + dot, `.`
         + month and day may be single digit but *must* be delimited if so.
 
-    `Vaivora` command
+    *Vaivora* command
     ---
     `Vaivora, record`
 
 
-3.  ## Talt Tracking.
++   ### Talt Tracking.
 
-    ### *Recommended user level:* **varies**
+    #### *Recommended user level:* **varies**
 
     ##### Purpose: to record and verify Talt donations, and to approve permissions of verifiers
     
     ___
 
 
-    1.  ### Donation Tracking (user)
+    +   ### Donation Tracking (user)
 
         #### *Recommended user level:* **member**
 
@@ -119,12 +120,12 @@
         
         ___
 
-        Syntax:
+        ### Syntax:
 
             $talt N [units] [@user]
             Vaivora, credit N [units] [@user]
 
-        Arguments
+        ### Arguments
         ---
         1.  `N` **(required)**
 
@@ -137,12 +138,12 @@
         3. `@user` *(optional)*
 
 
-        `Vaivora` command
+        *Vaivora* command
         ---
         `Vaivora, credit`
 
 
-    2.  ### Donation Validation
+    +   ### Donation Validation
 
         #### *Recommended user level:* **moderator**
 
@@ -150,7 +151,7 @@
         
         ___
 
-        Syntax:
+        ### Syntax:
 
             $talt validated @user [@user ...]
             Vaivora, validated @user [@user ...]
@@ -166,12 +167,12 @@
             Mention the user.
 
 
-        `Vaivora` command
+        *Vaivora* command
         ---
         `Vaivora, validated`
 
 
-4.  ## Permission Management.
++   ### Permission Management.
 
     #### *Recommended user level:* **administrator**
 
@@ -189,11 +190,13 @@
         + Grants roles
         + All permissions
 
+
     2.  `moderator` *(mod)*
 
         + Below `administrator`
         + Cannot make role changes
         + Elevated permissions for settings
+
 
     3.  `guild member` *(member)*
 
@@ -203,6 +206,7 @@
         + Cannot make role changes
         + Cannot change settings
 
+
     4.  `all` *(all)*
 
         + Everyone else
@@ -210,9 +214,10 @@
         + Cannot make role changes
         + Cannot change settings
         + Least permissions *(or almost none)*
+
     ___
 
-    Syntax:
+    ### Syntax:
 
         $vaivora grant|revoke role @user [@user ...]
         Vaivora, grant|revoke role @user [@user ...]
@@ -233,7 +238,7 @@
 
         You may approve as many as possible.
 
-    `Vaivora` command
+    *Vaivora* command
     ---
     `Vaivora, approve`
 
@@ -244,5 +249,5 @@
 ### *Work in progress.*
 ---
 
-[tos]: https://treeofsavior.com/    "\"TOS\""
+[tos]: https://treeofsavior.com/    ""TOS""
 [discord]: https://discordapp.com/  "Chatting app and platform"
