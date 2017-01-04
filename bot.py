@@ -27,11 +27,11 @@ remi_prototype_types = ('text',)*2 + time_prototype_types
 talt_prototype_types = ('text',) + ('real',)*3 + time_prototype_types
 
 # zip, create, concatenate into tuple
-boss_tuple = tuple('{} {}'.format(*t) for t in \
+boss_tuple = tuple('{} {}'.format(*t) for t in 
                    zip(boss_prototype,boss_prototype_types))
-remi_tuple = tuple('{} {}'.format(*t) for t in \
+remi_tuple = tuple('{} {}'.format(*t) for t in 
                    zip(remi_prototype,remi_prototype_types))
-talt_tuple = tuple('{} {}'.format(*t) for t in \
+talt_tuple = tuple('{} {}'.format(*t) for t in 
                    zip(talt_prototype,talt_prototype_types))
 
 async def create_discord_db(discord_db):
@@ -78,7 +78,7 @@ async def check_boss_db(discord_server,boss_name,channel,boss_map,time):
 #         output.append(c.fetchall())
 #     except:
 #         print('Error: ' + db + ' database not found. Building new database...')
-#         c.execute("create table ?(name text,channel real,day text,time text,\
+#         c.execute("create table ?(name text,channel real,day text,time text,
 #                    map text,status text",db)
 #         c.commit()
 #         output.append(["None. Start getting some timers!"])
@@ -91,7 +91,7 @@ async def check_boss_db(discord_server,boss_name,channel,boss_map,time):
 #     print("Attaching database...")
 #     await check_db('boss')
 #     # check_db('dilgele')
-#     print('Successsfully logged in as: ' + client.user.name + '#' + \
+#     print('Successsfully logged in as: ' + client.user.name + '#' + 
 #           client.user.id + '. Ready!')
 #     while True:
 #         update(output[0])
@@ -114,43 +114,43 @@ async def check_boss_db(discord_server,boss_name,channel,boss_map,time):
 #         _mins  = boss[3][3:5]
 #         diff = (datetime(_year,_month,_day,_hour,_mins)-datetime.now()).seconds
 #         if diff < 0:
-#             c.executemany('delete from boss where name=?,day=?,time=?',\
+#             c.executemany('delete from boss where name=?,day=?,time=?',
 #                           boss[0],boss[2],boss[3])
 #             continue
 #         _hours = diff//3600
 #         _minsT = diff//60
 #         _mins_ = _minsT-_hours*3600
-#         print(boss[0] + " at " + boss[1] + " " + boss[4] + ", in " + \
-#               _hours + " hour(s), " + _mins + " min(s). [" + \
+#         print(boss[0] + " at " + boss[1] + " " + boss[4] + ", in " + 
+#               _hours + " hour(s), " + _mins + " min(s). [" + 
 #               _year + "/" + _month + "/" + _day + " "  + boss[3] + "]")
 #     return
 
 # # @return: True if succeeded, False otherwise
 # async def db_process_boss(user,channel,arg_list):
-#     await c.executemany("select * from boss where name=? and channel=? and map=?",\
+#     await c.executemany("select * from boss where name=? and channel=? and map=?",
 #                   (arg_list[0],arg_list[1],arg_list[2]))
 #     previous = c.fetchall() # retrieve boss record given name, channel, map
 #     if previous: # previous record exists
 #         response = await ask_delete_boss(user,channel,previous)
 #     if not response:
-#         await client.send_message(channel,\
-#                                   "@" + user + " " + \
+#         await client.send_message(channel,
+#                                   "@" + user + " " + 
 #                                   "Command aborted.\n")
 #         return False
 #     # else:
-#     await c.executemany("delete from boss where name=? and channel=? and map=?",\
+#     await c.executemany("delete from boss where name=? and channel=? and map=?",
 #                   (arg_list[0],arg_list[1],arg_list[2]))
-#     c.executemany("insert into boss values (?,?,?,?)",\
-#                   (arg_list[0],arg_list[1],arg_list[2],\
+#     c.executemany("insert into boss values (?,?,?,?)",
+#                   (arg_list[0],arg_list[1],arg_list[2],
 #                    str(datetime.date()) + " " + str(arg_list[3])))
 #     return True
 
 # # confirm deletion for db_process_boss(*)
 # async def ask_delete_boss(user,channel,previous):
-#     await client.send_message(channel,\
-#                               "@" + user + " " + \
-#                               "A record for this boss already exists: ```" + \
-#                               ' '.join(previous) + "```\n" + \
+#     await client.send_message(channel,
+#                               "@" + user + " " + 
+#                               "A record for this boss already exists: ```" + 
+#                               ' '.join(previous) + "```\n" + 
 #                               "Do you want to delete this entry? [YN]")
 #     response = await client.wait_for_message(timeout=10,author=user)
 #     return re.match("^[Yy]",response)
@@ -164,136 +164,144 @@ async def check_boss_db(discord_server,boss_name,channel,boss_map,time):
 ## end: obsolete code
 
 # begin boss related variables
-bosses = ['Blasphemous Deathweaver',\
-          'Bleak Chapparition',\
-          'Hungry Velnia Monkey',\
-          'Abomination',\
-          'Earth Templeshooter',\
-          'Earth Canceril',\
-          'Earth Archon',\
-          'Violent Cerberus',\
-          'Necroventer',\
-          'Forest Keeper Ferret Marauder',\
-          'Kubas Event',\
-          'Noisy Mineloader',\
-          'Burning Fire Lord',\
-          'Wrathful Harpeia',\
-          'Glackuman',\
-          'Marionette',\
-          'Dullahan Event',\
-          'Starving Ellaganos',\
-          'Prison Manager Prison Cutter',\
-          'Mirtis',\
-          'Rexipher',\
-          'Helgasercle',\
-          'Demon Lord Marnox',\
-          'Demon Lord Nuaele',\
-          'Demon Lord Zaura',\
+
+# 'bosses'
+# - list of boss names in full
+bosses = ['Blasphemous Deathweaver',
+          'Bleak Chapparition',
+          'Hungry Velnia Monkey',
+          'Abomination',
+          'Earth Templeshooter',
+          'Earth Canceril',
+          'Earth Archon',
+          'Violent Cerberus',
+          'Necroventer',
+          'Forest Keeper Ferret Marauder',
+          'Kubas Event',
+          'Noisy Mineloader',
+          'Burning Fire Lord',
+          'Wrathful Harpeia',
+          'Glackuman',
+          'Marionette',
+          'Dullahan Event',
+          'Starving Ellaganos',
+          'Prison Manager Prison Cutter',
+          'Mirtis',
+          'Rexipher',
+          'Helgasercle',
+          'Demon Lord Marnox',
+          'Demon Lord Nuaele',
+          'Demon Lord Zaura',
           'Demon Lord Blut']
 
 bossfl = bosses[0:2] + list(bosses[7]) + list(bosses[11]) + list(bosses[13]) + list(bosses[25])
 
-bossyn = {'Blasphemous Deathweaver':['dw','spider','deathweaver'],\
-          'Bleak Chapparition':['chap','chapparition'],\
-          'Hungry Velnia Monkey':['monkey','velnia','velniamonkey',\
-            'velnia monkey'],\
-          'Abomination':['abom','abomination'],\
-          'Earth Templeshooter':['temple shooter','TS','ETS','templeshooter'],\
-          'Earth Canceril':['canceril','crab','ec'],\
-          'Earth Archon':['archon'],\
-          'Violent Cerberus':['cerb','dog','doge','cerberus'],\
-          'Necroventer':['nv','necro','necroventer'],\
-          'Forest Keeper Ferret Marauder':['ferret','marauder'],\
-          'Kubas Event':['kubas'],\
-          'Noisy Mineloader':['ml','mineloader'],\
-          'Burning Fire Lord':['firelord','fl','fire lord'],\
-          'Wrathful Harpeia':['harp','harpy','harpie','harpeia'],\
-          'Glackuman':['glack','glackuman'],\
-          'Marionette':['mario','marionette'],\
-          'Dullahan Event':['dull','dulla','dullachan'],\
-          'Starving Ellaganos':['ella','ellaganos'],\
-          'Prison Manager Prison Cutter':['cutter','prison cutter',\
-            'prison manager','prison manager cutter'],\
-          'Mirtis':['mirtis'],\
-          'Rexipher':['rexipher','rexi','rexifer'],\
-          'Helgasercle':['helga','helgasercle'],\
-          'Demon Lord Marnox':['marnox','marn'],\
-          'Demon Lord Nuaele':['nuaele'],\
-          'Demon Lord Zaura':['zaura'],\
+# 'boss synonyms'
+# - keys: boss names (var `bosses`)
+# - values: list of synonyms of boss names
+bossyn = {'Blasphemous Deathweaver':['dw','spider','deathweaver'],
+          'Bleak Chapparition':['chap','chapparition'],
+          'Hungry Velnia Monkey':['monkey','velnia','velniamonkey',
+            'velnia monkey'],
+          'Abomination':['abom','abomination'],
+          'Earth Templeshooter':['temple shooter','TS','ETS','templeshooter'],
+          'Earth Canceril':['canceril','crab','ec'],
+          'Earth Archon':['archon'],
+          'Violent Cerberus':['cerb','dog','doge','cerberus'],
+          'Necroventer':['nv','necro','necroventer'],
+          'Forest Keeper Ferret Marauder':['ferret','marauder'],
+          'Kubas Event':['kubas'],
+          'Noisy Mineloader':['ml','mineloader'],
+          'Burning Fire Lord':['firelord','fl','fire lord'],
+          'Wrathful Harpeia':['harp','harpy','harpie','harpeia'],
+          'Glackuman':['glack','glackuman'],
+          'Marionette':['mario','marionette'],
+          'Dullahan Event':['dull','dulla','dullachan'],
+          'Starving Ellaganos':['ella','ellaganos'],
+          'Prison Manager Prison Cutter':['cutter','prison cutter',
+            'prison manager','prison manager cutter'],
+          'Mirtis':['mirtis'],
+          'Rexipher':['rexipher','rexi','rexifer'],
+          'Helgasercle':['helga','helgasercle'],
+          'Demon Lord Marnox':['marnox','marn'],
+          'Demon Lord Nuaele':['nuaele'],
+          'Demon Lord Zaura':['zaura'],
           'Demon Lord Blut':['blut']}
 
-# 'boss synonyms'
-# - list of synonyms
-bossns = list(bossyn.values())
+# 'boss synonyms short'
+# - list of synonyms of boss names
+bossns = []
+for l in list(bossyn.values()):
+    bossns.extend(l)
 
 # 'boss location'
-# - keys: boss names
+# - keys: boss names (var `bosses`)
 # - values: list of locations, full name
-bosslo = {'Blasphemous Deathweaver':['Crystal Mine 1F',\
-                                     'Crystal Mine 2F',\
-                                     'Crystal Mine 3F',\
-                                     'Ashaq Underground Prison 1F',\
-                                     'Ashaq Underground Prison 2F',\
-                                     'Ashaq Underground Prison 3F'],\
-          'Bleak Chapparition':['Tenet Church B1',\
-                                'Tenet Church 1F',\
-                                'Tenet Church 2F'],\
-          'Hungry Velnia Monkey':['Novaha Assembly Hall',\
-                                  'Novaha Annex',\
-                                  'Novaha Institute'],\
-          'Abomination':['Guards\' Graveyard'],\
-          'Earth Templeshooter':['Royal Mausoleum Workers\' Lodge'],\
-          'Earth Canceril':['Royal Mausoleum Constructors\' Chapel'],\
-          'Earth Archon':['Royal Mausoleum Storage'],\
-          'Violent Cerberus':['Royal Mausoleum 4F',\
-                              'Royal Mausoleum 5F'],\
-          'Necroventer':['Residence of the Fallen Legwyn Family'],\
-          'Forest Keeper Ferret Marauder':['Bellai Rainforest',\
-                                           'Zeraha',\
-                                           'Seir Rainforest'],\
-          'Kubas Event':['Crystal Mine Lot 2 - 2F'],\
-          'Noisy Mineloader':['Mage Tower 4F','Mage Tower 5F'],\
-          'Burning Fire Lord':['Main Chamber','Sanctuary'],\
-          'Wrathful Harpeia':['Demon Prison District 1',\
-                              'Demon Prison District 2',\
-                              'Demon Prison District 5'],\
-          'Glackuman':['2nd Demon Prison'],\
-          'Marionette':['Roxona Reconstruction Agency East Building'],\
-          'Dullahan Event':['Roxona Reconstruction Agency West Building'],\
-          'Starving Ellaganos':['Mokusul Chamber',\
-                                'Videntis Shrine'],\
-          'Prison Manager Prison Cutter':['Drill Ground of Confliction',\
-                                          'Resident Quarter',\
-                                          'Storage Quarter',\
-                                          'Fortress Battlegrounds'],\
-          'Mirtis':['Kalejimas Visiting Room',\
-                    'Storage',\
-                    'Solitary Cells',\
-                    'Workshop',\
+bosslo = {'Blasphemous Deathweaver':['Crystal Mine 1F',
+                                     'Crystal Mine 2F',
+                                     'Crystal Mine 3F',
+                                     'Ashaq Underground Prison 1F',
+                                     'Ashaq Underground Prison 2F',
+                                     'Ashaq Underground Prison 3F'],
+          'Bleak Chapparition':['Tenet Church B1',
+                                'Tenet Church 1F',
+                                'Tenet Church 2F'],
+          'Hungry Velnia Monkey':['Novaha Assembly Hall',
+                                  'Novaha Annex',
+                                  'Novaha Institute'],
+          'Abomination':['Guards\' Graveyard'],
+          'Earth Templeshooter':['Royal Mausoleum Workers\' Lodge'],
+          'Earth Canceril':['Royal Mausoleum Constructors\' Chapel'],
+          'Earth Archon':['Royal Mausoleum Storage'],
+          'Violent Cerberus':['Royal Mausoleum 4F',
+                              'Royal Mausoleum 5F'],
+          'Necroventer':['Residence of the Fallen Legwyn Family'],
+          'Forest Keeper Ferret Marauder':['Bellai Rainforest',
+                                           'Zeraha',
+                                           'Seir Rainforest'],
+          'Kubas Event':['Crystal Mine Lot 2 - 2F'],
+          'Noisy Mineloader':['Mage Tower 4F','Mage Tower 5F'],
+          'Burning Fire Lord':['Main Chamber','Sanctuary'],
+          'Wrathful Harpeia':['Demon Prison District 1',
+                              'Demon Prison District 2',
+                              'Demon Prison District 5'],
+          'Glackuman':['2nd Demon Prison'],
+          'Marionette':['Roxona Reconstruction Agency East Building'],
+          'Dullahan Event':['Roxona Reconstruction Agency West Building'],
+          'Starving Ellaganos':['Mokusul Chamber',
+                                'Videntis Shrine'],
+          'Prison Manager Prison Cutter':['Drill Ground of Confliction',
+                                          'Resident Quarter',
+                                          'Storage Quarter',
+                                          'Fortress Battlegrounds'],
+          'Mirtis':['Kalejimas Visiting Room',
+                    'Storage',
+                    'Solitary Cells',
+                    'Workshop',
                     'Investigation Room'],
-          'Helgasercle':['Kalejimas Visiting Room',\
-                    'Storage',\
-                    'Solitary Cells',\
-                    'Workshop',\
+          'Helgasercle':['Kalejimas Visiting Room',
+                    'Storage',
+                    'Solitary Cells',
+                    'Workshop',
                     'Investigation Room'],
-          'Rexipher':['Thaumas Trail',\
-                      'Salvia Forest',\
-                      'Sekta Forest',\
-                      'Rasvoy Lake',\
+          'Rexipher':['Thaumas Trail',
+                      'Salvia Forest',
+                      'Sekta Forest',
+                      'Rasvoy Lake',
                       'Oasseu Memorial'],
-          'Demon Lord Marnox':['Thaumas Trail',\
-                      'Salvia Forest',\
-                      'Sekta Forest',\
-                      'Rasvoy Lake',\
+          'Demon Lord Marnox':['Thaumas Trail',
+                      'Salvia Forest',
+                      'Sekta Forest',
+                      'Rasvoy Lake',
                       'Oasseu Memorial'],
-          'Demon Lord Nuaele':['Yudejan Forest',\
-                               'Nobreer Forest',\
-                               'Emmet Forest',\
-                               'Pystis Forest',\
+          'Demon Lord Nuaele':['Yudejan Forest',
+                               'Nobreer Forest',
+                               'Emmet Forest',
+                               'Pystis Forest',
                                'Syla Forest'],
-          'Demon Lord Zaura':['Arcus Forest',\
-                              'Phamer Forest',\
-                              'Ghibulinas Forest',\
+          'Demon Lord Zaura':['Arcus Forest',
+                              'Phamer Forest',
+                              'Ghibulinas Forest',
                               'Mollogheo Forest'],
           'Demon Lord Blut':['Tevhrin Stalactite Cave Section 1',
                              'Tevhrin Stalactite Cave Section 2',
@@ -302,39 +310,50 @@ bosslo = {'Blasphemous Deathweaver':['Crystal Mine 1F',\
                              'Tevhrin Stalactite Cave Section 5']                          
          }
 
-# group similar locations by line
-bossls = ['crystal mine','ashaq',\
-          'tenet',\
-          'novaha',\
-          'guards','graveyard',\
-          'maus','mausoleum',\
-          'legwyn',\
-          'bellai','zeraha','seir',\
-          'mage tower','mt',\
-          'demon prison','dp',\
-          'main chamber','sanctuary','sanc',\
-          'roxona',\
-          'mokusul','videntis',\
-          'drill','quarter','battlegrounds',\
-          'kalejimas','storage','solitary','workshop','investigation',\
-          'thaumas','salvia','sekta','rasvoy','oasseu',\
-          'yudejan','nobreer','emmet','pystis','syla',\
-          'arcus','phamer','ghibulinas','mollogheo',\
+# 'boss location synonyms'
+# - list of synonyms of boss locations
+# -- grouping similar locations by line
+bossls = ['crystal mine','ashaq',
+          'tenet',
+          'novaha',
+          'guards','graveyard',
+          'maus','mausoleum',
+          'legwyn',
+          'bellai','zeraha','seir',
+          'mage tower','mt',
+          'demon prison','dp',
+          'main chamber','sanctuary','sanc',
+          'roxona',
+          'mokusul','videntis',
+          'drill','quarter','battlegrounds',
+          'kalejimas','storage','solitary','workshop','investigation',
+          'thaumas','salvia','sekta','rasvoy','oasseu',
+          'yudejan','nobreer','emmet','pystis','syla',
+          'arcus','phamer','ghibulinas','mollogheo',
           'tevhrin']
-# probably won't be using this.
+# probably won't be using this, in hindsight.
+
 # end of boss related variables
 
-
+# begin code for message processing
 async def on_message(message):
     # 'boss' channel processing
     if "timer" in message.channel or "boss" in message.channel:
         # 'boss' channel command: $boss
-        if message.content.startswith('$boss '):
+        if message.content.startswith('$boss ') or 
+           message.content.startswith('Vaivora, boss'):
+            command_message = message.content
+            # odd amount of quotes - drop
+            if len(re.findall('"',command_message)) % 2:
+                await error(message.author,message.channel,'quote')
             count    = 1      # initialize; count (section)
             bossrec  = list() # list to submit to database
             bossname = str()  # boss name to record
             mapnum   = 0      # number of map e.g. Royal Mausoleum 4F
             mapnam   = str()  # map name
+
+
+
 
             # begin for-loop _message
             for word in message.content:
@@ -501,60 +520,86 @@ async def on_message(message):
     else:
         return
 
+cmd_usage     = "Usage:\n"
+cmd_us_cblk   = "```\n"
+cmd_us_carg   = "Arguments:\n"
+cmd_usb1_arg  = "BossName|\"boss name\" died time [chN] [Map|\"Map\"]\n"
+cmd_usb1_cmd  = "$boss " + cmd_usb1_arg +
+                "Vaivora, boss" + cmd_usb1_arg
 
-cmd_usage_b   = "Usage: $boss \"boss name\" channel \"map\" time\n" + \
-                "- boss name: in quotes (multiple words) or just one word\n" + \
-                "- map: in quotes or part of map name, e.g. `4` (for 4f)" + \
+cmd_usage_b   = "Usage (boss commands):\n" + 
+                "```\n" + 
+                "PREFIX BossName|\"boss name\" died|anchored time [chN] [Map|\"Map\"]\n" + 
+                "PREFIX BossName|\"boss name\" verified|erase [chN]\n" + 
+                "PREFIX BossName|\"boss name\" list [chN]\n" + 
+                "PREFIX all list" + 
+                "```\n" + 
+                "`PREFIX`: `$boss` or `Vaivora, boss`" + 
+                "- Boss Name or `all` **(required)**: " + 
+                "- map: in quotes or part of map name, e.g. `4` (for 4f)" + 
                 "- time: please omit spaces, e.g. `4:00pm` or `4:00p` or `16:00`"
-cmd_usage_b_m = "Make sure to properly record the map.\n" + \
-                "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses,\n" + \
+cmd_usage_b_1 = cmd_usage +
+                cmd_uscblk +
+                cmd_usb1_cmd +
+                cmd_us_cblk +
+                cmd_us_carg +
+                "`"
+
+cmd_usage_b_m = "Make sure to properly record the map.\n" + 
+                "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses,\n" + 
                 "and should not be recorded because they have unpredictable spawns."
 
-
+# @return:
+#     -1: too general
+#     -2: 
+#     -127:   malformed command; quote, badmap, nomap
 async def error(user,channel,etype,msg=''):
-    if etype == "boss":
-        await client.send_message(channel,"@" + user + " " + \
-                                  "The following option `boss` (" + msg + \
-                                  ") is invalid for `$boss`.\n" + \
-                                  "This is a list of bosses you may use:\n" + \
-                                  "```" + '\n'.join(bosses) + "```\n" + \
+    user = '@' + str(user)
+    cmd_badsyntax = "Your command was malformed.\n"
+    cmd_ambiguous = "Your command was ambiguous.\n"
+
+    if etype == "broad":
+        await client.send_message(channel,user + " " + 
+                                  "The following option `boss` (" + msg + 
+                                  ") for `$boss` has multiple matching spawn points:\n```" + 
+                                  '\n'.join(bosslo[msg]) + "```\n" + 
+                                  cmd_ambiguous + 
                                   cmd_usage_b)
-        return
+        return -1  
+    elif etype == "boss":
+        await client.send_message(channel,user + " " + 
+                                  "The following option `boss` (" + msg + 
+                                  ") is invalid for `$boss`.\n" + 
+                                  "This is a list of bosses you may use:\n" + 
+                                  "```" + '\n'.join(bosses) + "```\n" + 
+                                  cmd_usage_b)
+        return -2
 
     elif etype == "quote":
-        await client.send_message(channel,"@" + user + " " + \
+        await client.send_message(channel,"@" + user + " " + 
                                   "Your command for `$boss` had misused quotes somewhere.\n" +
                                   cmd_usage_b)
-        return
-
-    elif etype == "broad":
-        await client.send_message(channel,"@" + user + " " + \
-                                  "The following option `boss` (" + msg + \
-                                  ") for `$boss` has multiple matching spawn points:\n```" + \
-                                  '\n'.join(bosslo[msg]) + "```\n" + \
-                                  "Your command was ambiguous.\n" + \
-                                  cmd_usage_b)
-        return
+        return -127
 
     elif etype == "badmap":
-        await client.send_message(channel,"@" + user + " " + \
-                                  "The following option `map` (" + msg + \
-                                  ") (number) is invalid for `$boss`.\n" + \
-                                  cmd_usage_b_m + \
+        await client.send_message(channel,"@" + user + " " + 
+                                  "The following option `map` (" + msg + 
+                                  ") (number) is invalid for `$boss`.\n" + 
+                                  cmd_usage_b_m + 
                                   cmd_usage_b)
-        return
+        return -127
 
     elif etype == "nomap":
-        await client.send_message(channel,"@" + user + " " + \
-                                  "The following option `map` (" + msg + \
-                                  ") is invalid for `$boss`.\n" + \
-                                  "The map was not found. " + \
-                                  cmd_usage_b_m + \
+        await client.send_message(channel,"@" + user + " " + 
+                                  "The following option `map` (" + msg + 
+                                  ") is invalid for `$boss`.\n" + 
+                                  "The map was not found. " + 
+                                  cmd_usage_b_m + 
                                   cmd_usage_b)
         return
     elif etype == "badtime":
-        await client.send_message(channel,"@" + user + " " + \
-                                  "The following option `time` (" + msg + \
-                                  ") is invalid for `$boss`.\n" + \
-                                  "Omit spaces; 12H or 24H time is valid." + \
+        await client.send_message(channel,"@" + user + " " + 
+                                  "The following option `time` (" + msg + 
+                                  ") is invalid for `$boss`.\n" + 
+                                  "Omit spaces; 12H or 24H time is valid." + 
                                   cmd_usage_b)
