@@ -8,9 +8,9 @@ from datetime import datetime
 client = discord.Client()
 
 # variables to use
-output = list()
+output  = list()
 numbers = re.compile('[0-9]+')
-
+quotes  = re.compile('"')
 # 
 
 
@@ -341,12 +341,28 @@ async def on_message(message):
     if "timer" in message.channel or "boss" in message.channel:
         # 'boss' channel command: $boss
         if message.content.startswith('$boss ') or 
-           message.content.startswith('Vaivora, boss'):
+           message.content.startswith('Vaivora, boss '):
             command_message = message.content
+            message_args    = list()
+            message_arg_str = str()
+
             # odd amount of quotes - drop
             if len(re.findall('"',command_message)) % 2:
-                await error(message.author,message.channel,'quote')
-            count    = 1      # initialize; count (section)
+                err_code = await error(message.author,message.channel,'quote')
+                return err_code
+
+            for word in command_message:
+                # begin quote found
+                if quotes.search(word) and not len(message_arg_str):
+                    message_arg_str = word[1:len(word)]
+                    continue
+                # end quote found
+                elif quotes.search(word):
+                    word = message_arg_str + " " + word[0:-1]
+                    message_arg_str = str()
+                message_args.append(word)
+
+            
             bossrec  = list() # list to submit to database
             bossname = str()  # boss name to record
             mapnum   = 0      # number of map e.g. Royal Mausoleum 4F
@@ -520,26 +536,35 @@ async def on_message(message):
     else:
         return
 
-cmd_usage     = "Usage:\n"
-cmd_us_cblk   = "```\n"
-cmd_us_carg   = "Arguments:\n"
-cmd_usb1_arg  = "BossName|\"boss name\" died time [chN] [Map|\"Map\"]\n"
-cmd_usb1_cmd  = "$boss " + cmd_usb1_arg +
-                "Vaivora, boss" + cmd_usb1_arg
 
-cmd_usage_b   = "Usage (boss commands):\n" + 
-                "```\n" + 
-                "PREFIX BossName|\"boss name\" died|anchored time [chN] [Map|\"Map\"]\n" + 
-                "PREFIX BossName|\"boss name\" verified|erase [chN]\n" + 
-                "PREFIX BossName|\"boss name\" list [chN]\n" + 
-                "PREFIX all list" + 
-                "```\n" + 
-                "`PREFIX`: `$boss` or `Vaivora, boss`" + 
-                "- Boss Name or `all` **(required)**: " + 
-                "- map: in quotes or part of map name, e.g. `4` (for 4f)" + 
-                "- time: please omit spaces, e.g. `4:00pm` or `4:00p` or `16:00`"
+# begin strings for errors
+# command - usage
+cmd_usage     = "Usage:\n"
+# command - [us]age - [c]ode [bl]oc[k]
+cmd_us_cblk   = "```\n"
+# command - [us]age - [c]ode [arg]uments
+cmd_us_carg   = "Arguments:\n"
+cmd_prefix    = ("$boss","Vaivora, boss")
+cmd_usage_b   = "***'Bosses' commands***"
+
+# command - usage - [b]oss - [N]th command
+cmd_usage_b_1 = ("BossName|\"boss name\" died|anchored time [chN] [Map|\"Map\"]\n",)
+cmd_usage_b_1 = '\n'.join([(' '.join(t) for t in zip(cmd_prefix,cmd_usage_b_1))])
+cmd_usage_b_2 = "BossName|\"boss name\" verified|erase [chN]\n"
+cmd_usage_b_2 = '\n'.join([(' '.join(t) for t in zip(cmd_prefix,cmd_usage_b_2))])
+cmd_usage_b_3 = "BossName|\"boss name\" list [chN]\n"
+cmd_usage_b_3 = '\n'.join([(' '.join(t) for t in zip(cmd_prefix,cmd_usage_b_3))])
+cmd_usage_b_4 = " all list"
+# command - usage - [b]oss - [a]rgs
+cmd_usage_b_a = "`-` Boss Name or `all` **(required)**\n" +
+                "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" +
+                "`  -` all when used with list will display all valid entries.\n" +
+                "`-` time **(required for died and anchored)**" +
+                "`-` Map *(optional)*\n" +
+                "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n"
+
 cmd_usage_b_1 = cmd_usage +
-                cmd_uscblk +
+                cmd_us_cblk +
                 cmd_usb1_cmd +
                 cmd_us_cblk +
                 cmd_us_carg +
@@ -554,20 +579,24 @@ cmd_usage_b_m = "Make sure to properly record the map.\n" +
 #     -2: 
 #     -127:   malformed command; quote, badmap, nomap
 async def error(user,channel,etype,msg=''):
-    user = '@' + str(user)
+    # Get the user in mentionable string
+    user_name = user.mention
+
+    # Command errors
     cmd_badsyntax = "Your command was malformed.\n"
     cmd_ambiguous = "Your command was ambiguous.\n"
 
     if etype == "broad":
-        await client.send_message(channel,user + " " + 
+        await client.send_message(channel, user_name + " " + 
                                   "The following option `boss` (" + msg + 
                                   ") for `$boss` has multiple matching spawn points:\n```" + 
                                   '\n'.join(bosslo[msg]) + "```\n" + 
                                   cmd_ambiguous + 
                                   cmd_usage_b)
-        return -1  
+        return -1 
+
     elif etype == "boss":
-        await client.send_message(channel,user + " " + 
+        await client.send_message(channel, user_name + " " + 
                                   "The following option `boss` (" + msg + 
                                   ") is invalid for `$boss`.\n" + 
                                   "This is a list of bosses you may use:\n" + 
@@ -576,13 +605,13 @@ async def error(user,channel,etype,msg=''):
         return -2
 
     elif etype == "quote":
-        await client.send_message(channel,"@" + user + " " + 
+        await client.send_message(channel, user_name + " " + 
                                   "Your command for `$boss` had misused quotes somewhere.\n" +
                                   cmd_usage_b)
         return -127
 
     elif etype == "badmap":
-        await client.send_message(channel,"@" + user + " " + 
+        await client.send_message(channel, user_name + " " + 
                                   "The following option `map` (" + msg + 
                                   ") (number) is invalid for `$boss`.\n" + 
                                   cmd_usage_b_m + 
