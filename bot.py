@@ -13,8 +13,8 @@ output  = list()
 
 # constants
 #   regex
-numbers   = re.compile('[0-9]+')
-quotes    = re.compile('"')
+numbers   = re.compile(r'[0-9]+')
+quotes    = re.compile(r'"')
 channel   = 'ch?[1-4]'
 #   error(**) related constants
 #     error(**) constants for "command" argument
@@ -25,6 +25,7 @@ rsn_unknn = "Reason: Unknown Boss"
 rsn_syntx = "Reason: Malformed Syntax"
 rsn_quote = "Reason: Mismatched Quotes"
 rsn_bdmap = "Reason: Bad Map"
+rsn_bdtme = "Reason: Bad Time"
 
 # database formats
 time_prototype = ('year','month','day','hour','minute')
@@ -363,25 +364,29 @@ async def on_message(message):
         if message.content.startswith('$boss ') or 
            message.content.startswith('Vaivora, boss '):
             command_message = message.content
+            command_message = re.sub(r'[^A-Za-z0-9-"]','',command_message) # sanitize
+            command_message = command_message.lower()                     # standardize
             message_args    = list()
             message_arg_str = str()
 
             # if odd amount of quotes, drop
             if len(re.findall('"',command_message)) % 2:
-                err_code = await error(message.author,message.channel,'quote')
+                err_code = await error(message.author,message.channel,rsn_quote)
                 return err_code
 
             # command: list of arguments
             command = shlex.split(command_message)
             # begin checking validity
+            #     boss validity
             boss_valid = await check_boss(command[0])
             if not boss_valid > 0:
                 err_code = await error(message.author,message.channel,rsn_unknn,command[0])
                 return err_code
+            #     map validity
+            maps_valid = await check_maps(command[1])
 
                 concat   = str()
-                word = re.sub('[^A-Za-z0-9-"]','',word) # sanitize
-                word = word.lower()                     # standardize
+                
 
                 # section 0: concatenation
                 if count == 1 or count == 3 and '"' in word:
@@ -541,18 +546,37 @@ async def on_message(message):
     else:
         return
 
-# begin code for checking boss validity
+# @func:  check_boss(str): begin code for checking boss validity
+# @arg:
+#     boss: str; boss name from raw input
+# @return:
+#     boss index in list, or -1 if not found
 async def check_boss(boss):
     if boss in bosses:
         return bosses.index(boss)
     else:
-        for b in bosses:
-            if b in boss:
+        # for b in bosses:
+        #     if b in boss:
+        #         return bosses.index(b)
+        for b, syns in bossyn.items():
+            if boss in syns or b in boss:
                 return bosses.index(b)
     return -1
-# end code for checking boss validity
+# end of check_boss
 
-# begin strings for errors
+# @func:  check_maps(str): begin code for checking map validity
+# @arg:
+#     maps: str; map name from raw input
+#     boss: str; the corresponding boss
+# @return:
+#     True if found, False otherwise
+async def check_maps(maps,boss):
+    if re.match(r'[bf]?[0-9][bf]?$',maps):
+        # rearrange letters, and remove map name
+        mapnum = re.sub(r'.+(b?)(f?)([0-9])(b?)(f?)$',r'\g<1>\g<4>\g<3>\g<2>\g<5>',maps)
+    pass
+
+# begin constants for strings for error messages
 #   command - usage
 cmd_usage     = "Usage:\n"
 #   command - [us]age - [c]ode [bl]oc[k]
@@ -561,30 +585,35 @@ cmd_us_cblk   = "```\n"
 cmd_us_ablk   = "`"
 #   command - [us]age - [c]ode [arg]uments
 cmd_us_carg   = "Arguments:\n"
-#   command - [us]age - [b]oss [arg]ument (1)
+
+#   begin $boss specific constants
+#       command - [us]age - [b]oss [arg]ument (1)
 cmd_us_barg_1 = "BossName|\"Boss Name\""
-#   command - prefix - [b]oss
+#       command - prefix - [b]oss
 cmd_prefix_b  = ("$boss","Vaivora, boss")
-#   command - usage - [b]oss
+#       command - usage - [b]oss
 cmd_usage_b   = ["***'Bosses' commands***"]
 cmd_usage_b.append(cmd_usage)
+#   end of $boss specific constants
+# end of constants for strings for error messages
 
-# command - usage - [b]oss - [n]th command -- reuse after every append
-#   boss arg [n] - cmd_usage_b[n]
-#     n=1
+# begin $boss usage string, in cmd_usage_b : list
+#     command - usage - [b]oss - [n]th command -- reuse after every append
+#         boss arg [n] - cmd_usage_b[n]
+#             n=1
 cmd_usage_b_n = (cmd_us_barg_1 + " died|anchored time [chN] [Map|\"Map\"]\n",)
 cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b,cmd_usage_b_n*2))]))
-#     n=2
+#             n=2
 cmd_usage_b_n = (cmd_us_barg_1 + "BossName|\"boss name\" verified|erase [chN]\n",)
 cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b,cmd_usage_b_n*2))]))
-#     n=3
+#             n=3
 cmd_usage_b_n = (cmd_us_barg_1 + "BossName|\"boss name\" list [chN]\n",)
 cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b,cmd_usage_b_n*2))]))
-#     n=4
+#             n=4
 cmd_usage_b_n = (cmd_us_barg_1 + "all list",)
 cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b,cmd_usage_b_n*2))]))
-#   command - usage - [b]oss - [a]rgument descriptors
-#     n=5
+#     command - usage - [b]oss - [a]rgument descriptors
+#             n=5
 cmd_usage_b_a = "`-` Boss Name or `all` **(required)**\n" +
                 "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" +
                 "`  -` all when used with list will display all valid entries.\n" +
@@ -594,17 +623,20 @@ cmd_usage_b_a = "`-` Boss Name or `all` **(required)**\n" +
                 "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + 
                 "and should not be recorded because they have unpredictable spawns.\n"
 cmd_usage_b.append(cmd_usage_b_a)
+# end of $boss usage string, in cmd_usage_b
 
-# General command errors
+# begin constants to use for error(**)
+#     general command errors
 cmd_badsyntax = "Your command was malformed.\n"
 cmd_ambiguous = "Your command was ambiguous.\n"
 
-# Specific command errors
-#   command - usage - [b]oss - [m]ap
+#     specific command errors
+#         command - usage - [b]oss - [m]ap
 cmd_usage_b_b = "Make sure to properly spell the boss name.\n"
 cmd_usage_b_m = "Make sure to properly record the map.\n"
+# end of constants for error(**)
 
-
+# @func:  error(**): begin code for error message printing to user
 # @arg:
 #     user:     Discord.user
 #     channel:  server channel
@@ -612,9 +644,9 @@ cmd_usage_b_m = "Make sure to properly record the map.\n"
 #     ecmd:     [e]rror (invoked by) command
 #     msg:      (optional) message for better error clarity
 # @return:
-#     -1: too general
-#     -2: 
-#     -127:   malformed command; quote, badmap, nomap
+#     -1: the command was correctly formed but the argument is too broad
+#     -2: the command was correctly formed but could not validate arguments
+#     -127:   malformed command: quote mismatch
 async def error(user,channel,etype,ecmd,msg='',xmsg=''):
     # Get the user in mentionable string
     user_name = user.mention
@@ -624,32 +656,54 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
     if ecmd == cmd_boss:
         # broad
         if etype == rsn_broad:
-            ret_msg.append(user_name + " The following option `boss` (" + msg + 
+            ret_msg.append(user_name + the_following_argument('boss') + msg + 
                            ") for `$boss` has multiple matching spawn points:\n")
             ret_msg.append(cmd_us_cblk)
             ret_msg.append('\n'.join(bosslo[msg]))
             ret_msg.append(cmd_us_cblk)
+            ret_msg.append(cmd_ambiguous)
             ret_msg.append(cmd_usage_b_m)
             ecode = -1
         # unknown
         elif etype == rsn_unknn:
-            ret_msg.append(user_name + " The following option `boss` (" + msg
+            ret_msg.append(user_name + the_following_argument('boss') + msg +
                            ") is invalid for `$boss`. This is a list of bosses you may use:\n")
             ret_msg.append(cmd_us_cblk)
             ret_msg.append('\n'.join(bosses))
             ret_msg.append(cmd_us_cblk)
             ret_msg.append(cmd_usage_b_b)
             ecode = -2
+        elif etype == rsn_bdmap:
+            ret_msg.append(user_name + the_following_argument('map') + msg +
+                           ") (number) is invalid for `$boss`. This is a list of maps you may use:\n")
+            ret_msg.append(cmd_us_cblk)
+            try:
+              ret_msg.append('\n'.join(bosslo[xmsg]))
+            except:
+              ret_msg.append(user_name + " Debug message. Something went wrong.")
+              ret_msg.append(cmd_badsyntax)
+              ecode = -127
+              await client.send_message(channel,'\n'.join(ret_msg))
+              return ecode
+            ret_msg.append(cmd_us_cblk)
+            ret_msg.append(cmd_usage_b_m)
+            ecode = -2
+        elif etype == rsn_bdtme:
+            ret_msg.append(user_name + the_following_argument('time') + msg +
+                           ") is invalid for `$boss`.\n")
+            ret_msg.append("Omit spaces; record in 12H (with AM/PM) or 24H time.")
+            ret_msg.append(cmd_badsyntax)
+
         elif etype == rsn_quote:
             ret_msg.append(user_name + " Your command for `$boss` had misused quotes somewhere.\n")
             ret_msg.append(cmd_badsyntax)
             ecode = -127
-        elif etype == rsn_bdmap:
-            ret_msg.append(user_name + " The following option `map` (" + msg
-                           ") (number) is invalid for `$boss`.\n")
         else:
-            ret_msg.append(user_name + " Debug message")
-            ecode = -1
+            ret_msg.append(user_name + " Debug message. Something went wrong.")
+            ret_msg.append(cmd_badsyntax)
+            ecode = -127
+            await client.send_message(channel,'\n'.join(ret_msg))
+            return ecode
         # end of conditionals for cmd_boss
 
         # begin common return
@@ -657,31 +711,21 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
         await client.send_message(channel,'\n'.join(cmd_usage_b))
         return ecode
         # end of common return
-    elif etype == "quote":
-        await client.send_message(channel, user_name + " " + 
-                                  "Your command for `$boss` had misused quotes somewhere.\n" +
-                                  cmd_usage_b)
-        return -127
+    # todo: reminders, Talt tracking, permissions
+    else:
+        # todo
+        ret_msg.append(user_name + " Debug message. Something went wrong.")
+        ret_msg.append(cmd_badsyntax)
+        ecode = -127
+        await client.send_message(channel,'\n'.join(ret_msg))
+        return ecode 
+# end of error
 
-    elif etype == "badmap":
-        await client.send_message(channel, user_name + " " + 
-                                  "The following option `map` (" + msg + 
-                                  ") (number) is invalid for `$boss`.\n" + 
-                                  cmd_usage_b_m + 
-                                  cmd_usage_b)
-        return -127
-
-    elif etype == "nomap":
-        await client.send_message(channel,"@" + user + " " + 
-                                  "The following option `map` (" + msg + 
-                                  ") is invalid for `$boss`.\n" + 
-                                  "The map was not found. " + 
-                                  cmd_usage_b_m + 
-                                  cmd_usage_b)
-        return
-    elif etype == "badtime":
-        await client.send_message(channel,"@" + user + " " + 
-                                  "The following option `time` (" + msg + 
-                                  ") is invalid for `$boss`.\n" + 
-                                  "Omit spaces; 12H or 24H time is valid." + 
-                                  cmd_usage_b)
+# @func:  the_following_argument(str): begin concatenated string
+# @arg:
+#     arg: str; e.g. boss, map, time
+# @return:
+#     str, containing message
+def the_following_argument(arg):
+    return " The following argument `" + arg + "` ("
+# end of the_following_argument
