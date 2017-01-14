@@ -21,6 +21,7 @@ channel   = 'ch?[1-4]'
 cmd_boss  = "Command: Boss"
 #     error(**) constants for "reason" argument
 rsn_broad = "Reason: Broad"
+rsn_unknn = "Reason: Unknown"
 
 # database formats
 time_prototype = ('year','month','day','hour','minute')
@@ -174,7 +175,7 @@ async def check_boss_db(discord_server,boss_name,channel,boss_map,time):
 # begin boss related variables
 
 # 'bosses'
-# - list of boss names in full
+#   list of boss names in full
 bosses = ['Blasphemous Deathweaver',
           'Bleak Chapparition',
           'Hungry Velnia Monkey',
@@ -201,8 +202,10 @@ bosses = ['Blasphemous Deathweaver',
           'Demon Lord Nuaele',
           'Demon Lord Zaura',
           'Demon Lord Blut']
-
+#   field bosses
 bossfl = bosses[0:2] + list(bosses[7]) + list(bosses[11]) + list(bosses[13]) + list(bosses[25])
+#   world bosses
+bosswo = [b for b in bosses if b not in bossfl]
 
 # 'boss synonyms'
 # - keys: boss names (var `bosses`)
@@ -348,33 +351,31 @@ async def on_message(message):
     # 'boss' channel processing
     if "timer" in message.channel or "boss" in message.channel:
         # 'boss' channel command: $boss
+        #   arg order:
+        #     1. [0] boss name
+        #     2. [1] status (killed, anchored)
+        #     3. [2] time
+        #     4. [3] channel
+        #     5. [4] map
         if message.content.startswith('$boss ') or 
            message.content.startswith('Vaivora, boss '):
             command_message = message.content
             message_args    = list()
             message_arg_str = str()
 
-            # odd amount of quotes - drop
+            # if odd amount of quotes, drop
             if len(re.findall('"',command_message)) % 2:
                 err_code = await error(message.author,message.channel,'quote')
                 return err_code
 
             # command: list of arguments
             command = shlex.split(command_message)
+            # begin checking validity
+            boss_valid = await check_boss(command[0])
+            if not boss_valid > 0:
+                err_code = await error(message.author,message.channel,rsn_unknn,command[0])
 
-                        
-            
-            bossrec  = list() # list to submit to database
-            bossname = str()  # boss name to record
-            mapnum   = 0      # number of map e.g. Royal Mausoleum 4F
-            mapnam   = str()  # map name
-
-
-
-
-            # begin for-loop _message
-            for word in message.content:
-                complete = True # initialize
+                
                 concat   = str()
                 word = re.sub('[^A-Za-z0-9-"]','',word) # sanitize
                 word = word.lower()                     # standardize
@@ -537,6 +538,16 @@ async def on_message(message):
     else:
         return
 
+# begin code for checking boss validity
+async def check_boss(boss):
+    if boss in bosses:
+        return bosses.index(boss)
+    else:
+        for b in bosses:
+            if b in boss:
+                return bosses.index(b)
+    return -1
+# end code for checking boss validity
 
 # begin strings for errors
 # command - usage
