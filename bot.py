@@ -21,9 +21,10 @@ channel   = 'ch?[1-4]'
 cmd_boss  = "Command: Boss"
 #     error(**) constants for "reason" argument
 rsn_broad = "Reason: Broad"
-rsn_unknn = "Reason: Unknown"
+rsn_unknn = "Reason: Unknown Boss"
 rsn_syntx = "Reason: Malformed Syntax"
 rsn_quote = "Reason: Mismatched Quotes"
+rsn_bdmap = "Reason: Bad Map"
 
 # database formats
 time_prototype = ('year','month','day','hour','minute')
@@ -529,7 +530,7 @@ async def on_message(message):
 
             # check if not properly terminated
             if not complete:
-                await error(message.author,message.channel,'quote')
+                await error(message.author,message.channel,)
                 return
 
         # 'boss' channel command: $list
@@ -552,20 +553,21 @@ async def check_boss(boss):
 # end code for checking boss validity
 
 # begin strings for errors
-# command - usage
+#   command - usage
 cmd_usage     = "Usage:\n"
-# command - [us]age - [c]ode [bl]oc[k]
+#   command - [us]age - [c]ode [bl]oc[k]
 cmd_us_cblk   = "```\n"
-# command - [us]age - [a]rguments [bl]oc[k]
+#   command - [us]age - [a]rguments [bl]oc[k]
 cmd_us_ablk   = "`"
-# command - [us]age - [c]ode [arg]uments
+#   command - [us]age - [c]ode [arg]uments
 cmd_us_carg   = "Arguments:\n"
-# command - [us]age - [b]oss [arg]ument (1)
+#   command - [us]age - [b]oss [arg]ument (1)
 cmd_us_barg_1 = "BossName|\"Boss Name\""
-# command - prefix - [b]oss
+#   command - prefix - [b]oss
 cmd_prefix_b  = ("$boss","Vaivora, boss")
-# command - usage - [b]oss
+#   command - usage - [b]oss
 cmd_usage_b   = ["***'Bosses' commands***"]
+cmd_usage_b.append(cmd_usage)
 
 # command - usage - [b]oss - [n]th command -- reuse after every append
 #   boss arg [n] - cmd_usage_b[n]
@@ -599,6 +601,7 @@ cmd_ambiguous = "Your command was ambiguous.\n"
 
 # Specific command errors
 #   command - usage - [b]oss - [m]ap
+cmd_usage_b_b = "Make sure to properly spell the boss name.\n"
 cmd_usage_b_m = "Make sure to properly record the map.\n"
 
 
@@ -612,42 +615,47 @@ cmd_usage_b_m = "Make sure to properly record the map.\n"
 #     -1: too general
 #     -2: 
 #     -127:   malformed command; quote, badmap, nomap
-async def error(user,channel,etype,ecmd,msg=''):
+async def error(user,channel,etype,ecmd,msg='',xmsg=''):
     # Get the user in mentionable string
     user_name = user.mention
     ret_msg   = list()
 
+    # boss command only
     if ecmd == cmd_boss:
+        # broad
         if etype == rsn_broad:
             ret_msg.append(user_name + " The following option `boss` (" + msg + 
-                           ") for `$boss` has multiple matching spawn points.\n")
+                           ") for `$boss` has multiple matching spawn points:\n")
             ret_msg.append(cmd_us_cblk)
             ret_msg.append('\n'.join(bosslo[msg]))
             ret_msg.append(cmd_us_cblk)
+            ret_msg.append(cmd_usage_b_m)
             ecode = -1
-            await client.send_message(channel, user_name + " " + 
-                                      "The following option `boss` (" + msg + 
-                                      ") for `$boss` has multiple matching spawn points:\n```" + 
-                                      '\n'.join(bosslo[msg]) + "```\n" + 
-                                      cmd_ambiguous + 
-                                      cmd_usage_b)
-
+        # unknown
         elif etype == rsn_unknn:
-            await client.send_message(channel, user_name + " " + 
-                                      "The following option `boss` (" + msg + 
-                                      ") is invalid for `$boss`.\n" + 
-                                      "This is a list of bosses you may use:\n" + 
-                                      "```" + '\n'.join(bosses) + "```\n" + 
-                                      cmd_usage_b)
-            return -2
+            ret_msg.append(user_name + " The following option `boss` (" + msg
+                           ") is invalid for `$boss`. This is a list of bosses you may use:\n")
+            ret_msg.append(cmd_us_cblk)
+            ret_msg.append('\n'.join(bosses))
+            ret_msg.append(cmd_us_cblk)
+            ret_msg.append(cmd_usage_b_b)
+            ecode = -2
+        elif etype == rsn_quote:
+            ret_msg.append(user_name + " Your command for `$boss` had misused quotes somewhere.\n")
+            ret_msg.append(cmd_badsyntax)
+            ecode = -127
+        elif etype == rsn_bdmap:
+            ret_msg.append(user_name + " The following option `map` (" + msg
+                           ") (number) is invalid for `$boss`.\n")
         else:
             ret_msg.append(user_name + " Debug message")
             ecode = -1
         # end of conditionals for cmd_boss
 
         # begin common return
-        ret_msg.append()
         ret_msg.extend(cmd_usage_b)
+        await client.send_message(channel,'\n'.join(cmd_usage_b))
+        return ecode
         # end of common return
     elif etype == "quote":
         await client.send_message(channel, user_name + " " + 
