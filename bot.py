@@ -1,5 +1,6 @@
 import discord
 import sqlite3
+import shlex
 import re
 import os
 from datetime import datetime
@@ -9,10 +10,17 @@ client = discord.Client()
 
 # variables to use
 output  = list()
-numbers = re.compile('[0-9]+')
-quotes  = re.compile('"')
-# 
 
+# constants
+#   regex
+numbers   = re.compile('[0-9]+')
+quotes    = re.compile('"')
+channel   = 'ch?[1-4]'
+#   error(**) related constants
+#     error(**) constants for "command" argument
+cmd_boss  = "Command: Boss"
+#     error(**) constants for "reason" argument
+rsn_broad = "Reason: Broad"
 
 # database formats
 time_prototype = ('year','month','day','hour','minute')
@@ -351,17 +359,10 @@ async def on_message(message):
                 err_code = await error(message.author,message.channel,'quote')
                 return err_code
 
-            for word in command_message:
-                # begin quote found
-                if quotes.search(word) and not len(message_arg_str):
-                    message_arg_str = word[1:len(word)]
-                    continue
-                # end quote found
-                elif quotes.search(word):
-                    word = message_arg_str + " " + word[0:-1]
-                    message_arg_str = str()
-                message_args.append(word)
+            # command: list of arguments
+            command = shlex.split(command_message)
 
+                        
             
             bossrec  = list() # list to submit to database
             bossname = str()  # boss name to record
@@ -415,7 +416,7 @@ async def on_message(message):
                 # end of section 1
 
                 # section 2: channel
-                elif count == 2 and re.match('ch?[1-4]',word):
+                elif count == 2 and channel.match(word):
                     message.append(re.sub('ch?','',word))
                     count += 1
                     continue
@@ -433,11 +434,11 @@ async def on_message(message):
                         mapnum = re.sub('[^0-9]f?','',word)
                         mapnam = word.split(mapnum)[0]
                     else: # boss spawns in maps with floors but floor not found
-                        await error(message.author,message.channel,'broad',bossname) # too broad
+                        await error(message.author,message.channel,rsn_broad,cmd_boss,bossname) # too broad
                         return
 
                     if not mapnum > 0: # error on floor number
-                        await error(message.author,message.channel,'broad',bossname) # too broad
+                        await error(message.author,message.channel,rsn_broad,cmd_boss,bossname) # too broad
                         return
                     elif bossname == bosses[0]: # blasphemous deathweaver
                         if not re.match('ashaq',mapnam) and not re.match('c(rystal ?)?m'):
@@ -542,51 +543,70 @@ async def on_message(message):
 cmd_usage     = "Usage:\n"
 # command - [us]age - [c]ode [bl]oc[k]
 cmd_us_cblk   = "```\n"
+# command - [us]age - [a]rguments [bl]oc[k]
+cmd_us_ablk   = "`"
 # command - [us]age - [c]ode [arg]uments
 cmd_us_carg   = "Arguments:\n"
-cmd_prefix    = ("$boss","Vaivora, boss")
-cmd_usage_b   = "***'Bosses' commands***"
+# command - [us]age - [b]oss [arg]ument (1)
+cmd_us_barg_1 = "BossName|\"Boss Name\""
+# command - prefix - [b]oss
+cmd_prefix_b  = ("$boss","Vaivora, boss")
+# command - usage - [b]oss
+cmd_usage_b   = ["***'Bosses' commands***"]
 
-# command - usage - [b]oss - [N]th command
-cmd_usage_b_1 = ("BossName|\"boss name\" died|anchored time [chN] [Map|\"Map\"]\n",)
-cmd_usage_b_1 = '\n'.join([(' '.join(t) for t in zip(cmd_prefix,cmd_usage_b_1))])
-cmd_usage_b_2 = "BossName|\"boss name\" verified|erase [chN]\n"
-cmd_usage_b_2 = '\n'.join([(' '.join(t) for t in zip(cmd_prefix,cmd_usage_b_2))])
-cmd_usage_b_3 = "BossName|\"boss name\" list [chN]\n"
-cmd_usage_b_3 = '\n'.join([(' '.join(t) for t in zip(cmd_prefix,cmd_usage_b_3))])
-cmd_usage_b_4 = " all list"
-# command - usage - [b]oss - [a]rgs
+# command - usage - [b]oss - [n]th command -- reuse after every append
+#   boss arg [n] - cmd_usage_b[n]
+#     n=1
+cmd_usage_b_n = (cmd_us_barg_1 + " died|anchored time [chN] [Map|\"Map\"]\n",)
+cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b,cmd_usage_b_n*2))]))
+#     n=2
+cmd_usage_b_n = (cmd_us_barg_1 + "BossName|\"boss name\" verified|erase [chN]\n",)
+cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b,cmd_usage_b_n*2))]))
+#     n=3
+cmd_usage_b_n = (cmd_us_barg_1 + "BossName|\"boss name\" list [chN]\n",)
+cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b,cmd_usage_b_n*2))]))
+#     n=4
+cmd_usage_b_n = (cmd_us_barg_1 + "all list",)
+cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b,cmd_usage_b_n*2))]))
+#   command - usage - [b]oss - [a]rgument descriptors
+#     n=5
 cmd_usage_b_a = "`-` Boss Name or `all` **(required)**\n" +
                 "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" +
                 "`  -` all when used with list will display all valid entries.\n" +
-                "`-` time **(required for died and anchored)**" +
+                "`-` time **(required for** `died` **and** `anchored` **)**" +
                 "`-` Map *(optional)*\n" +
-                "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n"
-
-cmd_usage_b_1 = cmd_usage +
-                cmd_us_cblk +
-                cmd_usb1_cmd +
-                cmd_us_cblk +
-                cmd_us_carg +
-                "`"
-
-cmd_usage_b_m = "Make sure to properly record the map.\n" + 
-                "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses,\n" + 
+                "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" +
+                "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + 
                 "and should not be recorded because they have unpredictable spawns."
+cmd_usage_b.append(cmd_usage_b_a)
 
+# General command errors
+cmd_badsyntax = "Your command was malformed.\n"
+cmd_ambiguous = "Your command was ambiguous.\n"
+
+# Specific command errors
+#   command - usage - [b]oss - [m]ap
+cmd_usage_b_m = "Make sure to properly record the map.\n"
+
+
+# @arg:
+#     user:     Discord.user
+#     channel:  server channel
+#     etype:    [e]rror type
+#     ecmd:     [e]rror (invoked by) command
+#     msg:      (optional) message for better error clarity
 # @return:
 #     -1: too general
 #     -2: 
 #     -127:   malformed command; quote, badmap, nomap
-async def error(user,channel,etype,msg=''):
+async def error(user,channel,etype,ecmd,msg=''):
     # Get the user in mentionable string
     user_name = user.mention
+    ret_msg   = list()
+    ret_msg.append()
 
-    # Command errors
-    cmd_badsyntax = "Your command was malformed.\n"
-    cmd_ambiguous = "Your command was ambiguous.\n"
+    if etype == rsn_broad and ecmd == cmd_boss:
 
-    if etype == "broad":
         await client.send_message(channel, user_name + " " + 
                                   "The following option `boss` (" + msg + 
                                   ") for `$boss` has multiple matching spawn points:\n```" + 
