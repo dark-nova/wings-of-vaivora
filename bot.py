@@ -22,6 +22,8 @@ cmd_boss  = "Command: Boss"
 #     error(**) constants for "reason" argument
 rsn_broad = "Reason: Broad"
 rsn_unknn = "Reason: Unknown"
+rsn_syntx = "Reason: Malformed Syntax"
+rsn_quote = "Reason: Mismatched Quotes"
 
 # database formats
 time_prototype = ('year','month','day','hour','minute')
@@ -374,8 +376,8 @@ async def on_message(message):
             boss_valid = await check_boss(command[0])
             if not boss_valid > 0:
                 err_code = await error(message.author,message.channel,rsn_unknn,command[0])
+                return err_code
 
-                
                 concat   = str()
                 word = re.sub('[^A-Za-z0-9-"]','',word) # sanitize
                 word = word.lower()                     # standardize
@@ -588,7 +590,7 @@ cmd_usage_b_a = "`-` Boss Name or `all` **(required)**\n" +
                 "`-` Map *(optional)*\n" +
                 "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" +
                 "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + 
-                "and should not be recorded because they have unpredictable spawns."
+                "and should not be recorded because they have unpredictable spawns.\n"
 cmd_usage_b.append(cmd_usage_b_a)
 
 # General command errors
@@ -614,27 +616,39 @@ async def error(user,channel,etype,ecmd,msg=''):
     # Get the user in mentionable string
     user_name = user.mention
     ret_msg   = list()
-    ret_msg.append()
 
-    if etype == rsn_broad and ecmd == cmd_boss:
+    if ecmd == cmd_boss:
+        if etype == rsn_broad:
+            ret_msg.append(user_name + " The following option `boss` (" + msg + 
+                           ") for `$boss` has multiple matching spawn points.\n")
+            ret_msg.append(cmd_us_cblk)
+            ret_msg.append('\n'.join(bosslo[msg]))
+            ret_msg.append(cmd_us_cblk)
+            ecode = -1
+            await client.send_message(channel, user_name + " " + 
+                                      "The following option `boss` (" + msg + 
+                                      ") for `$boss` has multiple matching spawn points:\n```" + 
+                                      '\n'.join(bosslo[msg]) + "```\n" + 
+                                      cmd_ambiguous + 
+                                      cmd_usage_b)
 
-        await client.send_message(channel, user_name + " " + 
-                                  "The following option `boss` (" + msg + 
-                                  ") for `$boss` has multiple matching spawn points:\n```" + 
-                                  '\n'.join(bosslo[msg]) + "```\n" + 
-                                  cmd_ambiguous + 
-                                  cmd_usage_b)
-        return -1 
+        elif etype == rsn_unknn:
+            await client.send_message(channel, user_name + " " + 
+                                      "The following option `boss` (" + msg + 
+                                      ") is invalid for `$boss`.\n" + 
+                                      "This is a list of bosses you may use:\n" + 
+                                      "```" + '\n'.join(bosses) + "```\n" + 
+                                      cmd_usage_b)
+            return -2
+        else:
+            ret_msg.append(user_name + " Debug message")
+            ecode = -1
+        # end of conditionals for cmd_boss
 
-    elif etype == "boss":
-        await client.send_message(channel, user_name + " " + 
-                                  "The following option `boss` (" + msg + 
-                                  ") is invalid for `$boss`.\n" + 
-                                  "This is a list of bosses you may use:\n" + 
-                                  "```" + '\n'.join(bosses) + "```\n" + 
-                                  cmd_usage_b)
-        return -2
-
+        # begin common return
+        ret_msg.append()
+        ret_msg.extend(cmd_usage_b)
+        # end of common return
     elif etype == "quote":
         await client.send_message(channel, user_name + " " + 
                                   "Your command for `$boss` had misused quotes somewhere.\n" +
