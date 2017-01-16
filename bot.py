@@ -21,6 +21,7 @@ channel   = 'ch?[1-4]'
 cmd_boss  = "Command: Boss"
 #     error(**) constants for "reason" argument
 rsn_broad = "Reason: Broad"
+rsn_argct = "Reason: Argument Count"
 rsn_unknn = "Reason: Unknown Boss"
 rsn_syntx = "Reason: Malformed Syntax"
 rsn_quote = "Reason: Mismatched Quotes"
@@ -356,11 +357,11 @@ async def on_message(message):
     if "timer" in message.channel or "boss" in message.channel:
         # 'boss' channel command: $boss
         #   arg order:
-        #     1. [0] boss name
-        #     2. [1] status (killed, anchored)
-        #     3. [2] time
-        #     4. [3] channel
-        #     5. [4] map
+        #     1. [0] req boss name
+        #     2. [1] req status (killed, anchored)
+        #     3. [2] req time
+        #     4. [3] opt channel
+        #     5. [4] opt map
         if message.content.startswith('$boss ') or 
            message.content.startswith('Vaivora, boss '):
             command_message = message.content
@@ -376,12 +377,18 @@ async def on_message(message):
 
             # command: list of arguments
             command = shlex.split(command_message)
+
             # begin checking validity
+            #     arg validity
+            if len(command) < 3 or len(command) > 4:
+                err_code = await error(message.author,message.channel,rsn_argct,len(command))
             #     boss validity
-            boss_valid = await check_boss(command[0])
-            if not boss_valid > 0:
+            boss_idx = await check_boss(command[0])
+            if not boss_idx > 0:
                 err_code = await error(message.author,message.channel,rsn_unknn,command[0])
                 return err_code
+            if bosses[boss_idx] in bossfl and command[]
+
             #     map validity
             maps_valid = await check_maps(command[1])
 
@@ -646,7 +653,7 @@ cmd_usage_b_m = "Make sure to properly record the map.\n"
 # @return:
 #     -1: the command was correctly formed but the argument is too broad
 #     -2: the command was correctly formed but could not validate arguments
-#     -127:   malformed command: quote mismatch
+#     -127:   malformed command: quote mismatch, argument count
 async def error(user,channel,etype,ecmd,msg='',xmsg=''):
     # Get the user in mentionable string
     user_name = user.mention
@@ -693,7 +700,12 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
                            ") is invalid for `$boss`.\n")
             ret_msg.append("Omit spaces; record in 12H (with AM/PM) or 24H time.")
             ret_msg.append(cmd_badsyntax)
-
+            ecode = -2
+        elif etype == rsn_argct:
+            ret_msg.append(user_name + " Your command for `$boss` had too few arguments.\n" +  
+                           "Expected: 3, 4; got: " + msg + ".\n")
+            ret_msg.append(cmd_badsyntax)
+            ecode = -127
         elif etype == rsn_quote:
             ret_msg.append(user_name + " Your command for `$boss` had misused quotes somewhere.\n")
             ret_msg.append(cmd_badsyntax)
