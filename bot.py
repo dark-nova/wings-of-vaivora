@@ -23,7 +23,7 @@ chanlre   = re.compile(r'(ch)?[1-4]')
 floors    = re.compile(r'[bf]?[0-9][bf]?$')
 gfloors   = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
 gflarre   = re.compile(r'\g<1>\g<4>\g<3>\g<2>\g<5>')
-pfboss    = re.compile(r'([Vv]a?i(v|b)ora, |$)boss')
+pfboss    = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss')
 #   error(**) related constants
 #     error(**) constants for "command" argument
 cmd_boss  = "Command: Boss"
@@ -377,8 +377,7 @@ async def on_message(message):
             command_message = uletters.sub('',command_message)  # sanitize
             command_message = command_message.lower()           # standardize
             command_message = pfboss.sub('',command_message)    # strip leading command/arg
-            message_args    = list()
-            message_arg_str = str()
+            message_args    = dict()
             boss_channel    = 1
 
             # if odd amount of quotes, drop
@@ -436,145 +435,12 @@ async def on_message(message):
                 err_code = await error(message.author,message.channel,rsn_fdbos,boss_channel,bosses[boss_idx])
 
             # everything looks good if the string passes through
-            
+            # begin compiling record in list form
+            message_args
 
-
-                # section 1: boss
-                elif count == 1 and word == "boss":
-                    continue
-
-                elif count == 1 and word in bosses: # matched completely
-                    bossrec.append(word)
-                    bossname = word
-                    count += 1
-                    continue
-
-                elif count == 1 and word in bossns: # matched synonym
-                    for boss in bossyn.keys():
-                        if word in bossyn[boss]:
-                            bossname = boss
-                            bossrec.append(boss) # append boss name
-                            count += 1
-                            continue
-                    await error(message.author,message.channel,'boss',word) # no match; send error message, and...
-                    return
-                # end of section 1
-
-                # section 2: channel
-                elif count == 2 and channel.match(word):
-                    message.append(re.sub('ch?','',word))
-                    count += 1
-                    continue
-                # end of section 2
-
-                # section 3: map
-                elif count == 3 and word in bosslo[bossname]: # matched completely
-                    bossrec.append(word)
-                    count += 1
-                    continue
-
-                # section 3.a: map with floors
-                elif count == 3 and bossname in bossfl: # no number? then...
-                    if re.match('[0-9]f?',word):
-                        mapnum = re.sub('[^0-9]f?','',word)
-                        mapnam = word.split(mapnum)[0]
-                    else: # boss spawns in maps with floors but floor not found
-                        await error(message.author,message.channel,rsn_broad,cmd_boss,bossname) # too broad
-                        return
-
-                    if not mapnum > 0: # error on floor number
-                        await error(message.author,message.channel,rsn_broad,cmd_boss,bossname) # too broad
-                        return
-                    elif bossname == bosses[0]: # blasphemous deathweaver
-                        if not re.match('ashaq',mapnam) and not re.match('c(rystal ?)?m'):
-                            await error(message.author,message.channel,'broad',bossname) # ashaq or cm not listed
-                            return
-                        elif mapnum > 3: # invalid floor
-                            await error(message.author,message.channel,'badmap',mapnum)
-                            return 
-                        elif re.match('ashaq',mapnam): # ashaq
-                            bossrec.append(bosslo[bossname][2+mapnum])
-                            count += 1
-                            continue
-                        else: # crystal mine
-                            bossrec.append(bosslo[bossname][mapnum-1])
-                            count += 1
-                            continue
-                    elif bossname == bosses[1]: # bleak chapparition
-                        if re.match('b',mapnam):
-                            bossrec.append(bosslo[bossname][0]) # b1
-                            count += 1
-                            continue
-                        elif re.match('1',mapnam):
-                            bossrec.append(bosslo[bossname][1]) # 1f
-                            count += 1
-                            continue
-                        else:
-                            bossrec.append(bosslo[bossname][2]) # 2f
-                            count += 1
-                            continue
-                    elif bossname == bosses[7] or bossname == bosses[11]: # violent cerberus and noisy mineloader
-                        if mapnum > 5 or mapnum < 4: # incorrect range
-                            await error(message.author,message.channel,'badmap',mapnum)
-                            return
-                        else:
-                            bossrec.append(bosslo[bossname][mapnum-4])
-                            count += 1
-                            continue
-                    # elif bossname == bosses[13]: # wrathful harpeia
-                    elif not mapnum in [1,2,5]: # wrong districts
-                        await error(message.author,message.channel,'badmap',mapnum)
-                            return
-                        else:
-                            bossrec.append(bosslo[bossname][sqrt(mapnum-1)])
-                            count += 1
-                            continue
-
-                # section 3.b: other maps
-                elif count == 3:
-                    for loc in bosslo[bossname]:
-                        if word in loc:                               
-                            bossrec.append(loc)
-                            count += 1 
-                            continue
-                    await error(message.author,message.channel,'nomap',word)
-                    return
-                # end of section 3
-
-                # section 4: time
-                elif count == 4:
-                    if re.match("am?",word):
-                        word = re.sub("am?",'',word)
-                        mins = int(word.split(':')[1])
-                        hour = int(word.split(':')[0])
-                    elif re.match("pm?",word):
-                        word = re.sub("pm?",'',word)
-                        mins = int(word.split(':')[1])
-                        hour = int(word.split(':')[0])+12
-                        word = str(hour) + ":" + str(mins)                               
-                    elif not re.match(":",word):
-                        await error(message.author,message.channel,'badtime',word)
-                        return
-                    elif hour > 23 or hour < 0 or mins > 59 or mins < 0:
-                        await error(message.author,message.channel,'badtime',word)
-                        return
-
-                    bossrec.append(word)
-                    count += 1
-                # end of section 4
-
-                # section 5: complete and assemble
-                else:
-                    await db_process_boss(message.author,message.channel,bossrec)
-                # end of section 5
-                # end of for-loop _message
-
-            # check if not properly terminated
-            if not complete:
-                await error(message.author,message.channel,)
-                return
 
         # 'boss' channel command: $list
+        #### TODO
         elif message.content.startswith('$list '):
             pass
 
