@@ -3,18 +3,21 @@ import sqlite3
 import shlex
 import re
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # basic declarations and initializations
-client = discord.Client()
+client    = discord.Client()
+EASTERN   = timedelta(hours=3)
 
 # variables to use
-output  = list()
+output    = list()
 
 # constants
 #   regex
 numbers   = re.compile(r'[0-9]+')
 letters   = re.compile(r'[a-z -]+')
+pmflag    = re.compile(r' ?[Pp][Mm]?')
+amflag    = re.compile(r' ?[Aa][Mm]?')
 uletters  = re.compile(r'[^A-Za-z0-9 "-]')
 timefmt   = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 quotes    = re.compile(r'"')
@@ -379,6 +382,7 @@ async def on_message(message):
             command_message = pfboss.sub('',command_message)    # strip leading command/arg
             message_args    = dict()
             boss_channel    = 1
+            maps_idx        = -1
 
             # if odd amount of quotes, drop
             if len(re.findall('"',command_message)) % 2:
@@ -427,7 +431,7 @@ async def on_message(message):
                 if not chanlre.match(command[argpos]) or len(command) == 5:
                     maps_idx = await check_maps(command[argpos],command[1])
                     if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
-                        err_code = await error(message.author.message.channel,rsn_bdmap,command[1])
+                        err_code = await error(message.author,message.channel,rsn_bdmap,command[1])
                         return err_code
 
             #         check if boss is a field boss, and discard if boss channel is not 1
@@ -436,7 +440,45 @@ async def on_message(message):
 
             # everything looks good if the string passes through
             # begin compiling record in list form
-            message_args
+            message_args['name'] = bosses[boss_idx]
+            message_args['channel'] = boss_channel
+            if maps_idx >= 0:
+                message_args['map'] = bosslo[message_args['name']][maps_idx]
+            else:
+                message_args['map'] = 'N/A'
+
+            # process time
+            #     antemeridian
+            if amflag.search(command[2]):
+                btime = amflag.sub('',command[2]).split(':')
+                bhour = int(btime[0]) % 12
+            #     postmeridian
+            elif pmflag.search(command[2]):
+                btime = pmflag.sub('',command[2]).split(':')
+                bhour = (int(btime[0]) % 12) + 12
+            #     24h time
+            else:
+                btime = command[2].split(':')
+                bhour = int(btime[0])
+            #     handle bad input
+            if bhour > 24:
+                err_code = await error(message.author,message.channel,rsn_bdtme,command[2])
+                return err_code
+            bminu = int(btime[1])
+
+            message_args['hour'] = bhour
+            message_args['mins'] = bminu
+
+            approx_server_time = datetime.today() + EASTERN
+            btday = approx_server_time.day
+            btmon = approx_server_time.month
+            byear = approx_server_time.year
+            # late recorded time; correct with -1 day
+            if (datetime.datetime(byear,btmon,btday,hour=bhour,minute=bminu)-approx_server_time).days < 0:
+                btday -= 1
+
+                
+
 
 
         # 'boss' channel command: $list
