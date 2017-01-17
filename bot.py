@@ -401,36 +401,23 @@ async def on_message(message):
 
             #     boss validity
             boss_idx = await check_boss(command[0])
-            if boss_idx < 0  or boss_idx >= len(boss) :
+            if boss_idx < 0  or boss_idx >= len(boss):
                 err_code = await error(message.author,message.channel,rsn_unknn,command[0])
                 return err_code
 
             #     (opt) channel: reject if field boss & ch > 1 or if ch > 4
+            #     (opt) map: validity
             # TODO: Make channel limit specific per boss
             if chanlre.match(command[3]):
                 boss_channel = int(letters.sub('',command[3]))
             if bosses[boss_idx] in bossfl and boss_channel != 1:
                 err_code = await error(message.author,message.channel,rsn_fdbos,boss_channel,bosses[boss_idx])
-            #     map validity
-            maps_valid = await check_maps(command[1])
+            maps_idx = await check_maps(command[1])
+            if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
+                err_code = await error(message.author.message.channel,rsn_bdmap,command[1])
+                return err_code
+            
 
-                concat   = str()
-                
-
-                # section 0: concatenation
-                if count == 1 or count == 3 and '"' in word:
-                    complete = not complete
-                    concat += word.replace('"','')
-                    continue
-
-                elif count == 1 or count == 3 and not complete:
-                    concat += word
-                    continue
-
-                elif count == 1 or count == 3 and complete:
-                    word = concat # redo loop with new word
-                    continue
-                # end of section 0
 
                 # section 1: boss
                 elif count == 1 and word == "boss":
@@ -598,12 +585,20 @@ async def check_boss(boss):
 #     maps: str; map name from raw input
 #     boss: str; the corresponding boss
 # @return:
-#     True if found, False otherwise
+#     map index in list, or -1 if not found
 async def check_maps(maps,boss):
     if floors.match(maps):
         # rearrange letters, and remove map name
         mapnum = gfloors.sub(gflarre,maps)
-    pass
+        mmatch = mapnum.search(maps)
+        if not mmatch:
+            return -1
+        return bosslo[boss].index(mmatch)
+    else:
+        for m in bosslo[boss]:
+            if m in maps:
+                return bosslo[boss].index(m)
+    return -1
 
 # begin constants for strings for error messages
 #   command - usage
