@@ -22,6 +22,7 @@ uletters  = re.compile(r'[^A-Za-z0-9 "-]')
 timefmt   = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 quotes    = re.compile(r'"')
 bstatus   = re.compile(r'([Dd]ied|[Aa]nchored)')
+bstanch   = re.compile(r'([Aa]nchored)')
 chanlre   = re.compile(r'(ch)?[1-4]')
 floors    = re.compile(r'[bf]?[0-9][bf]?$')
 gfloors   = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
@@ -45,12 +46,14 @@ time_prototype = ('year','month','day','hour','minute')
 boss_prototype = ('name','channel','map') + time_prototype
 remi_prototype = ('user','comment') + time_prototype
 talt_prototype = ('user','previous','current','valid') + time_prototype
+perm_prototype = ('user','role')
 
 # and the database formats' types
 time_prototype_types = ('real',)*5
 boss_prototype_types = ('text',) + ('real',)*2 + time_prototype_types
 remi_prototype_types = ('text',)*2 + time_prototype_types
 talt_prototype_types = ('text',) + ('real',)*3 + time_prototype_types
+perm_prototype_types = ('text',)*2
 
 # zip, create, concatenate into tuple
 boss_tuple = tuple('{} {}'.format(*t) for t in 
@@ -59,44 +62,59 @@ remi_tuple = tuple('{} {}'.format(*t) for t in
                    zip(remi_prototype,remi_prototype_types))
 talt_tuple = tuple('{} {}'.format(*t) for t in 
                    zip(talt_prototype,talt_prototype_types))
+perm_tuple = tuple('{} {}'.format(*t) for t in
+                   zip(perm_prototype,perm_prototype_types))
 
 async def create_discord_db(discord_db):
-  conn = sqlite3.connect(discord_db)
-  c = conn.cursor()
-  # create boss table
-  c.execute('create table boss(?)',boss_tuple)
-  c.commit()
-  # create reminders table; 
-  #### TODO
-  c.execute('create table reminders(?)',remi_tuple)
-  c.commit()
-  # close the database after creating
-  c.close()
-  return
-
-async def validate_discord_db(discord_db):
-  conn = sqlite3.connect(discord_db)
-  conn.row_factory = sqlite3.Row
-  c = conn.cursor()
-  # 
-  c.execute('select * from boss')
-  r = c.fetchone()
-
-async def check_boss_db(discord_server,boss_name,channel,boss_map,time):
-  discord_db = discord_server + ".db"
-  if not os.path.isfile(discord_db):
-    await create_discord_db(discord_db)
-  else:
-    await valid = validate_discord_db(discord_db)
-
-  if valid:
     conn = sqlite3.connect(discord_db)
     c = conn.cursor()
-    c.executemany("select * from boss where name=? and channel=? and map=?",(boss,channel,boss_map))
 
+    # create boss table
+    c.execute('create table boss(?)',boss_tuple)
+    c.commit()
 
+    # create reminders table
+    #### TODO
+    #c.execute('create table reminders(?)',remi_tuple)
+    #c.commit()
 
-  return valid 
+    # create talt tracking table
+    #### TODO
+    #c.execute('create table talt(?)',talt_tuple)
+    #c.commit()
+
+    # create permissions hierarchy
+    #### TODO
+    #c.execute('create table permissions(?)',perm_tuple)
+    #c.commit()
+
+    # close the database after creating
+    c.close()
+    return
+
+async def validate_discord_db(discord_db):
+    conn = sqlite3.connect(discord_db)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    c.execute('select * from boss')
+    r = c.fetchone()
+
+async def check_boss_db(discord_server,boss_name,channel,boss_map,time):
+    discord_db = discord_server + ".db"
+    if not os.path.isfile(discord_db):
+        await create_discord_db(discord_db)
+    else:
+        await valid = validate_discord_db(discord_db)
+
+    if valid:
+        conn = sqlite3.connect(discord_db)
+        c = conn.cursor()
+        c.executemany("select * from boss where name=? and channel=? and map=?",(boss,channel,boss_map))
+
+        # return a list of records
+        return c.fetchall()
+
+    return None
 
 ## begin: obsolete code
 # async def check_db(db):
@@ -477,7 +495,9 @@ async def on_message(message):
             if (datetime.datetime(byear,btmon,btday,hour=bhour,minute=bminu)-approx_server_time).days < 0:
                 btday -= 1
 
-                
+            #### Start here
+            bhour = (bhour + wait_time)
+
 
 
 
