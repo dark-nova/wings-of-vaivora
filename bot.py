@@ -14,8 +14,11 @@ output  = list()
 # constants
 #   regex
 numbers   = re.compile(r'[0-9]+')
+letters   = re.compile(r'[a-z -]+')
+timefmt   = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 quotes    = re.compile(r'"')
-channel   = 'ch?[1-4]'
+bstatus   = re.compile(r'([Dd]ied|[Aa]nchored)')
+chanlre   = re.compile(r'(ch)?[1-4]')
 #   error(**) related constants
 #     error(**) constants for "command" argument
 cmd_boss  = "Command: Boss"
@@ -356,19 +359,20 @@ async def on_message(message):
     # 'boss' channel processing
     if "timer" in message.channel or "boss" in message.channel:
         # 'boss' channel command: $boss
-        #   arg order:
-        #     1. [0] req boss name
-        #     2. [1] req status (killed, anchored)
-        #     3. [2] req time
-        #     4. [3] opt channel
-        #     5. [4] opt map
+        #     arg order:
+        #         1. [0] req boss name
+        #         2. [1] req status (killed, anchored)
+        #         3. [2] req time
+        #         4. [3] opt channel
+        #         5. [4] opt map
         if message.content.startswith('$boss ') or 
            message.content.startswith('Vaivora, boss '):
             command_message = message.content
-            command_message = re.sub(r'[^A-Za-z0-9-"]','',command_message) # sanitize
-            command_message = command_message.lower()                     # standardize
+            command_message = re.sub(r'[^A-Za-z0-9 "-]','',command_message) # sanitize
+            command_message = command_message.lower()                      # standardize
             message_args    = list()
             message_arg_str = str()
+            boss_channel    = 1
 
             # if odd amount of quotes, drop
             if len(re.findall('"',command_message)) % 2:
@@ -380,13 +384,22 @@ async def on_message(message):
 
             # begin checking validity
             #     arg validity
+            #         count: [3,4]
             if len(command) < 3 or len(command) > 4:
                 err_code = await error(message.author,message.channel,rsn_argct,len(command))
+                return err_code
+            #         boss: letters
+            #         status: anchored, died
+            #         time: format
+            if not (letters.match(command[0]) or bstatus.match(command[1]) or timefmt.match(command[2])):
+                err_code = await error(message.author,message.channel,rsn_syntx)
+                return err_code
             #     boss validity
             boss_idx = await check_boss(command[0])
-            if not boss_idx > 0:
+            if boss_idx < 0  or boss_idx >= len(boss) :
                 err_code = await error(message.author,message.channel,rsn_unknn,command[0])
                 return err_code
+            boss_channel = int(letters.sub('',))
             if bosses[boss_idx] in bossfl and command[]
 
             #     map validity
