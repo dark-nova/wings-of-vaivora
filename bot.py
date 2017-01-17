@@ -15,6 +15,7 @@ output  = list()
 #   regex
 numbers   = re.compile(r'[0-9]+')
 letters   = re.compile(r'[a-z -]+')
+uletters  = re.compile(r'[^A-Za-z0-9 "-]')
 timefmt   = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 quotes    = re.compile(r'"')
 bstatus   = re.compile(r'([Dd]ied|[Aa]nchored)')
@@ -22,6 +23,7 @@ chanlre   = re.compile(r'(ch)?[1-4]')
 floors    = re.compile(r'[bf]?[0-9][bf]?$')
 gfloors   = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
 gflarre   = re.compile(r'\g<1>\g<4>\g<3>\g<2>\g<5>')
+pfboss    = re.compile(r'([Vv]a?i(v|b)ora, |$)boss')
 #   error(**) related constants
 #     error(**) constants for "command" argument
 cmd_boss  = "Command: Boss"
@@ -61,7 +63,8 @@ async def create_discord_db(discord_db):
   # create boss table
   c.execute('create table boss(?)',boss_tuple)
   c.commit()
-  # create reminders table; TODO (?)
+  # create reminders table; 
+  #### TODO
   c.execute('create table reminders(?)',remi_tuple)
   c.commit()
   # close the database after creating
@@ -371,8 +374,9 @@ async def on_message(message):
         if message.content.startswith('$boss ') or 
            message.content.startswith('Vaivora, boss '):
             command_message = message.content
-            command_message = re.sub(r'[^A-Za-z0-9 "-]','',command_message) # sanitize
-            command_message = command_message.lower()                      # standardize
+            command_message = uletters.sub('',command_message)  # sanitize
+            command_message = command_message.lower()           # standardize
+            command_message = pfboss.sub('',command_message)    # strip leading command/arg
             message_args    = list()
             message_arg_str = str()
             boss_channel    = 1
@@ -387,8 +391,8 @@ async def on_message(message):
 
             # begin checking validity
             #     arg validity
-            #         count: [3,4]
-            if len(command) < 3 or len(command) > 4:
+            #         count: [3,5]
+            if len(command) < 3 or len(command) > 5:
                 err_code = await error(message.author,message.channel,rsn_argct,len(command))
                 return err_code
 
@@ -407,15 +411,31 @@ async def on_message(message):
 
             #     (opt) channel: reject if field boss & ch > 1 or if ch > 4
             #     (opt) map: validity
-            # TODO: Make channel limit specific per boss
-            if chanlre.match(command[3]):
-                boss_channel = int(letters.sub('',command[3]))
+            ##### TODO: Make channel limit specific per boss
+            if len(command) > 3:
+                #     channel is set
+                #     keep track of arg position in case we have 5
+                argpos = 3
+                if chanlre.match(command[argpos]):
+                    boss_channel = int(letters.sub('',command[argpos]))
+                    argpos += 1
+                
+                #     specifically not an elif - sequential
+                #     cases:
+                #         4 args: 4th arg is channel
+                #         4 args: 4th arg is map
+                #         5 args: 4th and 5th arg are channel and map respectively
+                if not chanlre.match(command[argpos]) or len(command) == 5:
+                    maps_idx = await check_maps(command[argpos],command[1])
+                    if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
+                        err_code = await error(message.author.message.channel,rsn_bdmap,command[1])
+                        return err_code
+
+            #         check if boss is a field boss, and discard if boss channel is not 1
             if bosses[boss_idx] in bossfl and boss_channel != 1:
                 err_code = await error(message.author,message.channel,rsn_fdbos,boss_channel,bosses[boss_idx])
-            maps_idx = await check_maps(command[1])
-            if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
-                err_code = await error(message.author.message.channel,rsn_bdmap,command[1])
-                return err_code
+
+            # everything looks good if the string passes through
             
 
 
@@ -727,7 +747,7 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             ecode = -2
         elif etype == rsn_argct:
             ret_msg.append(user_name + " Your command for `$boss` had too few arguments.\n" +  
-                           "Expected: 3, 4; got: " + msg + ".\n")
+                           "Expected: 4 to 6; got: " + msg + ".\n")
             ret_msg.append(cmd_badsyntax)
             ecode = -127
         elif etype == rsn_quote:
