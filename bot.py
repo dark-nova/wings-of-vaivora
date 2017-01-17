@@ -19,6 +19,9 @@ timefmt   = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 quotes    = re.compile(r'"')
 bstatus   = re.compile(r'([Dd]ied|[Aa]nchored)')
 chanlre   = re.compile(r'(ch)?[1-4]')
+floors    = re.compile(r'[bf]?[0-9][bf]?$')
+gfloors   = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
+gflarre   = re.compile(r'\g<1>\g<4>\g<3>\g<2>\g<5>')
 #   error(**) related constants
 #     error(**) constants for "command" argument
 cmd_boss  = "Command: Boss"
@@ -30,6 +33,7 @@ rsn_syntx = "Reason: Malformed Syntax"
 rsn_quote = "Reason: Mismatched Quotes"
 rsn_bdmap = "Reason: Bad Map"
 rsn_bdtme = "Reason: Bad Time"
+rsn_fdbos = "Reason: Field Boss Channel"
 
 # database formats
 time_prototype = ('year','month','day','hour','minute')
@@ -263,8 +267,7 @@ bosslo = {'Blasphemous Deathweaver':['Crystal Mine 1F',
                                      'Ashaq Underground Prison 2F',
                                      'Ashaq Underground Prison 3F'],
           'Bleak Chapparition':['Tenet Church B1',
-                                'Tenet Church 1F',
-                                'Tenet Church 2F'],
+                                'Tenet Church 1F'],
           'Hungry Velnia Monkey':['Novaha Assembly Hall',
                                   'Novaha Annex',
                                   'Novaha Institute'],
@@ -388,20 +391,26 @@ async def on_message(message):
             if len(command) < 3 or len(command) > 4:
                 err_code = await error(message.author,message.channel,rsn_argct,len(command))
                 return err_code
+
             #         boss: letters
             #         status: anchored, died
             #         time: format
             if not (letters.match(command[0]) or bstatus.match(command[1]) or timefmt.match(command[2])):
                 err_code = await error(message.author,message.channel,rsn_syntx)
                 return err_code
+
             #     boss validity
             boss_idx = await check_boss(command[0])
             if boss_idx < 0  or boss_idx >= len(boss) :
                 err_code = await error(message.author,message.channel,rsn_unknn,command[0])
                 return err_code
-            boss_channel = int(letters.sub('',))
-            if bosses[boss_idx] in bossfl and command[]
 
+            #     (opt) channel: reject if field boss & ch > 1 or if ch > 4
+            # TODO: Make channel limit specific per boss
+            if chanlre.match(command[3]):
+                boss_channel = int(letters.sub('',command[3]))
+            if bosses[boss_idx] in bossfl and boss_channel != 1:
+                err_code = await error(message.author,message.channel,rsn_fdbos,boss_channel,bosses[boss_idx])
             #     map validity
             maps_valid = await check_maps(command[1])
 
@@ -591,9 +600,9 @@ async def check_boss(boss):
 # @return:
 #     True if found, False otherwise
 async def check_maps(maps,boss):
-    if re.match(r'[bf]?[0-9][bf]?$',maps):
+    if floors.match(maps):
         # rearrange letters, and remove map name
-        mapnum = re.sub(r'.+(b?)(f?)([0-9])(b?)(f?)$',r'\g<1>\g<4>\g<3>\g<2>\g<5>',maps)
+        mapnum = gfloors.sub(gflarre,maps)
     pass
 
 # begin constants for strings for error messages
@@ -605,6 +614,7 @@ cmd_us_cblk   = "```\n"
 cmd_us_ablk   = "`"
 #   command - [us]age - [c]ode [arg]uments
 cmd_us_carg   = "Arguments:\n"
+debug_message = " Debug message. Something went wrong.\n"
 
 #   begin $boss specific constants
 #       command - [us]age - [b]oss [arg]ument (1)
@@ -700,7 +710,7 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             try:
               ret_msg.append('\n'.join(bosslo[xmsg]))
             except:
-              ret_msg.append(user_name + " Debug message. Something went wrong.")
+              ret_msg.append(user_name + debug_message)
               ret_msg.append(cmd_badsyntax)
               ecode = -127
               await client.send_message(channel,'\n'.join(ret_msg))
@@ -708,10 +718,16 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             ret_msg.append(cmd_us_cblk)
             ret_msg.append(cmd_usage_b_m)
             ecode = -2
+        elif etype == rsn_fdbos:
+            ret_msg.append(user_name + the_following_argument('channel') + msg +
+                           ") (number) is invalid for `$boss`. " + xmsg + " is a field boss, thus " +
+                           "variants that spawn on channels other than 1 (or other maps) are considered world bosses " +
+                           "with unpredictable spawns.\n")
+            ecode = -2
         elif etype == rsn_bdtme:
             ret_msg.append(user_name + the_following_argument('time') + msg +
                            ") is invalid for `$boss`.\n")
-            ret_msg.append("Omit spaces; record in 12H (with AM/PM) or 24H time.")
+            ret_msg.append("Omit spaces; record in 12H (with AM/PM) or 24H time.\n")
             ret_msg.append(cmd_badsyntax)
             ecode = -2
         elif etype == rsn_argct:
@@ -724,7 +740,7 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             ret_msg.append(cmd_badsyntax)
             ecode = -127
         else:
-            ret_msg.append(user_name + " Debug message. Something went wrong.")
+            ret_msg.append(user_name + debug_message)
             ret_msg.append(cmd_badsyntax)
             ecode = -127
             await client.send_message(channel,'\n'.join(ret_msg))
@@ -739,7 +755,7 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
     # todo: reminders, Talt tracking, permissions
     else:
         # todo
-        ret_msg.append(user_name + " Debug message. Something went wrong.")
+        ret_msg.append(user_name + debug_message)
         ret_msg.append(cmd_badsyntax)
         ecode = -127
         await client.send_message(channel,'\n'.join(ret_msg))
