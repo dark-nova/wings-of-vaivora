@@ -8,6 +8,9 @@ from datetime import datetime, timedelta
 # basic declarations and initializations
 client    = discord.Client()
 EASTERN   = timedelta(hours=3)
+WESTERN   = timedelta(hours=-3)
+FOURHWAIT = timedelta(hours=4)
+ANCHHWAIT = timedelta(hours=3)
 
 # variables to use
 output    = list()
@@ -28,6 +31,8 @@ floors    = re.compile(r'[bf]?[0-9][bf]?$')
 gfloors   = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
 gflarre   = re.compile(r'\g<1>\g<4>\g<3>\g<2>\g<5>')
 pfboss    = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss')
+bossall   = re.compile(r'all')
+bosslist  = re.compile(r'li?st?')
 #   error(**) related constants
 #     error(**) constants for "command" argument
 cmd_boss  = "Command: Boss"
@@ -69,6 +74,8 @@ async def create_discord_db(discord_db):
     conn = sqlite3.connect(discord_db)
     c = conn.cursor()
 
+    # delete table if necessary since it may be invalid
+    c.execute('drop table if exists boss')
     # create boss table
     c.execute('create table boss(?)',boss_tuple)
     c.commit()
@@ -93,13 +100,25 @@ async def create_discord_db(discord_db):
     return
 
 async def validate_discord_db(discord_db):
-    conn = sqlite3.connect(discord_db)
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
-    c.execute('select * from boss')
-    r = c.fetchone()
+    if not os.path.isfile(discord_db):
+        await create_discord_db(discord_db)
+        return False # not initialized
+    else:
+        conn = sqlite3.connect(discord_db)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        # check boss table
+        c.execute('select * from boss')
+        r = c.fetchone()
+        # check if boss table matches format
+        if not tuple(r.keys()) is boss_prototype:
+            c.close() # close first
+            await create_discord_db(discord_db)
+            return False # invalid db; deleted and recreated
+        #### TODO: Validate other tables when implemented
+        return True
 
-async def check_boss_db(discord_server,boss_name,channel,boss_map,time):
+async def check_boss_db(discord_server,boss_name):
     discord_db = discord_server + ".db"
     if not os.path.isfile(discord_db):
         await create_discord_db(discord_db)
@@ -115,6 +134,10 @@ async def check_boss_db(discord_server,boss_name,channel,boss_map,time):
         return c.fetchall()
 
     return None
+
+async def update_boss_db(discord_server,boss_dict):
+    discord_db = discord_server + ".db"
+
 
 ## begin: obsolete code
 # async def check_db(db):
@@ -394,11 +417,12 @@ async def on_message(message):
         #         5. [4] opt map
         if message.content.startswith('$boss ') or 
            message.content.startswith('Vaivora, boss '):
+            command_server  = message.server
             command_message = message.content
             command_message = uletters.sub('',command_message)  # sanitize
             command_message = command_message.lower()           # standardize
             command_message = pfboss.sub('',command_message)    # strip leading command/arg
-            message_args    = dict()
+            message_args    = dict() # keys(): name, channel, map, time, 
             boss_channel    = 1
             maps_idx        = -1
 
@@ -420,15 +444,28 @@ async def on_message(message):
             #         boss: letters
             #         status: anchored, died
             #         time: format
-            if not (letters.match(command[0]) or bstatus.match(command[1]) or timefmt.match(command[2])):
+            if not (letters.match(command[0]) and bstatus.match(command[1]) and timefmt.match(command[2])):
                 err_code = await error(message.author,message.channel,rsn_syntx)
                 return err_code
 
             #     boss validity
+            #         all list
+            if bossall.match(command[0]) and bosslist.match(command[1]):
+                bossrec = await check_boss_db(command_server,[bosses]) # possible return
+
+            elif bossall.match(command[0]):
+                err_code = await error(message.author,message.channel,rsn_syntx)
+                return err_code
+            
             boss_idx = await check_boss(command[0])
             if boss_idx < 0  or boss_idx >= len(boss):
                 err_code = await error(message.author,message.channel,rsn_unknn,command[0])
                 return err_code
+
+            #         boss list
+            if bosslist.match(command[1]):
+                bossrec = await get_boss_db(command_server,[bosses[boss_idx],]) # possible return
+
 
             #     (opt) channel: reject if field boss & ch > 1 or if ch > 4
             #     (opt) map: validity
@@ -441,7 +478,7 @@ async def on_message(message):
                     boss_channel = int(letters.sub('',command[argpos]))
                     argpos += 1
                 
-                #     specifically not an elif - sequential
+                #     specifically not an elif - sequential handling of args
                 #     cases:
                 #         4 args: 4th arg is channel
                 #         4 args: 4th arg is map
@@ -457,7 +494,7 @@ async def on_message(message):
                 err_code = await error(message.author,message.channel,rsn_fdbos,boss_channel,bosses[boss_idx])
 
             # everything looks good if the string passes through
-            # begin compiling record in list form
+            # begin compiling record in dict form 'message_args'
             message_args['name'] = bosses[boss_idx]
             message_args['channel'] = boss_channel
             if maps_idx >= 0:
@@ -484,28 +521,27 @@ async def on_message(message):
                 return err_code
             bminu = int(btime[1])
 
-            message_args['hour'] = bhour
-            message_args['mins'] = bminu
-
             approx_server_time = datetime.today() + EASTERN
             btday = approx_server_time.day
             btmon = approx_server_time.month
             byear = approx_server_time.year
             # late recorded time; correct with -1 day
-            if (datetime.datetime(byear,btmon,btday,hour=bhour,minute=bminu)-approx_server_time).days < 0:
+            mdate = datetime.datetime(byear,btmon,btday,hour=bhour,minute=bminu)
+            if (mdate-approx_server_time).days < 0:
                 btday -= 1
 
-            #### Start here
-            bhour = (bhour + wait_time)
+            wait_time = ANCHHWAIT if bstanch.match(command[1]) else FOURHWAIT
+            bhour = int(bhour + wait_time - 3) # bhour in Pacific/local
 
+            # add them to dict
+            message_args['hour'] = bhour
+            message_args['mins'] = bminu
+            message_args['day']       = btday
+            message_args['month']     = btmon
+            message_args['year']      = byear
+            message_args['status']    = command[1] # anchored or died
 
-
-
-        # 'boss' channel command: $list
-        #### TODO
-        elif message.content.startswith('$list '):
-            pass
-
+            bossrec = await update_boss_db(command_server,message_args)
                 
     else:
         return
