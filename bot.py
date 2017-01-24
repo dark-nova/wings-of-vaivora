@@ -99,6 +99,7 @@ async def create_discord_db(discord_db):
     c.close()
     return
 
+# @func:  
 async def validate_discord_db(discord_db):
     if not os.path.isfile(discord_db):
         await create_discord_db(discord_db)
@@ -405,6 +406,11 @@ bossls = ['crystal mine','ashaq',
 # end of boss related variables
 
 # begin code for message processing
+# @func:    on_message(Discord.message)
+# @arg:
+#     message: Discord.message; includes message among sender (Discord.user) and server (Discord.server)
+# @return:
+#     None
 async def on_message(message):
     # 'boss' channel processing
     if "timer" in message.channel or "boss" in message.channel:
