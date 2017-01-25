@@ -113,47 +113,84 @@ async def validate_discord_db(discord_db):
         r = c.fetchone()
         # check if boss table matches format
         if not tuple(r.keys()) is boss_prototype:
-            c.close() # close first
+            c.close() # close first, and then recreate
             await create_discord_db(discord_db)
             return False # invalid db; deleted and recreated
         #### TODO: Validate other tables when implemented
         return True
 
-async def check_boss_db(discord_server,boss_name):
-    discord_db = discord_server + ".db"
-    if not os.path.isfile(discord_db):
-        await create_discord_db(discord_db)
-    else:
-        await valid = validate_discord_db(discord_db)
+# @func:    check_boss_db(Discord.server.name,list)
+# @arg:
+#   discord_server: the server
+#   boss_list:      list containing bosses to check
+# @return:
+#   None if db is not prepared; otherwise, a list
+async def check_boss_db(discord_server,boss_list):
+    discord_db  = discord_server + ".db"
+    db_status   = await validate_discord_db(discord_db)
+    db_record   = list()
 
-    if valid:
+    if not db_status:
+        return None
+    else: # db is working and may be populated
         conn = sqlite3.connect(discord_db)
         c = conn.cursor()
-        c.executemany("select * from boss where name=? and channel=? and map=?",(boss,channel,boss_map))
-
+        for b in boss_list:
+            c.execute("select * from boss where name=?",b)
+            db_record.extend(c.fetchall())
+        c.close()
         # return a list of records
-        return c.fetchall()
+        return db_record
 
-    return None
-
+# @func:    update_boss_db(Discord.server.name,dict)
+# @arg:
+#   discord_server: the server
+#   boss_dict: message_args from on_message(*)
+# @return:
+#   True if successful
 async def update_boss_db(discord_server,boss_dict):
-    discord_db = discord_server + ".db"
+    discord_db  = discord_server + ".db"
+    db_status   = await validate_discord_db(discord_db)
 
+    if db_status: # db is working and may be populated
+        conn = sqlite3.connect(discord_db)
+        c = conn.cursor()
+        c.executemany("select * from boss where name=? and channel=?",(boss_dict['boss'],boss_dict['channel']))
+        contents = c.fetchall()
+
+        # invalid case: more than one entry for this combination
+        #### TODO: keep most recent time? 
+        if len(contents) > 1:
+            c.close()
+            await rm_ent_boss_db(discord_server,boss_dict)
+            conn = sqlite3.connect(discord_db)
+
+        # if entry has newer data, discard previous
+        if contents and (contents[4] < boss_dict['year'] or
+                         contents[5] < boss_dict['month'] or
+                         contents[6] < boss_dict['day'] or
+                         contents[7] < boss_dict['hour']):
+            await rm_ent_boss_db(discord_server,boss_dict)
+        else:
+            return False
+
+
+
+# @func:    rm_ent_boss_db(Discord.server.name,dict)
+# @arg:
+#   discord_server: the server
+#   boss_dict: message_args from on_message(*)
+# @return:
+#   True if successful
+async def rm_ent_boss_db(discord_server,boss_dict):
+    discord_db  = discord_server + ".db"
+    db_status   = await validate_discord_db(discord_db)
+
+    if db_status:
+        conn = sqlite3.connect(discord_db)
+####### RESUME HERE!
 
 ## begin: obsolete code
-# async def check_db(db):
-#     try:
-#         c.execute("select * from ?",db)
-#         output.append(c.fetchall())
-#     except:
-#         print('Error: ' + db + ' database not found. Building new database...')
-#         c.execute("create table ?(name text,channel real,day text,time text,
-#                    map text,status text",db)
-#         c.commit()
-#         output.append(["None. Start getting some timers!"])
-#         print("Built " + db + " database!")
-
-
 # async def on_ready():
 #     await client.login('MjEzMDQxNzI3Nzk4MjQ3NDI1.Co0qOA.yqoI7ggaX9aleWxUyPEHEIiLji0')
 #     print("Logging in...")
@@ -166,70 +203,6 @@ async def update_boss_db(discord_server,boss_dict):
 #         update(output[0])
 #         #await asyncio.sleep(60)
 #     pass
-
-
-
-# async def update(db):
-#     print("Current timers:")
-#     boss_db.sort(key=lambda entry: (entry[2],entry[3]))
-#     #dilg_db = output[1]
-#     #dilg_db.sort(key=lambda entry: (entry[2],entry[3]))
-#     print("Bosses:")
-#     for boss in boss_db:
-#         _year  = boss[2][0:4]
-#         _month = boss[2][4:6]
-#         _day   = boss[2][6:8]
-#         _hour  = boss[3][0:2]
-#         _mins  = boss[3][3:5]
-#         diff = (datetime(_year,_month,_day,_hour,_mins)-datetime.now()).seconds
-#         if diff < 0:
-#             c.executemany('delete from boss where name=?,day=?,time=?',
-#                           boss[0],boss[2],boss[3])
-#             continue
-#         _hours = diff//3600
-#         _minsT = diff//60
-#         _mins_ = _minsT-_hours*3600
-#         print(boss[0] + " at " + boss[1] + " " + boss[4] + ", in " + 
-#               _hours + " hour(s), " + _mins + " min(s). [" + 
-#               _year + "/" + _month + "/" + _day + " "  + boss[3] + "]")
-#     return
-
-# # @return: True if succeeded, False otherwise
-# async def db_process_boss(user,channel,arg_list):
-#     await c.executemany("select * from boss where name=? and channel=? and map=?",
-#                   (arg_list[0],arg_list[1],arg_list[2]))
-#     previous = c.fetchall() # retrieve boss record given name, channel, map
-#     if previous: # previous record exists
-#         response = await ask_delete_boss(user,channel,previous)
-#     if not response:
-#         await client.send_message(channel,
-#                                   "@" + user + " " + 
-#                                   "Command aborted.\n")
-#         return False
-#     # else:
-#     await c.executemany("delete from boss where name=? and channel=? and map=?",
-#                   (arg_list[0],arg_list[1],arg_list[2]))
-#     c.executemany("insert into boss values (?,?,?,?)",
-#                   (arg_list[0],arg_list[1],arg_list[2],
-#                    str(datetime.date()) + " " + str(arg_list[3])))
-#     return True
-
-# # confirm deletion for db_process_boss(*)
-# async def ask_delete_boss(user,channel,previous):
-#     await client.send_message(channel,
-#                               "@" + user + " " + 
-#                               "A record for this boss already exists: ```" + 
-#                               ' '.join(previous) + "```\n" + 
-#                               "Do you want to delete this entry? [YN]")
-#     response = await client.wait_for_message(timeout=10,author=user)
-#     return re.match("^[Yy]",response)
-
-# # timeA and timeB must be of datatype datetime
-# async def compare_time(timeA,timeB):
-#     try:
-#         return (timeA-timeB).seconds
-#     except:
-#         return 0
 ## end: obsolete code
 
 # begin boss related variables
@@ -423,7 +396,7 @@ async def on_message(message):
         #         5. [4] opt map
         if message.content.startswith('$boss ') or 
            message.content.startswith('Vaivora, boss '):
-            command_server  = message.server
+            command_server  = message.server.name
             command_message = message.content
             command_message = uletters.sub('',command_message)  # sanitize
             command_message = command_message.lower()           # standardize
@@ -531,10 +504,13 @@ async def on_message(message):
             btday = approx_server_time.day
             btmon = approx_server_time.month
             byear = approx_server_time.year
+
             # late recorded time; correct with -1 day
             mdate = datetime.datetime(byear,btmon,btday,hour=bhour,minute=bminu)
-            if (mdate-approx_server_time).days < 0:
-                btday -= 1
+            tdiff = mdate-approx_server_time
+            if tdiff.days < 0:
+                err_code = await error(message.author,message.channel,rsn_bdtme,command[2])
+                return err_code
 
             wait_time = ANCHHWAIT if bstanch.match(command[1]) else FOURHWAIT
             bhour = int(bhour + wait_time - 3) # bhour in Pacific/local
