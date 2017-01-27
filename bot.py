@@ -48,28 +48,29 @@ reason['bdtme'] = "Reason: Bad Time"
 reason['fdbos'] = "Reason: Field Boss Channel"
 
 # database formats
-time_prototype = ('year','month','day','hour','minute')
-boss_prototype = ('name','channel','map') + time_prototype
-remi_prototype = ('user','comment') + time_prototype
-talt_prototype = ('user','previous','current','valid') + time_prototype
-perm_prototype = ('user','role')
+prototype = dict()
+prototype['time'] = ('year','month','day','hour','minute')
+prototype['boss'] = ('name','channel','map') + prototype['time']
+prototype['remi'] = ('user','comment') + prototype['time']
+prototype['talt'] = ('user','previous','current','valid') + prototype['time']
+prototype['perm'] = ('user','role')
 
 # and the database formats' types
-time_prototype_types = ('real',)*5
-boss_prototype_types = ('text',) + ('real',)*2 + time_prototype_types
-remi_prototype_types = ('text',)*2 + time_prototype_types
-talt_prototype_types = ('text',) + ('real',)*3 + time_prototype_types
-perm_prototype_types = ('text',)*2
+prototype['time_types'] = ('real',)*5
+prototype['boss_types'] = ('text',) + ('real',)*2 + prototype['time_types']
+prototype['remi_types'] = ('text',)*2 + prototype['time_types']
+prototype['talt_types'] = ('text',) + ('real',)*3 + prototype['time_types']
+prototype['perm_types'] = ('text',)*2
 
 # zip, create, concatenate into tuple
 boss_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(boss_prototype,boss_prototype_types))
+                   zip(prototype['boss'],prototype['boss_types']))
 remi_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(remi_prototype,remi_prototype_types))
+                   zip(prototype['remi'],prototype['remi_types']))
 talt_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(talt_prototype,talt_prototype_types))
+                   zip(prototype['talt'],prototype['talt_types']))
 perm_tuple = tuple('{} {}'.format(*t) for t in
-                   zip(perm_prototype,perm_prototype_types))
+                   zip(prototype['perm'],prototype['perm_types']))
 
 async def func_discord_db(discord_server, db_func, xargs=None):
     discord_db  = discord_server + ".db"
@@ -122,7 +123,7 @@ async def validate_discord_db(conn):
     c.execute('select * from boss')
     r = c.fetchone()
     # check if boss table matches format
-    if not tuple(r.keys()) is boss_prototype:
+    if not tuple(r.keys()) is prototype['boss']:
         c.close() # close first, and then recreate
         await create_discord_db(conn)
         return False # invalid db; deleted and recreated
