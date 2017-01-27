@@ -37,14 +37,15 @@ bosslist  = re.compile(r'li?st?')
 #     error(**) constants for "command" argument
 cmd_boss  = "Command: Boss"
 #     error(**) constants for "reason" argument
-rsn_broad = "Reason: Broad"
-rsn_argct = "Reason: Argument Count"
-rsn_unknn = "Reason: Unknown Boss"
-rsn_syntx = "Reason: Malformed Syntax"
-rsn_quote = "Reason: Mismatched Quotes"
-rsn_bdmap = "Reason: Bad Map"
-rsn_bdtme = "Reason: Bad Time"
-rsn_fdbos = "Reason: Field Boss Channel"
+reason = dict()
+reason['broad'] = "Reason: Broad"
+reason['argct'] = "Reason: Argument Count"
+reason['unknn'] = "Reason: Unknown Boss"
+reason['syntx'] = "Reason: Malformed Syntax"
+reason['quote'] = "Reason: Mismatched Quotes"
+reason['bdmap'] = "Reason: Bad Map"
+reason['bdtme'] = "Reason: Bad Time"
+reason['fdbos'] = "Reason: Field Boss Channel"
 
 # database formats
 time_prototype = ('year','month','day','hour','minute')
@@ -128,13 +129,13 @@ async def validate_discord_db(conn):
     #### TODO: Validate other tables when implemented
     return True
 
-# @func:    check_boss_db(Discord.server.name,list)
+# @func:    check_boss_db(sqlite3.connect, list)
 # @arg:
 #   discord_server: the server
 #   boss_list:      list containing bosses to check
 # @return:
 #   None if db is not prepared; otherwise, a list
-async def check_boss_db(conn,boss_list):
+async def check_boss_db(conn, boss_list):
     for b in boss_list:
         c.execute("select * from boss where name=?",b)
         db_record.extend(c.fetchall())
@@ -407,7 +408,7 @@ async def on_message(message):
 
             # if odd amount of quotes, drop
             if len(re.findall('"',command_message)) % 2:
-                err_code = await error(message.author,message.channel,rsn_quote)
+                err_code = await error(message.author,message.channel,reason['quote'])
                 return err_code
 
             # command: list of arguments
@@ -417,14 +418,14 @@ async def on_message(message):
             #     arg validity
             #         count: [3,5]
             if len(command) < 3 or len(command) > 5:
-                err_code = await error(message.author,message.channel,rsn_argct,len(command))
+                err_code = await error(message.author,message.channel,reason['argct'],len(command))
                 return err_code
 
             #         boss: letters
             #         status: anchored, died
             #         time: format
             if not (letters.match(command[0]) and bstatus.match(command[1]) and timefmt.match(command[2])):
-                err_code = await error(message.author,message.channel,rsn_syntx)
+                err_code = await error(message.author,message.channel,reason['syntx'])
                 return err_code
 
             #     boss validity
@@ -433,12 +434,12 @@ async def on_message(message):
                 bossrec = await check_boss_db(command_server,[bosses]) # possible return
 
             elif bossall.match(command[0]):
-                err_code = await error(message.author,message.channel,rsn_syntx)
+                err_code = await error(message.author,message.channel,reason['syntx'])
                 return err_code
             
             boss_idx = await check_boss(command[0])
             if boss_idx < 0  or boss_idx >= len(boss):
-                err_code = await error(message.author,message.channel,rsn_unknn,command[0])
+                err_code = await error(message.author,message.channel,reason['unknn'],command[0])
                 return err_code
 
             #         boss list
@@ -465,12 +466,12 @@ async def on_message(message):
                 if not chanlre.match(command[argpos]) or len(command) == 5:
                     maps_idx = await check_maps(command[argpos],command[1])
                     if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
-                        err_code = await error(message.author,message.channel,rsn_bdmap,command[1])
+                        err_code = await error(message.author,message.channel,reason['bdmap'],command[1])
                         return err_code
 
             #         check if boss is a field boss, and discard if boss channel is not 1
             if bosses[boss_idx] in bossfl and boss_channel != 1:
-                err_code = await error(message.author,message.channel,rsn_fdbos,boss_channel,bosses[boss_idx])
+                err_code = await error(message.author,message.channel,reason['fdbos'],boss_channel,bosses[boss_idx])
 
             # everything looks good if the string passes through
             # begin compiling record in dict form 'message_args'
@@ -496,7 +497,7 @@ async def on_message(message):
                 bhour = int(btime[0])
             #     handle bad input
             if bhour > 24:
-                err_code = await error(message.author,message.channel,rsn_bdtme,command[2])
+                err_code = await error(message.author,message.channel,reason['bdtme'],command[2])
                 return err_code
             bminu = int(btime[1])
 
@@ -509,7 +510,7 @@ async def on_message(message):
             mdate = datetime.datetime(byear,btmon,btday,hour=bhour,minute=bminu)
             tdiff = mdate-approx_server_time
             if tdiff.days < 0:
-                err_code = await error(message.author,message.channel,rsn_bdtme,command[2])
+                err_code = await error(message.author,message.channel,reason['bdtme'],command[2])
                 return err_code
 
             wait_time = ANCHHWAIT if bstanch.match(command[1]) else FOURHWAIT
@@ -646,7 +647,7 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
     # boss command only
     if ecmd == cmd_boss:
         # broad
-        if etype == rsn_broad:
+        if etype == reason['broad']:
             ret_msg.append(user_name + the_following_argument('boss') + msg + 
                            ") for `$boss` has multiple matching spawn points:\n")
             ret_msg.append(cmd_us_cblk)
@@ -656,7 +657,7 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             ret_msg.append(cmd_usage_b_m)
             ecode = -1
         # unknown
-        elif etype == rsn_unknn:
+        elif etype == reason['unknn']:
             ret_msg.append(user_name + the_following_argument('boss') + msg +
                            ") is invalid for `$boss`. This is a list of bosses you may use:\n")
             ret_msg.append(cmd_us_cblk)
@@ -664,7 +665,7 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             ret_msg.append(cmd_us_cblk)
             ret_msg.append(cmd_usage_b_b)
             ecode = -2
-        elif etype == rsn_bdmap:
+        elif etype == reason['bdmap']:
             ret_msg.append(user_name + the_following_argument('map') + msg +
                            ") (number) is invalid for `$boss`. This is a list of maps you may use:\n")
             ret_msg.append(cmd_us_cblk)
@@ -679,24 +680,24 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             ret_msg.append(cmd_us_cblk)
             ret_msg.append(cmd_usage_b_m)
             ecode = -2
-        elif etype == rsn_fdbos:
+        elif etype == reason['fdbos']:
             ret_msg.append(user_name + the_following_argument('channel') + msg +
                            ") (number) is invalid for `$boss`. " + xmsg + " is a field boss, thus " +
                            "variants that spawn on channels other than 1 (or other maps) are considered world bosses " +
                            "with unpredictable spawns.\n")
             ecode = -2
-        elif etype == rsn_bdtme:
+        elif etype == reason['bdtme']:
             ret_msg.append(user_name + the_following_argument('time') + msg +
                            ") is invalid for `$boss`.\n")
             ret_msg.append("Omit spaces; record in 12H (with AM/PM) or 24H time.\n")
             ret_msg.append(cmd_badsyntax)
             ecode = -2
-        elif etype == rsn_argct:
+        elif etype == reason['argct']:
             ret_msg.append(user_name + " Your command for `$boss` had too few arguments.\n" +  
                            "Expected: 4 to 6; got: " + msg + ".\n")
             ret_msg.append(cmd_badsyntax)
             ecode = -127
-        elif etype == rsn_quote:
+        elif etype == reason['quote']:
             ret_msg.append(user_name + " Your command for `$boss` had misused quotes somewhere.\n")
             ret_msg.append(cmd_badsyntax)
             ecode = -127
