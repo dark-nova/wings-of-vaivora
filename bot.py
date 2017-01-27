@@ -70,8 +70,22 @@ talt_tuple = tuple('{} {}'.format(*t) for t in
 perm_tuple = tuple('{} {}'.format(*t) for t in
                    zip(perm_prototype,perm_prototype_types))
 
-async def create_discord_db(discord_db):
+async def func_discord_db(discord_server, db_func, xargs=None):
+    discord_db  = discord_server + ".db"
     conn = sqlite3.connect(discord_db)
+    if not os.path.isfile(discord_db):
+        await create_discord_db(discord_db)
+        return False # not initialized
+    elif not callable(db_func):
+        return False
+    # implicit else
+    if xargs:
+        await db_func(conn, xargs)
+    else:
+        await db_func(conn)
+
+
+async def create_discord_db(conn):
     c = conn.cursor()
 
     # delete table if necessary since it may be invalid
@@ -100,24 +114,19 @@ async def create_discord_db(discord_db):
     return
 
 # @func:  
-async def validate_discord_db(discord_db):
-    if not os.path.isfile(discord_db):
-        await create_discord_db(discord_db)
-        return False # not initialized
-    else:
-        conn = sqlite3.connect(discord_db)
-        conn.row_factory = sqlite3.Row
-        c = conn.cursor()
-        # check boss table
-        c.execute('select * from boss')
-        r = c.fetchone()
-        # check if boss table matches format
-        if not tuple(r.keys()) is boss_prototype:
-            c.close() # close first, and then recreate
-            await create_discord_db(discord_db)
-            return False # invalid db; deleted and recreated
-        #### TODO: Validate other tables when implemented
-        return True
+async def validate_discord_db(conn):
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
+    # check boss table
+    c.execute('select * from boss')
+    r = c.fetchone()
+    # check if boss table matches format
+    if not tuple(r.keys()) is boss_prototype:
+        c.close() # close first, and then recreate
+        await create_discord_db(conn)
+        return False # invalid db; deleted and recreated
+    #### TODO: Validate other tables when implemented
+    return True
 
 # @func:    check_boss_db(Discord.server.name,list)
 # @arg:
@@ -125,22 +134,13 @@ async def validate_discord_db(discord_db):
 #   boss_list:      list containing bosses to check
 # @return:
 #   None if db is not prepared; otherwise, a list
-async def check_boss_db(discord_server,boss_list):
-    discord_db  = discord_server + ".db"
-    db_status   = await validate_discord_db(discord_db)
-    db_record   = list()
-
-    if not db_status:
-        return None
-    else: # db is working and may be populated
-        conn = sqlite3.connect(discord_db)
-        c = conn.cursor()
-        for b in boss_list:
-            c.execute("select * from boss where name=?",b)
-            db_record.extend(c.fetchall())
-        c.close()
-        # return a list of records
-        return db_record
+async def check_boss_db(conn,boss_list):
+    for b in boss_list:
+        c.execute("select * from boss where name=?",b)
+        db_record.extend(c.fetchall())
+    c.close()
+    # return a list of records
+    return db_record
 
 # @func:    update_boss_db(Discord.server.name,dict)
 # @arg:
