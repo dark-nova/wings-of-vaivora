@@ -38,6 +38,7 @@ bosslist  = re.compile(r'li?st?')
 cmd_boss  = "Command: Boss"
 #     error(**) constants for "reason" argument
 reason = dict()
+reason['baddb'] = "Reason: Bad Database"
 reason['broad'] = "Reason: Broad"
 reason['argct'] = "Reason: Argument Count"
 reason['unknn'] = "Reason: Unknown Boss"
@@ -72,24 +73,40 @@ talt_tuple = tuple('{} {}'.format(*t) for t in
 perm_tuple = tuple('{} {}'.format(*t) for t in
                    zip(prototype['perm'],prototype['perm_types']))
 
+# @func:      create_discord_db(Discord.server.str, func, *)
+# @arg:
+#   discord_server: the discord server's name
+#   db_func:        a database function
+#   xargs:          extra arguments
+# @return:
+#   Relevant data, False otherwise
 async def func_discord_db(discord_server, db_func, xargs=None):
     discord_db  = discord_server + ".db"
     conn = sqlite3.connect(discord_db)
+    conn.row_factory = sqlite3.Row
+    c = conn.cursor()
     if not os.path.isfile(discord_db):
-        await create_discord_db(discord_db)
+        await create_discord_db(c)
         return False # not initialized
     elif not callable(db_func):
         return False
     # implicit else
     if xargs:
-        await db_func(conn, xargs)
+        dbif  = await db_func(c, xargs)
     else:
-        await db_func(conn)
+        dbif  = await db_func(c)
 
+    c.commit()
+    c.close()
 
-async def create_discord_db(conn):
-    c = conn.cursor()
+    return dbif
 
+# @func:      create_discord_db(sqlite3.connect)
+# @arg:
+#   conn:           the sqlite3 connection
+# @return:
+#   None
+async def create_discord_db(c):
     # delete table if necessary since it may be invalid
     c.execute('drop table if exists boss')
     # create boss table
@@ -110,87 +127,74 @@ async def create_discord_db(conn):
     #### TODO
     #c.execute('create table permissions(?)',perm_tuple)
     #c.commit()
-
-    # close the database after creating
-    c.close()
     return
 
-# @func:  
-async def validate_discord_db(conn):
-    conn.row_factory = sqlite3.Row
-    c = conn.cursor()
+# @func:    validate_discord_db(sqlite3.connect)
+# @arg:
+#   c:              the sqlite3 connection cursor
+# @return:
+#   True if valid, False otherwise
+async def validate_discord_db(c):
     # check boss table
     c.execute('select * from boss')
     r = c.fetchone()
     # check if boss table matches format
     if not tuple(r.keys()) is prototype['boss']:
-        c.close() # close first, and then recreate
-        await create_discord_db(conn)
-        return False # invalid db; deleted and recreated
+        return False # invalid db
     #### TODO: Validate other tables when implemented
     return True
 
 # @func:    check_boss_db(sqlite3.connect, list)
 # @arg:
-#   discord_server: the server
+#   c:              the sqlite3 connection cursor
 #   boss_list:      list containing bosses to check
 # @return:
 #   None if db is not prepared; otherwise, a list
-async def check_boss_db(conn, boss_list):
+async def check_boss_db(c, boss_list):
     for b in boss_list:
         c.execute("select * from boss where name=?",b)
         db_record.extend(c.fetchall())
-    c.close()
     # return a list of records
     return db_record
 
-# @func:    update_boss_db(Discord.server.name,dict)
+# @func:    update_boss_db(sqlite3.connect, dict)
 # @arg:
-#   discord_server: the server
-#   boss_dict: message_args from on_message(*)
+#   c:              the sqlite3 connection cursor
+#   boss_dict:      message_args from on_message(*)
 # @return:
-#   True if successful
-async def update_boss_db(discord_server,boss_dict):
-    discord_db  = discord_server + ".db"
-    db_status   = await validate_discord_db(discord_db)
+#   True if successful, False otherwise
+async def update_boss_db(c, boss_dict):
+    c.executemany("select * from boss where name=? and channel=?",(boss_dict['boss'],boss_dict['channel']))
+    contents = c.fetchall()
 
-    if db_status: # db is working and may be populated
-        conn = sqlite3.connect(discord_db)
-        c = conn.cursor()
-        c.executemany("select * from boss where name=? and channel=?",(boss_dict['boss'],boss_dict['channel']))
-        contents = c.fetchall()
+    # invalid case: more than one entry for this combination
+    #### TODO: keep most recent time? 
+    if len(contents) > 1:
+        await rm_ent_boss_db(conn,boss_dict)
 
-        # invalid case: more than one entry for this combination
-        #### TODO: keep most recent time? 
-        if len(contents) > 1:
-            c.close()
-            await rm_ent_boss_db(discord_server,boss_dict)
-            conn = sqlite3.connect(discord_db)
-
-        # if entry has newer data, discard previous
-        if contents and (contents[4] < boss_dict['year'] or
-                         contents[5] < boss_dict['month'] or
-                         contents[6] < boss_dict['day'] or
-                         contents[7] < boss_dict['hour']):
-            await rm_ent_boss_db(discord_server,boss_dict)
-        else:
-            return False
+    # if entry has newer data, discard previous
+    if contents and (contents[4] < boss_dict['year'] or
+                     contents[5] < boss_dict['month'] or
+                     contents[6] < boss_dict['day'] or
+                     contents[7] < boss_dict['hour']):
+        await rm_ent_boss_db(discord_server,boss_dict)
+    else:
+        return False
+    #### TODO: continue function
 
 
-
-# @func:    rm_ent_boss_db(Discord.server.name,dict)
+# @func:    rm_ent_boss_db(sqlite3.connect, dict)
 # @arg:
-#   discord_server: the server
-#   boss_dict: message_args from on_message(*)
+#   c:              the sqlite3 connection cursor
+#   boss_dict:      message_args from on_message(*)
 # @return:
-#   True if successful
-async def rm_ent_boss_db(discord_server,boss_dict):
-    discord_db  = discord_server + ".db"
-    db_status   = await validate_discord_db(discord_db)
-
-    if db_status:
-        conn = sqlite3.connect(discord_db)
-####### RESUME HERE!
+#   True if successful, False otherwise
+async def rm_ent_boss_db(c, boss_dict):
+    try:
+        c.executemany("delete from boss where name=? and channel=?",(boss_dict['boss'],boss_dict['channel']))
+    except:
+        return False
+    return True
 
 ## begin: obsolete code
 # async def on_ready():
@@ -511,6 +515,8 @@ async def on_message(message):
             mdate = datetime.datetime(byear,btmon,btday,hour=bhour,minute=bminu)
             tdiff = mdate-approx_server_time
             if tdiff.days < 0:
+                btday -= 1
+            elif tdiff.days > 0 or tdiff.seconds > 119: # 2 minute leeway
                 err_code = await error(message.author,message.channel,reason['bdtme'],command[2])
                 return err_code
 
@@ -518,14 +524,19 @@ async def on_message(message):
             bhour = int(bhour + wait_time - 3) # bhour in Pacific/local
 
             # add them to dict
-            message_args['hour'] = bhour
-            message_args['mins'] = bminu
+            message_args['hour']      = bhour
+            message_args['mins']      = bminu
             message_args['day']       = btday
             message_args['month']     = btmon
             message_args['year']      = byear
             message_args['status']    = command[1] # anchored or died
 
-            bossrec = await update_boss_db(command_server,message_args)
+            status  = await func_boss_db(command_server,validate_discord_db)
+            if not status:
+                err_code = await error(message.author,message.channel,reason['baddb'])
+                await func_boss_db(command_server,create_discord_db)
+                return err_code
+            bossrec = await func_boss_db(command_server,update_boss_db,message_args)
                 
     else:
         return
