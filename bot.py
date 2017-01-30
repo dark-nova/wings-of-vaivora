@@ -35,13 +35,14 @@ bossall   = re.compile(r'all')
 bosslist  = re.compile(r'li?st?')
 #   error(**) related constants
 #     error(**) constants for "command" argument
-cmd_boss  = "Command: Boss"
+cmd['boss']     = "Command: Boss"
 #     error(**) constants for "reason" argument
 reason = dict()
 reason['baddb'] = "Reason: Bad Database"
-reason['broad'] = "Reason: Broad"
+reason['unkwn'] = "Reason: Unknown"
+reason['broad'] = "Reason: Broad Command"
 reason['argct'] = "Reason: Argument Count"
-reason['unknn'] = "Reason: Unknown Boss"
+reason['unknb'] = "Reason: Unknown Boss"
 reason['syntx'] = "Reason: Malformed Syntax"
 reason['quote'] = "Reason: Mismatched Quotes"
 reason['bdmap'] = "Reason: Bad Map"
@@ -51,14 +52,14 @@ reason['fdbos'] = "Reason: Field Boss Channel"
 # database formats
 prototype = dict()
 prototype['time'] = ('year','month','day','hour','minute')
-prototype['boss'] = ('name','channel','map') + prototype['time']
+prototype['boss'] = ('name','channel','map','status') + prototype['time']
 prototype['remi'] = ('user','comment') + prototype['time']
 prototype['talt'] = ('user','previous','current','valid') + prototype['time']
 prototype['perm'] = ('user','role')
 
 # and the database formats' types
 prototype['time_types'] = ('real',)*5
-prototype['boss_types'] = ('text',) + ('real',)*2 + prototype['time_types']
+prototype['boss_types'] = ('text',) + ('real',) + ('text',)*2 + prototype['time_types']
 prototype['remi_types'] = ('text',)*2 + prototype['time_types']
 prototype['talt_types'] = ('text',) + ('real',)*3 + prototype['time_types']
 prototype['perm_types'] = ('text',)*2
@@ -79,7 +80,7 @@ perm_tuple = tuple('{} {}'.format(*t) for t in
 #   db_func:        a database function
 #   xargs:          extra arguments
 # @return:
-#   Relevant data, False otherwise
+#   Relevant data if successful, False otherwise
 async def func_discord_db(discord_server, db_func, xargs=None):
     discord_db  = discord_server + ".db"
     conn = sqlite3.connect(discord_db)
@@ -98,10 +99,9 @@ async def func_discord_db(discord_server, db_func, xargs=None):
 
     c.commit()
     c.close()
-
     return dbif
 
-# @func:      create_discord_db(sqlite3.connect)
+# @func:      create_discord_db(sqlite3.connect.cursor)
 # @arg:
 #   conn:           the sqlite3 connection
 # @return:
@@ -129,7 +129,7 @@ async def create_discord_db(c):
     #c.commit()
     return
 
-# @func:    validate_discord_db(sqlite3.connect)
+# @func:    validate_discord_db(sqlite3.connect.cursor)
 # @arg:
 #   c:              the sqlite3 connection cursor
 # @return:
@@ -144,7 +144,7 @@ async def validate_discord_db(c):
     #### TODO: Validate other tables when implemented
     return True
 
-# @func:    check_boss_db(sqlite3.connect, list)
+# @func:    check_boss_db(sqlite3.connect.cursor, list)
 # @arg:
 #   c:              the sqlite3 connection cursor
 #   boss_list:      list containing bosses to check
@@ -157,33 +157,59 @@ async def check_boss_db(c, boss_list):
     # return a list of records
     return db_record
 
-# @func:    update_boss_db(sqlite3.connect, dict)
+# @func:    update_boss_db(sqlite3.connect.cursor, dict)
 # @arg:
 #   c:              the sqlite3 connection cursor
 #   boss_dict:      message_args from on_message(*)
 # @return:
 #   True if successful, False otherwise
 async def update_boss_db(c, boss_dict):
-    c.executemany("select * from boss where name=? and channel=?",(boss_dict['boss'],boss_dict['channel']))
-    contents = c.fetchall()
+    # the following two bosses rotate per spawn
+    if boss_dict['boss'] == 'Mirtis' or boss_dict['boss'] == 'Helgasercle':
+        c.executemany("select * from boss where name=?",'Mirtis')
+        contents = c.fetchall()
+        c.executemany("select * from boss where name=?",'Helgasercle')
+        contents += c.fetchall()
+    elif boss_dict['boss'] == 'Demon Lord Marnox' or boss_dict['boss'] == 'Rexipher':
+        c.executemany("select * from boss where name=?",'Demon Lord Marnox')
+        contents = c.fetchall()
+        c.executemany("select * from boss where name=?",'Rexipher')
+        contents += c.fetchall()
+    else:
+        c.executemany("select * from boss where name=? and channel=?",(boss_dict['boss'],boss_dict['channel']))
+        contents = c.fetchall()
 
     # invalid case: more than one entry for this combination
     #### TODO: keep most recent time? 
-    if len(contents) > 1:
-        await rm_ent_boss_db(conn,boss_dict)
+    if len(contents) > 1 and boss_dict['boss'] not in bos16s:
+        await rm_ent_boss_db(c,boss_dict)
 
     # if entry has newer data, discard previous
     if contents and (contents[4] < boss_dict['year'] or
                      contents[5] < boss_dict['month'] or
                      contents[6] < boss_dict['day'] or
-                     contents[7] < boss_dict['hour']):
-        await rm_ent_boss_db(discord_server,boss_dict)
+                     contents[7] < boss_dict['hour'] - 3):
+        await rm_ent_boss_db(c,boss_dict)
     else:
         return False
-    #### TODO: continue function
 
+    try:
+        c.executemany("insert into boss values (?,?,?,?,?,?,?,?,?)",
+                      (boss_dict['name'],
+                       boss_dict['channel'],
+                       boss_dict['map'],
+                       boss_dict['status'],
+                       boss_dict['year'],
+                       boss_dict['month'],
+                       boss_dict['day'],
+                       boss_dict['hour'],
+                       boss_dict['mins']))
+        c.commit()
+    except:
+        return False
+    return True
 
-# @func:    rm_ent_boss_db(sqlite3.connect, dict)
+# @func:    rm_ent_boss_db(sqlite3.connect.cursor, dict)
 # @arg:
 #   c:              the sqlite3 connection cursor
 #   boss_dict:      message_args from on_message(*)
@@ -192,6 +218,7 @@ async def update_boss_db(c, boss_dict):
 async def rm_ent_boss_db(c, boss_dict):
     try:
         c.executemany("delete from boss where name=? and channel=?",(boss_dict['boss'],boss_dict['channel']))
+        c.commit()
     except:
         return False
     return True
@@ -245,6 +272,22 @@ bosses = ['Blasphemous Deathweaver',
 bossfl = bosses[0:2] + list(bosses[7]) + list(bosses[11]) + list(bosses[13]) + list(bosses[25])
 #   world bosses
 bosswo = [b for b in bosses if b not in bossfl]
+
+# 'boss'es that 'alt'ernate
+bosalt = ['Mirtis',
+          'Rexipher',
+          'Helgasercle',
+          'Demon Lord Marnox']
+
+# 'boss' - N - 'special'
+#   list of bosses with unusual spawn time of 2h
+bos02s = ['Kubas Event',
+          'Dullahan Event']
+#   list of bosses with unusual spawn time of 16h
+bos16s = ['Demon Lord Nuaele',
+          'Demon Lord Zaura',
+          'Demon Lord Blut']
+
 
 # 'boss synonyms'
 # - keys: boss names (var `bosses`)
@@ -444,7 +487,7 @@ async def on_message(message):
             
             boss_idx = await check_boss(command[0])
             if boss_idx < 0  or boss_idx >= len(boss):
-                err_code = await error(message.author,message.channel,reason['unknn'],command[0])
+                err_code = await error(message.author,message.channel,reason['unknb'],command[0])
                 return err_code
 
             #         boss list
@@ -532,11 +575,15 @@ async def on_message(message):
             message_args['status']    = command[1] # anchored or died
 
             status  = await func_boss_db(command_server,validate_discord_db)
-            if not status:
+            if not status: # db is not valid
                 err_code = await error(message.author,message.channel,reason['baddb'])
-                await func_boss_db(command_server,create_discord_db)
+                await func_boss_db(command_server,create_discord_db) # (re)create db
                 return err_code
-            bossrec = await func_boss_db(command_server,update_boss_db,message_args)
+
+            status = await func_boss_db(command_server,update_boss_db,message_args)
+            if not status: # update_boss_db failed
+                err_code = await error(message.author,message.channel,reason['unkwn'])
+                return err_code
                 
     else:
         return
@@ -657,7 +704,7 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
     ret_msg   = list()
 
     # boss command only
-    if ecmd == cmd_boss:
+    if ecmd == cmd['boss']:
         # broad
         if etype == reason['broad']:
             ret_msg.append(user_name + the_following_argument('boss') + msg + 
@@ -668,8 +715,11 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             ret_msg.append(cmd_ambiguous)
             ret_msg.append(cmd_usage_b_m)
             ecode = -1
-        # unknown
-        elif etype == reason['unknn']:
+        elif etype == reason['unkwn']:
+            ret_msg.append(user_name + " I'm sorry. Your command failed for unknown reasons. Please try again shortly.")
+            ecode = -2
+        # unknown boss
+        elif etype == reason['unknb']:
             ret_msg.append(user_name + the_following_argument('boss') + msg +
                            ") is invalid for `$boss`. This is a list of bosses you may use:\n")
             ret_msg.append(cmd_us_cblk)
@@ -678,20 +728,21 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             ret_msg.append(cmd_usage_b_b)
             ecode = -2
         elif etype == reason['bdmap']:
-            ret_msg.append(user_name + the_following_argument('map') + msg +
+            try_msg = list()
+            try_msg.append(user_name + the_following_argument('map') + msg +
                            ") (number) is invalid for `$boss`. This is a list of maps you may use:\n")
-            ret_msg.append(cmd_us_cblk)
-            try:
-              ret_msg.append('\n'.join(bosslo[xmsg]))
-            except:
+            try: # make sure the data is valid by `try`ing
+              try_msg.append(cmd_us_cblk)
+              try_msg.append('\n'.join(bosslo[xmsg]))
+              try_msg.append(cmd_us_cblk)
+              try_msg.append(cmd_usage_b_m)
+              # seems to have succeeded, so extend to original
+              ret_msg.extend(try_msg)
+              ecode = -2
+            except: # boss not found! 
               ret_msg.append(user_name + debug_message)
               ret_msg.append(cmd_badsyntax)
               ecode = -127
-              await client.send_message(channel,'\n'.join(ret_msg))
-              return ecode
-            ret_msg.append(cmd_us_cblk)
-            ret_msg.append(cmd_usage_b_m)
-            ecode = -2
         elif etype == reason['fdbos']:
             ret_msg.append(user_name + the_following_argument('channel') + msg +
                            ") (number) is invalid for `$boss`. " + xmsg + " is a field boss, thus " +
@@ -718,14 +769,14 @@ async def error(user,channel,etype,ecmd,msg='',xmsg=''):
             ret_msg.append(cmd_badsyntax)
             ecode = -127
             await client.send_message(channel,'\n'.join(ret_msg))
-            return ecode
-        # end of conditionals for cmd_boss
+        # end of conditionals for cmd['boss']
 
-        # begin common return
+        # begin common return for $boss
         ret_msg.extend(cmd_usage_b)
-        await client.send_message(channel,'\n'.join(cmd_usage_b))
+        await client.send_message(channel,'\n'.join(ret_msg))
         return ecode
-        # end of common return
+        # end of common return for $boss
+
     # todo: reminders, Talt tracking, permissions
     else:
         # todo
