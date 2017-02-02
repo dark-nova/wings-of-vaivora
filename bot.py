@@ -1,14 +1,22 @@
 import discord
+import logging
 import sqlite3
 import shlex
 import re
 import os
 from datetime import datetime, timedelta
 
+# snippet from discord.py docs
+logger = logging.getLogger('tos.wingsofvaivora')
+logger.setLevel(logging.WARNING)
+handler = logging.FileHandler("tos.wingsofvaivora.log", encoding="utf-8")
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
+
 # basic declarations and initializations
 client    = discord.Client()
 EASTERN   = timedelta(hours=3)
-WESTERN   = timedelta(hours=-3)
+PACIFIC   = timedelta(hours=-3)
 FOURHWAIT = timedelta(hours=4)
 ANCHHWAIT = timedelta(hours=3)
 
@@ -24,8 +32,9 @@ amflag    = re.compile(r' ?[Aa][Mm]?')
 uletters  = re.compile(r'[^A-Za-z0-9 "-]')
 timefmt   = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 quotes    = re.compile(r'"')
-bstatus   = re.compile(r'([Dd]ied|[Aa]nchored)')
+bstatus   = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
 bstanch   = re.compile(r'([Aa]nchored)')
+bstwarn   = re.compile(r'([Ww]arn(ed)?)')
 chanlre   = re.compile(r'(ch)?[1-4]')
 floors    = re.compile(r'[bf]?[0-9][bf]?$')
 gfloors   = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
@@ -427,6 +436,10 @@ bossls = ['crystal mine','ashaq',
 
 # end of boss related variables
 
+async def on_ready():
+
+
+
 # begin code for message processing
 # @func:    on_message(Discord.message)
 # @arg:
@@ -479,7 +492,9 @@ async def on_message(message):
             #     boss validity
             #         all list
             if bossall.match(command[0]) and bosslist.match(command[1]):
-                bossrec = await func_boss_db(command_server, check_boss_db, [bosses]) # possible return
+                bossrec = await func_boss_db(command_server, check_boss_db, bosses) # possible return
+                if not bossrec:
+                    err_code = await error(message.author, message.channel, reason['bdcmd'])
 
             elif bossall.match(command[0]):
                 err_code = await error(message.author, message.channel,reason['syntx'])
@@ -492,7 +507,7 @@ async def on_message(message):
 
             #         boss list
             if bosslist.match(command[1]):
-                bossrec = await get_boss_db(command_server, [bosses[boss_idx],]) # possible return
+                bossrec = await func_boss_db(command_server, check_boss_db, list(bosses[boss_idx])) # possible return
 
 
             #     (opt) channel: reject if field boss & ch > 1 or if ch > 4
@@ -565,9 +580,13 @@ async def on_message(message):
                 return err_code
 
             wait_time = ANCHHWAIT if bstanch.match(command[1]) else FOURHWAIT
-            bhour = int(bhour + wait_time - 3) # bhour in Pacific/local
+            bhour = bhour + int(wait_time + PACIFIC) # bhour in Pacific/local
             if message_args['name'] in bos02s and bstanch.match(command[1]): # you cannot anchor events
                 err_code = await error(message.author, message.channel, reason[])
+            elif message_args['name'] in bos02s:
+                bhour -= 2
+            elif message_args['name'] in bos16s:
+                bhour += 12 # 12 + 4 = 16
 
             # add them to dict
             message_args['hour']      = bhour
@@ -648,7 +667,7 @@ cmd_us_barg_1 = "BossName|\"Boss Name\""
 #       command - prefix - [b]oss
 cmd_prefix_b  = ("$boss","Vaivora, boss")
 #       command - usage - [b]oss
-cmd_usage_b   = ["***'Bosses' commands***"]
+cmd_usage_b   = ["***'Boss' commands***"]
 cmd_usage_b.append(cmd_usage)
 #   end of $boss specific constants
 # end of constants for strings for error messages
@@ -704,9 +723,10 @@ cmd_usage['b_s'] = "Make sure to properly record the status.\n"
 #     -1: the command was correctly formed but the argument is too broad
 #     -2: the command was correctly formed but could not validate arguments
 #     -127:   malformed command: quote mismatch, argument count
-async def error(user, channel,etype,ecmd,msg='',xmsg=''):
-    # Get the user in mentionable string
+async def error(user, channel, etype, ecmd, msg='', xmsg=''):
+    # get the user in mentionable string
     user_name = user.mention
+    # prepare a list to send message
     ret_msg   = list()
 
     # boss command only
@@ -722,7 +742,11 @@ async def error(user, channel,etype,ecmd,msg='',xmsg=''):
             ret_msg.append(cmd_usage['b_m'])
             ecode = -1
         elif etype == reason['unkwn']:
-            ret_msg.append(user_name + " I'm sorry. Your command failed for unknown reasons. Please try again shortly.")
+            ret_msg.append(user_name + " I'm sorry. Your command failed for unknown reasons.\n" +
+                           "This command failure has been recorded.\n" +
+                           "Please try again shortly.\n")
+            with open('wings_of_vaivora-error.txt','a') as f:
+                f.write(datetime.today() + " An error was detected when " + user_name + " sent a command.")
             ecode = -2
         # unknown boss
         elif etype == reason['unknb']:
