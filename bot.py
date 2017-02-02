@@ -61,14 +61,14 @@ reason['fdbos'] = "Reason: Field Boss Channel"
 # database formats
 prototype = dict()
 prototype['time'] = ('year', 'month','day','hour','minute')
-prototype['boss'] = ('name', 'channel','map','status') + prototype['time']
+prototype['boss'] = ('name', 'channel','map','status','channel') + prototype['time']
 prototype['remi'] = ('user', 'comment') + prototype['time']
 prototype['talt'] = ('user', 'previous','current','valid') + prototype['time']
 prototype['perm'] = ('user', 'role')
 
 # and the database formats' types
 prototype['time_types'] = ('real',)*5
-prototype['boss_types'] = ('text',) + ('real',) + ('text',)*2 + prototype['time_types']
+prototype['boss_types'] = ('text',) + ('real',) + ('text',)*3 + prototype['time_types']
 prototype['remi_types'] = ('text',)*2 + prototype['time_types']
 prototype['talt_types'] = ('text',) + ('real',)*3 + prototype['time_types']
 prototype['perm_types'] = ('text',)*2
@@ -212,7 +212,8 @@ async def update_boss_db(c, boss_dict):
                        boss_dict['month'],
                        boss_dict['day'],
                        boss_dict['hour'],
-                       boss_dict['mins']))
+                       boss_dict['mins'],
+                       boss_dict['srvchn']))
         c.commit()
     except:
         return False
@@ -232,20 +233,14 @@ async def rm_ent_boss_db(c, boss_dict):
         return False
     return True
 
-## begin: obsolete code
-# async def on_ready():
-#     await client.login('MjEzMDQxNzI3Nzk4MjQ3NDI1.Co0qOA.yqoI7ggaX9aleWxUyPEHEIiLji0')
-#     print("Logging in...")
-#     print("Attaching database...")
-#     await check_db('boss')
-#     # check_db('dilgele')
-#     print('Successsfully logged in as: ' + client.user.name + '#' + 
-#           client.user.id + '. Ready!')
-#     while True:
-#         update(output[0])
-#         #await asyncio.sleep(60)
-#     pass
-## end: obsolete code
+# @func:    on_ready()
+# @return:
+#   None
+async def on_ready():
+    await client.login('MjEzMDQxNzI3Nzk4MjQ3NDI1.Co0qOA.yqoI7ggaX9aleWxUyPEHEIiLji0')
+    print("Logging in...")
+    print('Successsfully logged in as: ' + client.user.name + '#' + 
+          client.user.id + '. Ready!')
 
 # begin boss related variables
 
@@ -436,10 +431,6 @@ bossls = ['crystal mine','ashaq',
 
 # end of boss related variables
 
-async def on_ready():
-
-
-
 # begin code for message processing
 # @func:    on_message(Discord.message)
 # @arg:
@@ -595,6 +586,7 @@ async def on_message(message):
             message_args['month']     = btmon
             message_args['year']      = byear
             message_args['status']    = command[1] # anchored or died
+            message_args['srvchn']    = message.channel
 
             status  = await func_boss_db(command_server, validate_discord_db)
             if not status: # db is not valid
@@ -602,17 +594,22 @@ async def on_message(message):
                 await func_boss_db(command_server, create_discord_db) # (re)create db
                 return err_code
 
-            status = await func_boss_db(command_server, update_boss_db,message_args)
+            status = await func_boss_db(command_server, update_boss_db, message_args)
             if not status: # update_boss_db failed
                 err_code = await error(message.author, message.channel,reason['unkwn'])
                 return err_code
 
+            await bot.process_commands(message)
             return True # command processed
                 
     else:
+        await bot.process_commands(message)
         return
 
-# @func:  check_boss(str): begin code for checking boss validity
+# @func:    check_databases()
+
+
+# @func:    check_boss(str): begin code for checking boss validity
 # @arg:
 #     boss: str; boss name from raw input
 # @return:
@@ -630,7 +627,7 @@ async def check_boss(boss):
     return -1
 # end of check_boss
 
-# @func:  check_maps(str): begin code for checking map validity
+# @func:    check_maps(str): begin code for checking map validity
 # @arg:
 #     maps: str; map name from raw input
 #     boss: str; the corresponding boss
