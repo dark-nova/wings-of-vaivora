@@ -16,10 +16,7 @@ logger.addHandler(handler)
 
 # basic declarations and initializations
 client    = discord.Client()
-EASTERN   = timedelta(hours=3)
-PACIFIC   = timedelta(hours=-3)
-FOURHWAIT = timedelta(hours=4)
-ANCHHWAIT = timedelta(hours=3)
+
 
 # variables to use
 valid_dbs = list()
@@ -27,9 +24,14 @@ valid_dbs = list()
 # constants
 #   constant dictionary
 con = dict()
-con['ARG.COUNT.MIN']        = 3
-con['ARG.COUNT.MIN']        = 5
+con['BOSSCMD.ARG.COUNTMIN']        = 3
+con['BOSSCMD.ARG.COUNTMAX']        = 5
 con['STR.REASON']           = "Reason: "
+con['TIME.OFFSET.EASTERN']  = timedelta(hours=3)
+con['TIME.OFFSET.PACIFIC']  = timedelta(hours=-3)
+con['TIME.WAIT.4H']         = timedelta(hours=4)
+con['TIME.WAIT.ANCHOR']     = timedelta(hours=3)
+
 #   regex dictionary
 rx = dict()
 # rx['format.numbers']        = re.compile(r'[0-9]+')
@@ -495,7 +497,7 @@ async def on_message(message):
             # begin checking validity
             #     arg validity
             #         count: [3,5]
-            if len(command) < con['ARG.COUNT.MIN'] or len(command) > con['ARG.COUNT.MAX']:
+            if len(command) < con['BOSSCMD.ARG.COUNTMIN'] or len(command) > con['BOSSCMD.ARG.COUNTMAX']:
                 err_code = await error(message.author, message.channel,reason['argct'],len(command))
                 return err_code
 
@@ -592,7 +594,7 @@ async def on_message(message):
                 return err_code
             bminu = int(btime[1])
 
-            approx_server_time = datetime.today() + EASTERN
+            approx_server_time = datetime.today() + con['TIME.OFFSET.EASTERN']
             btday = approx_server_time.day
             btmon = approx_server_time.month
             byear = approx_server_time.year
@@ -606,8 +608,8 @@ async def on_message(message):
                 err_code = await error(message.author, message.channel, reason['bdtme'], command[2])
                 return err_code
 
-            wait_time = ANCHHWAIT if rx['boss.status.anchor'].match(command[1]) else FOURHWAIT
-            bhour = bhour + int(wait_time + PACIFIC) # bhour in Pacific/local
+            wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.status.anchor'].match(command[1]) else con['TIME.WAIT.4H']
+            bhour = bhour + int(wait_time + con['TIME.OFFSET.PACIFIC']) # bhour in Pacific/local
             if message_args['name'] in bos02s and rx['boss.status.anchor'].match(command[1]): # you cannot anchor events
                 err_code = await error(message.author, message.channel, reason[])
             elif message_args['name'] in bos02s:
