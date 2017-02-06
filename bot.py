@@ -7,16 +7,8 @@ import os
 from datetime import datetime, timedelta
 from operator import itemgetter
 
-# snippet from discord.py docs
-logger = logging.getLogger('tos.wingsofvaivora')
-logger.setLevel(logging.WARNING)
-handler = logging.FileHandler("tos.wingsofvaivora.log", encoding="utf-8")
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
-
 # basic declarations and initializations
 client    = discord.Client()
-
 
 # variables to use
 valid_dbs = list()
@@ -24,13 +16,15 @@ valid_dbs = list()
 # constants
 #   constant dictionary
 con = dict()
-con['BOSSCMD.ARG.COUNTMIN']        = 3
-con['BOSSCMD.ARG.COUNTMAX']        = 5
+con['BOSSCMD.ARG.COUNTMIN'] = 3
+con['BOSSCMD.ARG.COUNTMAX'] = 5
 con['STR.REASON']           = "Reason: "
 con['TIME.OFFSET.EASTERN']  = timedelta(hours=3)
 con['TIME.OFFSET.PACIFIC']  = timedelta(hours=-3)
 con['TIME.WAIT.4H']         = timedelta(hours=4)
 con['TIME.WAIT.ANCHOR']     = timedelta(hours=3)
+con['LOGGER']               = "tos.wingsofvaivora"
+con['LOGGER.FILE']          = "tos.wingsofvaivora.log"
 
 #   regex dictionary
 rx = dict()
@@ -94,6 +88,13 @@ talt_tuple = tuple('{} {}'.format(*t) for t in
                    zip(prototype['talt'], prototype['talt_types']))
 perm_tuple = tuple('{} {}'.format(*t) for t in
                    zip(prototype['perm'], prototype['perm_types']))
+
+# snippet from discord.py docs
+logger = logging.getLogger(con['LOGGER'])
+logger.setLevel(logging.WARNING)
+handler = logging.FileHandler(con['LOGGER.FILE'], encoding="utf-8")
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 # @func:      create_discord_db(Discord.server.str, func, *)
 # @arg:
