@@ -73,21 +73,21 @@ prototype['talt'] = ('user', 'previous','current','valid') + prototype['time']
 prototype['perm'] = ('user', 'role')
 
 # and the database formats' types
-prototype['time_types'] = ('real',)*5
-prototype['boss_types'] = ('text',) + ('real',) + ('text',)*3 + prototype['time_types']
-prototype['remi_types'] = ('text',)*2 + prototype['time_types']
-prototype['talt_types'] = ('text',) + ('real',)*3 + prototype['time_types']
-prototype['perm_types'] = ('text',)*2
+prototype['time.types'] = ('real',)*5
+prototype['boss.types'] = ('text',) + ('real',) + ('text',)*3 + prototype['time.types']
+prototype['remi.types'] = ('text',)*2 + prototype['time.types']
+prototype['talt.types'] = ('text',) + ('real',)*3 + prototype['time.types']
+prototype['perm.types'] = ('text',)*2
 
 # zip, create, concatenate into tuple
 boss_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(prototype['boss'], prototype['boss_types']))
+                   zip(prototype['boss'], prototype['boss.types']))
 remi_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(prototype['remi'], prototype['remi_types']))
+                   zip(prototype['remi'], prototype['remi.types']))
 talt_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(prototype['talt'], prototype['talt_types']))
+                   zip(prototype['talt'], prototype['talt.types']))
 perm_tuple = tuple('{} {}'.format(*t) for t in
-                   zip(prototype['perm'], prototype['perm_types']))
+                   zip(prototype['perm'], prototype['perm.types']))
 
 # snippet from discord.py docs
 logger = logging.getLogger(con['LOGGER'])
