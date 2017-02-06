@@ -5,6 +5,7 @@ import shlex
 import re
 import os
 from datetime import datetime, timedelta
+from operator import itemgetter
 
 # snippet from discord.py docs
 logger = logging.getLogger('tos.wingsofvaivora')
@@ -21,42 +22,51 @@ FOURHWAIT = timedelta(hours=4)
 ANCHHWAIT = timedelta(hours=3)
 
 # variables to use
-output    = list()
+valid_dbs = list()
 
 # constants
-#   regex
-numbers   = re.compile(r'[0-9]+')
-letters   = re.compile(r'[a-z -]+')
-pmflag    = re.compile(r' ?[Pp][Mm]?')
-amflag    = re.compile(r' ?[Aa][Mm]?')
-uletters  = re.compile(r'[^A-Za-z0-9 "-]')
-timefmt   = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
-quotes    = re.compile(r'"')
-bstatus   = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
-bstanch   = re.compile(r'([Aa]nchored)')
-bstwarn   = re.compile(r'([Ww]arn(ed)?)')
-chanlre   = re.compile(r'(ch)?[1-4]')
-floors    = re.compile(r'[bf]?[0-9][bf]?$')
-gfloors   = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
-gflarre   = re.compile(r'\g<1>\g<4>\g<3>\g<2>\g<5>')
-pfboss    = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss')
-bossall   = re.compile(r'all')
-bosslist  = re.compile(r'li?st?')
+#   constant dictionary
+con = dict()
+con['ARG.COUNT.MIN']        = 3
+con['ARG.COUNT.MIN']        = 5
+con['STR.REASON']           = "Reason: "
+#   regex dictionary
+rx = dict()
+# rx['format.numbers']        = re.compile(r'[0-9]+')
+rx['format.letters']        = re.compile(r'[a-z -]+')
+rx['format.time.pm']        = re.compile(r' ?[Pp][Mm]?')
+rx['format.time.am']        = re.compile(r' ?[Aa][Mm]?')
+rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 "-]')
+rx['format.time']           = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
+rx['format.quotes']         = re.compile(r'"')
+rx['boss.status']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
+rx['boss.status.anchor']    = re.compile(r'([Aa]nchored)')
+rx['boss.status.warning']   = re.compile(r'([Ww]arn(ed)?)')
+rx['boss.channel']          = re.compile(r'(ch)?[1-4]')
+rx['boss.floors']           = re.compile(r'[bf]?[0-9][bf]?$')
+rx['boss.floors.format']    = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
+rx['boss.floors.arrange']   = re.compile(r'\g<1>\g<4>\g<3>\g<2>\g<5>')
+rx['vaivora.boss']          = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss')
+rx['boss.arg.all']          = re.compile(r'all')
+rx['boss.arg.list']         = re.compile(r'li?st?')
 #   error(**) related constants
 #     error(**) constants for "command" argument
-cmd['boss']     = "Command: Boss"
+cmd['boss']                 = "Command: Boss"
+# cmd['talt']                 = "Command: Talt Tracker"
+# cmd['reminders']            = "Command: Reminders"
 #     error(**) constants for "reason" argument
+#### TODO: Replace con['STR.REASON'] applied to each one? Priority: low
 reason = dict()
-reason['baddb'] = "Reason: Bad Database"
-reason['unkwn'] = "Reason: Unknown"
-reason['broad'] = "Reason: Broad Command"
-reason['argct'] = "Reason: Argument Count"
-reason['unknb'] = "Reason: Unknown Boss"
-reason['syntx'] = "Reason: Malformed Syntax"
-reason['quote'] = "Reason: Mismatched Quotes"
-reason['bdmap'] = "Reason: Bad Map"
-reason['bdtme'] = "Reason: Bad Time"
-reason['fdbos'] = "Reason: Field Boss Channel"
+reason['baddb'] = con['STR.REASON'] + "Bad Database"
+reason['unkwn'] = con['STR.REASON'] + "Unknown"
+reason['broad'] = con['STR.REASON'] + "Broad Command"
+reason['argct'] = con['STR.REASON'] + "Argument Count"
+reason['unknb'] = con['STR.REASON'] + "Unknown Boss"
+reason['syntx'] = con['STR.REASON'] + "Malformed Syntax"
+reason['quote'] = con['STR.REASON'] + "Mismatched Quotes"
+reason['bdmap'] = con['STR.REASON'] + "Bad Map"
+reason['bdtme'] = con['STR.REASON'] + "Bad Time"
+reason['fdbos'] = con['STR.REASON'] + "Field Boss Channel"
 
 # database formats
 prototype = dict()
@@ -202,7 +212,7 @@ async def update_boss_db(c, boss_dict):
     else:
         return False
 
-    try:
+    try: # boss database structure
         c.executemany("insert into boss values (?, ?,?,?,?,?,?,?,?)",
                       (boss_dict['name'],
                        boss_dict['channel'],
@@ -236,11 +246,27 @@ async def rm_ent_boss_db(c, boss_dict):
 # @func:    on_ready()
 # @return:
 #   None
+@client.event
 async def on_ready():
-    await client.login('MjEzMDQxNzI3Nzk4MjQ3NDI1.Co0qOA.yqoI7ggaX9aleWxUyPEHEIiLji0')
     print("Logging in...")
     print('Successsfully logged in as: ' + client.user.name + '#' + 
           client.user.id + '. Ready!')
+
+    with os.scandir() as items:
+        for item in items:
+            if item.is_file() and item.name.endswith(".db"):
+                iname = item.name.replace(".db","")
+                if await func_discord_db(iname,validate_discord_db):
+                    valid_dbs.append(item.name)
+                else:
+                    await func_discord_db(iname,create_discord_db)
+                    valid_dbs.append(item.name)
+
+# @func:    on_server_join()
+@client.event
+async def on_server_join(server):
+    srvnm = server.name
+    await func_
 
 # begin boss related variables
 
@@ -291,7 +317,6 @@ bos02s = ['Kubas Event',
 bos16s = ['Demon Lord Nuaele',
           'Demon Lord Zaura',
           'Demon Lord Blut']
-
 
 # 'boss synonyms'
 # - keys: boss names (var `bosses`)
@@ -437,6 +462,7 @@ bossls = ['crystal mine','ashaq',
 #     message: Discord.message; includes message among sender (Discord.user) and server (Discord.server)
 # @return:
 #     None
+@client.event
 async def on_message(message):
     # 'boss' channel processing
     if "timer" in message.channel or "boss" in message.channel:
@@ -451,15 +477,15 @@ async def on_message(message):
            message.content.startswith('Vaivora, boss '):
             command_server  = message.server.name
             command_message = message.content
-            command_message = uletters.sub('', command_message)  # sanitize
-            command_message = command_message.lower()           # standardize
-            command_message = pfboss.sub('', command_message)    # strip leading command/arg
+            command_message = rx['format.letters.inv'].sub('', command_message)   # sanitize
+            command_message = command_message.lower()             # standardize
+            command_message = rx['vaivora.boss'].sub('', command_message)     # strip leading command/arg
             message_args    = dict() # keys(): name, channel, map, time, 
             boss_channel    = 1
             maps_idx        = -1
 
             # if odd amount of quotes, drop
-            if len(re.findall('"', command_message)) % 2:
+            if len(rx['format.quotes'].findall(command_message)) % 2:
                 err_code = await error(message.author, message.channel,reason['quote'])
                 return err_code
 
@@ -469,25 +495,29 @@ async def on_message(message):
             # begin checking validity
             #     arg validity
             #         count: [3,5]
-            if len(command) < 3 or len(command) > 5:
+            if len(command) < con['ARG.COUNT.MIN'] or len(command) > con['ARG.COUNT.MAX']:
                 err_code = await error(message.author, message.channel,reason['argct'],len(command))
                 return err_code
 
             #         boss: letters
             #         status: anchored, died
             #         time: format
-            if not (letters.match(command[0]) and bstatus.match(command[1]) and timefmt.match(command[2])):
+            if not (rx['format.letters'].match(command[0]) and rx['boss.status'].match(command[1]) and rx['format.time'].match(command[2])):
                 err_code = await error(message.author, message.channel, reason['syntx'])
                 return err_code
 
             #     boss validity
             #         all list
-            if bossall.match(command[0]) and bosslist.match(command[1]):
-                bossrec = await func_boss_db(command_server, check_boss_db, bosses) # possible return
-                if not bossrec:
-                    err_code = await error(message.author, message.channel, reason['bdcmd'])
+            if rx['boss.arg.all'].match(command[0]) and rx['boss.arg.list'].match(command[1]):
+                bossrec = await func_discord_db(command_server, check_boss_db, bosses) # possible return
+                if not bossrec: # empty
+                    await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.")
+                    return True
+                await client.send_message(message.channel, message.author.mention + " Records: ```\n" +
+                                          '\n'.join(['\t'.join(brow) for brow in bossrec]) + "\n```")
+                return True
 
-            elif bossall.match(command[0]):
+            elif rx['boss.arg.all'].match(command[0]):
                 err_code = await error(message.author, message.channel,reason['syntx'])
                 return err_code
             
@@ -497,8 +527,14 @@ async def on_message(message):
                 return err_code
 
             #         boss list
-            if bosslist.match(command[1]):
-                bossrec = await func_boss_db(command_server, check_boss_db, list(bosses[boss_idx])) # possible return
+            if rx['boss.arg.list'].match(command[1]):
+                bossrec = await func_discord_db(command_server, check_boss_db, list(bosses[boss_idx])) # possible return
+                if not bossrec: # empty
+                    await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.")
+                    return True
+                await client.send_message(message.channel, message.author.mention + " Records: ```\n" +
+                                          '\n'.join(['\t'.join(brow) for brow in bossrec]) + "\n```")
+                return True
 
 
             #     (opt) channel: reject if field boss & ch > 1 or if ch > 4
@@ -508,8 +544,8 @@ async def on_message(message):
                 #     channel is set
                 #     keep track of arg position in case we have 5
                 argpos = 3
-                if chanlre.match(command[argpos]):
-                    boss_channel = int(letters.sub('', command[argpos]))
+                if rx['boss.channel'].match(command[argpos]):
+                    boss_channel = int(rx['format.letters'].sub('', command[argpos]))
                     argpos += 1
                 
                 #     specifically not an elif - sequential handling of args
@@ -517,15 +553,15 @@ async def on_message(message):
                 #         4 args: 4th arg is channel
                 #         4 args: 4th arg is map
                 #         5 args: 4th and 5th arg are channel and map respectively
-                if not chanlre.match(command[argpos]) or len(command) == 5:
+                if not rx['boss.channel'].match(command[argpos]) or len(command) == 5:
                     maps_idx = await check_maps(command[argpos], command[1])
                     if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
-                        err_code = await error(message.author, message.channel,reason['bdmap'],command[1])
+                        err_code = await error(message.author, message.channel, reason['bdmap'], command[1])
                         return err_code
 
             #         check if boss is a field boss, and discard if boss channel is not 1
             if bosses[boss_idx] in bossfl and boss_channel != 1:
-                err_code = await error(message.author, message.channel,reason['fdbos'],boss_channel,bosses[boss_idx])
+                err_code = await error(message.author, message.channel, reason['fdbos'], boss_channel, bosses[boss_idx])
                 return err_code
 
             # everything looks good if the string passes through
@@ -539,12 +575,12 @@ async def on_message(message):
 
             # process time
             #     antemeridian
-            if amflag.search(command[2]):
-                btime = amflag.sub('', command[2]).split(':')
+            if rx['format.time.am'].search(command[2]):
+                btime = rx['format.time.am'].sub('', command[2]).split(':')
                 bhour = int(btime[0]) % 12
             #     postmeridian
-            elif pmflag.search(command[2]):
-                btime = pmflag.sub('', command[2]).split(':')
+            elif rx['format.time.pm'].search(command[2]):
+                btime = rx['format.time.pm'].sub('', command[2]).split(':')
                 bhour = (int(btime[0]) % 12) + 12
             #     24h time
             else:
@@ -570,9 +606,9 @@ async def on_message(message):
                 err_code = await error(message.author, message.channel, reason['bdtme'], command[2])
                 return err_code
 
-            wait_time = ANCHHWAIT if bstanch.match(command[1]) else FOURHWAIT
+            wait_time = ANCHHWAIT if rx['boss.status.anchor'].match(command[1]) else FOURHWAIT
             bhour = bhour + int(wait_time + PACIFIC) # bhour in Pacific/local
-            if message_args['name'] in bos02s and bstanch.match(command[1]): # you cannot anchor events
+            if message_args['name'] in bos02s and rx['boss.status.anchor'].match(command[1]): # you cannot anchor events
                 err_code = await error(message.author, message.channel, reason[])
             elif message_args['name'] in bos02s:
                 bhour -= 2
@@ -588,13 +624,13 @@ async def on_message(message):
             message_args['status']    = command[1] # anchored or died
             message_args['srvchn']    = message.channel
 
-            status  = await func_boss_db(command_server, validate_discord_db)
+            status  = await func_discord_db(command_server, validate_discord_db)
             if not status: # db is not valid
                 err_code = await error(message.author, message.channel, reason['baddb'])
-                await func_boss_db(command_server, create_discord_db) # (re)create db
+                await func_discord_db(command_server, create_discord_db) # (re)create db
                 return err_code
 
-            status = await func_boss_db(command_server, update_boss_db, message_args)
+            status = await func_discord_db(command_server, update_boss_db, message_args)
             if not status: # update_boss_db failed
                 err_code = await error(message.author, message.channel,reason['unkwn'])
                 return err_code
@@ -604,10 +640,24 @@ async def on_message(message):
                 
     else:
         await bot.process_commands(message)
-        return
+        return False
 
 # @func:    check_databases()
+async def check_databases():
+    results = dict()
+    await wait_until_ready()
+    while True:
+        for valid_db in valid_dbs:
+            # check all timers
+            results[valid_db] = await func_discord_db(valid_db, check_boss_db, bosses)
+            # sort by time
+            results[valid_db].sort(key=itemgetter(4,5,6,7,8))
+            for result in results[valid_db]:
+                rtime = datetime(tuple(result[4:9]))
+                if rtime-datetime.now() < 0: # stale data; delete
+                    await func_discord_db(valid_db, rm_ent_boss_db, result)
 
+    #### TODO
 
 # @func:    check_boss(str): begin code for checking boss validity
 # @arg:
@@ -634,9 +684,9 @@ async def check_boss(boss):
 # @return:
 #     map index in list, or -1 if not found
 async def check_maps(maps, boss):
-    if floors.match(maps):
+    if rx['boss.floors'].match(maps):
         # rearrange letters, and remove map name
-        mapnum = gfloors.sub(gflarre, maps)
+        mapnum = rx['boss.floors.format'].sub(rx['boss.floors.arrange'], maps)
         mmatch = mapnum.search(maps)
         if not mmatch:
             return -1
@@ -826,3 +876,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
 def the_following_argument(arg):
     return " The following argument `" + arg + "` ("
 # end of the_following_argument
+
+
+client.loop.create_task(check_databases())
+client.run('MjEzMDQxNzI3Nzk4MjQ3NDI1.Co0qOA.yqoI7ggaX9aleWxUyPEHEIiLji0')
