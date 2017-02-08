@@ -35,9 +35,9 @@ rx['format.time.am']        = re.compile(r' ?[Aa][Mm]?')
 rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 "-]')
 rx['format.time']           = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 rx['format.quotes']         = re.compile(r'"')
-rx['boss.status']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
-rx['boss.status.anchor']    = re.compile(r'([Aa]nchored)')
-rx['boss.status.warning']   = re.compile(r'([Ww]arn(ed)?)')
+rx['boss.statustatus']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
+rx['boss.statustatus.anchor']    = re.compile(r'([Aa]nchored)')
+rx['boss.statustatus.warning']   = re.compile(r'([Ww]arn(ed)?)')
 rx['boss.channel']          = re.compile(r'(ch)?[1-4]')
 rx['boss.floors']           = re.compile(r'[bf]?[0-9][bf]?$')
 rx['boss.floors.format']    = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
@@ -136,19 +136,16 @@ async def create_discord_db(c):
     c.commit()
 
     # create reminders table
-    #### TODO
-    #c.execute('create table reminders(?)', remi_tuple)
-    #c.commit()
+    c.execute('create table reminders(?)', remi_tuple)
+    c.commit()
 
     # create talt tracking table
-    #### TODO
-    #c.execute('create table talt(?)', talt_tuple)
-    #c.commit()
+    c.execute('create table talt(?)', talt_tuple)
+    c.commit()
 
     # create permissions hierarchy
-    #### TODO
-    #c.execute('create table permissions(?)', perm_tuple)
-    #c.commit()
+    c.execute('create table permissions(?)', perm_tuple)
+    c.commit()
     return
 
 # @func:    validate_discord_db(sqlite3.connect.cursor)
@@ -163,7 +160,7 @@ async def validate_discord_db(c):
     # check if boss table matches format
     if not tuple(r.keys()) is prototype['boss']:
         return False # invalid db
-    #### TODO: Validate other tables when implemented
+    #### TODO: Validate other tables when implemented, priority: medium
     return True
 
 # @func:    check_boss_db(sqlite3.connect.cursor, list)
@@ -258,18 +255,18 @@ async def on_ready():
     with os.scandir() as items:
         for item in items:
             if item.is_file() and item.name.endswith(".db"):
-                iname = item.name.replace(".db","")
-                if await func_discord_db(iname,validate_discord_db):
+                iname = item.name.replace(".db", "")
+                if await func_discord_db(iname, validate_discord_db):
                     valid_dbs.append(item.name)
                 else:
-                    await func_discord_db(iname,create_discord_db)
-                    valid_dbs.append(item.name)
+                    await func_discord_db(iname, create_discord_db)
+                    valid_dbs.append(item.name) # a fresh db is valid
 
 # @func:    on_server_join()
 @client.event
 async def on_server_join(server):
     srvnm = server.name
-    await func_
+    await func_discord_db(srvnm, create_discord_db)
 
 # begin boss related variables
 
@@ -505,7 +502,7 @@ async def on_message(message):
             #         boss: letters
             #         status: anchored, died
             #         time: format
-            if not (rx['format.letters'].match(command[0]) and rx['boss.status'].match(command[1]) and rx['format.time'].match(command[2])):
+            if not (rx['format.letters'].match(command[0]) and rx['boss.statustatus'].match(command[1]) and rx['format.time'].match(command[2])):
                 err_code = await error(message.author, message.channel, reason['syntx'])
                 return err_code
 
@@ -609,9 +606,9 @@ async def on_message(message):
                 err_code = await error(message.author, message.channel, reason['bdtme'], command[2])
                 return err_code
 
-            wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.status.anchor'].match(command[1]) else con['TIME.WAIT.4H']
+            wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.statustatus.anchor'].match(command[1]) else con['TIME.WAIT.4H']
             bhour = bhour + int(wait_time + con['TIME.OFFSET.PACIFIC']) # bhour in Pacific/local
-            if message_args['name'] in bos02s and rx['boss.status.anchor'].match(command[1]): # you cannot anchor events
+            if message_args['name'] in bos02s and rx['boss.statustatus.anchor'].match(command[1]): # you cannot anchor events
                 err_code = await error(message.author, message.channel, reason[])
             elif message_args['name'] in bos02s:
                 bhour -= 2
@@ -702,44 +699,41 @@ async def check_maps(maps, boss):
 
 # begin constants for strings for error messages
 #   command - usage
-cmd_usage     = "Usage:\n"
+cmd_usage = dict()
+cmd_usage['heading']      = "Usage:\n"
 #   command - [us]age - [c]ode [bl]oc[k]
-cmd_us_cblk   = "```\n"
+cmd_usage['code_block']   = "```\n"
 #   command - [us]age - [a]rguments [bl]oc[k]
-cmd_us_ablk   = "`"
+cmd_usage['back_tick']    = "`"
 #   command - [us]age - [c]ode [arg]uments
-cmd_us_carg   = "Arguments:\n"
-debug_message = " Debug message. Something went wrong.\n"
+cmd_usage['heading.arg']  = "Arguments:\n"
+cmd_usage['debug']        = " Debug message. Something went wrong.\n"
 
 #   begin $boss specific constants
-#       command - [us]age - [b]oss [arg]ument (1)
-cmd_us_barg_1 = "BossName|\"Boss Name\""
-#       command - prefix - [b]oss
-cmd_prefix_b  = ("$boss","Vaivora, boss")
-#       command - usage - [b]oss
-cmd_usage_b   = ["***'Boss' commands***"]
-cmd_usage_b.append(cmd_usage)
+cmd_usage['boss.arg.1']   = "BossName|\"Boss Name\""
+cmd_usage['boss.prefix']  = ("$boss","Vaivora, boss")
+cmd_usage['boss']         = ["***'Boss' commands***"]
+cmd_usage['boss'].append(cmd_usage['heading'])
 #   end of $boss specific constants
 # end of constants for strings for error messages
 
-# begin $boss usage string, in cmd_usage_b : list
+# begin $boss usage string, in cmd_usage['boss'] : list
 #     command - usage - [b]oss - [n]th command -- reuse after every append
-#         boss arg [n] - cmd_usage_b[n]
-#             n=1
-cmd_usage_b_n = (cmd_us_barg_1 + " died|anchored time [chN] [Map|\"Map\"]\n",)
-cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b, cmd_usage_b_n*2))]))
-#             n=2
-cmd_usage_b_n = (cmd_us_barg_1 + "BossName|\"boss name\" verified|erase [chN]\n",)
-cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b, cmd_usage_b_n*2))]))
-#             n=3
-cmd_usage_b_n = (cmd_us_barg_1 + "BossName|\"boss name\" list [chN]\n",)
-cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b, cmd_usage_b_n*2))]))
-#             n=4
-cmd_usage_b_n = (cmd_us_barg_1 + "all list",)
-cmd_usage_b.append('\n'.join([(' '.join(t) for t in zip(cmd_prefix_b, cmd_usage_b_n*2))]))
+#         boss arg [n] - cmd_usage['boss.args'][n]
+cmd_usage['boss.args'] = list()
+cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " died|anchored time [chN] [Map|\"Map\"]\n",)
+cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " erase [chN]\n",)
+cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " list [chN]\n",)
+cmd_usage['boss.args'].append("all list",)
+
+cmd_usage['boss'].append('\n'.join([((' '.join(t) for t in zip(cmd_usage['boss.prefix'], boss_arg)) for boss_arg in cmd_usage['boss.args'])]))
+
+# cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][1]*2))]))
+# cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][2]*2))]))
+# cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][3]*2))]))
 #     command - usage - [b]oss - [a]rgument descriptors
 #             n=5
-cmd_usage_b_a = "`-` Boss Name or `all` **(required)**\n" +
+cmd_usage['boss.arg'] = "`-` Boss Name or `all` **(required)**\n" +
                 "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" +
                 "`  -` all when used with list will display all valid entries.\n" +
                 "`-` time **(required for** `died` **and** `anchored` **)**" +
@@ -747,19 +741,19 @@ cmd_usage_b_a = "`-` Boss Name or `all` **(required)**\n" +
                 "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" +
                 "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + 
                 "and should not be recorded because they have unpredictable spawns.\n"
-cmd_usage_b.append(cmd_usage_b_a)
-# end of $boss usage string, in cmd_usage_b
+cmd_usage['boss'].append(cmd_usage['boss.arg'])
+# end of $boss usage string, in cmd_usage['boss.args']
 
 # begin constants to use for error(**)
 #     general command errors
-cmd_usage['badsyn'] = "Your command was malformed.\n"
-cmd_usage['ambigu'] = "Your command was ambiguous.\n"
+cmd_usage['error.badsyntax']  = "Your command was malformed.\n"
+cmd_usage['error.ambiguous']  = "Your command was ambiguous.\n"
 
 #     specific command errors
 #         command - usage - [b]oss - [m]ap
-cmd_usage['b_b'] = "Make sure to properly spell the boss name.\n"
-cmd_usage['b_m'] = "Make sure to properly record the map.\n"
-cmd_usage['b_s'] = "Make sure to properly record the status.\n"
+cmd_usage['boss.name']        = "Make sure to properly spell the boss name.\n"
+cmd_usage['boss.map']         = "Make sure to properly record the map.\n"
+cmd_usage['boss.status']      = "Make sure to properly record the status.\n"
 # end of constants for error(**)
 
 # @func:  error(**): begin code for error message printing to user
@@ -785,11 +779,11 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
         if etype == reason['broad']:
             ret_msg.append(user_name + the_following_argument('boss') + msg + 
                            ") for `$boss` has multiple matching spawn points:\n")
-            ret_msg.append(cmd_us_cblk)
+            ret_msg.append(cmd_usage['code_block'])
             ret_msg.append('\n'.join(bosslo[msg]))
-            ret_msg.append(cmd_us_cblk)
-            ret_msg.append(cmd_usage['ambigu'])
-            ret_msg.append(cmd_usage['b_m'])
+            ret_msg.append(cmd_usage['code_block'])
+            ret_msg.append(cmd_usage['error.ambiguous'])
+            ret_msg.append(cmd_usage['boss.map'])
             ecode = -1
         elif etype == reason['unkwn']:
             ret_msg.append(user_name + " I'm sorry. Your command failed for unknown reasons.\n" +
@@ -802,10 +796,10 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
         elif etype == reason['unknb']:
             ret_msg.append(user_name + the_following_argument('boss') + msg +
                            ") is invalid for `$boss`. This is a list of bosses you may use:\n")
-            ret_msg.append(cmd_us_cblk)
+            ret_msg.append(cmd_usage['code_block'])
             ret_msg.append('\n'.join(bosses))
-            ret_msg.append(cmd_us_cblk)
-            ret_msg.append(cmd_usage['b_b'])
+            ret_msg.append(cmd_usage['code_block'])
+            ret_msg.append(cmd_usage['boss.name'])
             ecode = -2
         elif etype == reason['badst']:
             ret_msg.append(user_name + the_following_argument('status') + msg +
@@ -816,16 +810,16 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             try_msg.append(user_name + the_following_argument('map') + msg +
                            ") (number) is invalid for `$boss`. This is a list of maps you may use:\n")
             try: # make sure the data is valid by `try`ing
-              try_msg.append(cmd_us_cblk)
+              try_msg.append(cmd_usage['code_block'])
               try_msg.append('\n'.join(bosslo[xmsg]))
-              try_msg.append(cmd_us_cblk)
-              try_msg.append(cmd_usage['b_m'])
+              try_msg.append(cmd_usage['code_block'])
+              try_msg.append(cmd_usage['boss.map'])
               # seems to have succeeded, so extend to original
               ret_msg.extend(try_msg)
               ecode = -2
             except: # boss not found! 
-              ret_msg.append(user_name + debug_message)
-              ret_msg.append(cmd_usage['badsyn'])
+              ret_msg.append(user_name + cmd_usage['debug'])
+              ret_msg.append(cmd_usage['error.badsyntax'])
               ecode = -127
         elif etype == reason['fdbos']:
             ret_msg.append(user_name + the_following_argument('channel') + msg +
@@ -837,26 +831,26 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             ret_msg.append(user_name + the_following_argument('time') + msg +
                            ") is invalid for `$boss`.\n")
             ret_msg.append("Omit spaces; record in 12H (with AM/PM) or 24H time.\n")
-            ret_msg.append(cmd_usage['badsyn'])
+            ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = -2
         elif etype == reason['argct']:
             ret_msg.append(user_name + " Your command for `$boss` had too few arguments.\n" +  
                            "Expected: 4 to 6; got: " + msg + ".\n")
-            ret_msg.append(cmd_usage['badsyn'])
+            ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = -127
         elif etype == reason['quote']:
             ret_msg.append(user_name + " Your command for `$boss` had misused quotes somewhere.\n")
-            ret_msg.append(cmd_usage['badsyn'])
+            ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = -127
         else:
-            ret_msg.append(user_name + debug_message)
-            ret_msg.append(cmd_usage['badsyn'])
+            ret_msg.append(user_name + cmd_usage['debug'])
+            ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = -127
             await client.send_message(channel, '\n'.join(ret_msg))
         # end of conditionals for cmd['boss']
 
         # begin common return for $boss
-        ret_msg.extend(cmd_usage_b)
+        ret_msg.extend(cmd_usage['boss'])
         await client.send_message(channel, '\n'.join(ret_msg))
         return ecode
         # end of common return for $boss
@@ -864,8 +858,8 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
     # todo: reminders, Talt tracking, permissions
     else:
         # todo
-        ret_msg.append(user_name + debug_message)
-        ret_msg.append(cmd_usage['badsyn'])
+        ret_msg.append(user_name + cmd_usage['debug'])
+        ret_msg.append(cmd_usage['error.badsyntax'])
         ecode = -127
         await client.send_message(channel, '\n'.join(ret_msg))
         return ecode 
