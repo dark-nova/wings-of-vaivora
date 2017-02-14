@@ -25,6 +25,10 @@ con['TIME.WAIT.4H']         = timedelta(hours=4)
 con['TIME.WAIT.ANCHOR']     = timedelta(hours=3)
 con['LOGGER']               = "tos.wingsofvaivora"
 con['LOGGER.FILE']          = "tos.wingsofvaivora.log"
+con['STR.MESSAGE.WELCOME']  = "Thank you for inviting me to your server! " +
+                              "I am a representative bot for the Wings of Vaivora, here to help you record your journey.\n" +
+                              "Here are some useful commands:" + 
+                              cmd_usage['boss']
 
 #   regex dictionary
 rx = dict()
@@ -45,6 +49,7 @@ rx['boss.floors.arrange']   = re.compile(r'\g<1>\g<4>\g<3>\g<2>\g<5>')
 rx['vaivora.boss']          = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss')
 rx['boss.arg.all']          = re.compile(r'all')
 rx['boss.arg.list']         = re.compile(r'li?st?')
+rx['str.ext.db']            = re.compile(r'\.db$')
 #   error(**) related constants
 #     error(**) constants for "command" argument
 cmd['boss']                 = "Command: Boss"
@@ -255,18 +260,28 @@ async def on_ready():
     with os.scandir() as items:
         for item in items:
             if item.is_file() and item.name.endswith(".db"):
-                iname = item.name.replace(".db", "")
+                iname = rx['str.ext.db'].sub('',item.name)
                 if await func_discord_db(iname, validate_discord_db):
                     valid_dbs.append(item.name)
                 else:
                     await func_discord_db(iname, create_discord_db)
                     valid_dbs.append(item.name) # a fresh db is valid
 
-# @func:    on_server_join()
+# @func:    on_server_join(discord.Server)
+# @return:
+#   True if ready, False otherwise
 @client.event
 async def on_server_join(server):
+    if server.unavailable:
+        return False
     srvnm = server.name
-    await func_discord_db(srvnm, create_discord_db)
+    status = await func_discord_db(srvnm, validate_discord_db)
+    if not status:
+        # create if db doesn't already exist
+        await func_discord_db(srvnm, create_discord_db)
+    # send welcome message
+    await send_message(server.owner, con['STR.MESSAGE.WELCOME'])
+    return True
 
 # begin boss related variables
 
@@ -804,7 +819,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
         elif etype == reason['badst']:
             ret_msg.append(user_name + the_following_argument('status') + msg +
                            ") is invalid for `$boss`. You may not select `anchored` for its status.\n")
-            ret_msg.append(cmd_usage_)
+            ret_msg.append(cmd_usage['boss'])
         elif etype == reason['bdmap']:
             try_msg = list()
             try_msg.append(user_name + the_following_argument('map') + msg +
