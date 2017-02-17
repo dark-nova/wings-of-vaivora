@@ -297,15 +297,15 @@ async def update_boss_db(c, boss_dict):
     try: # boss database structure
         c.executemany("insert into boss values (?, ?,?,?,?,?,?,?,?)",
                       (boss_dict['name'],
-                       boss_dict['channel'],
+                       int(boss_dict['channel']),
                        boss_dict['map'],
                        boss_dict['status'],
-                       boss_dict['year'],
-                       boss_dict['month'],
-                       boss_dict['day'],
-                       boss_dict['hour'],
-                       boss_dict['mins'],
-                       boss_dict['srvchn']))
+                       boss_dict['srvchn'],
+                       int(boss_dict['year']),
+                       int(boss_dict['month']),
+                       int(boss_dict['day']),
+                       int(boss_dict['hour']),
+                       int(boss_dict['mins'])))
     except:
         return False
     return True
