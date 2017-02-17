@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import discord
 import logging
 import sqlite3
@@ -594,17 +595,27 @@ async def on_message(message):
             #     arg validity
             #         count: [3,5] - killed/anchored
             #                [2,3] - erase
-            if (rx['boss.status'].match(command[1]) and len(command) < con['BOSSCMD.ARG.COUNTMIN'] or len(command) > con['BOSSCMD.ARG.COUNTMAX']) or \
-               (rx['boss.arg.erase'].match(command[1]) and len(command) < 2 or len(command) > 3): #### TODO: change constants
+            if (rx['boss.status'].match(command[1]) and (len(command) < con['BOSSCMD.ARG.COUNTMIN'] or len(command) > con['BOSSCMD.ARG.COUNTMAX'])):
+                err_code = await error(message.author, message.channel, reason['argct'], cmd['name'], len(command))
+                return err_code
+
+            if (rx['boss.arg.erase'].match(command[1]) and (len(command) < 2 or len(command) > 3)): #### TODO: change constants
                 err_code = await error(message.author, message.channel, reason['argct'], cmd['name'], len(command))
                 return err_code
 
             #         boss: letters
             #         status: anchored, died
             #         time: format
-            if (not (rx['format.letters'].match(command[0]) and (rx['boss.status'].match(command[1]) or \
-                                                                 rx['boss.arg.erase'].match(command[1]) or \
-                                                                 rx['boss.arg.list'].match(command[1])) ) ):
+            if not rx['format.letters'].match(command[0]):
+                err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
+                return err_code
+            if not (rx['boss.status'].match(command[1]) and rx['format.time'].match(command[2])):
+                err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
+                return err_code
+            if not rx['boss.arg.erase'].match(command[1]):
+                err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
+                return err_code
+            if not rx['boss.arg.list'].match(command[1]):
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
                 return err_code
 
@@ -942,6 +953,10 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             ecode = con['ERROR.SYNTAX']
         elif etype == reason['quote']:
             ret_msg.append(user_name + " Your command for `$boss` had misused quotes somewhere.\n")
+            ret_msg.append(cmd_usage['error.badsyntax'])
+            ecode = con['ERROR.SYNTAX']
+        elif etype == reason['syntx']:
+            ret_msg.append(user_name + " Your command could not be parsed. Re-check the syntax, and try again.")
             ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = con['ERROR.SYNTAX']
         else:
