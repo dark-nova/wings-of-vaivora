@@ -121,6 +121,7 @@ rx['boss.floors.format']    = re.compile(r'.+(?P<basement>b?)(?P<floor>f?)(?P<fl
 rx['vaivora.boss']          = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss')
 rx['boss.arg.all']          = re.compile(r'all')
 rx['boss.arg.list']         = re.compile(r'li?st?')
+rx['boss.arg.erase']        = re.compile(r'(erase|del(ete)?)')
 rx['str.ext.db']            = re.compile(r'\.db$')
 #   error(**) related constants
 #     error(**) constants for "command" argument
@@ -294,31 +295,35 @@ async def update_boss_db(c, boss_dict):
                      contents[7] < boss_dict['hour'] - 3):
         await rm_ent_boss_db(c, boss_dict)
 
-    try: # boss database structure
-        c.executemany("insert into boss values (?, ?,?,?,?,?,?,?,?)",
-                      (boss_dict['name'],
-                       int(boss_dict['channel']),
-                       boss_dict['map'],
-                       boss_dict['status'],
-                       boss_dict['srvchn'],
-                       int(boss_dict['year']),
-                       int(boss_dict['month']),
-                       int(boss_dict['day']),
-                       int(boss_dict['hour']),
-                       int(boss_dict['mins'])))
-    except:
-        return False
+    #try: # boss database structure
+    c.execute("insert into boss values (?,?,?,?,?,?,?,?,?,?)",
+              (str(boss_dict['name']),
+               int(boss_dict['channel']),
+               str(boss_dict['map']),
+               str(boss_dict['status']),
+               str(boss_dict['srvchn']),
+               int(boss_dict['year']),
+               int(boss_dict['month']),
+               int(boss_dict['day']),
+               int(boss_dict['hour']),
+               int(boss_dict['mins'])))
+    # except:
+    #     return False
     return True
 
-# @func:    rm_ent_boss_db(sqlite3.connect.cursor, dict)
+# @func:    rm_ent_boss_db(sqlite3.connect.cursor, dict, int)
 # @arg:
 #   c:              the sqlite3 connection cursor
 #   boss_dict:      message_args from on_message(*)
+#   ch:             Default: None; the channel to remove
 # @return:
 #   True if successful, False otherwise
-async def rm_ent_boss_db(c, boss_dict):
+async def rm_ent_boss_db(c, boss_dict, ch=None):
     try:
-        c.executemany("delete from boss where name=? and channel=?", (boss_dict['name'], boss_dict['channel']))
+        if ch:
+            c.execute("delete from boss where name=? and channel=?", (boss_dict['name'], boss_dict['channel'],))
+        else:
+            c.execute("delete from boss where name=?", boss_dict['name'])
     except:
         return False
     return True
@@ -349,7 +354,7 @@ async def on_ready():
 async def on_server_join(server):
     if server.unavailable:
         return False
-    srvnm = server.name
+    srvnm = server.id # id now
     status = await func_discord_db(srvnm, validate_discord_db)
     if not status:
         # create if db doesn't already exist
@@ -564,7 +569,7 @@ async def on_message(message):
         #         5. [4] opt map
         if message.content.startswith('$boss ') or \
            message.content.startswith('Vaivora, boss '):
-            command_server  = message.server.name
+            command_server  = message.server.id # changed to id
             command_message = message.content
             command_message = rx['format.letters.inv'].sub('', command_message)   # sanitize
             command_message = command_message.lower()             # standardize
@@ -618,8 +623,13 @@ async def on_message(message):
                 err_code = await error(message.author, message.channel, reason['unknb'], cmd['name'], command[0])
                 return err_code
 
+            #         boss erase
+            if rx['boss.arg.erase'].match(command[1]) and not command[2]:
+                await func_discord_db(command_server, rm_ent_boss_db)
+            elif rx['boss.arg.erase'].match(command[1]):
+                await func_discord_db(command_server, rm_ent_boss_db, command[2])
             #         boss list
-            if rx['boss.arg.list'].match(command[1]):
+            elif rx['boss.arg.list'].match(command[1]):
                 bossrec = await func_discord_db(command_server, check_boss_db, list(bosses[boss_idx])) # possible return
                 if not bossrec: # empty
                     await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.")
@@ -732,13 +742,16 @@ async def on_message(message):
 
             await client.send_message(message.channel, message.author.mention + cmd_usage['boss.acknowledged'] + \
                                       message_args['name'] + " " + message_args['status'] + " at " + \
-                                      message_args['hour'] + ":" + message_args['mins'] + ", CH" + message_args['channel'])
+                                      ("0" if message_args['hour'] < 10 else "") + \
+                                      str(message_args['hour']) + ":" + \
+                                      ("0" if message_args['mins'] < 10 else "") + \
+                                      str(message_args['mins']) + ", CH" + str(message_args['channel']))
 
-            await bot.process_commands(message)
+            #await client.process_commands(message)
             return True # command processed
                 
     else:
-        await bot.process_commands(message)
+        #await client.process_commands(message)
         return False
 
 # @func:    check_databases()
@@ -762,7 +775,8 @@ async def check_databases():
                     message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
                 elif (rtime-datetime.now()).seconds < 14400:
                     message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
-        await bot.process_commands(message)
+            await client.send_message(results[valid_db][0][4],'\n'.join(message_send))
+        #await client.process_commands(message)
         sleep(60)
 
 def format_message_boss(boss, status, time, bossmap, channel):
