@@ -46,7 +46,7 @@ cmd_usage['boss.args'].append("all list",)
 cmd_usage['boss'].append('\n'.join([("PREFIX " + boss_arg) for boss_arg in cmd_usage['boss.args']]))
 cmd_usage['boss'].append(cmd_usage['code_block'])
 cmd_usage['boss'].append("Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usage['back_tick'] + "es: " + \
-                         '&'.join(cmd_usage['boss.prefix']))
+                         '&'.join(cmd_usage['boss.prefix']) + "\n")
 
 # cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][1]*2))]))
 # cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][2]*2))]))
@@ -56,7 +56,7 @@ cmd_usage['boss'].append("Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usag
 cmd_usage['boss.arg'] = "`-` Boss Name or `all` **(required)**\n" + \
                 "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" + \
                 "`  -` all when used with list will display all valid entries.\n" + \
-                "`-` time **(required for** `died` **and** `anchored` **)**" + \
+                "`-` time **(required for** `died` **and** `anchored` **)**\n" + \
                 "`-` Map *(optional)*\n" + \
                 "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" + \
                 "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + \
