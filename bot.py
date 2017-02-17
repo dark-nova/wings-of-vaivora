@@ -549,7 +549,7 @@ bossls = ['crystal mine','ashaq',
 @client.event
 async def on_message(message):
     # 'boss' channel processing
-    if "timer" in message.channel or "boss" in message.channel:
+    if "timer" in message.channel.name or "boss" in message.channel.name:
         # 'boss' channel command: $boss
         #     arg order:
         #         1. [0] req boss name
@@ -903,6 +903,4 @@ def the_following_argument(arg):
     return " The following argument `" + arg + "` ("
 # end of the_following_argument
 
-
-client.loop.create_task(check_databases())
 client.run('MjEzMDQxNzI3Nzk4MjQ3NDI1.Co0qOA.yqoI7ggaX9aleWxUyPEHEIiLji0')
