@@ -209,19 +209,19 @@ async def create_discord_db(c):
     # delete table if necessary since it may be invalid
     c.execute('drop table if exists boss')
     # create boss table
-    c.execute('create table boss(?)', boss_tuple)
+    c.execute('create table boss({})'.format(','.join(boss_tuple)))
     
 
     # create reminders table
-    c.execute('create table reminders(?)', remi_tuple)
+    c.execute('create table reminders({})'.format(','.join(remi_tuple)))
     
 
     # create talt tracking table
-    c.execute('create table talt(?)', talt_tuple)
+    c.execute('create table talt({})'.format(','.join(talt_tuple)))
     
 
     # create permissions hierarchy
-    c.execute('create table permissions(?)', perm_tuple)
+    c.execute('create table permissions({})'.format(','.join(perm_tuple)))
     
     return
 
