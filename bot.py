@@ -917,4 +917,6 @@ def the_following_argument(arg):
     return " The following argument `" + arg + "` ("
 # end of the_following_argument
 
-client.run('MjEzMDQxNzI3Nzk4MjQ3NDI1.Co0qOA.yqoI7ggaX9aleWxUyPEHEIiLji0')
+with open('discordtoken','r') as f:
+    secret = f.read()
+client.run(secret)
