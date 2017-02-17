@@ -255,8 +255,9 @@ async def validate_discord_db(c):
 # @return:
 #   None if db is not prepared; otherwise, a list
 async def check_boss_db(c, boss_list):
+    db_record = list()
     for b in boss_list:
-        c.execute("select * from boss where name=?", b)
+        c.execute("select * from boss where name=?",(b,))
         db_record.extend(c.fetchall())
     # return a list of records
     return db_record
@@ -591,15 +592,19 @@ async def on_message(message):
 
             # begin checking validity
             #     arg validity
-            #         count: [3,5]
-            if len(command) < con['BOSSCMD.ARG.COUNTMIN'] or len(command) > con['BOSSCMD.ARG.COUNTMAX']:
+            #         count: [3,5] - killed/anchored
+            #                [2,3] - erase
+            if (rx['boss.status'].match(command[1]) and len(command) < con['BOSSCMD.ARG.COUNTMIN'] or len(command) > con['BOSSCMD.ARG.COUNTMAX']) or \
+               (rx['boss.arg.erase'].match(command[1]) and len(command) < 2 or len(command) > 3): #### TODO: change constants
                 err_code = await error(message.author, message.channel, reason['argct'], cmd['name'], len(command))
                 return err_code
 
             #         boss: letters
             #         status: anchored, died
             #         time: format
-            if not (rx['format.letters'].match(command[0]) and rx['boss.status'].match(command[1]) and rx['format.time'].match(command[2])):
+            if (not (rx['format.letters'].match(command[0]) and (rx['boss.status'].match(command[1]) or \
+                                                                 rx['boss.arg.erase'].match(command[1]) or \
+                                                                 rx['boss.arg.list'].match(command[1])) ) ):
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
                 return err_code
 
@@ -626,13 +631,15 @@ async def on_message(message):
             #         boss erase
             if rx['boss.arg.erase'].match(command[1]) and not command[2]:
                 await func_discord_db(command_server, rm_ent_boss_db)
+                await client.send_message(message.channel, message.author.mention + " Record successfully erased.\n")
             elif rx['boss.arg.erase'].match(command[1]):
                 await func_discord_db(command_server, rm_ent_boss_db, command[2])
+                await client.send_message(message.channel, message.author.mention + " Record successfully erased.\n")
             #         boss list
             elif rx['boss.arg.list'].match(command[1]):
                 bossrec = await func_discord_db(command_server, check_boss_db, list(bosses[boss_idx])) # possible return
                 if not bossrec: # empty
-                    await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.")
+                    await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.\n")
                     return True
                 await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
                                           '\n'.join(['\t'.join(brow) for brow in bossrec]) + "\n```")
@@ -769,12 +776,15 @@ async def check_databases():
                 tupletime = tuple(result[4:9])
                 rtime = datetime(tupletime)
                 rtime_east = rtime + con['TIME.OFFSET.EASTERN']
-                if rtime-datetime.now() < 0: # stale data; delete
+                tdiff = rtime-datetime.now()
+                if tdiff < 0: # stale data; delete
                     await func_discord_db(valid_db, rm_ent_boss_db, result)
-                elif (rtime-datetime.now()).seconds < 10800 and rx['boss.status.anchor'].match(result[3]):
+                elif tdiff.seconds < 10800 and rx['boss.status.anchor'].match(result[3]):
                     message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
-                elif (rtime-datetime.now()).seconds < 14400:
+                elif tdiff.seconds < 14400:
                     message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
+                elif tdiff.seconds > 72000:
+                    await func_discord_db(valid_db, rm_ent_boss_db, result)
             await client.send_message(results[valid_db][0][4],'\n'.join(message_send))
         #await client.process_commands(message)
         sleep(60)
