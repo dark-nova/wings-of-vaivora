@@ -4,6 +4,7 @@ import sqlite3
 import shlex
 import re
 import os
+from time import sleep
 from datetime import datetime, timedelta
 from operator import itemgetter
 
@@ -64,6 +65,8 @@ cmd_usage['boss.arg'] = "`-` Boss Name or `all` **(required)**\n" + \
 cmd_usage['boss'].append(cmd_usage['boss.arg'])
 # end of $boss usage string, in cmd_usage['boss.args']
 
+cmd_usage['boss.acknowledged'] = " Thank you! Your command has been acknowledged and recorded.\n"
+
 # begin constants to use for error(**)
 #     general command errors
 cmd_usage['error.badsyntax']  = "Your command was malformed.\n"
@@ -108,9 +111,9 @@ rx['format.time.am']        = re.compile(r' ?[Aa][Mm]?')
 rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 $"-]')
 rx['format.time']           = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 rx['format.quotes']         = re.compile(r'"')
-rx['boss.statustatus']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
-rx['boss.statustatus.anchor']    = re.compile(r'([Aa]nchored)')
-rx['boss.statustatus.warning']   = re.compile(r'([Ww]arn(ed)?)')
+rx['boss.status']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
+rx['boss.status.anchor']    = re.compile(r'([Aa]nchored)')
+rx['boss.status.warning']   = re.compile(r'([Ww]arn(ed)?)')
 rx['boss.channel']          = re.compile(r'(ch)?[1-4]')
 rx['boss.floors']           = re.compile(r'[bf]?[0-9][bf]?$')
 rx['boss.floors.format']    = re.compile(r'.+(?P<basement>b?)(?P<floor>f?)(?P<floornumber>[0-9])(?P=basement)(?P=floor)$')
@@ -231,13 +234,16 @@ async def create_discord_db(c):
 #   True if valid, False otherwise
 async def validate_discord_db(c):
     # check boss table
-    c.execute('select * from boss')
-    r = c.fetchone()
-    # check if boss table matches format
-    if not tuple(r.keys()) is prototype['boss']:
-        return False # invalid db
-    #### TODO: Validate other tables when implemented, priority: medium
-    return True
+    try:
+        c.execute('select * from boss')
+        r = c.fetchone()
+        # check if boss table matches format
+        if not tuple(r.keys()) is prototype['boss']:
+            return False # invalid db
+        #### TODO: Validate other tables when implemented, priority: medium
+        return True
+    except:
+        return False
 
 # @func:    check_boss_db(sqlite3.connect.cursor, list)
 # @arg:
@@ -445,8 +451,7 @@ for l in list(bossyn.values()):
 # 'boss location'
 # - keys: boss names (var `bosses`)
 # - values: list of locations, full name
-bosslo = {'Blasphemous Deathweaver':['Crystal Mine 1F',
-                                     'Crystal Mine 2F',
+bosslo = {'Blasphemous Deathweaver':['Crystal Mine 2F',
                                      'Crystal Mine 3F',
                                      'Ashaq Underground Prison 1F',
                                      'Ashaq Underground Prison 2F',
@@ -592,7 +597,7 @@ async def on_message(message):
             #         boss: letters
             #         status: anchored, died
             #         time: format
-            if not (rx['format.letters'].match(command[0]) and rx['boss.statustatus'].match(command[1]) and rx['format.time'].match(command[2])):
+            if not (rx['format.letters'].match(command[0]) and rx['boss.status'].match(command[1]) and rx['format.time'].match(command[2])):
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['boss'])
                 return err_code
 
@@ -696,9 +701,9 @@ async def on_message(message):
                 err_code = await error(message.author, message.channel, reason['bdtme'], cmd['boss'], msg=command[2])
                 return err_code
 
-            wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.statustatus.anchor'].match(command[1]) else con['TIME.WAIT.4H']
+            wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.status.anchor'].match(command[1]) else con['TIME.WAIT.4H']
             bhour = bhour + int(wait_time + con['TIME.OFFSET.PACIFIC']) # bhour in Pacific/local
-            if message_args['name'] in bos02s and rx['boss.statustatus.anchor'].match(command[1]): # you cannot anchor events
+            if message_args['name'] in bos02s and rx['boss.status.anchor'].match(command[1]): # you cannot anchor events
                 err_code = await error(message.author, message.channel, reason['noanc'], cmd['boss'])
             elif message_args['name'] in bos02s:
                 bhour -= 2
@@ -725,6 +730,10 @@ async def on_message(message):
                 err_code = await error(message.author, message.channel, reason['unkwn'], cmd['boss'])
                 return err_code
 
+            await client.send_message(message.channel, message.author.mention + cmd_usage['boss.acknowledged'] + \
+                                      message_args['name'] + " " + message_args['status'] + " at " + \
+                                      message_args['hour'] + ":" + message_args['mins'] + ", CH" + message_args['channel'])
+
             await bot.process_commands(message)
             return True # command processed
                 
@@ -738,15 +747,42 @@ async def check_databases():
     while True:
         for valid_db in valid_dbs:
             # check all timers
+            message_send = list()
+            message_send.append("@here ")
             results[valid_db] = await func_discord_db(valid_db, check_boss_db, bosses)
             # sort by time
             results[valid_db].sort(key=itemgetter(4,5,6,7,8))
             for result in results[valid_db]:
-                rtime = datetime(tuple(result[4:9]))
+                tupletime = tuple(result[4:9])
+                rtime = datetime(tupletime)
+                rtime_east = rtime + con['TIME.OFFSET.EASTERN']
                 if rtime-datetime.now() < 0: # stale data; delete
                     await func_discord_db(valid_db, rm_ent_boss_db, result)
+                elif (rtime-datetime.now()).seconds < 10800 and rx['boss.status.anchor'].match(result[3]):
+                    message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
+                elif (rtime-datetime.now()).seconds < 14400:
+                    message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
+        await bot.process_commands(message)
+        sleep(60)
 
-    #### TODO
+def format_message_boss(boss, status, time, bossmap, channel):
+    if bossmap == 'N/A':
+        bossmap = ['[Map Unknown]',]
+    elif boss == "Blasphemous Deathweaver" and re.search("[Aa]shaq",bossmap):
+        bossmap = [m for m in bosslo[boss][2:-1] if m != bossmap]
+    elif boss == "Blasphemous Deathweaver":
+        bossmap = [m for m in bosslo[boss][0:2] if m != bossmap]
+    else:
+        bossmap = [m for m in bosslo[boss] if m != bossmap]
+    status_str  = " " + ("was anchored" if rx['boss.status.anchor'].match(status) else "died") + " at "
+
+    expect_str  = (("between " + (time + con['TIME.WAIT.ANCHOR']).strftime("%Y/%m/%d %H:%M") + " and ") \
+                   if rx['boss.status.anchor'].match(status) else "at ") + \
+                  (time + con['TIME.WAIT.4H']).strftime("%Y/%m/%d %H:%M") + ", "
+    map_str     = "in the following maps: " + '. '.join(bossmap)
+    message     = boss + status_str + time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
+                  expect_str + map_str
+    return message
 
 # @func:    check_boss(str): begin code for checking boss validity
 # @arg:
