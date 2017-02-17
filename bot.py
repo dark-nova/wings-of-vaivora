@@ -148,7 +148,7 @@ reason['fdbos'] = con['STR.REASON'] + "Field Boss Channel"
 # database formats
 prototype = dict()
 prototype['time'] = ('year', 'month','day','hour','minute')
-prototype['name'] = ('name', 'channel','map','status','text_channel') + prototype['time']
+prototype['boss'] = ('name', 'channel','map','status','text_channel') + prototype['time']
 prototype['remi'] = ('user', 'comment') + prototype['time']
 prototype['talt'] = ('user', 'previous','current','valid') + prototype['time']
 prototype['perm'] = ('user', 'role')
@@ -162,7 +162,7 @@ prototype['perm.types'] = ('text',)*2
 
 # zip, create, concatenate into tuple
 boss_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(prototype['name'], prototype['boss.types']))
+                   zip(prototype['boss'], prototype['boss.types']))
 remi_tuple = tuple('{} {}'.format(*t) for t in 
                    zip(prototype['remi'], prototype['remi.types']))
 talt_tuple = tuple('{} {}'.format(*t) for t in 
@@ -200,6 +200,7 @@ async def func_discord_db(discord_server, db_func, xargs=None):
     else:
         dbif  = await db_func(c)
     conn.commit()
+    conn.close()
     return dbif
 
 # @func:      create_discord_db(sqlite3.connect.cursor)
@@ -208,6 +209,7 @@ async def func_discord_db(discord_server, db_func, xargs=None):
 # @return:
 #   None
 async def create_discord_db(c):
+    print("create db called")
     # delete tables if necessary since it may be invalid #### Maybe to ignore?
     c.execute('drop table if exists boss')
     c.execute('drop table if exists reminders')
@@ -236,33 +238,32 @@ async def create_discord_db(c):
 #   True if valid, False otherwise
 async def validate_discord_db(c):
     # check boss table
-    try:
-        c.execute('select * from boss')
-        r = c.fetchone()
-        if not r:
-            return True # it's empty. probably works.
-        # check if boss table matches format
-        if not tuple(r.keys()) is prototype['name']:
-            return False # invalid db
-        #### TODO: Validate other tables when implemented, priority: medium
-        return True
-    except:
-        return False
+    c.execute('select * from boss')
+    r = c.fetchone()
+    if not r:
+        return True # it's empty. probably works.
+    # check if boss table matches format
+    if sorted(tuple(r.keys())) != sorted(prototype['boss']):
+        print("false")
+        return False # invalid db
+    #### TODO: Validate other tables when implemented, priority: medium
+    return True
 
 # @func:    check_boss_db(sqlite3.connect.cursor, list)
 # @arg:
 #   c:              the sqlite3 connection cursor
 #   boss_list:      list containing bosses to check
 # @return:
-#   None if db is not prepared; otherwise, a list
+#   False if db is not prepared; otherwise, a list
 async def check_boss_db(c, boss_list):
     db_record = list()
     for b in boss_list:
         c.execute("select * from boss where name=?",(b,))
-        db_record.extend(c.fetchall())
+        records = c.fetchall()
+        for record in records:
+            db_record.extend(tuple(record))
     # return a list of records
     return db_record
-
 # @func:    update_boss_db(sqlite3.connect.cursor, dict)
 # @arg:
 #   c:              the sqlite3 connection cursor
@@ -586,6 +587,10 @@ async def on_message(message):
                 await client.send_message(message.channel, message.author.mention + '\n'.join(cmd_usage['name']))
                 return True
 
+            if len(command) < 2:
+                err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
+                return err_code
+
             # if odd amount of quotes, drop
             if len(rx['format.quotes'].findall(command_message)) % 2:
                 err_code = await error(message.author, message.channel, reason['quote'], cmd['name'])
@@ -609,13 +614,11 @@ async def on_message(message):
             if not rx['format.letters'].match(command[0]):
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
                 return err_code
-            if not (rx['boss.status'].match(command[1]) and rx['format.time'].match(command[2])):
+            if not (rx['boss.status'].match(command[1]) or rx['boss.arg.erase'].match(command[1]) or \
+              rx['boss.arg.list'].match(command[1])):
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
                 return err_code
-            if not rx['boss.arg.erase'].match(command[1]):
-                err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
-                return err_code
-            if not rx['boss.arg.list'].match(command[1]):
+            if rx['boss.status'].match(command[1]) and not rx['format.time'].match(command[2]):
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
                 return err_code
 
@@ -627,7 +630,7 @@ async def on_message(message):
                     await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.")
                     return True
                 await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
-                                          '\n'.join(['\t'.join(brow) for brow in bossrec]) + "\n```")
+                                          '\n'.join(['\t'.join(str(brow)) for brow in bossrec]) + "\n```")
                 return True
 
             elif rx['boss.arg.all'].match(command[0]):
@@ -648,6 +651,7 @@ async def on_message(message):
                 await client.send_message(message.channel, message.author.mention + " Record successfully erased.\n")
             #         boss list
             elif rx['boss.arg.list'].match(command[1]):
+                print(bosses[boss_idx])
                 bossrec = await func_discord_db(command_server, check_boss_db, list(bosses[boss_idx])) # possible return
                 if not bossrec: # empty
                     await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.\n")
@@ -710,11 +714,12 @@ async def on_message(message):
                 btime = command[2].split(':')
                 bhour = int(btime[0])
             #     handle bad input
+
             if bhour > 24:
                 err_code = await error(message.author, message.channel, reason['bdtme'], cmd['name'], msg=command[2])
                 return err_code
             bminu = int(btime[1])
-
+            oribhour  = bhour
             approx_server_time = datetime.today() + con['TIME.OFFSET.EASTERN']
             btday = approx_server_time.day
             btmon = approx_server_time.month
@@ -760,8 +765,8 @@ async def on_message(message):
 
             await client.send_message(message.channel, message.author.mention + cmd_usage['boss.acknowledged'] + \
                                       message_args['name'] + " " + message_args['status'] + " at " + \
-                                      ("0" if message_args['hour'] < 10 else "") + \
-                                      str(message_args['hour']) + ":" + \
+                                      ("0" if oribhour < 10 else "") + \
+                                      str(oribhour) + ":" + \
                                       ("0" if message_args['mins'] < 10 else "") + \
                                       str(message_args['mins']) + ", CH" + str(message_args['channel']))
 
