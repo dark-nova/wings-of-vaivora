@@ -25,10 +25,16 @@ con['TIME.WAIT.4H']         = timedelta(hours=4)
 con['TIME.WAIT.ANCHOR']     = timedelta(hours=3)
 con['LOGGER']               = "tos.wingsofvaivora"
 con['LOGGER.FILE']          = "tos.wingsofvaivora.log"
-con['STR.MESSAGE.WELCOME']  = "Thank you for inviting me to your server! " +
-                              "I am a representative bot for the Wings of Vaivora, here to help you record your journey.\n" +
-                              "Here are some useful commands:" + 
-                              cmd_usage['boss']
+con['STR.MESSAGE.WELCOME']  = "Thank you for inviting me to your server! " + \
+                              "I am a representative bot for the Wings of Vaivora, here to help you record your journey.\n" + \
+                              "Here are some useful commands:" + \
+                              cmd_usage['boss'] # + \
+                              # cmd_usage['talt'] # + \
+                              # cmd_usage['remi'] # + \
+                              # cmd_usage['perm']
+con['ERROR.BROAD']          = -1
+con['ERROR.WRONG']          = -2
+con['ERROR.SYNTAX']         = -127
 
 #   regex dictionary
 rx = dict()
@@ -62,6 +68,7 @@ reason['baddb'] = con['STR.REASON'] + "Bad Database"
 reason['unkwn'] = con['STR.REASON'] + "Unknown"
 reason['broad'] = con['STR.REASON'] + "Broad Command"
 reason['argct'] = con['STR.REASON'] + "Argument Count"
+reason['noanc'] = con['STR.REASON'] + "Cannot Anchor"
 reason['unknb'] = con['STR.REASON'] + "Unknown Boss"
 reason['syntx'] = con['STR.REASON'] + "Malformed Syntax"
 reason['quote'] = con['STR.REASON'] + "Mismatched Quotes"
@@ -209,9 +216,9 @@ async def update_boss_db(c, boss_dict):
         await rm_ent_boss_db(c, boss_dict)
 
     # if entry has newer data, discard previous
-    if contents and (contents[4] < boss_dict['year'] or
-                     contents[5] < boss_dict['month'] or
-                     contents[6] < boss_dict['day'] or
+    if contents and (contents[4] < boss_dict['year'] or \
+                     contents[5] < boss_dict['month'] or \
+                     contents[6] < boss_dict['day'] or \
                      contents[7] < boss_dict['hour'] - 3):
         await rm_ent_boss_db(c, boss_dict)
     else:
@@ -254,7 +261,7 @@ async def rm_ent_boss_db(c, boss_dict):
 @client.event
 async def on_ready():
     print("Logging in...")
-    print('Successsfully logged in as: ' + client.user.name + '#' + 
+    print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
 
     with os.scandir() as items:
@@ -488,7 +495,7 @@ async def on_message(message):
         #         3. [2] req time
         #         4. [3] opt channel
         #         5. [4] opt map
-        if message.content.startswith('$boss ') or 
+        if message.content.startswith('$boss ') or \
            message.content.startswith('Vaivora, boss '):
             command_server  = message.server.name
             command_message = message.content
@@ -528,7 +535,7 @@ async def on_message(message):
                 if not bossrec: # empty
                     await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.")
                     return True
-                await client.send_message(message.channel, message.author.mention + " Records: ```\n" +
+                await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
                                           '\n'.join(['\t'.join(brow) for brow in bossrec]) + "\n```")
                 return True
 
@@ -547,7 +554,7 @@ async def on_message(message):
                 if not bossrec: # empty
                     await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.")
                     return True
-                await client.send_message(message.channel, message.author.mention + " Records: ```\n" +
+                await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
                                           '\n'.join(['\t'.join(brow) for brow in bossrec]) + "\n```")
                 return True
 
@@ -624,7 +631,7 @@ async def on_message(message):
             wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.statustatus.anchor'].match(command[1]) else con['TIME.WAIT.4H']
             bhour = bhour + int(wait_time + con['TIME.OFFSET.PACIFIC']) # bhour in Pacific/local
             if message_args['name'] in bos02s and rx['boss.statustatus.anchor'].match(command[1]): # you cannot anchor events
-                err_code = await error(message.author, message.channel, reason[])
+                err_code = await error(message.author, message.channel, reason['noanc'])
             elif message_args['name'] in bos02s:
                 bhour -= 2
             elif message_args['name'] in bos16s:
@@ -647,7 +654,7 @@ async def on_message(message):
 
             status = await func_discord_db(command_server, update_boss_db, message_args)
             if not status: # update_boss_db failed
-                err_code = await error(message.author, message.channel,reason['unkwn'])
+                err_code = await error(message.author, message.channel, reason['unkwn'])
                 return err_code
 
             await bot.process_commands(message)
@@ -748,13 +755,13 @@ cmd_usage['boss'].append('\n'.join([((' '.join(t) for t in zip(cmd_usage['boss.p
 # cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][3]*2))]))
 #     command - usage - [b]oss - [a]rgument descriptors
 #             n=5
-cmd_usage['boss.arg'] = "`-` Boss Name or `all` **(required)**\n" +
-                "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" +
-                "`  -` all when used with list will display all valid entries.\n" +
-                "`-` time **(required for** `died` **and** `anchored` **)**" +
-                "`-` Map *(optional)*\n" +
-                "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" +
-                "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + 
+cmd_usage['boss.arg'] = "`-` Boss Name or `all` **(required)**\n" + \
+                "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" + \
+                "`  -` all when used with list will display all valid entries.\n" + \
+                "`-` time **(required for** `died` **and** `anchored` **)**" + \
+                "`-` Map *(optional)*\n" + \
+                "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" + \
+                "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + \
                 "and should not be recorded because they have unpredictable spawns.\n"
 cmd_usage['boss'].append(cmd_usage['boss.arg'])
 # end of $boss usage string, in cmd_usage['boss.args']
@@ -779,9 +786,9 @@ cmd_usage['boss.status']      = "Make sure to properly record the status.\n"
 #     ecmd:     [e]rror (invoked by) command
 #     msg:      (optional) message for better error clarity
 # @return:
-#     -1: the command was correctly formed but the argument is too broad
-#     -2: the command was correctly formed but could not validate arguments
-#     -127:   malformed command: quote mismatch, argument count
+#     -1:     BROAD:  the command was correctly formed but the argument is too broad
+#     -2:     WRONG:  the command was correctly formed but could not validate arguments
+#     -127:   SYNTAX: malformed command: quote mismatch, argument count
 async def error(user, channel, etype, ecmd, msg='', xmsg=''):
     # get the user in mentionable string
     user_name = user.mention
@@ -792,37 +799,37 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
     if ecmd == cmd['boss']:
         # broad
         if etype == reason['broad']:
-            ret_msg.append(user_name + the_following_argument('boss') + msg + 
+            ret_msg.append(user_name + the_following_argument('boss') + msg + \
                            ") for `$boss` has multiple matching spawn points:\n")
             ret_msg.append(cmd_usage['code_block'])
             ret_msg.append('\n'.join(bosslo[msg]))
             ret_msg.append(cmd_usage['code_block'])
             ret_msg.append(cmd_usage['error.ambiguous'])
             ret_msg.append(cmd_usage['boss.map'])
-            ecode = -1
+            ecode = con['ERROR.BROAD']
         elif etype == reason['unkwn']:
-            ret_msg.append(user_name + " I'm sorry. Your command failed for unknown reasons.\n" +
-                           "This command failure has been recorded.\n" +
+            ret_msg.append(user_name + " I'm sorry. Your command failed for unknown reasons.\n" + \
+                           "This command failure has been recorded.\n" + \
                            "Please try again shortly.\n")
             with open('wings_of_vaivora-error.txt','a') as f:
                 f.write(datetime.today() + " An error was detected when " + user_name + " sent a command.")
-            ecode = -2
+            ecode = con['ERROR.WRONG']
         # unknown boss
         elif etype == reason['unknb']:
-            ret_msg.append(user_name + the_following_argument('boss') + msg +
+            ret_msg.append(user_name + the_following_argument('boss') + msg + \
                            ") is invalid for `$boss`. This is a list of bosses you may use:\n")
             ret_msg.append(cmd_usage['code_block'])
             ret_msg.append('\n'.join(bosses))
             ret_msg.append(cmd_usage['code_block'])
             ret_msg.append(cmd_usage['boss.name'])
-            ecode = -2
+            ecode = con['ERROR.WRONG']
         elif etype == reason['badst']:
-            ret_msg.append(user_name + the_following_argument('status') + msg +
+            ret_msg.append(user_name + the_following_argument('status') + msg + \
                            ") is invalid for `$boss`. You may not select `anchored` for its status.\n")
             ret_msg.append(cmd_usage['boss'])
         elif etype == reason['bdmap']:
             try_msg = list()
-            try_msg.append(user_name + the_following_argument('map') + msg +
+            try_msg.append(user_name + the_following_argument('map') + msg + \
                            ") (number) is invalid for `$boss`. This is a list of maps you may use:\n")
             try: # make sure the data is valid by `try`ing
               try_msg.append(cmd_usage['code_block'])
@@ -831,36 +838,41 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
               try_msg.append(cmd_usage['boss.map'])
               # seems to have succeeded, so extend to original
               ret_msg.extend(try_msg)
-              ecode = -2
+              ecode = con['ERROR.WRONG']
             except: # boss not found! 
               ret_msg.append(user_name + cmd_usage['debug'])
               ret_msg.append(cmd_usage['error.badsyntax'])
-              ecode = -127
+              ecode = con['ERROR.SYNTAX']
         elif etype == reason['fdbos']:
-            ret_msg.append(user_name + the_following_argument('channel') + msg +
-                           ") (number) is invalid for `$boss`. " + xmsg + " is a field boss, thus " +
-                           "variants that spawn on channels other than 1 (or other maps) are considered world bosses " +
+            ret_msg.append(user_name + the_following_argument('channel') + msg + \
+                           ") (number) is invalid for `$boss`. " + xmsg + " is a field boss, thus " + \
+                           "variants that spawn on channels other than 1 (or other maps) are considered world bosses " + \
                            "with unpredictable spawns.\n")
-            ecode = -2
+            ecode = con['ERROR.WRONG']
         elif etype == reason['bdtme']:
-            ret_msg.append(user_name + the_following_argument('time') + msg +
+            ret_msg.append(user_name + the_following_argument('time') + msg + \
                            ") is invalid for `$boss`.\n")
             ret_msg.append("Omit spaces; record in 12H (with AM/PM) or 24H time.\n")
             ret_msg.append(cmd_usage['error.badsyntax'])
-            ecode = -2
+            ecode = con['ERROR.WRONG']
+        elif etype == reason['noanc']:
+            ret_msg.append(user_name + the_following_argument('status') + 'anchored' + \
+                           ") is invalid for `$boss`.\n" +
+                           "You cannot anchor events or bosses of this kind.\n")
+            ecode = con['ERROR.WRONG']
         elif etype == reason['argct']:
             ret_msg.append(user_name + " Your command for `$boss` had too few arguments.\n" +  
                            "Expected: 4 to 6; got: " + msg + ".\n")
             ret_msg.append(cmd_usage['error.badsyntax'])
-            ecode = -127
+            ecode = con['ERROR.SYNTAX']
         elif etype == reason['quote']:
             ret_msg.append(user_name + " Your command for `$boss` had misused quotes somewhere.\n")
             ret_msg.append(cmd_usage['error.badsyntax'])
-            ecode = -127
+            ecode = con['ERROR.SYNTAX']
         else:
             ret_msg.append(user_name + cmd_usage['debug'])
             ret_msg.append(cmd_usage['error.badsyntax'])
-            ecode = -127
+            ecode = con['ERROR.SYNTAX']
             await client.send_message(channel, '\n'.join(ret_msg))
         # end of conditionals for cmd['boss']
 
@@ -875,7 +887,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
         # todo
         ret_msg.append(user_name + cmd_usage['debug'])
         ret_msg.append(cmd_usage['error.badsyntax'])
-        ecode = -127
+        ecode = con['ERROR.SYNTAX']
         await client.send_message(channel, '\n'.join(ret_msg))
         return ecode 
 # end of error
