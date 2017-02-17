@@ -206,12 +206,14 @@ async def func_discord_db(discord_server, db_func, xargs=None):
 # @return:
 #   None
 async def create_discord_db(c):
-    # delete table if necessary since it may be invalid
+    # delete tables if necessary since it may be invalid #### Maybe to ignore?
     c.execute('drop table if exists boss')
+    c.execute('drop table if exists reminders')
+    c.execute('drop table if exists talt')
+    c.execute('drop table if exists permissions')
     # create boss table
     c.execute('create table boss({})'.format(','.join(boss_tuple)))
     
-
     # create reminders table
     c.execute('create table reminders({})'.format(','.join(remi_tuple)))
     
@@ -613,7 +615,7 @@ async def on_message(message):
                 return err_code
             
             boss_idx = await check_boss(command[0])
-            if boss_idx < 0  or boss_idx >= len(boss):
+            if boss_idx < 0  or boss_idx >= len(bosses):
                 err_code = await error(message.author, message.channel, reason['unknb'], cmd['boss'], command[0])
                 return err_code
 
