@@ -18,7 +18,7 @@ valid_dbs = list()
 cmd_usage = dict()
 cmd_usage['heading']      = "Usage:\n"
 #   command - [us]age - [c]ode [bl]oc[k]
-cmd_usage['code_block']   = "```\n"
+cmd_usage['code_block']   = "```"
 #   command - [us]age - [a]rguments [bl]oc[k]
 cmd_usage['back_tick']    = "`"
 #   command - [us]age - [c]ode [arg]uments
@@ -45,8 +45,8 @@ cmd_usage['boss.args'].append("all list",)
 
 cmd_usage['boss'].append('\n'.join([("PREFIX " + boss_arg) for boss_arg in cmd_usage['boss.args']]))
 cmd_usage['boss'].append(cmd_usage['code_block'])
-cmd_usage['boss'].append("Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usage['back_tick'] + "es: " + \
-                         '&'.join(cmd_usage['boss.prefix']) + "\n")
+cmd_usage['boss'].append("Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usage['back_tick'] + "es: `" + \
+                         '` & `'.join(cmd_usage['boss.prefix']) + "`\n")
 
 # cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][1]*2))]))
 # cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][2]*2))]))
@@ -54,11 +54,11 @@ cmd_usage['boss'].append("Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usag
 #     command - usage - [b]oss - [a]rgument descriptors
 #             n=5
 cmd_usage['boss.arg'] = "`-` Boss Name or `all` **(required)**\n" + \
-                "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" + \
-                "`  -` all when used with list will display all valid entries.\n" + \
+                "`- -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" + \
+                "`- -` all when used with list will display all valid entries.\n" + \
                 "`-` time **(required for** `died` **and** `anchored` **)**\n" + \
                 "`-` Map *(optional)*\n" + \
-                "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" + \
+                "`- -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" + \
                 "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + \
                 "and should not be recorded because they have unpredictable spawns.\n"
 cmd_usage['boss'].append(cmd_usage['boss.arg'])
@@ -75,7 +75,6 @@ cmd_usage['boss.name']        = "Make sure to properly spell the boss name.\n"
 cmd_usage['boss.map']         = "Make sure to properly record the map.\n"
 cmd_usage['boss.status']      = "Make sure to properly record the status.\n"
 # end of constants for error(**)
-
 
 # constants
 #   constant dictionary
@@ -106,7 +105,7 @@ rx = dict()
 rx['format.letters']        = re.compile(r'[a-z -]+')
 rx['format.time.pm']        = re.compile(r' ?[Pp][Mm]?')
 rx['format.time.am']        = re.compile(r' ?[Aa][Mm]?')
-rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 "-]')
+rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 $"-]')
 rx['format.time']           = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 rx['format.quotes']         = re.compile(r'"')
 rx['boss.statustatus']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
@@ -571,13 +570,17 @@ async def on_message(message):
             boss_channel    = 1
             maps_idx        = -1
 
+            # command: list of arguments
+            command = shlex.split(command_message)
+            print(command)
+            if command[0] == "help":
+                await client.send_message(message.channel, message.author.mention + '\n'.join(cmd_usage['boss']))
+                return True
+
             # if odd amount of quotes, drop
             if len(rx['format.quotes'].findall(command_message)) % 2:
                 err_code = await error(message.author, message.channel, reason['quote'], cmd['boss'])
                 return err_code
-
-            # command: list of arguments
-            command = shlex.split(command_message)
 
             # begin checking validity
             #     arg validity
@@ -675,7 +678,7 @@ async def on_message(message):
                 bhour = int(btime[0])
             #     handle bad input
             if bhour > 24:
-                err_code = await error(message.author, message.channel, reason['bdtme'], cmd['boss'], command[2])
+                err_code = await error(message.author, message.channel, reason['bdtme'], cmd['boss'], msg=command[2])
                 return err_code
             bminu = int(btime[1])
 
@@ -690,7 +693,7 @@ async def on_message(message):
             if tdiff.days < 0:
                 btday -= 1
             elif tdiff.days > 0 or tdiff.seconds > 119: # 2 minute leeway
-                err_code = await error(message.author, message.channel, reason['bdtme'], cmd['boss'], command[2])
+                err_code = await error(message.author, message.channel, reason['bdtme'], cmd['boss'], msg=command[2])
                 return err_code
 
             wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.statustatus.anchor'].match(command[1]) else con['TIME.WAIT.4H']
@@ -797,6 +800,11 @@ async def check_maps(maps, boss):
 async def error(user, channel, etype, ecmd, msg='', xmsg=''):
     # get the user in mentionable string
     user_name = user.mention
+    # convert args
+    if msg:
+        msg = str(msg)
+    if xmsg:
+        xmsg = str(xmsg)
     # prepare a list to send message
     ret_msg   = list()
 
@@ -848,6 +856,8 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
               ret_msg.append(user_name + cmd_usage['debug'])
               ret_msg.append(cmd_usage['error.badsyntax'])
               ecode = con['ERROR.SYNTAX']
+              with open('wingsofvaivora.debug.log','a') as f:
+                  f.write('boss not found\n')
         elif etype == reason['fdbos']:
             ret_msg.append(user_name + the_following_argument('channel') + msg + \
                            ") (number) is invalid for `$boss`. " + xmsg + " is a field boss, thus " + \
@@ -875,10 +885,11 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = con['ERROR.SYNTAX']
         else:
-            ret_msg.append(user_name + cmd_usage['debug'])
+            ret_msg.append(user_name + cmd_usage['debug'] + "\n" + etype)
             ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = con['ERROR.SYNTAX']
             await client.send_message(channel, '\n'.join(ret_msg))
+            return ecode
         # end of conditionals for cmd['boss']
 
         # begin common return for $boss
