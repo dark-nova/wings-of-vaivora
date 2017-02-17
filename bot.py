@@ -27,9 +27,10 @@ cmd_usage['debug']        = " Debug message. Something went wrong.\n"
 
 #   begin $boss specific constants
 cmd_usage['boss.arg.1']   = "BossName|\"Boss Name\""
-cmd_usage['boss.prefix']  = ("$boss","Vaivora, boss")
+cmd_usage['boss.prefix']  = ("$boss ","Vaivora, boss ")
 cmd_usage['boss']         = ["***'Boss' commands***"]
 cmd_usage['boss'].append(cmd_usage['heading'])
+cmd_usage['boss'].append(cmd_usage['code_block'])
 #   end of $boss specific constants
 # end of constants for strings for error messages
 
@@ -42,8 +43,10 @@ cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " erase [chN]\n",)
 cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " list [chN]\n",)
 cmd_usage['boss.args'].append("all list",)
 
-
-cmd_usage['boss'].append('\n'.join([(prefix + boss_arg) for prefix in cmd_usage['boss.prefix'] for boss_arg in cmd_usage['boss.args']]))
+cmd_usage['boss'].append('\n'.join([("PREFIX " + boss_arg) for boss_arg in cmd_usage['boss.args']]))
+cmd_usage['boss'].append(cmd_usage['code_block'])
+cmd_usage['boss'].append("Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usage['back_tick'] + "es: " + \
+                         '&'.join(cmd_usage['boss.prefix']))
 
 # cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][1]*2))]))
 # cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][2]*2))]))
@@ -570,7 +573,7 @@ async def on_message(message):
 
             # if odd amount of quotes, drop
             if len(rx['format.quotes'].findall(command_message)) % 2:
-                err_code = await error(message.author, message.channel,reason['quote'])
+                err_code = await error(message.author, message.channel, reason['quote'], cmd['boss'])
                 return err_code
 
             # command: list of arguments
@@ -580,14 +583,14 @@ async def on_message(message):
             #     arg validity
             #         count: [3,5]
             if len(command) < con['BOSSCMD.ARG.COUNTMIN'] or len(command) > con['BOSSCMD.ARG.COUNTMAX']:
-                err_code = await error(message.author, message.channel,reason['argct'],len(command))
+                err_code = await error(message.author, message.channel, reason['argct'], cmd['boss'], len(command))
                 return err_code
 
             #         boss: letters
             #         status: anchored, died
             #         time: format
             if not (rx['format.letters'].match(command[0]) and rx['boss.statustatus'].match(command[1]) and rx['format.time'].match(command[2])):
-                err_code = await error(message.author, message.channel, reason['syntx'])
+                err_code = await error(message.author, message.channel, reason['syntx'], cmd['boss'])
                 return err_code
 
             #     boss validity
@@ -602,12 +605,12 @@ async def on_message(message):
                 return True
 
             elif rx['boss.arg.all'].match(command[0]):
-                err_code = await error(message.author, message.channel,reason['syntx'])
+                err_code = await error(message.author, message.channel, reason['syntx'], cmd['boss'])
                 return err_code
             
             boss_idx = await check_boss(command[0])
             if boss_idx < 0  or boss_idx >= len(boss):
-                err_code = await error(message.author, message.channel,reason['unknb'],command[0])
+                err_code = await error(message.author, message.channel, reason['unknb'], cmd['boss'], command[0])
                 return err_code
 
             #         boss list
@@ -640,12 +643,12 @@ async def on_message(message):
                 if not rx['boss.channel'].match(command[argpos]) or len(command) == 5:
                     maps_idx = await check_maps(command[argpos], command[1])
                     if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
-                        err_code = await error(message.author, message.channel, reason['bdmap'], command[1])
+                        err_code = await error(message.author, message.channel, reason['bdmap'], cmd['boss'], command[1])
                         return err_code
 
             #         check if boss is a field boss, and discard if boss channel is not 1
             if bosses[boss_idx] in bossfl and boss_channel != 1:
-                err_code = await error(message.author, message.channel, reason['fdbos'], boss_channel, bosses[boss_idx])
+                err_code = await error(message.author, message.channel, reason['fdbos'], cmd['boss'], boss_channel, bosses[boss_idx])
                 return err_code
 
             # everything looks good if the string passes through
@@ -672,7 +675,7 @@ async def on_message(message):
                 bhour = int(btime[0])
             #     handle bad input
             if bhour > 24:
-                err_code = await error(message.author, message.channel, reason['bdtme'], command[2])
+                err_code = await error(message.author, message.channel, reason['bdtme'], cmd['boss'], command[2])
                 return err_code
             bminu = int(btime[1])
 
@@ -687,13 +690,13 @@ async def on_message(message):
             if tdiff.days < 0:
                 btday -= 1
             elif tdiff.days > 0 or tdiff.seconds > 119: # 2 minute leeway
-                err_code = await error(message.author, message.channel, reason['bdtme'], command[2])
+                err_code = await error(message.author, message.channel, reason['bdtme'], cmd['boss'], command[2])
                 return err_code
 
             wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.statustatus.anchor'].match(command[1]) else con['TIME.WAIT.4H']
             bhour = bhour + int(wait_time + con['TIME.OFFSET.PACIFIC']) # bhour in Pacific/local
             if message_args['name'] in bos02s and rx['boss.statustatus.anchor'].match(command[1]): # you cannot anchor events
-                err_code = await error(message.author, message.channel, reason['noanc'])
+                err_code = await error(message.author, message.channel, reason['noanc'], cmd['boss'])
             elif message_args['name'] in bos02s:
                 bhour -= 2
             elif message_args['name'] in bos16s:
@@ -710,13 +713,13 @@ async def on_message(message):
 
             status  = await func_discord_db(command_server, validate_discord_db)
             if not status: # db is not valid
-                err_code = await error(message.author, message.channel, reason['baddb'])
+                err_code = await error(message.author, message.channel, reason['baddb'], cmd['boss'])
                 await func_discord_db(command_server, create_discord_db) # (re)create db
                 return err_code
 
             status = await func_discord_db(command_server, update_boss_db, message_args)
             if not status: # update_boss_db failed
-                err_code = await error(message.author, message.channel, reason['unkwn'])
+                err_code = await error(message.author, message.channel, reason['unkwn'], cmd['boss'])
                 return err_code
 
             await bot.process_commands(message)
@@ -825,7 +828,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             ret_msg.append(cmd_usage['code_block'])
             ret_msg.append(cmd_usage['boss.name'])
             ecode = con['ERROR.WRONG']
-        elif etype == reason['badst']:
+        elif etype == reason['noanc']:
             ret_msg.append(user_name + the_following_argument('status') + msg + \
                            ") is invalid for `$boss`. You may not select `anchored` for its status.\n")
             ret_msg.append(cmd_usage['boss'])
