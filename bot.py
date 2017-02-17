@@ -237,6 +237,8 @@ async def validate_discord_db(c):
     try:
         c.execute('select * from boss')
         r = c.fetchone()
+        if not r:
+            return True # it's empty. probably works.
         # check if boss table matches format
         if not tuple(r.keys()) is prototype['boss']:
             return False # invalid db
@@ -272,7 +274,7 @@ async def update_boss_db(c, boss_dict):
         c.executemany("select * from boss where name=?", 'Helgasercle')
         contents += c.fetchall()
     elif boss_dict['boss'] == 'Demon Lord Marnox' or boss_dict['boss'] == 'Rexipher':
-        c.executemany("select * from boss where name=?",'Demon Lord Marnox')
+        c.executemany("select * from boss where name=?", 'Demon Lord Marnox')
         contents = c.fetchall()
         c.executemany("select * from boss where name=?", 'Rexipher')
         contents += c.fetchall()
@@ -575,7 +577,6 @@ async def on_message(message):
 
             # command: list of arguments
             command = shlex.split(command_message)
-            print(command)
             if command[0] == "help":
                 await client.send_message(message.channel, message.author.mention + '\n'.join(cmd_usage['boss']))
                 return True
@@ -637,7 +638,6 @@ async def on_message(message):
                 #     channel is set
                 #     keep track of arg position in case we have 5
                 argpos = 3
-                print(len(command))
                 if rx['boss.channel'].match(command[argpos]):
                     boss_channel = int(rx['format.letters'].sub('', command[argpos]))
                     argpos += 1
@@ -753,7 +753,7 @@ async def check_databases():
             message_send.append("@here ")
             results[valid_db] = await func_discord_db(valid_db, check_boss_db, bosses)
             # sort by time
-            results[valid_db].sort(key=itemgetter(4,5,6,7,8))
+            results[valid_db].sort(key=itemgetter(5,6,7,8,9))
             for result in results[valid_db]:
                 tupletime = tuple(result[4:9])
                 rtime = datetime(tupletime)
