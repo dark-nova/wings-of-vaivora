@@ -13,6 +13,67 @@ client    = discord.Client()
 # variables to use
 valid_dbs = list()
 
+# begin constants for strings for error messages
+#   command - usage
+cmd_usage = dict()
+cmd_usage['heading']      = "Usage:\n"
+#   command - [us]age - [c]ode [bl]oc[k]
+cmd_usage['code_block']   = "```\n"
+#   command - [us]age - [a]rguments [bl]oc[k]
+cmd_usage['back_tick']    = "`"
+#   command - [us]age - [c]ode [arg]uments
+cmd_usage['heading.arg']  = "Arguments:\n"
+cmd_usage['debug']        = " Debug message. Something went wrong.\n"
+
+#   begin $boss specific constants
+cmd_usage['boss.arg.1']   = "BossName|\"Boss Name\""
+cmd_usage['boss.prefix']  = ("$boss","Vaivora, boss")
+cmd_usage['boss']         = ["***'Boss' commands***"]
+cmd_usage['boss'].append(cmd_usage['heading'])
+#   end of $boss specific constants
+# end of constants for strings for error messages
+
+# begin $boss usage string, in cmd_usage['boss'] : list
+#     command - usage - [b]oss - [n]th command -- reuse after every append
+#         boss arg [n] - cmd_usage['boss.args'][n]
+cmd_usage['boss.args'] = list()
+cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " died|anchored time [chN] [Map|\"Map\"]\n",)
+cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " erase [chN]\n",)
+cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " list [chN]\n",)
+cmd_usage['boss.args'].append("all list",)
+
+
+cmd_usage['boss'].append('\n'.join([(prefix + boss_arg) for prefix in cmd_usage['boss.prefix'] for boss_arg in cmd_usage['boss.args']]))
+
+# cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][1]*2))]))
+# cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][2]*2))]))
+# cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][3]*2))]))
+#     command - usage - [b]oss - [a]rgument descriptors
+#             n=5
+cmd_usage['boss.arg'] = "`-` Boss Name or `all` **(required)**\n" + \
+                "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" + \
+                "`  -` all when used with list will display all valid entries.\n" + \
+                "`-` time **(required for** `died` **and** `anchored` **)**" + \
+                "`-` Map *(optional)*\n" + \
+                "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" + \
+                "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + \
+                "and should not be recorded because they have unpredictable spawns.\n"
+cmd_usage['boss'].append(cmd_usage['boss.arg'])
+# end of $boss usage string, in cmd_usage['boss.args']
+
+# begin constants to use for error(**)
+#     general command errors
+cmd_usage['error.badsyntax']  = "Your command was malformed.\n"
+cmd_usage['error.ambiguous']  = "Your command was ambiguous.\n"
+
+#     specific command errors
+#         command - usage - [b]oss - [m]ap
+cmd_usage['boss.name']        = "Make sure to properly spell the boss name.\n"
+cmd_usage['boss.map']         = "Make sure to properly record the map.\n"
+cmd_usage['boss.status']      = "Make sure to properly record the status.\n"
+# end of constants for error(**)
+
+
 # constants
 #   constant dictionary
 con = dict()
@@ -28,10 +89,10 @@ con['LOGGER.FILE']          = "tos.wingsofvaivora.log"
 con['STR.MESSAGE.WELCOME']  = "Thank you for inviting me to your server! " + \
                               "I am a representative bot for the Wings of Vaivora, here to help you record your journey.\n" + \
                               "Here are some useful commands:" + \
-                              cmd_usage['boss'] # + \
-                              # cmd_usage['talt'] # + \
-                              # cmd_usage['remi'] # + \
-                              # cmd_usage['perm']
+                              '\n'.join(cmd_usage['boss']) # + \
+                              # '\n'.join(cmd_usage['talt']) # + \
+                              # '\n'.join(cmd_usage['remi']) # + \
+                              # '\n'.join(cmd_usage['perm'])
 con['ERROR.BROAD']          = -1
 con['ERROR.WRONG']          = -2
 con['ERROR.SYNTAX']         = -127
@@ -50,14 +111,15 @@ rx['boss.statustatus.anchor']    = re.compile(r'([Aa]nchored)')
 rx['boss.statustatus.warning']   = re.compile(r'([Ww]arn(ed)?)')
 rx['boss.channel']          = re.compile(r'(ch)?[1-4]')
 rx['boss.floors']           = re.compile(r'[bf]?[0-9][bf]?$')
-rx['boss.floors.format']    = re.compile(r'.+(b?)(f?)([0-9])(b?)(f?)$')
-rx['boss.floors.arrange']   = re.compile(r'\g<1>\g<4>\g<3>\g<2>\g<5>')
+rx['boss.floors.format']    = re.compile(r'.+(?P<basement>b?)(?P<floor>f?)(?P<floornumber>[0-9])(?P=basement)(?P=floor)$')
+# rx['boss.floors.arrange']   = re.compile(r'\g<floor>\g<floornumber>\g<basement>')
 rx['vaivora.boss']          = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss')
 rx['boss.arg.all']          = re.compile(r'all')
 rx['boss.arg.list']         = re.compile(r'li?st?')
 rx['str.ext.db']            = re.compile(r'\.db$')
 #   error(**) related constants
 #     error(**) constants for "command" argument
+cmd                         = dict()
 cmd['boss']                 = "Command: Boss"
 # cmd['talt']                 = "Command: Talt Tracker"
 # cmd['reminders']            = "Command: Reminders"
@@ -667,7 +729,6 @@ async def on_message(message):
 # @func:    check_databases()
 async def check_databases():
     results = dict()
-    await wait_until_ready()
     while True:
         for valid_db in valid_dbs:
             # check all timers
@@ -708,7 +769,7 @@ async def check_boss(boss):
 async def check_maps(maps, boss):
     if rx['boss.floors'].match(maps):
         # rearrange letters, and remove map name
-        mapnum = rx['boss.floors.format'].sub(rx['boss.floors.arrange'], maps)
+        mapnum = rx['boss.floors.format'].sub(r'\g<floor>\g<floornumber>\g<basement>', maps)
         mmatch = mapnum.search(maps)
         if not mmatch:
             return -1
@@ -718,65 +779,6 @@ async def check_maps(maps, boss):
             if m in maps:
                 return bosslo[boss].index(m)
     return -1
-
-# begin constants for strings for error messages
-#   command - usage
-cmd_usage = dict()
-cmd_usage['heading']      = "Usage:\n"
-#   command - [us]age - [c]ode [bl]oc[k]
-cmd_usage['code_block']   = "```\n"
-#   command - [us]age - [a]rguments [bl]oc[k]
-cmd_usage['back_tick']    = "`"
-#   command - [us]age - [c]ode [arg]uments
-cmd_usage['heading.arg']  = "Arguments:\n"
-cmd_usage['debug']        = " Debug message. Something went wrong.\n"
-
-#   begin $boss specific constants
-cmd_usage['boss.arg.1']   = "BossName|\"Boss Name\""
-cmd_usage['boss.prefix']  = ("$boss","Vaivora, boss")
-cmd_usage['boss']         = ["***'Boss' commands***"]
-cmd_usage['boss'].append(cmd_usage['heading'])
-#   end of $boss specific constants
-# end of constants for strings for error messages
-
-# begin $boss usage string, in cmd_usage['boss'] : list
-#     command - usage - [b]oss - [n]th command -- reuse after every append
-#         boss arg [n] - cmd_usage['boss.args'][n]
-cmd_usage['boss.args'] = list()
-cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " died|anchored time [chN] [Map|\"Map\"]\n",)
-cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " erase [chN]\n",)
-cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " list [chN]\n",)
-cmd_usage['boss.args'].append("all list",)
-
-cmd_usage['boss'].append('\n'.join([((' '.join(t) for t in zip(cmd_usage['boss.prefix'], boss_arg)) for boss_arg in cmd_usage['boss.args'])]))
-
-# cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][1]*2))]))
-# cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][2]*2))]))
-# cmd_usage['boss'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][3]*2))]))
-#     command - usage - [b]oss - [a]rgument descriptors
-#             n=5
-cmd_usage['boss.arg'] = "`-` Boss Name or `all` **(required)**\n" + \
-                "`  -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" + \
-                "`  -` all when used with list will display all valid entries.\n" + \
-                "`-` time **(required for** `died` **and** `anchored` **)**" + \
-                "`-` Map *(optional)*\n" + \
-                "`  -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" + \
-                "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + \
-                "and should not be recorded because they have unpredictable spawns.\n"
-cmd_usage['boss'].append(cmd_usage['boss.arg'])
-# end of $boss usage string, in cmd_usage['boss.args']
-
-# begin constants to use for error(**)
-#     general command errors
-cmd_usage['error.badsyntax']  = "Your command was malformed.\n"
-cmd_usage['error.ambiguous']  = "Your command was ambiguous.\n"
-
-#     specific command errors
-#         command - usage - [b]oss - [m]ap
-cmd_usage['boss.name']        = "Make sure to properly spell the boss name.\n"
-cmd_usage['boss.map']         = "Make sure to properly record the map.\n"
-cmd_usage['boss.status']      = "Make sure to properly record the status.\n"
-# end of constants for error(**)
 
 # @func:  error(**): begin code for error message printing to user
 # @arg:
