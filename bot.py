@@ -108,7 +108,7 @@ rx = dict()
 rx['format.letters']        = re.compile(r'[a-z -]+')
 rx['format.time.pm']        = re.compile(r' ?[Pp][Mm]?')
 rx['format.time.am']        = re.compile(r' ?[Aa][Mm]?')
-rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 $"-]')
+rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 :$"-]')
 rx['format.time']           = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
 rx['format.quotes']         = re.compile(r'"')
 rx['boss.status']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
@@ -146,7 +146,7 @@ reason['fdbos'] = con['STR.REASON'] + "Field Boss Channel"
 # database formats
 prototype = dict()
 prototype['time'] = ('year', 'month','day','hour','minute')
-prototype['boss'] = ('name', 'channel','map','status','channel') + prototype['time']
+prototype['boss'] = ('name', 'channel','map','status','text_channel') + prototype['time']
 prototype['remi'] = ('user', 'comment') + prototype['time']
 prototype['talt'] = ('user', 'previous','current','valid') + prototype['time']
 prototype['perm'] = ('user', 'role')
