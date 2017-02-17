@@ -704,7 +704,7 @@ async def on_message(message):
                 return err_code
 
             wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.status.anchor'].match(command[1]) else con['TIME.WAIT.4H']
-            bhour = bhour + int((wait_time + con['TIME.OFFSET.PACIFIC']).minutes * 60) # bhour in Pacific/local
+            bhour = bhour + int((wait_time + con['TIME.OFFSET.PACIFIC']).hours) # bhour in Pacific/local
             if message_args['name'] in bos02s and rx['boss.status.anchor'].match(command[1]): # you cannot anchor events
                 err_code = await error(message.author, message.channel, reason['noanc'], cmd['boss'])
             elif message_args['name'] in bos02s:
