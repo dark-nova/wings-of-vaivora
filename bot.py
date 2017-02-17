@@ -197,9 +197,7 @@ async def func_discord_db(discord_server, db_func, xargs=None):
         dbif  = await db_func(c, xargs)
     else:
         dbif  = await db_func(c)
-
-    c.commit()
-    c.close()
+    conn.commit()
     return dbif
 
 # @func:      create_discord_db(sqlite3.connect.cursor)
@@ -212,19 +210,19 @@ async def create_discord_db(c):
     c.execute('drop table if exists boss')
     # create boss table
     c.execute('create table boss(?)', boss_tuple)
-    c.commit()
+    
 
     # create reminders table
     c.execute('create table reminders(?)', remi_tuple)
-    c.commit()
+    
 
     # create talt tracking table
     c.execute('create table talt(?)', talt_tuple)
-    c.commit()
+    
 
     # create permissions hierarchy
     c.execute('create table permissions(?)', perm_tuple)
-    c.commit()
+    
     return
 
 # @func:    validate_discord_db(sqlite3.connect.cursor)
@@ -306,7 +304,6 @@ async def update_boss_db(c, boss_dict):
                        boss_dict['hour'],
                        boss_dict['mins'],
                        boss_dict['srvchn']))
-        c.commit()
     except:
         return False
     return True
@@ -320,7 +317,6 @@ async def update_boss_db(c, boss_dict):
 async def rm_ent_boss_db(c, boss_dict):
     try:
         c.executemany("delete from boss where name=? and channel=?", (boss_dict['boss'], boss_dict['channel']))
-        c.commit()
     except:
         return False
     return True
