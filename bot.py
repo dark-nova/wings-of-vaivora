@@ -637,6 +637,7 @@ async def on_message(message):
                 #     channel is set
                 #     keep track of arg position in case we have 5
                 argpos = 3
+                print(len(command))
                 if rx['boss.channel'].match(command[argpos]):
                     boss_channel = int(rx['format.letters'].sub('', command[argpos]))
                     argpos += 1
@@ -646,11 +647,14 @@ async def on_message(message):
                 #         4 args: 4th arg is channel
                 #         4 args: 4th arg is map
                 #         5 args: 4th and 5th arg are channel and map respectively
-                if not rx['boss.channel'].match(command[argpos]) or len(command) == 5:
-                    maps_idx = await check_maps(command[argpos], command[1])
-                    if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
-                        err_code = await error(message.author, message.channel, reason['bdmap'], cmd['boss'], command[1])
-                        return err_code
+                try:
+                    if not rx['boss.channel'].match(command[argpos]) or len(command) == 5:
+                        maps_idx = await check_maps(command[argpos], command[1])
+                        if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
+                            err_code = await error(message.author, message.channel, reason['bdmap'], cmd['boss'], command[1])
+                            return err_code
+                except:
+                    pass
 
             #         check if boss is a field boss, and discard if boss channel is not 1
             if bosses[boss_idx] in bossfl and boss_channel != 1:
