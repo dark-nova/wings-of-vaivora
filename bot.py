@@ -695,7 +695,7 @@ async def on_message(message):
             byear = approx_server_time.year
 
             # late recorded time; correct with -1 day
-            mdate = datetime.datetime(byear, btmon,btday,hour=bhour,minute=bminu)
+            mdate = datetime(byear, btmon,btday,hour=bhour,minute=bminu)
             tdiff = mdate-approx_server_time
             if tdiff.days < 0:
                 btday -= 1
