@@ -179,7 +179,7 @@ logger.addHandler(handler)
 
 # @func:      create_discord_db(Discord.server.str, func, *)
 # @arg:
-#   discord_server: the discord server's name
+#   discord_server: the discord server's id
 #   db_func:        a database function
 #   xargs:          extra arguments
 # @return:
@@ -195,8 +195,17 @@ async def func_discord_db(discord_server, db_func, xargs=None):
     elif not callable(db_func):
         return False
     # implicit else
-    if xargs:
+    if xargs and not db_func is rm_ent_boss_db:
         dbif  = await db_func(c, xargs)
+    elif type(xargs) is str:
+        print('str')
+        dbif  = await db_func(c, bn=xargs)
+    elif type(xargs) is tuple:
+        print("tuple")
+        dbif  = await db_func(c, bn=xargs[0], ch=xargs[1])
+    elif type(xargs) is dict:
+        print("dict")
+        dbif  = await db_func(c, bd=xargs)
     else:
         dbif  = await db_func(c)
     conn.commit()
@@ -238,13 +247,16 @@ async def create_discord_db(c):
 #   True if valid, False otherwise
 async def validate_discord_db(c):
     # check boss table
-    c.execute('select * from boss')
+    try:
+      c.execute('select * from boss')
+    except:
+      await create_discord_db(c)
+      return True
     r = c.fetchone()
     if not r:
         return True # it's empty. probably works.
     # check if boss table matches format
     if sorted(tuple(r.keys())) != sorted(prototype['boss']):
-        print("false")
         return False # invalid db
     #### TODO: Validate other tables when implemented, priority: medium
     return True
@@ -261,7 +273,7 @@ async def check_boss_db(c, boss_list):
         c.execute("select * from boss where name=?",(b,))
         records = c.fetchall()
         for record in records:
-            db_record.extend(tuple(record))
+            db_record.append(tuple(record))
     # return a list of records
     return db_record
 # @func:    update_boss_db(sqlite3.connect.cursor, dict)
@@ -273,22 +285,26 @@ async def check_boss_db(c, boss_list):
 async def update_boss_db(c, boss_dict):
     # the following two bosses rotate per spawn
     if boss_dict['name'] == 'Mirtis' or boss_dict['name'] == 'Helgasercle':
-        c.executemany("select * from boss where name=?", 'Mirtis')
+        c.execute("select * from boss where name=?", ('Mirtis',))
         contents = c.fetchall()
-        c.executemany("select * from boss where name=?", 'Helgasercle')
+        c.execute("select * from boss where name=?", ('Helgasercle',))
         contents += c.fetchall()
     elif boss_dict['name'] == 'Demon Lord Marnox' or boss_dict['name'] == 'Rexipher':
-        c.executemany("select * from boss where name=?", 'Demon Lord Marnox')
+        c.execute("select * from boss where name=?", ('Demon Lord Marnox',))
         contents = c.fetchall()
-        c.executemany("select * from boss where name=?", 'Rexipher')
+        c.execute("select * from boss where name=?", ('Rexipher',))
         contents += c.fetchall()
+    elif boss_dict['name'] == 'Blasphemous Deathweaver':
+        c.execute("select * from boss where name=? and map=?", \
+          (boss_dict['name'], boss_dict['channel'], boss_dict['map'],))
+        contents = c.fetchall()
     else:
         c.execute("select * from boss where name=? and channel=?", (boss_dict['name'], boss_dict['channel'],))
         contents = c.fetchall()
 
     # invalid case: more than one entry for this combination
     #### TODO: keep most recent time? 
-    if len(contents) > 1 and boss_dict['name'] not in bos16s:
+    if len(contents) > 1: #and boss_dict['name'] not in bos16s:
         await rm_ent_boss_db(c, boss_dict)
 
     # if entry has newer data, discard previous
@@ -321,12 +337,26 @@ async def update_boss_db(c, boss_dict):
 #   ch:             Default: None; the channel to remove
 # @return:
 #   True if successful, False otherwise
-async def rm_ent_boss_db(c, boss_dict, ch=None):
+async def rm_ent_boss_db(c, bd=None, bn=None, ch=None, perm=True):
+    if perm: # temporary. going to implement permissions for this
+        return True
+    if bd:
+        rm_name, rm_channel = bd['name'], bd['channel']
+    elif bn and ch:
+        rm_name, rm_channel = bn, ch
+    elif bn:
+        rm_name = bn
+        rm_channel = None
+    else:
+        return False
     try:
-        if ch:
-            c.execute("delete from boss where name=? and channel=?", (boss_dict['name'], boss_dict['channel'],))
+        if rm_channel:
+            print("one")
+            c.execute("delete from boss where name=? and channel=?", (rm_name, rm_channel,))
         else:
-            c.execute("delete from boss where name=?", boss_dict['name'])
+            print("all")
+            c.execute("delete from boss where name=?", (rm_name,))
+            print('erased?')
     except:
         return False
     return True
@@ -624,13 +654,18 @@ async def on_message(message):
 
             #     boss validity
             #         all list
+            bossrec_str = list()
             if rx['boss.arg.all'].match(command[0]) and rx['boss.arg.list'].match(command[1]):
                 bossrec = await func_discord_db(command_server, check_boss_db, bosses) # possible return
                 if not bossrec: # empty
                     await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.")
                     return True
+                for brec in bossrec:
+                    recdate = datetime(int(brec[5]),int(brec[6]),int(brec[7]),int(brec[8]),int(brec[9])) + con['TIME.OFFSET.EASTERN']
+                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch." + str(int(brec[1])) + " and will respawn around " + \
+                                       recdate.strftime("%Y/%m/%d %H:%M") + ". Map: " + brec[2])
                 await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
-                                          '\n'.join(['\t'.join(str(brow)) for brow in bossrec]) + "\n```")
+                                          '\n'.join(bossrec_str) + "\n```")
                 return True
 
             elif rx['boss.arg.all'].match(command[0]):
@@ -643,21 +678,28 @@ async def on_message(message):
                 return err_code
 
             #         boss erase
-            if rx['boss.arg.erase'].match(command[1]) and not command[2]:
-                await func_discord_db(command_server, rm_ent_boss_db)
+            if rx['boss.arg.erase'].match(command[1]) and len(command) < 3:
+                await func_discord_db(command_server, rm_ent_boss_db, bosses[boss_idx])
                 await client.send_message(message.channel, message.author.mention + " Record successfully erased.\n")
+                return True
             elif rx['boss.arg.erase'].match(command[1]):
-                await func_discord_db(command_server, rm_ent_boss_db, command[2])
+                await func_discord_db(command_server, rm_ent_boss_db, (bosses[boss_idx], command[2],))
                 await client.send_message(message.channel, message.author.mention + " Record successfully erased.\n")
+                return True
+
             #         boss list
-            elif rx['boss.arg.list'].match(command[1]):
-                print(bosses[boss_idx])
-                bossrec = await func_discord_db(command_server, check_boss_db, list(bosses[boss_idx])) # possible return
+            bossrec_str = list()
+            if rx['boss.arg.list'].match(command[1]):
+                bossrec = await func_discord_db(command_server, check_boss_db, (bosses[boss_idx],)) # possible return
                 if not bossrec: # empty
                     await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.\n")
                     return True
+                for brec in bossrec:
+                    recdate = datetime(int(brec[5]),int(brec[6]),int(brec[7]),int(brec[8]),int(brec[9])) + con['TIME.OFFSET.EASTERN']
+                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch." + str(int(brec[1])) + " and will respawn around " + \
+                                       recdate.strftime("%Y/%m/%d %H:%M") + ". Map: " + brec[2])
                 await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
-                                          '\n'.join(['\t'.join(brow) for brow in bossrec]) + "\n```")
+                                          '\n'.join(bossrec_str) + "\n```")
                 return True
 
 
@@ -793,14 +835,15 @@ async def check_databases():
                 rtime = datetime(tupletime)
                 rtime_east = rtime + con['TIME.OFFSET.EASTERN']
                 tdiff = rtime-datetime.now()
-                if tdiff < 0: # stale data; delete
-                    await func_discord_db(valid_db, rm_ent_boss_db, result)
-                elif tdiff.seconds < 10800 and rx['boss.status.anchor'].match(result[3]):
-                    message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
-                elif tdiff.seconds < 14400:
-                    message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
-                elif tdiff.seconds > 72000:
-                    await func_discord_db(valid_db, rm_ent_boss_db, result)
+                # if tdiff < 0: # stale data; delete
+                #     await func_discord_db(valid_db, rm_ent_boss_db, bd=result)
+                # elif tdiff.seconds < 10800 and rx['boss.status.anchor'].match(result[3]):
+                #     message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
+                #elif
+                if tdiff.seconds < 900:
+                    message_send.append(format_message_boss(result[0], result[3], rtime_east, result[2], result[1]))
+                # elif tdiff.seconds > 72000:
+                #     await func_discord_db(valid_db, rm_ent_boss_db, result)
             await client.send_message(results[valid_db][0][4],'\n'.join(message_send))
         #await client.process_commands(message)
         sleep(60)
@@ -830,8 +873,9 @@ def format_message_boss(boss, status, time, bossmap, channel):
 # @return:
 #     boss index in list, or -1 if not found
 async def check_boss(boss):
-    if boss in bosses:
-        return bosses.index(boss)
+    for bossa in bosses:
+        if boss in bossa.lower():
+            return bosses.index(bossa)
     else:
         # for b in bosses:
         #     if b in boss:
