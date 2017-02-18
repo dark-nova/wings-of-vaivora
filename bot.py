@@ -105,28 +105,31 @@ con['ERROR.SYNTAX']         = -127
 
 #   regex dictionary
 rx = dict()
-# rx['format.numbers']        = re.compile(r'[0-9]+')
-rx['format.letters']        = re.compile(r'[a-z -]+')
-rx['format.time.pm']        = re.compile(r' ?[Pp][Mm]?')
-rx['format.time.am']        = re.compile(r' ?[Aa][Mm]?')
-rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 :$"-]')
-rx['format.time']           = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?')
-rx['format.quotes']         = re.compile(r'"')
-rx['boss.status']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
-rx['boss.status.anchor']    = re.compile(r'([Aa]nchored)')
-rx['boss.status.warning']   = re.compile(r'([Ww]arn(ed)?)')
-rx['boss.channel']          = re.compile(r'(ch)?[1-4]$')
-rx['boss.floors']           = re.compile(r'[bf]?[0-9][bf]?$')
-rx['boss.floors.format']    = re.compile(r'.+(?P<basement>b?)(?P<floor>f?)(?P<floornumber>[0-9])(?P=basement)(?P=floor)$')
-# rx['boss.floors.arrange']   = re.compile(r'\g<floor>\g<floornumber>\g<basement>')
-rx['vaivora.boss']          = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss')
-rx['boss.arg.all']          = re.compile(r'all')
-rx['boss.arg.list']         = re.compile(r'li?st?')
-rx['boss.arg.erase']        = re.compile(r'(erase|del(ete)?)')
-rx['boss.dw.ambi']          = re.compile(r'([Aa]shaq|[Cc](rystal)? ?[Mm](ine)?)')
-rx['boss.dw.loc.cm']        = re.compile(r'[Cc](rystal)? ?[Mm](ine)?')
-rx['boss.dw.loc.ashaq']     = re.compile(r'[Aa]shaq[A-Za-z ]+')
-rx['str.ext.db']            = re.compile(r'\.db$')
+rx['format.numbers']        = re.compile(r'^[0-9]{1}$')
+rx['format.letters']        = re.compile(r'[a-z -]+', re.IGNORECASE)
+rx['format.time.pm']        = re.compile(r' ?[Pp][Mm]?', re.IGNORECASE)
+rx['format.time.am']        = re.compile(r' ?[Aa][Mm]?', re.IGNORECASE)
+rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 :$"-]', re.IGNORECASE)
+rx['format.time']           = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?', re.IGNORECASE)
+rx['format.quotes']         = re.compile(r'"', re.IGNORECASE)
+rx['boss.status']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)', re.IGNORECASE)
+rx['boss.status.anchor']    = re.compile(r'([Aa]nchored)', re.IGNORECASE)
+rx['boss.status.warning']   = re.compile(r'([Ww]arn(ed)?)', re.IGNORECASE)
+rx['boss.channel']          = re.compile(r'[Cc]([Hh])?[1-4]$', re.IGNORECASE)
+rx['boss.floors']           = re.compile(r'[bfd]?[0-9][bfd]?$', re.IGNORECASE)
+rx['boss.floors.format']    = re.compile(r'.*(?P<basement>b?)(?P<floor>f?)(?P<district>([Dd] ?(ist(rict)?)?)?) ?(?P<floornumber>[0-9]) ?(?P=basement)?(?P=floor)?(?P=district)?$', re.IGNORECASE)
+# rx['boss.floors.arrange']   = re.compile(r'\g<floor>\g<floornumber>\g<basement>', re.IGNORECASE)
+rx['vaivora.boss']          = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss', re.IGNORECASE)
+rx['boss.arg.all']          = re.compile(r'all', re.IGNORECASE)
+rx['boss.arg.list']         = re.compile(r'li?st?', re.IGNORECASE)
+rx['boss.arg.erase']        = re.compile(r'(erase|del(ete)?)', re.IGNORECASE)
+rx['boss.dw.ambi']          = re.compile(r'([Aa]shaq|[Cc](rystal)? ?[Mm](ine)?)', re.IGNORECASE)
+rx['boss.dw.loc.cm']        = re.compile(r'[Cc](rystal)? ?[Mm](ine)?', re.IGNORECASE)
+rx['boss.dw.loc.ashaq']     = re.compile(r'[Aa]shaq[A-Za-z ]*', re.IGNORECASE)
+rx['boss.hp.loc.dp']        = re.compile(r'[Dd](emon)? ?[Pp](ris(on?))? ?', re.IGNORECASE)
+rx['boss.hp.loc.dp.dist']   = re.compile(r'([Dd] ?(istrict)?)?[125]', re.IGNORECASE)
+rx['boss.hp.loc.dp.dist.n'] = re.compile(r'([Dd] ?(ist(rict)?)?)?', re.IGNORECASE)
+rx['str.ext.db']            = re.compile(r'\.db$', re.IGNORECASE)
 #   error(**) related constants
 #     error(**) constants for "command" argument
 cmd                         = dict()
@@ -423,7 +426,7 @@ bosses = ['Blasphemous Deathweaver',
           'Demon Lord Zaura',
           'Demon Lord Blut']
 #   field bosses
-bossfl = bosses[0:2] + list(bosses[7]) + list(bosses[11]) + list(bosses[13]) + list(bosses[25])
+bossfl = bosses[0:3] + [bosses[7], bosses[9],] + bosses[11:14] + bosses[17:-1]
 #   world bosses
 bosswo = [b for b in bosses if b not in bossfl]
 
@@ -718,7 +721,6 @@ async def on_message(message):
                 try:
                     if not rx['boss.channel'].match(command[argpos]) or len(command) == 5:
                         maps_idx = await check_maps(command[argpos], bosses[boss_idx])
-                        print(maps_idx)
                         if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
                             err_code = await error(message.author, message.channel, reason['bdmap'], cmd['name'], command[1])
                             return err_code
@@ -888,7 +890,7 @@ async def check_boss(boss):
     return -1
 # end of check_boss
 
-# @func:    check_maps(str): begin code for checking map validity
+# @func:    check_maps(str, str): begin code for checking map validity
 # @arg:
 #     maps: str; map name from raw input
 #     boss: str; the corresponding boss
@@ -897,16 +899,35 @@ async def check_boss(boss):
 async def check_maps(maps, boss):
     if boss == "Blasphemous Deathweaver" and not rx['boss.dw.ambi'].search(maps):
         return -1
-    if rx['boss.floors'].search(maps):
+
+    if rx['boss.floors.format'].search(maps):
         # rearrange letters, and remove map name
-        mapnum = rx['boss.floors.format'].sub(r'\g<basement>\g<floornumber>\g<floor>', maps)
-        mapnum = str(mapnum).upper()
+        if boss == "Wrathful Harpeia":
+            mapnum = rx['boss.floors.format'].sub(r'\g<floornumber>', maps)
+            maps = "Demon Prison District " + mapnum
+        else:
+            mapnum = rx['boss.floors.format'].sub(r'\g<district>\g<basement>\g<floornumber>\g<floor>', maps)
+            mapnum = str(mapnum).upper()
+
         if boss == "Blasphemous Deathweaver" and rx['boss.dw.loc.cm'].search(maps):
-            mapnum = rx['boss.dw.loc.cm'].sub('', mapnum)
+            mapnum = rx['boss.dw.loc.cm'].sub('', mapnum) # erase name and redo
             maps = "Crystal Mine " + mapnum
         elif boss == "Blasphemous Deathweaver":
-            mapnum = rx['boss.dw.loc.ashaq'].sub('', mapnum)
+            mapnum = rx['boss.dw.loc.ashaq'].sub('', mapnum) # erase name and redo
             maps = "Ashaq Underground Prison " + mapnum
+
+        # elif boss == "Wrathful Harpeia":
+        #     if rx['boss.hp.loc.dp'].search(maps):
+        #         mapnum = rx['boss.hp.loc.dp'].sub('', mapnum) # erase name and redo
+        #     if rx['boss.floors'].search(maps):
+        #         mapnum = rx['boss.floors'].sub('', mapnum) # erase d or f; doesn't matter!
+        #     if rx['boss.hp.loc.dp.dist'].search(maps):
+        #         mapnum = rx['boss.hp.loc.dp.dist.n'].sub('', mapnum) # erase district, keep number, and redo
+        #     maps = "Demon Prison District " + mapnum
+    # elif rx['format.numbers'].search(maps) and boss != "Bleak Chapparition":
+    #     mapname = rx['format.numbers'].sub('', bosslo[boss][0])
+    #     maps = mapname + maps
+
     for m in bosslo[boss]:
         if m in maps:
             return bosslo[boss].index(m)
