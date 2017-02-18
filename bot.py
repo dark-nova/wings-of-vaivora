@@ -125,6 +125,7 @@ rx['boss.arg.list']         = re.compile(r'li?st?')
 rx['boss.arg.erase']        = re.compile(r'(erase|del(ete)?)')
 rx['boss.dw.ambi']          = re.compile(r'([Aa]shaq|[Cc](rystal)? ?[Mm](ine)?)')
 rx['boss.dw.loc.cm']        = re.compile(r'[Cc](rystal)? ?[Mm](ine)?')
+rx['boss.dw.loc.ashaq']     = re.compile(r'[Aa]shaq[A-Za-z ]+')
 rx['str.ext.db']            = re.compile(r'\.db$')
 #   error(**) related constants
 #     error(**) constants for "command" argument
@@ -716,7 +717,6 @@ async def on_message(message):
                 #         5 args: 4th and 5th arg are channel and map respectively
                 try:
                     if not rx['boss.channel'].match(command[argpos]) or len(command) == 5:
-                        print('if')
                         maps_idx = await check_maps(command[argpos], bosses[boss_idx])
                         print(maps_idx)
                         if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
@@ -806,7 +806,7 @@ async def on_message(message):
                                       ("0" if oribhour < 10 else "") + \
                                       str(oribhour) + ":" + \
                                       ("0" if message_args['mins'] < 10 else "") + \
-                                      str(message_args['mins']) + ", CH" + str(message_args['channel']) + \
+                                      str(message_args['mins']) + ", CH" + str(message_args['channel']) + ": " + \
                                       (message_args['map'] if message_args['map'] != "N/A" else ""))
 
             #await client.process_commands(message)
@@ -900,11 +900,13 @@ async def check_maps(maps, boss):
     if rx['boss.floors'].search(maps):
         # rearrange letters, and remove map name
         mapnum = rx['boss.floors.format'].sub(r'\g<basement>\g<floornumber>\g<floor>', maps)
+        mapnum = str(mapnum).upper()
         if boss == "Blasphemous Deathweaver" and rx['boss.dw.loc.cm'].search(maps):
+            mapnum = rx['boss.dw.loc.cm'].sub('', mapnum)
             maps = "Crystal Mine " + mapnum
         elif boss == "Blasphemous Deathweaver":
+            mapnum = rx['boss.dw.loc.ashaq'].sub('', mapnum)
             maps = "Ashaq Underground Prison " + mapnum
-        print(maps, boss)
     for m in bosslo[boss]:
         if m in maps:
             return bosslo[boss].index(m)
