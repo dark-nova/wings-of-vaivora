@@ -115,7 +115,7 @@ rx['format.quotes']         = re.compile(r'"')
 rx['boss.status']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)')
 rx['boss.status.anchor']    = re.compile(r'([Aa]nchored)')
 rx['boss.status.warning']   = re.compile(r'([Ww]arn(ed)?)')
-rx['boss.channel']          = re.compile(r'(ch)?[1-4]')
+rx['boss.channel']          = re.compile(r'(ch)?[1-4]$')
 rx['boss.floors']           = re.compile(r'[bf]?[0-9][bf]?$')
 rx['boss.floors.format']    = re.compile(r'.+(?P<basement>b?)(?P<floor>f?)(?P<floornumber>[0-9])(?P=basement)(?P=floor)$')
 # rx['boss.floors.arrange']   = re.compile(r'\g<floor>\g<floornumber>\g<basement>')
@@ -123,6 +123,8 @@ rx['vaivora.boss']          = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss')
 rx['boss.arg.all']          = re.compile(r'all')
 rx['boss.arg.list']         = re.compile(r'li?st?')
 rx['boss.arg.erase']        = re.compile(r'(erase|del(ete)?)')
+rx['boss.dw.ambi']          = re.compile(r'([Aa]shaq|[Cc](rystal)? ?[Mm](ine)?)')
+rx['boss.dw.loc.cm']        = re.compile(r'[Cc](rystal)? ?[Mm](ine)?')
 rx['str.ext.db']            = re.compile(r'\.db$')
 #   error(**) related constants
 #     error(**) constants for "command" argument
@@ -198,13 +200,10 @@ async def func_discord_db(discord_server, db_func, xargs=None):
     if xargs and not db_func is rm_ent_boss_db:
         dbif  = await db_func(c, xargs)
     elif type(xargs) is str:
-        print('str')
         dbif  = await db_func(c, bn=xargs)
     elif type(xargs) is tuple:
-        print("tuple")
         dbif  = await db_func(c, bn=xargs[0], ch=xargs[1])
     elif type(xargs) is dict:
-        print("dict")
         dbif  = await db_func(c, bd=xargs)
     else:
         dbif  = await db_func(c)
@@ -218,7 +217,6 @@ async def func_discord_db(discord_server, db_func, xargs=None):
 # @return:
 #   None
 async def create_discord_db(c):
-    print("create db called")
     # delete tables if necessary since it may be invalid #### Maybe to ignore?
     c.execute('drop table if exists boss')
     c.execute('drop table if exists reminders')
@@ -296,7 +294,7 @@ async def update_boss_db(c, boss_dict):
         contents += c.fetchall()
     elif boss_dict['name'] == 'Blasphemous Deathweaver':
         c.execute("select * from boss where name=? and map=?", \
-          (boss_dict['name'], boss_dict['channel'], boss_dict['map'],))
+          (boss_dict['name'], boss_dict['map'],))
         contents = c.fetchall()
     else:
         c.execute("select * from boss where name=? and channel=?", (boss_dict['name'], boss_dict['channel'],))
@@ -308,10 +306,10 @@ async def update_boss_db(c, boss_dict):
         await rm_ent_boss_db(c, boss_dict)
 
     # if entry has newer data, discard previous
-    if contents and (contents[4] < boss_dict['year'] or \
-                     contents[5] < boss_dict['month'] or \
-                     contents[6] < boss_dict['day'] or \
-                     contents[7] < boss_dict['hour'] - 3):
+    if contents and (int(contents[0][5]) < boss_dict['year'] or \
+                     int(contents[0][6]) < boss_dict['month'] or \
+                     int(contents[0][7]) < boss_dict['day'] or \
+                     int(contents[0][8]) < boss_dict['hour'] - 3):
         await rm_ent_boss_db(c, boss_dict)
 
     #try: # boss database structure
@@ -338,8 +336,8 @@ async def update_boss_db(c, boss_dict):
 # @return:
 #   True if successful, False otherwise
 async def rm_ent_boss_db(c, bd=None, bn=None, ch=None, perm=True):
-    if perm: # temporary. going to implement permissions for this
-        return True
+    #if perm: # temporary. going to implement permissions for this
+     #   return True
     if bd:
         rm_name, rm_channel = bd['name'], bd['channel']
     elif bn and ch:
@@ -351,12 +349,9 @@ async def rm_ent_boss_db(c, bd=None, bn=None, ch=None, perm=True):
         return False
     try:
         if rm_channel:
-            print("one")
             c.execute("delete from boss where name=? and channel=?", (rm_name, rm_channel,))
         else:
-            print("all")
             c.execute("delete from boss where name=?", (rm_name,))
-            print('erased?')
     except:
         return False
     return True
@@ -713,7 +708,7 @@ async def on_message(message):
                 if rx['boss.channel'].match(command[argpos]):
                     boss_channel = int(rx['format.letters'].sub('', command[argpos]))
                     argpos += 1
-                
+
                 #     specifically not an elif - sequential handling of args
                 #     cases:
                 #         4 args: 4th arg is channel
@@ -721,7 +716,9 @@ async def on_message(message):
                 #         5 args: 4th and 5th arg are channel and map respectively
                 try:
                     if not rx['boss.channel'].match(command[argpos]) or len(command) == 5:
-                        maps_idx = await check_maps(command[argpos], command[1])
+                        print('if')
+                        maps_idx = await check_maps(command[argpos], bosses[boss_idx])
+                        print(maps_idx)
                         if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
                             err_code = await error(message.author, message.channel, reason['bdmap'], cmd['name'], command[1])
                             return err_code
@@ -762,21 +759,20 @@ async def on_message(message):
                 return err_code
             bminu = int(btime[1])
             oribhour  = bhour
-            approx_server_time = datetime.today() + con['TIME.OFFSET.EASTERN']
+            approx_server_time = datetime.now() + con['TIME.OFFSET.EASTERN']
             btday = approx_server_time.day
             btmon = approx_server_time.month
             byear = approx_server_time.year
 
             # late recorded time; correct with -1 day
             mdate = datetime(byear, btmon,btday,hour=bhour,minute=bminu)
-            tdiff = mdate-approx_server_time
-            if tdiff.days < 0:
-                btday -= 1
-            elif tdiff.days > 0 or tdiff.seconds > 119: # 2 minute leeway
+            tdiff = approx_server_time-mdate
+            if tdiff.seconds < 0 or tdiff.seconds > 64800:
                 err_code = await error(message.author, message.channel, reason['bdtme'], cmd['name'], msg=command[2])
                 return err_code
 
-            wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.status.anchor'].match(command[1]) else con['TIME.WAIT.4H']
+            #wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.status.anchor'].match(command[1]) else con['TIME.WAIT.4H']
+            wait_time = con['TIME.WAIT.4H']
             bhour = bhour + int((wait_time + con['TIME.OFFSET.PACIFIC']).seconds / 3600) # bhour in Pacific/local
             if message_args['name'] in bos02s and rx['boss.status.anchor'].match(command[1]): # you cannot anchor events
                 err_code = await error(message.author, message.channel, reason['noanc'], cmd['name'])
@@ -810,7 +806,8 @@ async def on_message(message):
                                       ("0" if oribhour < 10 else "") + \
                                       str(oribhour) + ":" + \
                                       ("0" if message_args['mins'] < 10 else "") + \
-                                      str(message_args['mins']) + ", CH" + str(message_args['channel']))
+                                      str(message_args['mins']) + ", CH" + str(message_args['channel']) + \
+                                      (message_args['map'] if message_args['map'] != "N/A" else ""))
 
             #await client.process_commands(message)
             return True # command processed
@@ -858,10 +855,15 @@ def format_message_boss(boss, status, time, bossmap, channel):
     else:
         bossmap = [m for m in bosslo[boss] if m != bossmap]
     status_str  = " " + ("was anchored" if rx['boss.status.anchor'].match(status) else "died") + " at "
-
-    expect_str  = (("between " + (time + con['TIME.WAIT.ANCHOR']).strftime("%Y/%m/%d %H:%M") + " and ") \
+    # if boss not in bos16s and boss not in bos02s:
+    #     time_exp    = con['TIME.WAIT.4H']
+    # elif boss in bos16s:
+    #     time_exp    = con['TIME.WAIT.16H']
+    # elif boss in bos02s:
+    #     time_exp    = con['TIME.WAIT.2H']
+    expect_str  = (("between " + (time-timedelta(hours=1)).strftime("%Y/%m/%d %H:%M") + " and ") \
                    if rx['boss.status.anchor'].match(status) else "at ") + \
-                  (time + con['TIME.WAIT.4H']).strftime("%Y/%m/%d %H:%M") + ", "
+                  (time).strftime("%Y/%m/%d %H:%M") + ", "
     map_str     = "in the following maps: " + '. '.join(bossmap)
     message     = boss + status_str + time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
                   expect_str + map_str
@@ -893,17 +895,19 @@ async def check_boss(boss):
 # @return:
 #     map index in list, or -1 if not found
 async def check_maps(maps, boss):
-    if rx['boss.floors'].match(maps):
+    if boss == "Blasphemous Deathweaver" and not rx['boss.dw.ambi'].search(maps):
+        return -1
+    if rx['boss.floors'].search(maps):
         # rearrange letters, and remove map name
-        mapnum = rx['boss.floors.format'].sub(r'\g<floor>\g<floornumber>\g<basement>', maps)
-        mmatch = mapnum.search(maps)
-        if not mmatch:
-            return -1
-        return bosslo[boss].index(mmatch)
-    else:
-        for m in bosslo[boss]:
-            if m in maps:
-                return bosslo[boss].index(m)
+        mapnum = rx['boss.floors.format'].sub(r'\g<basement>\g<floornumber>\g<floor>', maps)
+        if boss == "Blasphemous Deathweaver" and rx['boss.dw.loc.cm'].search(maps):
+            maps = "Crystal Mine " + mapnum
+        elif boss == "Blasphemous Deathweaver":
+            maps = "Ashaq Underground Prison " + mapnum
+        print(maps, boss)
+    for m in bosslo[boss]:
+        if m in maps:
+            return bosslo[boss].index(m)
     return -1
 
 # @func:  error(**): begin code for error message printing to user
