@@ -3,9 +3,9 @@ import discord
 import logging
 import sqlite3
 import shlex
+import asyncio
 import re
 import os
-from time import sleep
 from datetime import datetime, timedelta
 from operator import itemgetter
 
@@ -13,7 +13,7 @@ from operator import itemgetter
 client    = discord.Client()
 
 # variables to use
-valid_dbs = list()
+#valid_dbs = list()
 
 # begin constants for strings for error messages
 #   command - usage
@@ -191,7 +191,10 @@ logger.addHandler(handler)
 # @return:
 #   Relevant data if successful, False otherwise
 async def func_discord_db(discord_server, db_func, xargs=None):
-    discord_db  = discord_server + ".db"
+    if re.search(r'.*\.db$', discord_server):
+        discord_db = discord_server
+    else:
+        discord_db = discord_server + ".db"
     conn = sqlite3.connect(discord_db)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
@@ -228,7 +231,7 @@ async def create_discord_db(c):
     c.execute('drop table if exists permissions')
     # create boss table
     c.execute('create table boss({})'.format(','.join(boss_tuple)))
-    
+
     # create reminders table
     c.execute('create table reminders({})'.format(','.join(remi_tuple)))
     
@@ -369,30 +372,48 @@ async def on_ready():
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
 
+    valid_dbs = []
+
+    f = open('wings-valid_db', 'a')
     with os.scandir() as items:
         for item in items:
-            if item.is_file() and item.name.endswith(".db"):
+            if item.is_file() and item.name.endswith(".db") and re.match(r'[0-9]{19,}\.db', item.name):
                 iname = rx['str.ext.db'].sub('',item.name)
                 if await func_discord_db(iname, validate_discord_db):
                     valid_dbs.append(item.name)
                 else:
                     await func_discord_db(iname, create_discord_db)
                     valid_dbs.append(item.name) # a fresh db is valid
+    r = open('wings-valid_db', 'r')
+    for line in r:
+        if await func_discord_db(line, validate_discord_db):
+            valid_dbs.append(item.name)
+        else:
+            await func_discord_db(line, create_discord_db)
+            valid_dbs.append(item.name) # a fresh db is valid
+    for valid_db in valid_dbs:
+        if not valid_db in open('wings-valid_db', 'r').read():
+            f.write(valid_db + "\n")
+    f.close()
 
 # @func:    on_server_join(discord.Server)
 # @return:
 #   True if ready, False otherwise
 @client.event
-async def on_server_join(server):
+async def on_server_available(server):
     if server.unavailable:
         return False
     srvnm = server.id # id now
+    if not re.match(r'[0-9]{19,}\.db', srvnm):
+        return False
     status = await func_discord_db(srvnm, validate_discord_db)
     if not status:
         # create if db doesn't already exist
         await func_discord_db(srvnm, create_discord_db)
     # send welcome message
-    await send_message(server.owner, con['STR.MESSAGE.WELCOME'])
+    with open('wings-valid_db','r') as f:
+        f.write(str(srvnm) + ".db")
+    #await send_message(server.owner, con['STR.MESSAGE.WELCOME'])
     return True
 
 # begin boss related variables
@@ -424,7 +445,8 @@ bosses = ['Blasphemous Deathweaver',
           'Demon Lord Marnox',
           'Demon Lord Nuaele',
           'Demon Lord Zaura',
-          'Demon Lord Blut']
+          'Demon Lord Blut',
+          'Legwyn Crystal Event']
 #   field bosses
 bossfl = bosses[0:3] + [bosses[7], bosses[9],] + bosses[11:14] + bosses[17:-1]
 #   world bosses
@@ -475,7 +497,8 @@ bossyn = {'Blasphemous Deathweaver':['dw','spider','deathweaver'],
           'Demon Lord Marnox':['marnox','marn'],
           'Demon Lord Nuaele':['nuaele'],
           'Demon Lord Zaura':['zaura'],
-          'Demon Lord Blut':['blut']}
+          'Demon Lord Blut':['blut'],
+          'Legwyn Crystal Event':['legwyn','crystal']}
 
 # 'boss synonyms short'
 # - list of synonyms of boss names
@@ -486,75 +509,76 @@ for l in list(bossyn.values()):
 # 'boss location'
 # - keys: boss names (var `bosses`)
 # - values: list of locations, full name
-bosslo = {'Blasphemous Deathweaver':['Crystal Mine 2F',
-                                     'Crystal Mine 3F',
-                                     'Ashaq Underground Prison 1F',
-                                     'Ashaq Underground Prison 2F',
-                                     'Ashaq Underground Prison 3F'],
-          'Bleak Chapparition':['Tenet Church B1',
-                                'Tenet Church 1F'],
-          'Hungry Velnia Monkey':['Novaha Assembly Hall',
-                                  'Novaha Annex',
-                                  'Novaha Institute'],
-          'Abomination':['Guards\' Graveyard'],
-          'Earth Templeshooter':['Royal Mausoleum Workers\' Lodge'],
-          'Earth Canceril':['Royal Mausoleum Constructors\' Chapel'],
-          'Earth Archon':['Royal Mausoleum Storage'],
-          'Violent Cerberus':['Royal Mausoleum 4F',
-                              'Royal Mausoleum 5F'],
-          'Necroventer':['Residence of the Fallen Legwyn Family'],
-          'Forest Keeper Ferret Marauder':['Bellai Rainforest',
-                                           'Zeraha',
-                                           'Seir Rainforest'],
-          'Kubas Event':['Crystal Mine Lot 2 - 2F'],
-          'Noisy Mineloader':['Mage Tower 4F','Mage Tower 5F'],
-          'Burning Fire Lord':['Main Chamber','Sanctuary'],
-          'Wrathful Harpeia':['Demon Prison District 1',
-                              'Demon Prison District 2',
-                              'Demon Prison District 5'],
-          'Glackuman':['2nd Demon Prison'],
-          'Marionette':['Roxona Reconstruction Agency East Building'],
-          'Dullahan Event':['Roxona Reconstruction Agency West Building'],
-          'Starving Ellaganos':['Mokusul Chamber',
-                                'Videntis Shrine'],
-          'Prison Manager Prison Cutter':['Drill Ground of Confliction',
-                                          'Resident Quarter',
-                                          'Storage Quarter',
-                                          'Fortress Battlegrounds'],
-          'Mirtis':['Kalejimas Visiting Room',
-                    'Storage',
-                    'Solitary Cells',
-                    'Workshop',
-                    'Investigation Room'],
-          'Helgasercle':['Kalejimas Visiting Room',
-                    'Storage',
-                    'Solitary Cells',
-                    'Workshop',
-                    'Investigation Room'],
-          'Rexipher':['Thaumas Trail',
-                      'Salvia Forest',
-                      'Sekta Forest',
-                      'Rasvoy Lake',
-                      'Oasseu Memorial'],
-          'Demon Lord Marnox':['Thaumas Trail',
-                      'Salvia Forest',
-                      'Sekta Forest',
-                      'Rasvoy Lake',
-                      'Oasseu Memorial'],
-          'Demon Lord Nuaele':['Yudejan Forest',
-                               'Nobreer Forest',
-                               'Emmet Forest',
-                               'Pystis Forest',
-                               'Syla Forest'],
-          'Demon Lord Zaura':['Arcus Forest',
-                              'Phamer Forest',
-                              'Ghibulinas Forest',
-                              'Mollogheo Forest'],
-          'Demon Lord Blut':['Tevhrin Stalactite Cave Section 1',
-                             'Tevhrin Stalactite Cave Section 2',
-                             'Tevhrin Stalactite Cave Section 3',
-                             'Tevhrin Stalactite Cave Section 4',
-                             'Tevhrin Stalactite Cave Section 5']                          
+    bosslo = {'Blasphemous Deathweaver':['Crystal Mine 2F',
+                                         'Crystal Mine 3F',
+                                         'Ashaq Underground Prison 1F',
+                                         'Ashaq Underground Prison 2F',
+                                         'Ashaq Underground Prison 3F'],
+              'Bleak Chapparition':['Tenet Church B1',
+                                    'Tenet Church 1F'],
+              'Hungry Velnia Monkey':['Novaha Assembly Hall',
+                                      'Novaha Annex',
+                                      'Novaha Institute'],
+              'Abomination':['Guards\' Graveyard'],
+              'Earth Templeshooter':['Royal Mausoleum Workers\' Lodge'],
+              'Earth Canceril':['Royal Mausoleum Constructors\' Chapel'],
+              'Earth Archon':['Royal Mausoleum Storage'],
+              'Violent Cerberus':['Royal Mausoleum 4F',
+                                  'Royal Mausoleum 5F'],
+              'Necroventer':['Residence of the Fallen Legwyn Family'],
+              'Forest Keeper Ferret Marauder':['Bellai Rainforest',
+                                               'Zeraha',
+                                               'Seir Rainforest'],
+              'Kubas Event':['Crystal Mine Lot 2 - 2F'],
+              'Noisy Mineloader':['Mage Tower 4F','Mage Tower 5F'],
+              'Burning Fire Lord':['Main Chamber','Sanctuary'],
+              'Wrathful Harpeia':['Demon Prison District 1',
+                                  'Demon Prison District 2',
+                                  'Demon Prison District 5'],
+              'Glackuman':['2nd Demon Prison'],
+              'Marionette':['Roxona Reconstruction Agency East Building'],
+              'Dullahan Event':['Roxona Reconstruction Agency West Building'],
+              'Starving Ellaganos':['Mokusul Chamber',
+                                    'Videntis Shrine'],
+              'Prison Manager Prison Cutter':['Drill Ground of Confliction',
+                                              'Resident Quarter',
+                                              'Storage Quarter',
+                                              'Fortress Battlegrounds'],
+              'Mirtis':['Kalejimas Visiting Room',
+                        'Storage',
+                        'Solitary Cells',
+                        'Workshop',
+                        'Investigation Room'],
+              'Helgasercle':['Kalejimas Visiting Room',
+                        'Storage',
+                        'Solitary Cells',
+                        'Workshop',
+                        'Investigation Room'],
+              'Rexipher':['Thaumas Trail',
+                          'Salvia Forest',
+                          'Sekta Forest',
+                          'Rasvoy Lake',
+                          'Oasseu Memorial'],
+              'Demon Lord Marnox':['Thaumas Trail',
+                          'Salvia Forest',
+                          'Sekta Forest',
+                          'Rasvoy Lake',
+                          'Oasseu Memorial'],
+              'Demon Lord Nuaele':['Yudejan Forest',
+                                   'Nobreer Forest',
+                                   'Emmet Forest',
+                                   'Pystis Forest',
+                                   'Syla Forest'],
+              'Demon Lord Zaura':['Arcus Forest',
+                                  'Phamer Forest',
+                                  'Ghibulinas Forest',
+                                  'Mollogheo Forest'],
+              'Demon Lord Blut':['Tevhrin Stalactite Cave Section 1',
+                                 'Tevhrin Stalactite Cave Section 2',
+                                 'Tevhrin Stalactite Cave Section 3',
+                                 'Tevhrin Stalactite Cave Section 4',
+                                 'Tevhrin Stalactite Cave Section 5'],
+              'Legwyn Crystal Event':['Residence of the Fallen Legwyn Family']
          }
 
 # 'boss location synonyms'
@@ -661,8 +685,8 @@ async def on_message(message):
                     return True
                 for brec in bossrec:
                     recdate = datetime(int(brec[5]),int(brec[6]),int(brec[7]),int(brec[8]),int(brec[9])) + con['TIME.OFFSET.EASTERN']
-                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch." + str(int(brec[1])) + " and will respawn around " + \
-                                       recdate.strftime("%Y/%m/%d %H:%M") + ". Map: " + brec[2])
+                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch" + str(int(brec[1])) + " and will respawn around " + \
+                                       recdate.strftime("%Y/%m/%d %H:%M") + ". Last map: " + brec[2])
                 await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
                                           '\n'.join(bossrec_str) + "\n```")
                 return True
@@ -695,8 +719,8 @@ async def on_message(message):
                     return True
                 for brec in bossrec:
                     recdate = datetime(int(brec[5]),int(brec[6]),int(brec[7]),int(brec[8]),int(brec[9])) + con['TIME.OFFSET.EASTERN']
-                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch." + str(int(brec[1])) + " and will respawn around " + \
-                                       recdate.strftime("%Y/%m/%d %H:%M") + ". Map: " + brec[2])
+                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch" + str(int(brec[1])) + " and will respawn around " + \
+                                       recdate.strftime("%Y/%m/%d %H:%M") + ". Last map: " + brec[2])
                 await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
                                           '\n'.join(bossrec_str) + "\n```")
                 return True
@@ -762,26 +786,35 @@ async def on_message(message):
             bminu = int(btime[1])
             oribhour  = bhour
             approx_server_time = datetime.now() + con['TIME.OFFSET.EASTERN']
-            btday = approx_server_time.day
+            print(bhour)
+            btday = approx_server_time.day if bhour <= int((datetime.now() + con['TIME.OFFSET.EASTERN']).hour) \
+                                           else (approx_server_time.day-1)
             btmon = approx_server_time.month
             byear = approx_server_time.year
 
             # late recorded time; correct with -1 day
-            mdate = datetime(byear, btmon,btday,hour=bhour,minute=bminu)
+            mdate = datetime(byear, btmon, btday, hour=bhour, minute=bminu)
             tdiff = approx_server_time-mdate
             if tdiff.seconds < 0 or tdiff.seconds > 64800:
                 err_code = await error(message.author, message.channel, reason['bdtme'], cmd['name'], msg=command[2])
                 return err_code
 
             #wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.status.anchor'].match(command[1]) else con['TIME.WAIT.4H']
-            wait_time = con['TIME.WAIT.4H']
-            bhour = bhour + int((wait_time + con['TIME.OFFSET.PACIFIC']).seconds / 3600) # bhour in Pacific/local
+            wait_time = con['TIME.WAIT.4H'] + con['TIME.OFFSET.PACIFIC']
+            bhour = bhour + (int(wait_time.seconds) / 3600) # bhour in Pacific/local
             if message_args['name'] in bos02s and rx['boss.status.anchor'].match(command[1]): # you cannot anchor events
                 err_code = await error(message.author, message.channel, reason['noanc'], cmd['name'])
             elif message_args['name'] in bos02s:
-                bhour -= 2
+                if bhour < 2:
+                    bhour += 22
+                    btday -= 1
+                else:
+                    bhour -= 2
             elif message_args['name'] in bos16s:
                 bhour += 12 # 12 + 4 = 16
+                if bhour / 24:
+                    bhour = bhour % 24
+                    btday += 1
 
             # add them to dict
             message_args['hour']      = bhour
@@ -790,7 +823,7 @@ async def on_message(message):
             message_args['month']     = btmon
             message_args['year']      = byear
             message_args['status']    = command[1] # anchored or died
-            message_args['srvchn']    = message.channel
+            message_args['srvchn']    = message.channel.id
 
             status  = await func_discord_db(command_server, validate_discord_db)
             if not status: # db is not valid
@@ -820,18 +853,26 @@ async def on_message(message):
 
 # @func:    check_databases()
 async def check_databases():
+    await client.wait_until_ready()
     results = dict()
-    while True:
+    while not client.is_closed:
+        valid_dbs = []
+        f = open('wings-valid_db','r')
+        g = open('wings-norepeat','r')
+        for line in f:
+            valid_dbs.append(line.strip())
+        print("Valid DBs: ", len(valid_dbs))
         for valid_db in valid_dbs:
             # check all timers
             message_send = list()
-            message_send.append("@here ")
+            cur_channel = str()
             results[valid_db] = await func_discord_db(valid_db, check_boss_db, bosses)
             # sort by time
             results[valid_db].sort(key=itemgetter(5,6,7,8,9))
             for result in results[valid_db]:
-                tupletime = tuple(result[4:9])
-                rtime = datetime(tupletime)
+                tupletime = tuple(result[5:10])
+                tupletime = tuple([int(t) for t in tupletime])
+                rtime = datetime(*tupletime[0:-1])
                 rtime_east = rtime + con['TIME.OFFSET.EASTERN']
                 tdiff = rtime-datetime.now()
                 # if tdiff < 0: # stale data; delete
@@ -840,12 +881,32 @@ async def check_databases():
                 #     message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
                 #elif
                 if tdiff.seconds < 900:
-                    message_send.append(format_message_boss(result[0], result[3], rtime_east, result[2], result[1]))
+                    msgb = []
+                    msgb.append(format_message_boss(result[0], result[3], rtime_east, result[2], result[1]))
+                    msgb.extend(result[4])
+                    strm = str(result[4]) + ":" + str(msgb[0]) + "\n"
+                    if strm in g:
+                        continue
+                    else:
+                        with open('wings-norepeat','a') as h:
+                            h.write(strm)
+                        message_send.append(msgb)
                 # elif tdiff.seconds > 72000:
                 #     await func_discord_db(valid_db, rm_ent_boss_db, result)
-            await client.send_message(results[valid_db][0][4],'\n'.join(message_send))
+            # message: str, str
+            if len(message_send) == 0:
+                continue
+            messtr = str()
+            srv = discord.get_server(rx['str.ext.db'].sub('',valid_db))
+            for message in message_send:
+                if cur_channel != message[-1] and not rx['format.letters'].match(message[-1]):
+                    if cur_channel:
+                        await client.send_message(srv.get_channel(cur_channel), messtr)
+                        cur_channel = message[-1]
+                    messtr = "@here The following bosses will spawn:\n"
+                messtr += message[0]
         #await client.process_commands(message)
-        sleep(60)
+        await asyncio.sleep(60)
 
 def format_message_boss(boss, status, time, bossmap, channel):
     if bossmap == 'N/A':
@@ -865,10 +926,11 @@ def format_message_boss(boss, status, time, bossmap, channel):
     #     time_exp    = con['TIME.WAIT.2H']
     expect_str  = (("between " + (time-timedelta(hours=1)).strftime("%Y/%m/%d %H:%M") + " and ") \
                    if rx['boss.status.anchor'].match(status) else "at ") + \
-                  (time).strftime("%Y/%m/%d %H:%M") + ", "
+                  (time).strftime("%Y/%m/%d %H:%M") + \
+                  " (" + str(int((time-datetime.now()).seconds)/60) + " minutes ), "
     map_str     = "in the following maps: " + '. '.join(bossmap)
     message     = boss + status_str + time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
-                  expect_str + map_str
+                  expect_str + map_str + "\n"
     return message
 
 # @func:    check_boss(str): begin code for checking boss validity
@@ -900,6 +962,7 @@ async def check_maps(maps, boss):
     if boss == "Blasphemous Deathweaver" and not rx['boss.dw.ambi'].search(maps):
         return -1
 
+
     if rx['boss.floors.format'].search(maps):
         # rearrange letters, and remove map name
         if boss == "Wrathful Harpeia":
@@ -930,6 +993,8 @@ async def check_maps(maps, boss):
 
     for m in bosslo[boss]:
         if m in maps:
+            return bosslo[boss].index(m)
+        if maps in m:
             return bosslo[boss].index(m)
     return -1
 
@@ -1070,4 +1135,6 @@ def the_following_argument(arg):
 
 with open('discordtoken','r') as f:
     secret = f.read()
+
+client.loop.create_task(check_databases())
 client.run(secret)
