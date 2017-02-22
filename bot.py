@@ -64,8 +64,8 @@ cmd_usage['boss.arg'] = "`+ - - -` Boss Name or `all` **(required)**\n" + \
                 "`+ - -` Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + \
                 "and should not be recorded because they have unpredictable spawns.\n"
 cmd_usage['boss.examples'] = "`+ - -` **`$boss` Examples:**\n" + \
-                             "`+ - - -` `$boss cerb died 4f` - channel can be omitted for field bosses\n" + \
-                             "`+ - - -` `Vaivora, crab died ch2` - map can be omitted for world bosses\n"
+                             "`+ - - -` `$boss cerb died 12:00pm 4f` - channel can be omitted for field bosses\n" + \
+                             "`+ - - -` `Vaivora, crab died 14:00 ch2` - map can be omitted for world bosses\n"
 cmd_usage['name'].append(cmd_usage['boss.arg'])
 cmd_usage['name'].append(cmd_usage['boss.examples'])
 # end of $boss usage string, in cmd_usage['boss.args']
@@ -120,8 +120,9 @@ rx['format.numbers']        = re.compile(r'^[0-9]{1}$')
 rx['format.letters']        = re.compile(r'[a-z -]+', re.IGNORECASE)
 rx['format.time.pm']        = re.compile(r' ?[Pp][Mm]?', re.IGNORECASE)
 rx['format.time.am']        = re.compile(r' ?[Aa][Mm]?', re.IGNORECASE)
-rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 :$",-]', re.IGNORECASE)
-rx['format.time']           = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?', re.IGNORECASE)
+rx['format.time.delim']     = re.compile(r'[:.]', re.IGNORECASE)
+rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 .:$",-]', re.IGNORECASE)
+rx['format.time']           = re.compile(r'[0-2]?[0-9][:.][0-5][0-9]([AaPp][Mm]?)?', re.IGNORECASE)
 rx['format.quotes']         = re.compile(r'"', re.IGNORECASE)
 rx['boss.status']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)', re.IGNORECASE)
 rx['boss.status.anchor']    = re.compile(r'([Aa]nchored)', re.IGNORECASE)
@@ -421,7 +422,10 @@ async def on_ready():
     #         valid_dbs.append(item.name) # a fresh db is valid
     for valid_db in valid_dbs:
         if not valid_db in '\n'.join(r):
-            f.write(valid_db + "\n")
+            if not rx['str.ext.db'].search(valid_db):
+                f.write(valid_db + ".db\n")
+            else:
+                f.write(valid_db + "\n")
     f.close()
 
 # @func:    on_server_available(discord.Server)
@@ -449,7 +453,7 @@ async def on_server_join(server):
     with open(con['FILES.WELCOMED'], 'a') as f:
         if not srvnm in '\n'.join(h):
             f.write(srvnm + "\n")
-    await client.send_message(server.owner, con['STR.MESSAGE.WELCOME'])
+            await client.send_message(server.owner, con['STR.MESSAGE.WELCOME'])
     return True
 
 # begin boss related variables
@@ -825,11 +829,11 @@ async def on_message(message):
             # process time
             #     antemeridian
             if rx['format.time.am'].search(command[2]):
-                btime = rx['format.time.am'].sub('', command[2]).split(':')
+                btime = rx['format.time.delim'].split(rx['format.time.am'].sub('', command[2]))
                 bhour = int(btime[0]) % 12
             #     postmeridian
             elif rx['format.time.pm'].search(command[2]):
-                btime = rx['format.time.pm'].sub('', command[2]).split(':')
+                btime = rx['format.time.delim'].split(rx['format.time.pm'].sub('', command[2]))
                 bhour = (int(btime[0]) % 12) + 12
                 print(bhour)
             #     24h time
@@ -1121,7 +1125,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
         elif etype == reason['noanc']:
             ret_msg.append(user_name + the_following_argument('status') + msg + \
                            ") is invalid for `$boss`. You may not select `anchored` for its status.\n")
-            ret_msg.append(cmd_usage['name'])
+            ecode = con['ERROR.WRONG']
         elif etype == reason['bdmap']:
             try_msg = list()
             try_msg.append(user_name + the_following_argument('map') + msg + \
@@ -1168,7 +1172,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             ecode = con['ERROR.SYNTAX']
         elif etype == reason['syntx']:
             ret_msg.append(user_name + " Your command could not be parsed. Re-check the syntax, and try again.\n" + \
-                           "Message: " + msg)
+                           ("Message: " + msg) if msg else "")
             ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = con['ERROR.SYNTAX']
         else:
@@ -1180,7 +1184,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
         # end of conditionals for cmd['name']
 
         # begin common return for $boss
-        ret_msg.extend(cmd_usage['name'])
+        ret_msg.append("For syntax: $boss help")
         await client.send_message(channel, '\n'.join(ret_msg))
         return ecode
         # end of common return for $boss
