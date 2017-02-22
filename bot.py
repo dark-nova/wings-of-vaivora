@@ -18,7 +18,7 @@ client    = discord.Client()
 # begin constants for strings for error messages
 #   command - usage
 cmd_usage = dict()
-cmd_usage['heading']      = "Usage:\n"
+cmd_usage['heading']      = "`+ - -` Usage:"
 #   command - [us]age - [c]ode [bl]oc[k]
 cmd_usage['code_block']   = "```"
 #   command - [us]age - [a]rguments [bl]oc[k]
@@ -30,7 +30,7 @@ cmd_usage['debug']        = " Debug message. Something went wrong.\n"
 #   begin $boss specific constants
 cmd_usage['boss.arg.1']   = "BossName|\"Boss Name\""
 cmd_usage['boss.prefix']  = ("$boss ","Vaivora, boss ")
-cmd_usage['name']         = ["***'Boss' commands***"]
+cmd_usage['name']         = ["`+` ***'Boss' commands*** [$boss]"]
 cmd_usage['name'].append(cmd_usage['heading'])
 cmd_usage['name'].append(cmd_usage['code_block'])
 #   end of $boss specific constants
@@ -47,7 +47,7 @@ cmd_usage['boss.args'].append("all list",)
 
 cmd_usage['name'].append('\n'.join([("PREFIX " + boss_arg) for boss_arg in cmd_usage['boss.args']]))
 cmd_usage['name'].append(cmd_usage['code_block'])
-cmd_usage['name'].append("Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usage['back_tick'] + "es: `" + \
+cmd_usage['name'].append("`+ - -` Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usage['back_tick'] + "es: `" + \
                          '` & `'.join(cmd_usage['boss.prefix']) + "`\n")
 
 # cmd_usage['name'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][1]*2))]))
@@ -55,15 +55,19 @@ cmd_usage['name'].append("Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usag
 # cmd_usage['name'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][3]*2))]))
 #     command - usage - [b]oss - [a]rgument descriptors
 #             n=5
-cmd_usage['boss.arg'] = "`-` Boss Name or `all` **(required)**\n" + \
-                "`- -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" + \
-                "`- -` all when used with list will display all valid entries.\n" + \
-                "`-` time **(required for** `died` **and** `anchored` **)**\n" + \
-                "`-` Map *(optional)*\n" + \
-                "`- -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" + \
-                "Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + \
+cmd_usage['boss.arg'] = "`+ - - -` Boss Name or `all` **(required)**\n" + \
+                "`+ - - - -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" + \
+                "`+ - - - -` all when used with list will display all valid entries.\n" + \
+                "`+ - - -` time **(required for** `died` **and** `anchored` **)**\n" + \
+                "`+ - - -` Map *(optional)*\n" + \
+                "`+ - - - -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" + \
+                "`+ - -` Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + \
                 "and should not be recorded because they have unpredictable spawns.\n"
+cmd_usage['boss.examples'] = "`+ - -` **`$boss` Examples:**\n" + \
+                             "`+ - - -` `$boss cerb died 4f` - channel can be omitted for field bosses\n" + \
+                             "`+ - - -` `Vaivora, crab died ch2` - map can be omitted for world bosses\n"
 cmd_usage['name'].append(cmd_usage['boss.arg'])
+cmd_usage['name'].append(cmd_usage['boss.examples'])
 # end of $boss usage string, in cmd_usage['boss.args']
 
 cmd_usage['boss.acknowledged'] = " Thank you! Your command has been acknowledged and recorded.\n"
@@ -90,12 +94,18 @@ con['TIME.OFFSET.EASTERN']  = timedelta(hours=3)
 con['TIME.OFFSET.PACIFIC']  = timedelta(hours=-3)
 con['TIME.WAIT.4H']         = timedelta(hours=4)
 con['TIME.WAIT.ANCHOR']     = timedelta(hours=3)
+con['TIME.SECONDS.IN.DAY']  = 24 * 60 * 60
 con['LOGGER']               = "tos.wingsofvaivora"
 con['LOGGER.FILE']          = "tos.wingsofvaivora.log"
+con['FILES.VALIDDB']        = 'wings-valid_db' #+ '_TEST'
+con['FILES.NOREPEAT']       = 'wings-norepeat' #+ '_TEST'
+con['FILES.WELCOMED']       = 'wings-welcomed' #+ '_TEST'
 con['STR.MESSAGE.WELCOME']  = "Thank you for inviting me to your server! " + \
                               "I am a representative bot for the Wings of Vaivora, here to help you record your journey.\n" + \
-                              "Here are some useful commands:" + \
-                              '\n'.join(cmd_usage['name']) # + \
+                              "\nHere are some useful commands: \n\n" + \
+                              '\n'.join(cmd_usage['name']) + \
+                              '\n'*2 + \
+                              "(To be implemented) Talt, Reminders, and Permissions. Check back soon!\n"
                               # '\n'.join(cmd_usage['talt']) # + \
                               # '\n'.join(cmd_usage['remi']) # + \
                               # '\n'.join(cmd_usage['perm'])
@@ -103,13 +113,14 @@ con['ERROR.BROAD']          = -1
 con['ERROR.WRONG']          = -2
 con['ERROR.SYNTAX']         = -127
 
+
 #   regex dictionary
 rx = dict()
 rx['format.numbers']        = re.compile(r'^[0-9]{1}$')
 rx['format.letters']        = re.compile(r'[a-z -]+', re.IGNORECASE)
 rx['format.time.pm']        = re.compile(r' ?[Pp][Mm]?', re.IGNORECASE)
 rx['format.time.am']        = re.compile(r' ?[Aa][Mm]?', re.IGNORECASE)
-rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 :$"-]', re.IGNORECASE)
+rx['format.letters.inv']    = re.compile(r'[^A-Za-z0-9 :$",-]', re.IGNORECASE)
 rx['format.time']           = re.compile(r'[0-2]?[0-9]:[0-5][0-9]([AaPp][Mm]?)?', re.IGNORECASE)
 rx['format.quotes']         = re.compile(r'"', re.IGNORECASE)
 rx['boss.status']           = re.compile(r'([Dd]ied|[Aa]nchored|[Ww]arn(ed)?)', re.IGNORECASE)
@@ -130,6 +141,7 @@ rx['boss.hp.loc.dp']        = re.compile(r'[Dd](emon)? ?[Pp](ris(on?))? ?', re.I
 rx['boss.hp.loc.dp.dist']   = re.compile(r'([Dd] ?(istrict)?)?[125]', re.IGNORECASE)
 rx['boss.hp.loc.dp.dist.n'] = re.compile(r'([Dd] ?(ist(rict)?)?)?', re.IGNORECASE)
 rx['str.ext.db']            = re.compile(r'\.db$', re.IGNORECASE)
+rx['str.fnm.db']            = re.compile(r'[0-9]{18,}')
 #   error(**) related constants
 #     error(**) constants for "command" argument
 cmd                         = dict()
@@ -191,10 +203,12 @@ logger.addHandler(handler)
 # @return:
 #   Relevant data if successful, False otherwise
 async def func_discord_db(discord_server, db_func, xargs=None):
-    if re.search(r'.*\.db$', discord_server):
+    if rx['str.ext.db'].search(discord_server):
         discord_db = discord_server
-    else:
+    elif rx['str.fnm.db'].search(discord_server):
         discord_db = discord_server + ".db"
+    else:
+        return False # invalid name
     conn = sqlite3.connect(discord_db)
     conn.row_factory = sqlite3.Row
     c = conn.cursor()
@@ -368,52 +382,74 @@ async def rm_ent_boss_db(c, bd=None, bn=None, ch=None, perm=True):
 #   None
 @client.event
 async def on_ready():
+    #servers
     print("Logging in...")
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
 
     valid_dbs = []
 
-    f = open('wings-valid_db', 'a')
+    try:
+        s = open(con['FILES.WELCOMED'], 'r')
+    except:
+        open(con['FILES.WELCOMED'],'a').close()
+        s = open(con['FILES.WELCOMED'], 'r')
+    for server in client.servers:
+        if not str(server.id) in s:
+            await on_server_join(server)
+
+    try:
+        f = open(con['FILES.VALIDDB'], 'a')
+    except:
+        f = open(con['FILES.VALIDDB'], 'w')
     with os.scandir() as items:
         for item in items:
-            if item.is_file() and item.name.endswith(".db") and re.match(r'[0-9]{19,}\.db', item.name):
+            if item.is_file() and rx['str.fnm.db'].search(item.name) and \
+              rx['str.ext.db'].search(item.name):
                 iname = rx['str.ext.db'].sub('',item.name)
                 if await func_discord_db(iname, validate_discord_db):
                     valid_dbs.append(item.name)
                 else:
                     await func_discord_db(iname, create_discord_db)
                     valid_dbs.append(item.name) # a fresh db is valid
-    r = open('wings-valid_db', 'r')
-    for line in r:
-        if await func_discord_db(line, validate_discord_db):
-            valid_dbs.append(item.name)
-        else:
-            await func_discord_db(line, create_discord_db)
-            valid_dbs.append(item.name) # a fresh db is valid
+    r = open(con['FILES.VALIDDB'], 'r')
+    # for line in r:
+    #     if await func_discord_db(line, validate_discord_db):
+    #         valid_dbs.append(item.name)
+    #     else:
+    #         await func_discord_db(line, create_discord_db)
+    #         valid_dbs.append(item.name) # a fresh db is valid
     for valid_db in valid_dbs:
-        if not valid_db in open('wings-valid_db', 'r').read():
+        if not valid_db in '\n'.join(r):
             f.write(valid_db + "\n")
     f.close()
 
-# @func:    on_server_join(discord.Server)
+# @func:    on_server_available(discord.Server)
 # @return:
 #   True if ready, False otherwise
 @client.event
-async def on_server_available(server):
+async def on_server_join(server):
     if server.unavailable:
         return False
     srvnm = server.id # id now
-    if not re.match(r'[0-9]{19,}\.db', srvnm):
+    if not re.match(r'[0-9]{18,}', srvnm):
         return False
-    status = await func_discord_db(srvnm, validate_discord_db)
+    srvnm   = str(srvnm)
+    status  = await func_discord_db(srvnm, validate_discord_db)
     if not status:
         # create if db doesn't already exist
         await func_discord_db(srvnm, create_discord_db)
     # send welcome message
-    with open('wings-valid_db','r') as f:
-        f.write(str(srvnm) + ".db")
-    #await send_message(server.owner, con['STR.MESSAGE.WELCOME'])
+    g = open(con['FILES.VALIDDB'], 'r')
+    with open(con['FILES.VALIDDB'], 'a') as f:
+        n = str(srvnm) + ".db"
+        if not n in '\n'.join(g):
+            f.write(n + "\n")
+    h = open(con['FILES.WELCOMED'], 'r')
+    with open(con['FILES.WELCOMED'], 'a') as f:
+        if not srvnm in '\n'.join(h):
+            f.write(srvnm + "\n")
+    await client.send_message(server.owner, con['STR.MESSAGE.WELCOME'])
     return True
 
 # begin boss related variables
@@ -615,6 +651,8 @@ bossls = ['crystal mine','ashaq',
 @client.event
 async def on_message(message):
     # 'name' channel processing
+    if not message.channel or not message.channel.name:
+        return
     if "timer" in message.channel.name or "boss" in message.channel.name:
         # 'name' channel command: $boss
         #     arg order:
@@ -634,6 +672,12 @@ async def on_message(message):
             boss_channel    = 1
             maps_idx        = -1
 
+
+            # if odd amount of quotes, drop
+            if len(rx['format.quotes'].findall(command_message)) % 2:
+                err_code = await error(message.author, message.channel, reason['quote'], cmd['name'])
+                return err_code
+
             # command: list of arguments
             command = shlex.split(command_message)
             if command[0] == "help":
@@ -641,12 +685,7 @@ async def on_message(message):
                 return True
 
             if len(command) < 2:
-                err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
-                return err_code
-
-            # if odd amount of quotes, drop
-            if len(rx['format.quotes'].findall(command_message)) % 2:
-                err_code = await error(message.author, message.channel, reason['quote'], cmd['name'])
+                err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'], command_message)
                 return err_code
 
             # begin checking validity
@@ -684,9 +723,27 @@ async def on_message(message):
                     await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.")
                     return True
                 for brec in bossrec:
-                    recdate = datetime(int(brec[5]),int(brec[6]),int(brec[7]),int(brec[8]),int(brec[9])) + con['TIME.OFFSET.EASTERN']
-                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch" + str(int(brec[1])) + " and will respawn around " + \
-                                       recdate.strftime("%Y/%m/%d %H:%M") + ". Last map: " + brec[2])
+                    recdate = datetime(int(brec[5]), \
+                                       int(brec[6]), \
+                                       int(brec[7]), \
+                                       int(brec[8]), \
+                                       int(brec[9])) \
+                              + con['TIME.OFFSET.EASTERN']
+                    tense = " and "
+                    tense_time = " minutes "
+                    difftime = datetime.now()+con['TIME.OFFSET.EASTERN']-recdate
+                    if int(difftime.days) >= 0:
+                        tense += "should have respawned at "
+                        tense_time += "ago"
+                        tense_mins = int(difftime.seconds / 60)
+                    else:
+                        tense += "will respawn around "
+                        tense_time += "from now"
+                        tense_mins = int((con['TIME.SECONDS.IN.DAY'] - difftime.seconds)/60)
+                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch" + str(int(brec[1])) + tense + \
+                                       recdate.strftime("%Y/%m/%d %H:%M") + \
+                                       " (" + str(tense_mins) + tense_time + ")" + \
+                                       ". Last known map: " + brec[2])
                 await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
                                           '\n'.join(bossrec_str) + "\n```")
                 return True
@@ -743,7 +800,7 @@ async def on_message(message):
                 #         4 args: 4th arg is map
                 #         5 args: 4th and 5th arg are channel and map respectively
                 try:
-                    if not rx['boss.channel'].match(command[argpos]) or len(command) == 5:
+                    if not rx['boss.channel'].match(command[argpos]) or len(command) == 5 or bosses[boss_idx] in bossfl:
                         maps_idx = await check_maps(command[argpos], bosses[boss_idx])
                         if maps_idx < 0 or maps_idx >= len(bosslo[boss]):
                             err_code = await error(message.author, message.channel, reason['bdmap'], cmd['name'], command[1])
@@ -774,6 +831,7 @@ async def on_message(message):
             elif rx['format.time.pm'].search(command[2]):
                 btime = rx['format.time.pm'].sub('', command[2]).split(':')
                 bhour = (int(btime[0]) % 12) + 12
+                print(bhour)
             #     24h time
             else:
                 btime = command[2].split(':')
@@ -786,7 +844,6 @@ async def on_message(message):
             bminu = int(btime[1])
             oribhour  = bhour
             approx_server_time = datetime.now() + con['TIME.OFFSET.EASTERN']
-            print(bhour)
             btday = approx_server_time.day if bhour <= int((datetime.now() + con['TIME.OFFSET.EASTERN']).hour) \
                                            else (approx_server_time.day-1)
             btmon = approx_server_time.month
@@ -795,7 +852,8 @@ async def on_message(message):
             # late recorded time; correct with -1 day
             mdate = datetime(byear, btmon, btday, hour=bhour, minute=bminu)
             tdiff = approx_server_time-mdate
-            if tdiff.seconds < 0 or tdiff.seconds > 64800:
+            if tdiff.seconds < 0:  #or tdiff.seconds > 64800:
+                print('what')
                 err_code = await error(message.author, message.channel, reason['bdtme'], cmd['name'], msg=command[2])
                 return err_code
 
@@ -856,9 +914,18 @@ async def check_databases():
     await client.wait_until_ready()
     results = dict()
     while not client.is_closed:
+        await asyncio.sleep(60)
         valid_dbs = []
-        f = open('wings-valid_db','r')
-        g = open('wings-norepeat','r')
+        try:
+            f = open(con['FILES.VALIDDB'],'r')
+        except:
+            open(con['FILES.VALIDDB'],'a').close()
+            f = open(con['FILES.VALIDDB'],'r')
+        try:
+            g = open(con['FILES.NOREPEAT'],'r')
+        except:
+            open(con['FILES.NOREPEAT'],'a').close()
+            g = open(con['FILES.NOREPEAT'],'r')
         for line in f:
             valid_dbs.append(line.strip())
         print("Valid DBs: ", len(valid_dbs))
@@ -868,6 +935,8 @@ async def check_databases():
             cur_channel = str()
             results[valid_db] = await func_discord_db(valid_db, check_boss_db, bosses)
             # sort by time
+            if not results[valid_db]:
+                continue
             results[valid_db].sort(key=itemgetter(5,6,7,8,9))
             for result in results[valid_db]:
                 tupletime = tuple(result[5:10])
@@ -884,11 +953,12 @@ async def check_databases():
                     msgb = []
                     msgb.append(format_message_boss(result[0], result[3], rtime_east, result[2], result[1]))
                     msgb.extend(result[4])
-                    strm = str(result[4]) + ":" + str(msgb[0]) + "\n"
+                    strm = str(result[4]) + ":" + str(result[0]) + ":" + str(result[3]) + ":" + \
+                           str(rtime_east) + ":" + str(result[1]) + "\n"
                     if strm in g:
                         continue
                     else:
-                        with open('wings-norepeat','a') as h:
+                        with open(con['FILES.NOREPEAT'],'a') as h:
                             h.write(strm)
                         message_send.append(msgb)
                 # elif tdiff.seconds > 72000:
@@ -897,7 +967,7 @@ async def check_databases():
             if len(message_send) == 0:
                 continue
             messtr = str()
-            srv = discord.get_server(rx['str.ext.db'].sub('',valid_db))
+            srv = client.get_server(rx['str.ext.db'].sub('',valid_db))
             for message in message_send:
                 if cur_channel != message[-1] and not rx['format.letters'].match(message[-1]):
                     if cur_channel:
@@ -906,7 +976,7 @@ async def check_databases():
                     messtr = "@here The following bosses will spawn:\n"
                 messtr += message[0]
         #await client.process_commands(message)
-        await asyncio.sleep(60)
+        await asyncio.sleep(1)
 
 def format_message_boss(boss, status, time, bossmap, channel):
     if bossmap == 'N/A':
@@ -992,9 +1062,9 @@ async def check_maps(maps, boss):
     #     maps = mapname + maps
 
     for m in bosslo[boss]:
-        if m in maps:
+        if m.lower() in maps.lower():
             return bosslo[boss].index(m)
-        if maps in m:
+        if maps.lower() in m.lower():
             return bosslo[boss].index(m)
     return -1
 
@@ -1088,7 +1158,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
                            "You cannot anchor events or bosses of this kind.\n")
             ecode = con['ERROR.WRONG']
         elif etype == reason['argct']:
-            ret_msg.append(user_name + " Your command for `$boss` had too few arguments.\n" +  
+            ret_msg.append(user_name + " Your command for `$boss` had too few arguments.\n" + \
                            "Expected: 4 to 6; got: " + msg + ".\n")
             ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = con['ERROR.SYNTAX']
@@ -1097,7 +1167,8 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = con['ERROR.SYNTAX']
         elif etype == reason['syntx']:
-            ret_msg.append(user_name + " Your command could not be parsed. Re-check the syntax, and try again.")
+            ret_msg.append(user_name + " Your command could not be parsed. Re-check the syntax, and try again.\n" + \
+                           "Message: " + msg)
             ret_msg.append(cmd_usage['error.badsyntax'])
             ecode = con['ERROR.SYNTAX']
         else:
