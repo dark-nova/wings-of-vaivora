@@ -97,6 +97,7 @@ con['TIME.WAIT.ANCHOR']     = timedelta(hours=3)
 con['TIME.SECONDS.IN.DAY']  = 24 * 60 * 60
 con['LOGGER']               = "tos.wingsofvaivora"
 con['LOGGER.FILE']          = "tos.wingsofvaivora.log"
+con['DEBUG.FILE']           = 'tos.wingsofvaivora.debug.log'
 con['FILES.VALIDDB']        = 'wings-valid_db' #+ '_TEST'
 con['FILES.NOREPEAT']       = 'wings-norepeat' #+ '_TEST'
 con['FILES.WELCOMED']       = 'wings-welcomed' #+ '_TEST'
@@ -244,16 +245,15 @@ async def create_discord_db(c):
     c.execute('drop table if exists reminders')
     c.execute('drop table if exists talt')
     c.execute('drop table if exists permissions')
+
     # create boss table
     c.execute('create table boss({})'.format(','.join(boss_tuple)))
 
     # create reminders table
     c.execute('create table reminders({})'.format(','.join(remi_tuple)))
-    
 
     # create talt tracking table
     c.execute('create table talt({})'.format(','.join(talt_tuple)))
-    
 
     # create permissions hierarchy
     c.execute('create table permissions({})'.format(','.join(perm_tuple)))
@@ -393,7 +393,7 @@ async def on_ready():
     try:
         s = open(con['FILES.WELCOMED'], 'r')
     except:
-        open(con['FILES.WELCOMED'],'a').close()
+        open(con['FILES.WELCOMED'], 'a').close()
         s = open(con['FILES.WELCOMED'], 'r')
     for server in client.servers:
         if not str(server.id) in s:
@@ -402,6 +402,7 @@ async def on_ready():
     try:
         f = open(con['FILES.VALIDDB'], 'a')
     except:
+        open(con['FILES.VALIDDB'], 'a').close()
         f = open(con['FILES.VALIDDB'], 'w')
     with os.scandir() as items:
         for item in items:
@@ -444,7 +445,11 @@ async def on_server_join(server):
         # create if db doesn't already exist
         await func_discord_db(srvnm, create_discord_db)
     # send welcome message
-    g = open(con['FILES.VALIDDB'], 'r')
+    try:
+        g = open(con['FILES.VALIDDB'], 'r')
+    except:
+        open(con['FILES.VALIDDB'], 'a').close()
+        g = open(con['FILES.VALIDDB'], 'r')
     with open(con['FILES.VALIDDB'], 'a') as f:
         n = str(srvnm) + ".db"
         if not n in '\n'.join(g):
@@ -744,12 +749,12 @@ async def on_message(message):
                         tense += "will respawn around "
                         tense_time += "from now"
                         tense_mins = int((con['TIME.SECONDS.IN.DAY'] - difftime.seconds)/60)
-                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch" + str(int(brec[1])) + tense + \
-                                       recdate.strftime("%Y/%m/%d %H:%M") + \
+                    bossrec_str.append("\"" + brec[0] + "\" " + brec[3] + " in ch." + str(int(brec[1])) + tense + \
+                                       recdate.strftime("%Y/%m/%d \"%H:%M\"") + \
                                        " (" + str(tense_mins) + tense_time + ")" + \
-                                       ". Last known map: " + brec[2])
-                await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
-                                          '\n'.join(bossrec_str) + "\n```")
+                                       ". Last known map: # " + brec[2])
+                await client.send_message(message.channel, message.author.mention + " Records: ```python\n" + \
+                                          '\n\n'.join(bossrec_str) + "\n```")
                 return True
 
             elif rx['boss.arg.all'].match(command[0]):
@@ -779,11 +784,30 @@ async def on_message(message):
                     await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.\n")
                     return True
                 for brec in bossrec:
-                    recdate = datetime(int(brec[5]),int(brec[6]),int(brec[7]),int(brec[8]),int(brec[9])) + con['TIME.OFFSET.EASTERN']
-                    bossrec_str.append(brec[0] + " " + brec[3] + " in ch" + str(int(brec[1])) + " and will respawn around " + \
-                                       recdate.strftime("%Y/%m/%d %H:%M") + ". Last map: " + brec[2])
-                await client.send_message(message.channel, message.author.mention + " Records: ```\n" + \
-                                          '\n'.join(bossrec_str) + "\n```")
+                    # following block should be made into function
+                    recdate = datetime(int(brec[5]), \
+                                       int(brec[6]), \
+                                       int(brec[7]), \
+                                       int(brec[8]), \
+                                       int(brec[9])) \
+                              + con['TIME.OFFSET.EASTERN']
+                    tense = " and "
+                    tense_time = " minutes "
+                    difftime = datetime.now()+con['TIME.OFFSET.EASTERN']-recdate
+                    if int(difftime.days) >= 0:
+                        tense += "should have respawned at "
+                        tense_time += "ago"
+                        tense_mins = int(difftime.seconds / 60)
+                    else:
+                        tense += "will respawn around "
+                        tense_time += "from now"
+                        tense_mins = int((con['TIME.SECONDS.IN.DAY'] - difftime.seconds)/60)
+                    bossrec_str.append("\"" + brec[0] + "\" " + brec[3] + " in ch." + str(int(brec[1])) + tense + \
+                                       recdate.strftime("%Y/%m/%d \"%H:%M\"") + \
+                                       " (" + str(tense_mins) + tense_time + ")" + \
+                                       ". Last known map: # " + brec[2])
+                await client.send_message(message.channel, message.author.mention + " Records: ```python\n" + \
+                                          '\n\n'.join(bossrec_str) + "\n```")
                 return True
 
 
@@ -835,7 +859,6 @@ async def on_message(message):
             elif rx['format.time.pm'].search(command[2]):
                 btime = rx['format.time.delim'].split(rx['format.time.pm'].sub('', command[2]))
                 bhour = (int(btime[0]) % 12) + 12
-                print(bhour)
             #     24h time
             else:
                 btime = command[2].split(':')
@@ -857,7 +880,8 @@ async def on_message(message):
             mdate = datetime(byear, btmon, btday, hour=bhour, minute=bminu)
             tdiff = approx_server_time-mdate
             if tdiff.seconds < 0:  #or tdiff.seconds > 64800:
-                print('what')
+                with open(con['DEBUG.FILE'],'a') as f:
+                    f.write("server",message.server,"; tdiff",tdiff,"; mdate",mdate)
                 err_code = await error(message.author, message.channel, reason['bdtme'], cmd['name'], msg=command[2])
                 return err_code
 
@@ -874,9 +898,10 @@ async def on_message(message):
                     bhour -= 2
             elif message_args['name'] in bos16s:
                 bhour += 12 # 12 + 4 = 16
-                if bhour / 24:
-                    bhour = bhour % 24
-                    btday += 1
+                
+            if bhour / 24:
+                bhour = bhour % 24
+                btday += 1
 
             # add them to dict
             message_args['hour']      = bhour
@@ -945,7 +970,11 @@ async def check_databases():
             for result in results[valid_db]:
                 tupletime = tuple(result[5:10])
                 tupletime = tuple([int(t) for t in tupletime])
-                rtime = datetime(*tupletime[0:-1])
+                try:
+                    rtime = datetime(*tupletime[0:-1])
+                except:
+                    print(tupletime)
+                    continue
                 rtime_east = rtime + con['TIME.OFFSET.EASTERN']
                 tdiff = rtime-datetime.now()
                 # if tdiff < 0: # stale data; delete
@@ -953,13 +982,15 @@ async def check_databases():
                 # elif tdiff.seconds < 10800 and rx['boss.status.anchor'].match(result[3]):
                 #     message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
                 #elif
-                if tdiff.seconds < 900:
+                print(tdiff)
+                if tdiff.seconds < 900 and tdiff.days == 0:
+
                     msgb = []
                     msgb.append(format_message_boss(result[0], result[3], rtime_east, result[2], result[1]))
                     msgb.extend(result[4])
                     strm = str(result[4]) + ":" + str(result[0]) + ":" + str(result[3]) + ":" + \
                            str(rtime_east) + ":" + str(result[1]) + "\n"
-                    if strm in g:
+                    if strm in '\n'.join(g):
                         continue
                     else:
                         with open(con['FILES.NOREPEAT'],'a') as h:
@@ -1142,7 +1173,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
               ret_msg.append(user_name + cmd_usage['debug'])
               ret_msg.append(cmd_usage['error.badsyntax'])
               ecode = con['ERROR.SYNTAX']
-              with open('wingsofvaivora.debug.log','a') as f:
+              with open(con['DEBUG.FILE'],'a') as f:
                   f.write('boss not found\n')
         elif etype == reason['fdbos']:
             ret_msg.append(user_name + the_following_argument('channel') + msg + \
