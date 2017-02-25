@@ -324,7 +324,7 @@ async def update_boss_db(c, boss_dict):
 
     # invalid case: more than one entry for this combination
     #### TODO: keep most recent time? 
-    if len(contents) > 1: #and boss_dict['name'] not in bos16s:
+    if len(contents) >= 1: #and boss_dict['name'] not in bos16s:
         await rm_ent_boss_db(c, boss_dict)
 
     # if entry has newer data, discard previous
@@ -960,7 +960,7 @@ async def check_databases():
                 try:
                     rtime = datetime(*tupletime[0:-1])
                 except:
-                    print(tupletime)
+                    print(tupletime,'failed')
                     continue
                 rtime_east = rtime + con['TIME.OFFSET.EASTERN']
                 tdiff = rtime-datetime.now()
@@ -969,7 +969,8 @@ async def check_databases():
                 # elif tdiff.seconds < 10800 and rx['boss.status.anchor'].match(result[3]):
                 #     message_send.append(format_message_boss(result[0], result[3], rtime_east, result[1]))
                 #elif
-                print(tdiff)
+                if tdiff.days < 0:
+                    continue
                 if tdiff.seconds < 900 and tdiff.days == 0:
                     msgb = []
                     msgb.append(format_message_boss(result[0], result[3], rtime_east, result[2], result[1]))
