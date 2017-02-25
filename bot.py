@@ -404,29 +404,16 @@ async def on_ready():
     except:
         open(con['FILES.VALIDDB'], 'a').close()
         f = open(con['FILES.VALIDDB'], 'w')
+
+    with open(con['FILES.VALIDDB'], 'r') as vdbs:
+        valid_list = [ vdb.rstrip('\n') for vdb in vdbs ]
     with os.scandir() as items:
         for item in items:
-            if item.is_file() and rx['str.fnm.db'].search(item.name) and \
-              rx['str.ext.db'].search(item.name):
-                iname = rx['str.ext.db'].sub('',item.name)
-                if await func_discord_db(iname, validate_discord_db):
-                    valid_dbs.append(item.name)
-                else:
-                    await func_discord_db(iname, create_discord_db)
-                    valid_dbs.append(item.name) # a fresh db is valid
-    r = open(con['FILES.VALIDDB'], 'r')
-    # for line in r:
-    #     if await func_discord_db(line, validate_discord_db):
-    #         valid_dbs.append(item.name)
-    #     else:
-    #         await func_discord_db(line, create_discord_db)
-    #         valid_dbs.append(item.name) # a fresh db is valid
-    for valid_db in valid_dbs:
-        if not valid_db in '\n'.join(r):
-            if not rx['str.ext.db'].search(valid_db):
-                f.write(valid_db + ".db\n")
-            else:
-                f.write(valid_db + "\n")
+            if item.is_file() and rx['str.fnm.db'].search(item.name) and rx['str.ext.db'].search(item.name) and \
+              not item.name in valid_list:
+                if not await func_discord_db(item.name, validate_discord_db):
+                    await func_discord_db(item.name, create_discord_db)
+                f.write(item.name + "\n")
     f.close()
 
 # @func:    on_server_available(discord.Server)
@@ -899,7 +886,7 @@ async def on_message(message):
             elif message_args['name'] in bos16s:
                 bhour += 12 # 12 + 4 = 16
                 
-            if bhour / 24:
+            if int(bhour / 24):
                 bhour = bhour % 24
                 btday += 1
 
@@ -984,7 +971,6 @@ async def check_databases():
                 #elif
                 print(tdiff)
                 if tdiff.seconds < 900 and tdiff.days == 0:
-
                     msgb = []
                     msgb.append(format_message_boss(result[0], result[3], rtime_east, result[2], result[1]))
                     msgb.extend(result[4])
@@ -1003,6 +989,7 @@ async def check_databases():
                 continue
             messtr = str()
             srv = client.get_server(rx['str.ext.db'].sub('',valid_db))
+            print('srv:',srv)
             for message in message_send:
                 if cur_channel != message[-1] and not rx['format.letters'].match(message[-1]):
                     if cur_channel:
