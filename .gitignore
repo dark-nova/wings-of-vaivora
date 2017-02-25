@@ -5,3 +5,6 @@ discordtoken
 *.db
 # directories
 venv_ttos
+db.backup
+db.bak
+snapshot
