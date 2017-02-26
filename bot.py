@@ -18,7 +18,7 @@ client    = discord.Client()
 # begin constants for strings for error messages
 #   command - usage
 cmd_usage = dict()
-cmd_usage['heading']      = "`+ - -` Usage:"
+cmd_usage['heading']      = "`+` Usage:"
 #   command - [us]age - [c]ode [bl]oc[k]
 cmd_usage['code_block']   = "```"
 #   command - [us]age - [a]rguments [bl]oc[k]
@@ -28,9 +28,9 @@ cmd_usage['heading.arg']  = "Arguments:\n"
 cmd_usage['debug']        = " Debug message. Something went wrong.\n"
 
 #   begin $boss specific constants
-cmd_usage['boss.arg.1']   = "BossName|\"Boss Name\""
-cmd_usage['boss.prefix']  = ("$boss ","Vaivora, boss ")
-cmd_usage['name']         = ["`+` ***'Boss' commands*** [$boss]"]
+cmd_usage['boss.arg.1']   = "boss"
+cmd_usage['boss.prefix']  = ("$boss ", "Vaivora, boss ")
+cmd_usage['name']         = ["***'Boss' commands*** [`$boss`]"]
 cmd_usage['name'].append(cmd_usage['heading'])
 cmd_usage['name'].append(cmd_usage['code_block'])
 #   end of $boss specific constants
@@ -40,14 +40,12 @@ cmd_usage['name'].append(cmd_usage['code_block'])
 #     command - usage - [b]oss - [n]th command -- reuse after every append
 #         boss arg [n] - cmd_usage['boss.args'][n]
 cmd_usage['boss.args'] = list()
-cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " died|anchored time [chN] [Map|\"Map\"]\n",)
-cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " erase [chN]\n",)
-cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " list [chN]\n",)
-cmd_usage['boss.args'].append("all list",)
+cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " (died|anchored) time [chN] [map]\n",)
+cmd_usage['boss.args'].append("(boss|all) (erase|list) [chN]\n",)
 
 cmd_usage['name'].append('\n'.join([("PREFIX " + boss_arg) for boss_arg in cmd_usage['boss.args']]))
 cmd_usage['name'].append(cmd_usage['code_block'])
-cmd_usage['name'].append("`+ - -` Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usage['back_tick'] + "es: `" + \
+cmd_usage['name'].append("`+` Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_usage['back_tick'] + "es: `" + \
                          '` & `'.join(cmd_usage['boss.prefix']) + "`\n")
 
 # cmd_usage['name'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][1]*2))]))
@@ -55,17 +53,24 @@ cmd_usage['name'].append("`+ - -` Valid " + cmd_usage['back_tick'] + "PREFIX" + 
 # cmd_usage['name'].append('\n'.join([(' '.join(t) for t in zip(cmd_usage['boss.prefix'], cmd_usage['boss.args'][3]*2))]))
 #     command - usage - [b]oss - [a]rgument descriptors
 #             n=5
-cmd_usage['boss.arg'] = "`+ - - -` Boss Name or `all` **(required)**\n" + \
-                "`+ - - - -` Either part of, or full name; if spaced, enclose in double-quotes (\")\n" + \
-                "`+ - - - -` all when used with list will display all valid entries.\n" + \
-                "`+ - - -` time **(required for** `died` **and** `anchored` **)**\n" + \
-                "`+ - - -` Map *(optional)*\n" + \
-                "`+ - - - -` Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.\n" + \
-                "`+ - -` Do note that Jackpot Bosses (clover buff) are 'world boss' variants of field bosses, " + \
-                "and should not be recorded because they have unpredictable spawns.\n"
-cmd_usage['boss.examples'] = "`+ - -` **`$boss` Examples:**\n" + \
-                             "`+ - - -` `$boss cerb died 12:00pm 4f` - channel can be omitted for field bosses\n" + \
-                             "`+ - - -` `Vaivora, crab died 14:00 ch2` - map can be omitted for world bosses\n"
+cmd_usage['boss.arg'] = "`+` `boss` or `all`\n" + \
+                "`+`   Either part of, or full name; if spaced, enclose in double-quotes (`\"`)\n" + \
+                "`-`   `all` for all bosses\n" + \
+                "`+` `died`|`anchored`\n" + \
+                "`-`   Valid for `boss` only, to indicate its status.\n" + \
+                "`+` `erase`|`list`\n" + \
+                "`-`   Valid for both `boss` and `all`, to `erase` or `list` entries.\n" + \
+                "`+` `time` **(required for `died` and `anchored`)**\n" + \
+                "`-`   Remove spaces. 12 hour and 24 hour times acceptable, with valid delimiters `:` and `.`. Use server time.\n" + \
+                "`+` `map` *(optional)*\n" + \
+                "`-`   Handy for field bosses* only. If unlisted, this will be unassumed.\n" + \
+                "`+` `chN` *(optional)*\n" + \
+                "`-`   Suitable only for world bosses.* If unlisted, CH1 will be assumed.\n" + \
+                "`.`     * Notes about world and field bosses: Field bosses in channels other than 1 are considered 'world boss' variants.\n" + \
+                "`.`       and should not be recorded because they have unpredictable spawns.\n"
+cmd_usage['boss.examples'] = "`+` **`$boss` Examples:**\n" + \
+                             "`-`  `$boss cerb died 12:00pm 4f` - channel can be omitted for field bosses\n" + \
+                             "`-`  `Vaivora, crab died 14:00 ch2` - map can be omitted for world bosses\n"
 cmd_usage['name'].append(cmd_usage['boss.arg'])
 cmd_usage['name'].append(cmd_usage['boss.examples'])
 # end of $boss usage string, in cmd_usage['boss.args']
@@ -167,10 +172,10 @@ reason['fdbos'] = con['STR.REASON'] + "Field Boss Channel"
 
 # database formats
 prototype = dict()
-prototype['time'] = ('year', 'month','day','hour','minute')
-prototype['boss'] = ('name', 'channel','map','status','text_channel') + prototype['time']
+prototype['time'] = ('year', 'month', 'day', 'hour', 'minute')
+prototype['boss'] = ('name', 'channel', 'map', 'status', 'text_channel') + prototype['time']
 prototype['remi'] = ('user', 'comment') + prototype['time']
-prototype['talt'] = ('user', 'previous','current','valid') + prototype['time']
+prototype['talt'] = ('user', 'previous', 'current', 'valid') + prototype['time']
 prototype['perm'] = ('user', 'role')
 
 # and the database formats' types
@@ -290,7 +295,7 @@ async def validate_discord_db(c):
 async def check_boss_db(c, boss_list):
     db_record = list()
     for b in boss_list:
-        c.execute("select * from boss where name=?",(b,))
+        c.execute("select * from boss where name=?", (b,))
         records = c.fetchall()
         for record in records:
             db_record.append(tuple(record))
@@ -834,6 +839,8 @@ async def on_message(message):
             message_args['channel'] = boss_channel
             if maps_idx >= 0:
                 message_args['map'] = bosslo[message_args['name']][maps_idx]
+            elif not message_args['name'] in bossfl:
+                message_args['map'] = bosslo[message_args['name']][0]
             else:
                 message_args['map'] = 'N/A'
 
@@ -955,12 +962,11 @@ async def check_databases():
                 continue
             results[valid_db].sort(key=itemgetter(5,6,7,8,9))
             for result in results[valid_db]:
-                tupletime = tuple(result[5:10])
-                tupletime = tuple([int(t) for t in tupletime])
+                tupletime = [int(t) for t in result[5:10]]
                 try:
-                    rtime = datetime(*tupletime[0:-1])
+                    rtime = datetime(*tupletime)
                 except:
-                    print(tupletime,'failed')
+                    #TODO: remove entry
                     continue
                 rtime_east = rtime + con['TIME.OFFSET.EASTERN']
                 tdiff = rtime-datetime.now()
@@ -973,14 +979,17 @@ async def check_databases():
                     continue
                 if tdiff.seconds < 900 and tdiff.days == 0:
                     msgb = []
+                    no_repeat = []
                     msgb.append(format_message_boss(result[0], result[3], rtime_east, result[2], result[1]))
-                    msgb.extend(result[4])
+                    msgb.append(str(result[4]),)
                     strm = str(result[4]) + ":" + str(result[0]) + ":" + str(result[3]) + ":" + \
                            str(rtime_east) + ":" + str(result[1]) + "\n"
-                    if strm in '\n'.join(g):
+                    for line_g in g:
+                        no_repeat.append(line_g.rstrip())
+                    if strm.rstrip() in no_repeat:
                         continue
                     else:
-                        with open(con['FILES.NOREPEAT'],'a') as h:
+                        with open(con['FILES.NOREPEAT'], 'a') as h:
                             h.write(strm)
                         message_send.append(msgb)
                 # elif tdiff.seconds > 72000:
@@ -989,22 +998,27 @@ async def check_databases():
             if len(message_send) == 0:
                 continue
             messtr = str()
-            srv = client.get_server(rx['str.ext.db'].sub('',valid_db))
-            print('srv:',srv)
+            srv = client.get_server(rx['str.ext.db'].sub('', valid_db))
+            cur_channel = ''
             for message in message_send:
                 if cur_channel != message[-1] and not rx['format.letters'].match(message[-1]):
                     if cur_channel:
+                        messtr += "```"
                         await client.send_message(srv.get_channel(cur_channel), messtr)
-                        cur_channel = message[-1]
-                    messtr = "@here The following bosses will spawn:\n"
+                    cur_channel = message[-1]
+                    #TODO: Replace 15 with custom server time threshold
+                    messtr = "@here The following bosses will spawn within " + "15" + " minutes: ```python\n"
                 messtr += message[0]
+            # flush
+            messtr += "```"
+            await client.send_message(srv.get_channel(cur_channel), messtr)
         #await client.process_commands(message)
         await asyncio.sleep(1)
 
 def format_message_boss(boss, status, time, bossmap, channel):
     if bossmap == 'N/A':
         bossmap = ['[Map Unknown]',]
-    elif boss == "Blasphemous Deathweaver" and re.search("[Aa]shaq",bossmap):
+    elif boss == "Blasphemous Deathweaver" and re.search("[Aa]shaq", bossmap):
         bossmap = [m for m in bosslo[boss][2:-1] if m != bossmap]
     elif boss == "Blasphemous Deathweaver":
         bossmap = [m for m in bosslo[boss][0:2] if m != bossmap]
@@ -1020,9 +1034,12 @@ def format_message_boss(boss, status, time, bossmap, channel):
     expect_str  = (("between " + (time-timedelta(hours=1)).strftime("%Y/%m/%d %H:%M") + " and ") \
                    if rx['boss.status.anchor'].match(status) else "at ") + \
                   (time).strftime("%Y/%m/%d %H:%M") + \
-                  " (" + str(int((time-datetime.now()).seconds)/60) + " minutes ), "
-    map_str     = "in the following maps: " + '. '.join(bossmap)
-    message     = boss + status_str + time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
+                  " (in " + str(int((time-datetime.now()+con['TIME.OFFSET.PACIFIC']).seconds/60)) + " minutes)"
+    if "[Map Unknown]" in bossmap:
+        map_str     = '.'
+    else:
+        map_str     = ", in the following maps: \"" + '. '.join(bossmap[0:]) + "\""
+    message     = "\"" + boss + "\"" + status_str + time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
                   expect_str + map_str + "\n"
     return message
 
@@ -1129,7 +1146,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             ret_msg.append(user_name + " I'm sorry. Your command failed for unknown reasons.\n" + \
                            "This command failure has been recorded.\n" + \
                            "Please try again shortly.\n")
-            with open('wings_of_vaivora-error.txt','a') as f:
+            with open('wings_of_vaivora-error.txt', 'a') as f:
                 f.write(str(datetime.today()) + " An error was detected when " + user_name + " sent a command.")
             ecode = con['ERROR.WRONG']
         # unknown boss
@@ -1161,7 +1178,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
               ret_msg.append(user_name + cmd_usage['debug'])
               ret_msg.append(cmd_usage['error.badsyntax'])
               ecode = con['ERROR.SYNTAX']
-              with open(con['DEBUG.FILE'],'a') as f:
+              with open(con['DEBUG.FILE'], 'a') as f:
                   f.write('boss not found\n')
         elif etype == reason['fdbos']:
             ret_msg.append(user_name + the_following_argument('channel') + msg + \
@@ -1227,7 +1244,7 @@ def the_following_argument(arg):
     return " The following argument `" + arg + "` ("
 # end of the_following_argument
 
-with open('discordtoken','r') as f:
+with open('discordtoken', 'r') as f:
     secret = f.read()
 
 client.loop.create_task(check_databases())
