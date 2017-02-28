@@ -755,6 +755,7 @@ async def on_message(message):
                 for boss in bosses:
                     await func_discord_db(command_server, rm_ent_boss_db, xargs=boss)
                 await client.send_message(message.channel, message.author.mention + " Records successfully erased.\n")
+                return True
 
             elif rx['boss.arg.all'].match(command[0]):
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
