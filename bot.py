@@ -40,7 +40,7 @@ cmd_usage['name'].append(cmd_usage['code_block'])
 #     command - usage - [b]oss - [n]th command -- reuse after every append
 #         boss arg [n] - cmd_usage['boss.args'][n]
 cmd_usage['boss.args'] = list()
-cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " (died|anchored) time [chN] [map]\n",)
+cmd_usage['boss.args'].append(cmd_usage['boss.arg.1'] + " (died|anchored|warned) time [chN] [map]\n",)
 cmd_usage['boss.args'].append("(boss|all) (erase|list) [chN]\n",)
 
 cmd_usage['name'].append('\n'.join([("PREFIX " + boss_arg) for boss_arg in cmd_usage['boss.args']]))
@@ -56,18 +56,19 @@ cmd_usage['name'].append("`+` Valid " + cmd_usage['back_tick'] + "PREFIX" + cmd_
 cmd_usage['boss.arg'] = "`+` `boss` or `all`\n" + \
                 "`+`   Either part of, or full name; if spaced, enclose in double-quotes (`\"`)\n" + \
                 "`-`   `all` for all bosses\n" + \
-                "`+` `died`|`anchored`\n" + \
-                "`-`   Valid for `boss` only, to indicate its status.\n" + \
+                "`+` `died`|`anchored`|`warned`\n" + \
+                "`-`   Valid for `boss` only, to indicate its status. Do not use with `erase` or `list`.\n" + \
                 "`+` `erase`|`list`\n" + \
-                "`-`   Valid for both `boss` and `all`, to `erase` or `list` entries.\n" + \
+                "`-`   Valid for both `boss` and `all`, to `erase` or `list` entries. Do not use with `died`, `anchored`, or `warned`.\n" + \
                 "`+` `time` **(required for `died` and `anchored`)**\n" + \
                 "`-`   Remove spaces. 12 hour and 24 hour times acceptable, with valid delimiters `:` and `.`. Use server time.\n" + \
                 "`+` `map` *(optional)*\n" + \
                 "`-`   Handy for field bosses* only. If unlisted, this will be unassumed.\n" + \
                 "`+` `chN` *(optional)*\n" + \
                 "`-`   Suitable only for world bosses.* If unlisted, CH1 will be assumed.\n" + \
-                "`.`     * Notes about world and field bosses: Field bosses in channels other than 1 are considered 'world boss' variants.\n" + \
-                "`.`       and should not be recorded because they have unpredictable spawns.\n"
+                "\n" + \
+                "`.` * Notes about world and field bosses: Field bosses in channels other than 1 are considered 'world boss' variants.\n" + \
+                "`.`    and should not be recorded because they have unpredictable spawns.\n"
 cmd_usage['boss.examples'] = "`+` **`$boss` Examples:**\n" + \
                              "`-`  `$boss cerb died 12:00pm 4f` - channel can be omitted for field bosses\n" + \
                              "`-`  `Vaivora, crab died 14:00 ch2` - map can be omitted for world bosses\n"
@@ -707,8 +708,9 @@ async def on_message(message):
             if not rx['format.letters'].match(command[0]):
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
                 return err_code
-            if not (rx['boss.status'].match(command[1]) or rx['boss.arg.erase'].match(command[1]) or \
-              rx['boss.arg.list'].match(command[1])):
+            if not (rx['boss.status'].match(command[1]) \
+              or rx['boss.arg.erase'].match(command[1]) \
+              or rx['boss.arg.list'].match(command[1])): 
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
                 return err_code
             if rx['boss.status'].match(command[1]) and not rx['format.time'].match(command[2]):
@@ -748,6 +750,11 @@ async def on_message(message):
                 await client.send_message(message.channel, message.author.mention + " Records: ```python\n" + \
                                           '\n\n'.join(bossrec_str) + "\n```")
                 return True
+
+            elif rx['boss.arg.all'].match(command[0]) and rx['boss.arg.erase'].match(command[1]):
+                for boss in bosses:
+                    await func_discord_db(command_server, rm_ent_boss_db, xargs=boss)
+                await client.send_message(message.channel, message.author.mention + " Records successfully erased.\n")
 
             elif rx['boss.arg.all'].match(command[0]):
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'])
@@ -884,7 +891,7 @@ async def on_message(message):
             bhour = bhour + (int(wait_time.seconds) / 3600) # bhour in Pacific/local
             if message_args['name'] in bos02s and rx['boss.status.anchor'].match(command[1]): # you cannot anchor events
                 err_code = await error(message.author, message.channel, reason['noanc'], cmd['name'])
-            elif message_args['name'] in bos02s:
+            elif message_args['name'] in bos02s or rx['boss.status.warning'].match(command[1]):
                 if bhour < 2:
                     bhour += 22
                     btday -= 1
@@ -1016,7 +1023,9 @@ async def check_databases():
         await asyncio.sleep(1)
 
 def format_message_boss(boss, status, time, bossmap, channel):
-    if bossmap == 'N/A':
+    if status == "warned":
+        bossmap = [(bossmap,)]
+    elif bossmap == 'N/A':
         bossmap = ['[Map Unknown]',]
     elif boss == "Blasphemous Deathweaver" and re.search("[Aa]shaq", bossmap):
         bossmap = [m for m in bosslo[boss][2:-1] if m != bossmap]
@@ -1024,7 +1033,13 @@ def format_message_boss(boss, status, time, bossmap, channel):
         bossmap = [m for m in bosslo[boss][0:2] if m != bossmap]
     else:
         bossmap = [m for m in bosslo[boss] if m != bossmap]
-    status_str  = " " + ("was anchored" if rx['boss.status.anchor'].match(status) else "died") + " at "
+    if rx['boss.status.anchor'].search(status):
+        status_str = "was anchored"
+    elif rx['boss.status.warning'].search(status):
+        status_str = "was warned to spawn"
+    else:
+        status_str = "died"
+    status_str  = " " + status_str + " at "
     # if boss not in bos16s and boss not in bos02s:
     #     time_exp    = con['TIME.WAIT.4H']
     # elif boss in bos16s:
@@ -1035,10 +1050,11 @@ def format_message_boss(boss, status, time, bossmap, channel):
                    if rx['boss.status.anchor'].match(status) else "at ") + \
                   (time).strftime("%Y/%m/%d %H:%M") + \
                   " (in " + str(int((time-datetime.now()+con['TIME.OFFSET.PACIFIC']).seconds/60)) + " minutes)"
+
     if "[Map Unknown]" in bossmap:
         map_str     = '.'
     else:
-        map_str     = ", in the following maps: \"" + '. '.join(bossmap[0:]) + "\""
+        map_str     = ", in the following maps: # " + '. '.join(bossmap[0:])
     message     = "\"" + boss + "\"" + status_str + time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
                   expect_str + map_str + "\n"
     return message
