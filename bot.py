@@ -686,6 +686,8 @@ async def on_message(message):
                 await client.send_message(message.channel, message.author.mention + '\n'.join(cmd_usage['name']))
                 return True
 
+            # if command[0] == "synonyms"
+
             if len(command) < 2:
                 err_code = await error(message.author, message.channel, reason['syntx'], cmd['name'], command_message)
                 return err_code
@@ -1021,6 +1023,8 @@ async def check_databases():
             messtr += "```"
             await client.send_message(srv.get_channel(cur_channel), messtr)
         #await client.process_commands(message)
+        f.close()
+        g.close()
         await asyncio.sleep(1)
 
 def format_message_boss(boss, status, time, bossmap, channel):
@@ -1035,10 +1039,18 @@ def format_message_boss(boss, status, time, bossmap, channel):
     else:
         bossmap = [m for m in bosslo[boss] if m != bossmap]
     if rx['boss.status.anchor'].search(status):
+        report_time = time+timedelta(hour=-3)
         status_str = "was anchored"
     elif rx['boss.status.warning'].search(status):
+        report_time = time+timedelta(hour=-2)
         status_str = "was warned to spawn"
     else:
+        if boss in bos02s:
+            report_time = time+timedelta(hour=-2)
+        elif boss in bos16s:
+            report_time = time+timedelta(hour=-16)
+        else:
+            report_time = time+timedelta(hour=-4)
         status_str = "died"
     status_str  = " " + status_str + " at "
     # if boss not in bos16s and boss not in bos02s:
