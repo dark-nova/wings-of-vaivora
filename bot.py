@@ -905,7 +905,10 @@ async def on_message(message):
                 
             if int(bhour / 24):
                 bhour = bhour % 24
-                btday += 1
+                tomorrow = (datetime(byear, btmon, btday)+timedelta(days=1))
+                btday = tomorrow.day
+                btmon = tomorrow.month
+                byear = tomorrow.year
 
             # add them to dict
             message_args['hour']      = bhour
@@ -1038,20 +1041,23 @@ def format_message_boss(boss, status, time, bossmap, channel):
         bossmap = [m for m in bosslo[boss][0:2] if m != bossmap]
     else:
         bossmap = [m for m in bosslo[boss] if m != bossmap]
+
     if rx['boss.status.anchor'].search(status):
-        report_time = time+timedelta(hour=-3)
+        report_time = time+timedelta(hours=-3)
         status_str = "was anchored"
     elif rx['boss.status.warning'].search(status):
-        report_time = time+timedelta(hour=-2)
+        report_time = time+timedelta(hours=-2)
         status_str = "was warned to spawn"
     else:
         if boss in bos02s:
-            report_time = time+timedelta(hour=-2)
+            report_time = time+timedelta(hours=-2)
         elif boss in bos16s:
-            report_time = time+timedelta(hour=-16)
+            report_time = time+timedelta(hours=-16)
+            print(report_time)
         else:
-            report_time = time+timedelta(hour=-4)
+            report_time = time+timedelta(hours=-4)
         status_str = "died"
+
     status_str  = " " + status_str + " at "
     # if boss not in bos16s and boss not in bos02s:
     #     time_exp    = con['TIME.WAIT.4H']
@@ -1068,7 +1074,7 @@ def format_message_boss(boss, status, time, bossmap, channel):
         map_str     = '.'
     else:
         map_str     = ", in the following maps: # " + '. '.join(bossmap[0:])
-    message     = "\"" + boss + "\"" + status_str + time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
+    message     = "\"" + boss + "\"" + status_str + report_time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
                   expect_str + map_str + "\n"
     return message
 
