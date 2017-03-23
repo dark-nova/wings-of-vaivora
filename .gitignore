@@ -3,6 +3,8 @@
 discordtoken
 *~
 *.db
+*.pyc
+
 # directories
 venv_ttos
 db.backup
