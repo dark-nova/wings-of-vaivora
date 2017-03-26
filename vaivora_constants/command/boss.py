@@ -1,5 +1,6 @@
 #vaivora_constants.command.boss
 #requires: vaivora_constants.command.syntax
+import vaivora_constants.command.syntax
 
 command     =   vaivora_constants.command.syntax.code_block + "ini\n" + "[$boss] commands" + "\n" + \
                 ";================" + "\n" + \
@@ -18,6 +19,7 @@ arg[N][0]       =   "[prefix]"
 arg[N][1]       =   dict()
 arg[N][1][A]    =   "[boss|all]"
 arg[N][1][B]    =   "boss"
+arg[N][2]       =   dict()
 arg[N][2][A]    =   "[died|anchored|warned]"
 arg[N][2][B]    =   "[erase|list]"
 arg[N][3]       =   "(time)"
@@ -33,7 +35,7 @@ usage       =   arg[N][0] + " " + arg[N][1][B] + " " + arg[N][2][A] + " " + arg[
 command     +=  usage
 
 arg_info    =   list()
-arg_info.append(arg[N][1]     + "\n" + \
+arg_info.append(arg[N][1][B]  + "\n" + \
                 "    Either part of, or full name; if spaced, enclose in double-quotes (`\"`)\n" + \
                 "    [all] for all bosses\n")
 arg_info.append(arg[N][2][A]  + "\n" + \
