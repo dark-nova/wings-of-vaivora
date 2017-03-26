@@ -1,4 +1,6 @@
 import re
+import sys
+import constant
 from datetime import datetime, timedelta
 
 # constants
@@ -8,6 +10,7 @@ class TOS_CONSTANTS:
         pass
 
     def con():
+        con_module              = sys.modules[__name__]    
         def boss():
             def arg():
                 def count():
@@ -17,7 +20,7 @@ class TOS_CONSTANTS:
             def logger():
                 name            = "wings.logger"
                 file            = name + ".log"
-            debug               = logger.name + "debug.log"
+            debug               = con_module.files.logger.name + "debug.log"
             valid_db            = "wings-valid_db"
             norepeat            = "wings-norepeat"
             welcomed            = "wings-welcomed"
@@ -93,7 +96,7 @@ class TOS_CONSTANTS:
 
     def reason():
         def invalid():
-            database            = 
+            database            = ""
     #   regular constants
     con = dict()
 
@@ -109,16 +112,16 @@ class TOS_CONSTANTS:
     # cmd['reminders']            = "Command: Reminders"    ####TODO
     #     error(**) constants for "reason" argument
 
-    reason = dict()
-    reason['baddb'] = con['STR.REASON'] + "Bad Database"
-    reason['unkwn'] = con['STR.REASON'] + "Unknown"
-    reason['broad'] = con['STR.REASON'] + "Broad Command"
-    reason['argct'] = con['STR.REASON'] + "Argument Count"
-    reason['noanc'] = con['STR.REASON'] + "Cannot Anchor"
-    reason['unknb'] = con['STR.REASON'] + "Unknown Boss"
-    reason['syntx'] = con['STR.REASON'] + "Malformed Syntax"
-    reason['quote'] = con['STR.REASON'] + "Mismatched Quotes"
-    reason['bdmap'] = con['STR.REASON'] + "Bad Map"
-    reason['bdtme'] = con['STR.REASON'] + "Bad Time"
-    reason['fdbos'] = con['STR.REASON'] + "Field Boss Channel"
+    # reason = dict()
+    # reason['baddb'] = con['STR.REASON'] + "Bad Database"
+    # reason['unkwn'] = con['STR.REASON'] + "Unknown"
+    # reason['broad'] = con['STR.REASON'] + "Broad Command"
+    # reason['argct'] = con['STR.REASON'] + "Argument Count"
+    # reason['noanc'] = con['STR.REASON'] + "Cannot Anchor"
+    # reason['unknb'] = con['STR.REASON'] + "Unknown Boss"
+    # reason['syntx'] = con['STR.REASON'] + "Malformed Syntax"
+    # reason['quote'] = con['STR.REASON'] + "Mismatched Quotes"
+    # reason['bdmap'] = con['STR.REASON'] + "Bad Map"
+    # reason['bdtme'] = con['STR.REASON'] + "Bad Time"
+    # reason['fdbos'] = con['STR.REASON'] + "Field Boss Channel"
 

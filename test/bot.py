@@ -136,7 +136,7 @@ rx['boss.status.anchor']    = re.compile(r'([Aa]nchored)', re.IGNORECASE)
 rx['boss.status.warning']   = re.compile(r'([Ww]arn(ed)?)', re.IGNORECASE)
 rx['boss.channel']          = re.compile(r'[Cc]([Hh])?[1-4]$', re.IGNORECASE)
 rx['boss.floors']           = re.compile(r'[bfd]?[0-9][bfd]?$', re.IGNORECASE)
-rx['boss.floors.format']    = re.compile(r'.*(?P<basement>b?)(?P<floor>f?)(?P<district>([Dd] ?(ist(rict)?)?)?) ?(?P<floornumber>[0-9]) ?(?P=basement)?(?P=floor)?(?P=district)?$', re.IGNORECASE)
+rx['boss.floors.format']    = re.compile(r'.*(?P<basement>b?)(?P<floor>f?)(?P<district>([Dd] ?(ist(rict)?)?)?) ?(?P<floornumber>[1-5]) ?(?P=basement)?(?P=floor)?(?P=district)?$', re.IGNORECASE)
 # rx['boss.floors.arrange']   = re.compile(r'\g<floor>\g<floornumber>\g<basement>', re.IGNORECASE)
 rx['vaivora.boss']          = re.compile(r'([Vv]a?i(v|b)ora, |\$)boss', re.IGNORECASE)
 rx['boss.arg.all']          = re.compile(r'all', re.IGNORECASE)
@@ -886,14 +886,13 @@ async def on_message(message):
             if tdiff.seconds < 0:  #or tdiff.seconds > 64800:
                 with open(con['DEBUG.FILE'],'a') as f:
                     f.write("server",message.server,"; tdiff",tdiff,"; mdate",mdate)
-                err_code = await error(message.author, message.channel, reason['bdtme'], cmd['name'], msg=command[2])
-                return err_code
+                return await error(message.author, message.channel, reason['bdtme'], cmd['name'], msg=command[2])
 
             #wait_time = con['TIME.WAIT.ANCHOR'] if rx['boss.status.anchor'].match(command[1]) else con['TIME.WAIT.4H']
             wait_time = con['TIME.WAIT.4H'] + con['TIME.OFFSET.PACIFIC']
             bhour = bhour + (int(wait_time.seconds) / 3600) # bhour in Pacific/local
             if message_args['name'] in bos02s and rx['boss.status.anchor'].match(command[1]): # you cannot anchor events
-                err_code = await error(message.author, message.channel, reason['noanc'], cmd['name'])
+                return await error(message.author, message.channel, reason['noanc'], cmd['name']) 
             elif message_args['name'] in bos02s or rx['boss.status.warning'].match(command[1]):
                 if bhour < 2:
                     bhour += 22
@@ -945,13 +944,23 @@ async def on_message(message):
         #await client.process_commands(message)
         return False
 
+def get_file_length(f):
+    with open(f) as a_file:
+        n = -1
+        for n, ln in enumerate(f):
+            pass
+        return n + 1
+
 # @func:    check_databases()
 async def check_databases():
     await client.wait_until_ready()
     results = dict()
+    today = datetime.today() # check on first launch
+
     while not client.is_closed:
         await asyncio.sleep(60)
         valid_dbs = []
+        no_repeat = []
         try:
             f = open(con['FILES.VALIDDB'],'r')
         except:
@@ -962,8 +971,10 @@ async def check_databases():
         except:
             open(con['FILES.NOREPEAT'],'a').close()
             g = open(con['FILES.NOREPEAT'],'r')
-        for line in f:
-            valid_dbs.append(line.strip())
+        for line_f in f:
+            valid_dbs.append(line_f.strip())
+        for line_g in g:
+            no_repeat.append(line_g.strip())
         print("Valid DBs: ", len(valid_dbs))
         for valid_db in valid_dbs:
             # check all timers
@@ -975,9 +986,9 @@ async def check_databases():
                 continue
             results[valid_db].sort(key=itemgetter(5,6,7,8,9))
             for result in results[valid_db]:
-                tupletime = [int(t) for t in result[5:10]]
+                list_time = [int(t) for t in result[5:10]]
                 try:
-                    rtime = datetime(*tupletime)
+                    rtime = datetime(*list_time)
                 except:
                     #TODO: remove entry
                     continue
@@ -992,14 +1003,11 @@ async def check_databases():
                     continue
                 if tdiff.seconds < 900 and tdiff.days == 0:
                     msgb = []
-                    no_repeat = []
                     msgb.append(format_message_boss(result[0], result[3], rtime_east, result[2], result[1]))
                     msgb.append(str(result[4]),)
                     strm = str(result[4]) + ":" + str(result[0]) + ":" + str(result[3]) + ":" + \
                            str(rtime_east) + ":" + str(result[1]) + "\n"
-                    for line_g in g:
-                        no_repeat.append(line_g.rstrip())
-                    if strm.rstrip() in no_repeat:
+                    if strm.rstrip() in no_repeat or strm in no_repeat:
                         continue
                     else:
                         with open(con['FILES.NOREPEAT'], 'a') as h:
@@ -1010,7 +1018,17 @@ async def check_databases():
             # message: str, str
             if len(message_send) == 0:
                 continue
-            messtr = str()
+            # right_now = datetime.now()
+            # dated_fil = "-" + str(right_now.year) + str(right_now.month) + str(right_now.day) + \
+            #             "." + str(right_now.hour) + str(right_now.minute)
+            # # remove clutter while nothing is reported
+            # os.rename(con['FILES.NOREPEAT'], con['FILES.NOREPEAT'] + dated_fil)
+            # with open('wings-norepeat-temp','a')
+            # len(line_g)-len(message_send)
+            # for i in range(len(line_g)):
+            # implement later.
+
+
             srv = client.get_server(rx['str.ext.db'].sub('', valid_db))
             cur_channel = ''
             for message in message_send:
@@ -1033,6 +1051,8 @@ async def check_databases():
 def format_message_boss(boss, status, time, bossmap, channel):
     if status == "warned":
         bossmap = [(bossmap,)]
+    elif not boss in bossfl:
+        bossmap = bosslo[boss]
     elif bossmap == 'N/A':
         bossmap = ['[Map Unknown]',]
     elif boss == "Blasphemous Deathweaver" and re.search("[Aa]shaq", bossmap):
@@ -1044,21 +1064,20 @@ def format_message_boss(boss, status, time, bossmap, channel):
 
     if rx['boss.status.anchor'].search(status):
         report_time = time+timedelta(hours=-3)
-        status_str = "was anchored"
+        status_str = " was anchored"
     elif rx['boss.status.warning'].search(status):
         report_time = time+timedelta(hours=-2)
-        status_str = "was warned to spawn"
+        status_str = " was warned to spawn"
     else:
         if boss in bos02s:
             report_time = time+timedelta(hours=-2)
         elif boss in bos16s:
             report_time = time+timedelta(hours=-16)
-            print(report_time)
         else:
             report_time = time+timedelta(hours=-4)
-        status_str = "died"
+        status_str = " died"
 
-    status_str  = " " + status_str + " at "
+    status_str  = status_str + " in ch." + str(int(channel)) + " at "
     # if boss not in bos16s and boss not in bos02s:
     #     time_exp    = con['TIME.WAIT.4H']
     # elif boss in bos16s:
@@ -1073,7 +1092,7 @@ def format_message_boss(boss, status, time, bossmap, channel):
     if "[Map Unknown]" in bossmap:
         map_str     = '.'
     else:
-        map_str     = ", in the following maps: # " + '. '.join(bossmap[0:])
+        map_str     = ", in one of the the following maps:" + '\n#    ' + '\n#    '.join(bossmap[0:])
     message     = "\"" + boss + "\"" + status_str + report_time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
                   expect_str + map_str + "\n"
     return message
@@ -1107,8 +1126,7 @@ async def check_maps(maps, boss):
     if boss == "Blasphemous Deathweaver" and not rx['boss.dw.ambi'].search(maps):
         return -1
 
-
-    if rx['boss.floors.format'].search(maps):
+    elif rx['boss.floors.format'].search(maps) or boss == "Blasphemous Deathweaver":
         # rearrange letters, and remove map name
         if boss == "Wrathful Harpeia":
             mapnum = rx['boss.floors.format'].sub(r'\g<floornumber>', maps)
@@ -1123,7 +1141,6 @@ async def check_maps(maps, boss):
         elif boss == "Blasphemous Deathweaver":
             mapnum = rx['boss.dw.loc.ashaq'].sub('', mapnum) # erase name and redo
             maps = "Ashaq Underground Prison " + mapnum
-
         # elif boss == "Wrathful Harpeia":
         #     if rx['boss.hp.loc.dp'].search(maps):
         #         mapnum = rx['boss.hp.loc.dp'].sub('', mapnum) # erase name and redo
@@ -1135,13 +1152,17 @@ async def check_maps(maps, boss):
     # elif rx['format.numbers'].search(maps) and boss != "Bleak Chapparition":
     #     mapname = rx['format.numbers'].sub('', bosslo[boss][0])
     #     maps = mapname + maps
-
+    mapidx = -1
     for m in bosslo[boss]:
         if m.lower() in maps.lower():
-            return bosslo[boss].index(m)
-        if maps.lower() in m.lower():
-            return bosslo[boss].index(m)
-    return -1
+            if mapidx != -1:
+                return -1
+            mapidx = bosslo[boss].index(m)
+        elif maps.lower() in m.lower():
+            if mapidx != -1:
+                return -1
+            mapidx = bosslo[boss].index(m)
+    return mapidx
 
 # @func:  error(**): begin code for error message printing to user
 # @arg:
