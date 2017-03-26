@@ -4,6 +4,7 @@ discordtoken
 *~
 *.db
 *.pyc
+wings*
 
 # directories
 venv_ttos
