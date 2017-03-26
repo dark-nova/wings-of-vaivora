@@ -151,6 +151,8 @@ rx['boss.hp.loc.dp.dist']   = re.compile(r'([Dd] ?(istrict)?)?[125]', re.IGNOREC
 rx['boss.hp.loc.dp.dist.n'] = re.compile(r'([Dd] ?(ist(rict)?)?)?', re.IGNORECASE)
 rx['str.ext.db']            = re.compile(r'\.db$', re.IGNORECASE)
 rx['str.fnm.db']            = re.compile(r'[0-9]{18,}')
+rx['ohoho']                 = re.compile(r'\#(oh)+', re.IGNORECASE)
+rx['meme']                  = re.compile(r'vaivora[, ]*pl(ea)?[sz]e?', re.IGNORECASE)
 #   error(**) related constants
 #     error(**) constants for "command" argument
 cmd                         = dict()
@@ -331,10 +333,12 @@ async def update_boss_db(c, boss_dict):
 
     # invalid case: more than one entry for this combination
     #### TODO: keep most recent time? 
-    if len(contents) >= 1: #and boss_dict['name'] not in bos16s:
+    if boss_dict['name'] != "Blasphemous Deathweaver" and len(contents) >= 1: #and boss_dict['name'] not in bos16s:
+        await rm_ent_boss_db(c, boss_dict)
+    elif boss_dict['name'] == "Blasphemous Deathweaver" and len(contents) >= 2:
         await rm_ent_boss_db(c, boss_dict)
 
-    # if entry has newer data, discard previous
+    # if entry has newer data, discard previousit's 
     if contents and (int(contents[0][5]) < boss_dict['year'] or \
                      int(contents[0][6]) < boss_dict['month'] or \
                      int(contents[0][7]) < boss_dict['day'] or \
@@ -367,8 +371,9 @@ async def update_boss_db(c, boss_dict):
 async def rm_ent_boss_db(c, bd=None, bn=None, ch=None, perm=True):
     #if perm: # temporary. going to implement permissions for this
      #   return True
+    rm_map = None
     if bd:
-        rm_name, rm_channel = bd['name'], bd['channel']
+        rm_name, rm_channel, rm_map = bd['name'], bd['channel'], bd['map']
     elif bn and ch:
         rm_name, rm_channel = bn, ch
     elif bn:
@@ -379,6 +384,8 @@ async def rm_ent_boss_db(c, bd=None, bn=None, ch=None, perm=True):
     try:
         if rm_channel:
             c.execute("delete from boss where name=? and channel=?", (rm_name, rm_channel,))
+        elif rm_name == "Blasphemous Deathweaver" and rm_map:
+            c.execute("delete from boss where name=? and map=?", (rm_name, rm_map))
         else:
             c.execute("delete from boss where name=?", (rm_name,))
     except:
@@ -500,7 +507,6 @@ bosalt = ['Mirtis',
 # 'name' - N - 'special'
 #   list of bosses with unusual spawn time of 2h
 bos02s = ['Abomination',
-          'Kubas Event',
           'Dullahan Event']
 #   list of bosses with unusual spawn time of 16h
 bos16s = ['Demon Lord Nuaele',
@@ -660,6 +666,7 @@ async def on_message(message):
     # 'name' channel processing
     if not message.channel or not message.channel.name:
         return
+
     if "timer" in message.channel.name or "boss" in message.channel.name:
         # 'name' channel command: $boss
         #     arg order:
@@ -745,7 +752,7 @@ async def on_message(message):
                     if int(difftime.days) >= 0:
                         tense += "should have respawned at "
                         tense_time += "ago"
-                        tense_mins = int(difftime.seconds / 60)
+                        tense_mins = int(difftime.seconds / 60) + int(difftime.days*con['TIME.SECONDS.IN.DAY']/60)
                     else:
                         tense += "will respawn around "
                         tense_time += "from now"
@@ -934,7 +941,7 @@ async def on_message(message):
                 err_code = await error(message.author, message.channel, reason['unkwn'], cmd['name'])
                 return err_code
 
-            await client.send_message(message.channel, message.author.mention + cmd_usage['boss.acknowledged'] + \
+            await client.send_message(message.channel, message.author.mention + " " + cmd_usage['boss.acknowledged'] + \
                                       message_args['name'] + " " + message_args['status'] + " at " + \
                                       ("0" if oribhour < 10 else "") + \
                                       str(oribhour) + ":" + \
@@ -944,7 +951,13 @@ async def on_message(message):
 
             #await client.process_commands(message)
             return True # command processed
-                
+    
+    elif rx['ohoho'].search(message.content):
+        await client.send_message(message.channel, "https://youtu.be/XzBCBIVC7Qg?t=12s")
+        return True
+    elif rx['meme'].match(message.content):
+        await client.send_message(message.channel, message.author.mention + " " + "http://i.imgur.com/xiuxzUW.png")
+        return True
     else:
         #await client.process_commands(message)
         return False
@@ -1033,8 +1046,12 @@ async def check_databases():
             # for i in range(len(line_g)):
             # implement later.
 
-
+            r = "@here"
             srv = client.get_server(rx['str.ext.db'].sub('', valid_db))
+            for role in srv.roles:
+                if role.mentionable and role.name == "Boss Hunter":
+                    r = role.mention
+                    break
             cur_channel = ''
             for message in message_send:
                 if cur_channel != message[-1] and not rx['format.letters'].match(message[-1]):
@@ -1043,7 +1060,7 @@ async def check_databases():
                         await client.send_message(srv.get_channel(cur_channel), messtr)
                     cur_channel = message[-1]
                     #TODO: Replace 15 with custom server time threshold
-                    messtr = "@here The following bosses will spawn within " + "15" + " minutes: ```python\n"
+                    messtr = r + " The following bosses will spawn within " + "15" + " minutes: ```python\n"
                 messtr += message[0]
             # flush
             messtr += "```"
