@@ -37,21 +37,22 @@ cmd_error[B][2] = boss_msg + "map.\n"
 cmd_error[B][3] = boss_msg + "status.\n"
 
 cmd_error[R]                = dict()
-cmd_error[R][0]             = R + "Unknown"
+cmd_error[R][0]             = R + "Unknown\n"
+cmd_error[R][1]             = R + "Ambiguous\n"
 
 cmd_error[R][BAD]           = dict()
 
 # Reason: Bad ...
 cmd_error[R][BAD][SYN]      = dict()
-cmd_error[R][BAD][SYN][1]   = R + BAD + "Syntax"
-cmd_error[R][BAD][SYN][2]   = R + BAD + "Argument Count"
-cmd_error[R][BAD][SYN][3]   = R + BAD + "Database"
-cmd_error[R][BAD][SYN][4]   = R + BAD + "Quote Count"
+cmd_error[R][BAD][SYN][1]   = R + BAD + "Syntax\n"
+cmd_error[R][BAD][SYN][2]   = R + BAD + "Argument Count\n"
+cmd_error[R][BAD][SYN][3]   = R + BAD + "Database\n"
+cmd_error[R][BAD][SYN][4]   = R + BAD + "Quote Count\n"
 
 # Reason: Bad Boss ...
 cmd_error[R][BAD][BOSS]     = dict()
-cmd_error[R][BAD][BOSS][1]  = R + BAD + BOSS + "Name"
-cmd_error[R][BAD][BOSS][2]  = R + BAD + BOSS + "Map"
-cmd_error[R][BAD][BOSS][3]  = R + BAD + BOSS + "Time"
-cmd_error[R][BAD][BOSS][4]  = R + BAD + BOSS + "Channel (Field)"
-cmd_error[R][BAD][BOSS][5]  = R + BAD + BOSS + "Status (Anchor)"
+cmd_error[R][BAD][BOSS][1]  = R + BAD + BOSS + "Name\n"
+cmd_error[R][BAD][BOSS][2]  = R + BAD + BOSS + "Map\n"
+cmd_error[R][BAD][BOSS][3]  = R + BAD + BOSS + "Time\n"
+cmd_error[R][BAD][BOSS][4]  = R + BAD + BOSS + "Channel (Field)\n"
+cmd_error[R][BAD][BOSS][5]  = R + BAD + BOSS + "Status (Anchor)\n"
