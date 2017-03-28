@@ -46,12 +46,13 @@ arg_info.append(arg[N][2][B]  + "\n" + \
 arg_info.append(arg[N][3]     + " ; required for [died] and [anchored]\n" + \
                 "    Remove spaces. 12 hour and 24 hour times acceptable, with valid delimiters \":\" and \".\". Use server time.\n")
 arg_info.append(arg[O][2]     + " ; optional\n" + \
-                "    Handy for field bosses* only. If unlisted, this will be unassumed.\n")
+                "    Handy for field bosses[*] only. If unlisted, this will be unassumed.\n")
 arg_info.append(arg[O][1]     + " ; optional\n" + \
                 "    Suitable only for world bosses.[*] If unlisted, CH[1] will be assumed.\n" + "\n")
 arg_info.append("[*] ; Notes about world and field bosses:\n" + \
                 "    ; Field bosses in channels other than 1 are considered 'world boss' variants.\n" + \
-                "    ; and should not be recorded because they spawn unpredictably.\n")
+                "    ; and should not be recorded because they spawn unpredictably, because they're jackpot bosses.\n" + \
+                "    ; Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.\n")
 
 command     +=  ''.join(arg_info)
 
