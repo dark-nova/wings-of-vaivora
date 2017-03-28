@@ -18,7 +18,7 @@ arg[N]          =   dict()
 arg[N][0]       =   "[prefix]"
 arg[N][1]       =   dict()
 arg[N][1][A]    =   "[boss|all]"
-arg[N][1][B]    =   "boss"
+arg[N][1][B]    =   "[boss]"
 arg[N][2]       =   dict()
 arg[N][2][A]    =   "[died|anchored|warned]"
 arg[N][2][B]    =   "[erase|list]"
@@ -36,7 +36,7 @@ command     +=  usage
 
 arg_info    =   list()
 arg_info.append(arg[N][1][B]  + "\n" + \
-                "    Either part of, or full name; if spaced, enclose in double-quotes (`\"`)\n" + \
+                "    Either part of, or full name- if spaced, enclose in double-quotes (`\"`)\n" + \
                 "    [all] for all bosses\n")
 arg_info.append(arg[N][2][A]  + "\n" + \
                 "    Valid for [boss] only, to indicate its status. Do not use with [erase] or [list].\n")
@@ -55,7 +55,7 @@ arg_info.append("[*] ; Notes about world and field bosses:\n" + \
 
 command     +=  ''.join(arg_info)
 
-examples    =   vaivora_constants.command.syntax.example + \
+examples    =   "\n" + vaivora_constants.command.syntax.example + \
                 "[$boss cerb died 12:00pm 4f]        ; channel can be omitted for field bosses\n" + \
                 "[Vaivora, boss crab died 14:00 ch2] ; map can be omitted for world bosses\n"
 

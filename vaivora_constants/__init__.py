@@ -19,7 +19,9 @@ __all__ = [ #"values", \
             "regex.boss.location", \
             "regex.boss.command", \
             "regex.format.matching", \
-            "regex.format.time"
+            "regex.format.time", \
+            "regex.commands", \
+            "fun"
             ]
 
 vaivora = [ "vaivora_constants" ] * len(__all__)
