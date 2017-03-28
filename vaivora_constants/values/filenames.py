@@ -4,9 +4,11 @@ wings       = "wings-"
 txt         = ".txt"
 log         = ".log"
 
+logger      = wings + "logger"
+
 valid_db    = wings + "valid_db"    + txt
-norepeat    = wings + "no_repeat"   + txt
+no_repeat   = wings + "no_repeat"   + txt
 welcomed    = wings + "welcomed"    + txt
 
-file        = wings + "logger"      + log
-debug       = wings + "debug"       + log
+log_file    = logger                + log
+debug_file  = wings + "debug"       + log
