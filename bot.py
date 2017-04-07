@@ -14,35 +14,36 @@ from importlib import import_module as im
 import vaivora_constants
 for mod in vaivora_constants.modules:
     im(mod)
-import vaivora_db
+#import vaivora_modules.db
+import vaivora_modules.version
 
 # basic declarations and initializations
 client    = discord.Client()
 
 # database formats
 prototype = dict()
-prototype['time'] = ('year', 'month', 'day', 'hour', 'minute')
-prototype['boss'] = ('name', 'channel', 'map', 'status', 'text_channel') + prototype['time']
-prototype['remi'] = ('user', 'comment') + prototype['time']
-prototype['talt'] = ('user', 'previous', 'current', 'valid') + prototype['time']
-prototype['perm'] = ('user', 'role')
+prototype[ 'time'] = ('year', 'month', 'day', 'hour', 'minute')
+prototype[ 'boss'] = ('name', 'channel', 'map', 'status', 'text_channel') + prototype[ 'time']
+prototype[ 'remi'] = ('user', 'comment') + prototype[ 'time']
+prototype[ 'talt'] = ('user', 'previous', 'current', 'valid') + prototype[ 'time']
+prototype[ 'perm'] = ('user', 'role')
 
 # and the database formats' types
-prototype['time.types'] = ('real',)*5
-prototype['boss.types'] = ('text',) + ('real',) + ('text',)*3 + prototype['time.types']
-prototype['remi.types'] = ('text',)*2 + prototype['time.types']
-prototype['talt.types'] = ('text',) + ('real',)*3 + prototype['time.types']
-prototype['perm.types'] = ('text',)*2
+prototype[ 'time.types'] = ('real',)*5
+prototype[ 'boss.types'] = ('text',) + ('real',) + ('text',)*3 + prototype[ 'time.types']
+prototype[ 'remi.types'] = ('text',)*2 + prototype[ 'time.types']
+prototype[ 'talt.types'] = ('text',) + ('real',)*3 + prototype[ 'time.types']
+prototype[ 'perm.types'] = ('text',)*2
 
 # zip, create, concatenate into tuple
 boss_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(prototype['boss'], prototype['boss.types']))
+                   zip(prototype[ 'boss'], prototype[ 'boss.types']))
 remi_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(prototype['remi'], prototype['remi.types']))
+                   zip(prototype[ 'remi'], prototype[ 'remi.types']))
 talt_tuple = tuple('{} {}'.format(*t) for t in 
-                   zip(prototype['talt'], prototype['talt.types']))
+                   zip(prototype[ 'talt'], prototype[ 'talt.types']))
 perm_tuple = tuple('{} {}'.format(*t) for t in
-                   zip(prototype['perm'], prototype['perm.types']))
+                   zip(prototype[ 'perm'], prototype[ 'perm.types']))
 
 # snippet from discord.py docs
 logger = logging.getLogger(vaivora_constants.values.filenames.logger)
@@ -88,154 +89,9 @@ async def func_discord_db(discord_server, db_func, xargs=None):
     conn.close()
     return dbif
 
-# @func:      create_discord_db(sqlite3.connect.cursor)
-# @arg:
-#   conn:           the sqlite3 connection
-# @return:
-#   None
-async def create_discord_db(c):
-    # delete tables if necessary since it may be invalid #### Maybe to ignore?
-    c.execute('drop table if exists boss')
-    c.execute('drop table if exists reminders')
-    c.execute('drop table if exists talt')
-    c.execute('drop table if exists permissions')
 
-    # create boss table
-    c.execute('create table boss({})'.format(','.join(boss_tuple)))
 
-    # create reminders table
-    c.execute('create table reminders({})'.format(','.join(remi_tuple)))
 
-    # create talt tracking table
-    c.execute('create table talt({})'.format(','.join(talt_tuple)))
-
-    # create permissions hierarchy
-    c.execute('create table permissions({})'.format(','.join(perm_tuple)))
-    
-    return
-
-# @func:    validate_discord_db(sqlite3.connect.cursor)
-# @arg:
-#   c:              the sqlite3 connection cursor
-# @return:
-#   True if valid, False otherwise
-async def validate_discord_db(c):
-    # check boss table
-    try:
-        c.execute('select * from boss')
-    except:
-        await create_discord_db(c)
-        return True
-    r = c.fetchone()
-    if not r:
-        return True # it's empty. probably works.
-    # check if boss table matches format
-    if sorted(tuple(r.keys())) != sorted(vaivora_db.columns[vaivora_db.BOSS]):
-        return False # invalid db
-    #### TODO: Validate other tables when implemented, priority: medium
-    return True
-
-# @func:    check_boss_db(sqlite3.connect.cursor, list)
-# @arg:
-#   c:              the sqlite3 connection cursor
-#   boss_list:      list containing bosses to check
-# @return:
-#   False if db is not prepared; otherwise, a list
-async def check_boss_db(c, boss_list):
-    db_record = list()
-    for b in boss_list:
-        c.execute("select * from boss where name=?", (b,))
-        records = c.fetchall()
-        for record in records:
-            db_record.append(tuple(record))
-    # return a list of records
-    return db_record
-# @func:    update_boss_db(sqlite3.connect.cursor, dict)
-# @arg:
-#   c:              the sqlite3 connection cursor
-#   boss_dict:      message_args from on_message(*)
-# @return:
-#   True if successful, False otherwise
-async def update_boss_db(c, boss_dict):
-    # the following two bosses rotate per spawn
-    if boss_dict['name'] == 'Mirtis' or boss_dict['name'] == 'Helgasercle':
-        c.execute("select * from boss where name=?", ('Mirtis',))
-        contents = c.fetchall()
-        c.execute("select * from boss where name=?", ('Helgasercle',))
-        contents += c.fetchall()
-    elif boss_dict['name'] == 'Demon Lord Marnox' or boss_dict['name'] == 'Rexipher':
-        c.execute("select * from boss where name=?", ('Demon Lord Marnox',))
-        contents = c.fetchall()
-        c.execute("select * from boss where name=?", ('Rexipher',))
-        contents += c.fetchall()
-    elif boss_dict['name'] == 'Blasphemous Deathweaver':
-        c.execute("select * from boss where name=? and map=?", \
-          (boss_dict['name'], boss_dict['map'],))
-        contents = c.fetchall()
-    else:
-        c.execute("select * from boss where name=? and channel=?", (boss_dict['name'], boss_dict['channel'],))
-        contents = c.fetchall()
-
-    # invalid case: more than one entry for this combination
-    #### TODO: keep most recent time? 
-    if boss_dict['name'] != "Blasphemous Deathweaver" and len(contents) >= 1: #and boss_dict['name'] not in bos16s:
-        await rm_ent_boss_db(c, boss_dict)
-    elif boss_dict['name'] == "Blasphemous Deathweaver" and len(contents) >= 2:
-        await rm_ent_boss_db(c, boss_dict)
-
-    # if entry has newer data, discard previousit's 
-    if contents and (int(contents[0][5]) < boss_dict['year'] or \
-                     int(contents[0][6]) < boss_dict['month'] or \
-                     int(contents[0][7]) < boss_dict['day'] or \
-                     int(contents[0][8]) < boss_dict['hour'] - 3):
-        await rm_ent_boss_db(c, boss_dict)
-
-    #try: # boss database structure
-    c.execute("insert into boss values (?,?,?,?,?,?,?,?,?,?)",
-              (str(boss_dict['name']),
-               int(boss_dict['channel']),
-               str(boss_dict['map']),
-               str(boss_dict['status']),
-               str(boss_dict['srvchn']),
-               int(boss_dict['year']),
-               int(boss_dict['month']),
-               int(boss_dict['day']),
-               int(boss_dict['hour']),
-               int(boss_dict['mins'])))
-    # except:
-    #     return False
-    return True
-
-# @func:    rm_ent_boss_db(sqlite3.connect.cursor, dict, int)
-# @arg:
-#   c:              the sqlite3 connection cursor
-#   boss_dict:      message_args from on_message(*)
-#   ch:             Default: None; the channel to remove
-# @return:
-#   True if successful, False otherwise
-async def rm_ent_boss_db(c, bd=None, bn=None, ch=None, perm=True):
-    #if perm: # temporary. going to implement permissions for this
-     #   return True
-    rm_map = None
-    if bd:
-        rm_name, rm_channel, rm_map = bd['name'], bd['channel'], bd['map']
-    elif bn and ch:
-        rm_name, rm_channel = bn, ch
-    elif bn:
-        rm_name = bn
-        rm_channel = None
-    else:
-        return False
-    try:
-        if rm_channel:
-            c.execute("delete from boss where name=? and channel=?", (rm_name, rm_channel,))
-        elif rm_name == "Blasphemous Deathweaver" and rm_map:
-            c.execute("delete from boss where name=? and map=?", (rm_name, rm_map))
-        else:
-            c.execute("delete from boss where name=?", (rm_name,))
-    except:
-        return False
-    return True
 
 # @func:    on_ready()
 # @return:
@@ -307,195 +163,7 @@ async def on_server_join(server):
             await client.send_message(server.owner, vaivora_constants.values.words.message.welcome)
     return True
 
-# begin boss related variables
 
-# 'bosses'
-#   list of boss names in full
-bosses = ['Blasphemous Deathweaver',
-          'Bleak Chapparition',
-          'Hungry Velnia Monkey',
-          'Abomination',
-          'Earth Templeshooter',
-          'Earth Canceril',
-          'Earth Archon',
-          'Violent Cerberus',
-          'Necroventer',
-          'Forest Keeper Ferret Marauder',
-          'Kubas Event',
-          'Noisy Mineloader',
-          'Burning Fire Lord',
-          'Wrathful Harpeia',
-          'Glackuman',
-          'Marionette',
-          'Dullahan Event',
-          'Starving Ellaganos',
-          'Prison Manager Prison Cutter',
-          'Mirtis',
-          'Rexipher',
-          'Helgasercle',
-          'Demon Lord Marnox',
-          'Demon Lord Nuaele',
-          'Demon Lord Zaura',
-          'Demon Lord Blut',
-          'Legwyn Crystal Event']
-#   field bosses
-bossfl = bosses[0:3] + [bosses[7], bosses[9],] + bosses[11:14] + bosses[17:-1]
-#   world bosses
-bosswo = [b for b in bosses if b not in bossfl]
-
-# 'name'es that 'alt'ernate
-bosalt = ['Mirtis',
-          'Rexipher',
-          'Helgasercle',
-          'Demon Lord Marnox']
-
-# 'name' - N - 'special'
-#   list of bosses with unusual spawn time of 2h
-bos02s = ['Abomination',
-          'Dullahan Event']
-#   list of bosses with unusual spawn time of 16h
-bos16s = ['Demon Lord Nuaele',
-          'Demon Lord Zaura',
-          'Demon Lord Blut']
-boseve = ['Kubas Event',
-          'Dullahan Event',
-          'Legwyn Crystal Event']
-
-# 'boss synonyms'
-# - keys: boss names (var `bosses`)
-# - values: list of synonyms of boss names
-bossyn = {'Blasphemous Deathweaver':['dw','spider','deathweaver'],
-          'Bleak Chapparition':['chap','chapparition'],
-          'Hungry Velnia Monkey':['monkey','velnia','velniamonkey',
-            'velnia monkey'],
-          'Abomination':['abom','abomination'],
-          'Earth Templeshooter':['temple shooter','TS','ETS','templeshooter'],
-          'Earth Canceril':['canceril','crab','ec'],
-          'Earth Archon':['archon'],
-          'Violent Cerberus':['cerb','dog','doge','cerberus'],
-          'Necroventer':['nv','necro','necroventer'],
-          'Forest Keeper Ferret Marauder':['ferret','marauder'],
-          'Kubas Event':['kubas'],
-          'Noisy Mineloader':['ml','mineloader'],
-          'Burning Fire Lord':['firelord','fl','fire lord'],
-          'Wrathful Harpeia':['harp','harpy','harpie','harpeia'],
-          'Glackuman':['glack','glackuman'],
-          'Marionette':['mario','marionette'],
-          'Dullahan Event':['dull','dulla','dullachan'],
-          'Starving Ellaganos':['ella','ellaganos'],
-          'Prison Manager Prison Cutter':['cutter','prison cutter',
-            'prison manager','prison manager cutter'],
-          'Mirtis':['mirtis'],
-          'Rexipher':['rexipher','rexi','rexifer'],
-          'Helgasercle':['helga','helgasercle'],
-          'Demon Lord Marnox':['marnox','marn'],
-          'Demon Lord Nuaele':['nuaele'],
-          'Demon Lord Zaura':['zaura'],
-          'Demon Lord Blut':['blut'],
-          'Legwyn Crystal Event':['legwyn','crystal']}
-
-# 'boss synonyms short'
-# - list of synonyms of boss names
-bossns = []
-for l in list(bossyn.values()):
-    bossns.extend(l)
-
-# 'boss location'
-# - keys: boss names (var `bosses`)
-# - values: list of locations, full name
-    bosslo = {'Blasphemous Deathweaver':['Crystal Mine 2F',
-                                         'Crystal Mine 3F',
-                                         'Ashaq Underground Prison 1F',
-                                         'Ashaq Underground Prison 2F',
-                                         'Ashaq Underground Prison 3F'],
-              'Bleak Chapparition':['Tenet Church B1',
-                                    'Tenet Church 1F'],
-              'Hungry Velnia Monkey':['Novaha Assembly Hall',
-                                      'Novaha Annex',
-                                      'Novaha Institute'],
-              'Abomination':['Guards\' Graveyard'],
-              'Earth Templeshooter':['Royal Mausoleum Workers\' Lodge'],
-              'Earth Canceril':['Royal Mausoleum Constructors\' Chapel'],
-              'Earth Archon':['Royal Mausoleum Storage'],
-              'Violent Cerberus':['Royal Mausoleum 4F',
-                                  'Royal Mausoleum 5F'],
-              'Necroventer':['Residence of the Fallen Legwyn Family'],
-              'Forest Keeper Ferret Marauder':['Bellai Rainforest',
-                                               'Zeraha',
-                                               'Seir Rainforest'],
-              'Kubas Event':['Crystal Mine Lot 2 - 2F'],
-              'Noisy Mineloader':['Mage Tower 4F','Mage Tower 5F'],
-              'Burning Fire Lord':['Main Chamber','Sanctuary'],
-              'Wrathful Harpeia':['Demon Prison District 1',
-                                  'Demon Prison District 2',
-                                  'Demon Prison District 5'],
-              'Glackuman':['2nd Demon Prison'],
-              'Marionette':['Roxona Reconstruction Agency East Building'],
-              'Dullahan Event':['Roxona Reconstruction Agency West Building'],
-              'Starving Ellaganos':['Mokusul Chamber',
-                                    'Videntis Shrine'],
-              'Prison Manager Prison Cutter':['Drill Ground of Confliction',
-                                              'Resident Quarter',
-                                              'Storage Quarter',
-                                              'Fortress Battlegrounds'],
-              'Mirtis':['Kalejimas Visiting Room',
-                        'Storage',
-                        'Solitary Cells',
-                        'Workshop',
-                        'Investigation Room'],
-              'Helgasercle':['Kalejimas Visiting Room',
-                        'Storage',
-                        'Solitary Cells',
-                        'Workshop',
-                        'Investigation Room'],
-              'Rexipher':['Thaumas Trail',
-                          'Salvia Forest',
-                          'Sekta Forest',
-                          'Rasvoy Lake',
-                          'Oasseu Memorial'],
-              'Demon Lord Marnox':['Thaumas Trail',
-                          'Salvia Forest',
-                          'Sekta Forest',
-                          'Rasvoy Lake',
-                          'Oasseu Memorial'],
-              'Demon Lord Nuaele':['Yudejan Forest',
-                                   'Nobreer Forest',
-                                   'Emmet Forest',
-                                   'Pystis Forest',
-                                   'Syla Forest'],
-              'Demon Lord Zaura':['Arcus Forest',
-                                  'Phamer Forest',
-                                  'Ghibulinas Forest',
-                                  'Mollogheo Forest'],
-              'Demon Lord Blut':['Tevhrin Stalactite Cave Section 1',
-                                 'Tevhrin Stalactite Cave Section 2',
-                                 'Tevhrin Stalactite Cave Section 3',
-                                 'Tevhrin Stalactite Cave Section 4',
-                                 'Tevhrin Stalactite Cave Section 5'],
-              'Legwyn Crystal Event':['Residence of the Fallen Legwyn Family']
-         }
-
-# 'boss location synonyms'
-# - list of synonyms of boss locations
-# -- grouping similar locations by line
-bossls = ['crystal mine','ashaq',
-          'tenet',
-          'novaha',
-          'guards','graveyard',
-          'maus','mausoleum',
-          'legwyn',
-          'bellai','zeraha','seir',
-          'mage tower','mt',
-          'demon prison','dp',
-          'main chamber','sanctuary','sanc',
-          'roxona',
-          'mokusul','videntis',
-          'drill','quarter','battlegrounds',
-          'kalejimas','storage','solitary','workshop','investigation',
-          'thaumas','salvia','sekta','rasvoy','oasseu',
-          'yudejan','nobreer','emmet','pystis','syla',
-          'arcus','phamer','ghibulinas','mollogheo',
-          'tevhrin']
 # probably won't be using this, in hindsight.
 
 # end of boss related variables
@@ -644,7 +312,7 @@ async def on_message(message):
 
 
                     bossrec_str.append("\"" + brec[0] + "\" " + brec[3] + " in ch." + str(int(brec[1])) + tense + \
-                                       recdate.strftime("%Y/%m/%d \"%H:%M\"") + \
+                                       recdate.strftime("%Y/%m/%d %H:%M") + \
                                        " (" + tense_mins + tense_time + ")" + \
                                        ". Last known map: # " + brec[2])
                 await client.send_message(message.channel, message.author.mention + " Records: ```python\n" + \
@@ -759,14 +427,14 @@ async def on_message(message):
 
             # everything looks good if the string passes through
             # begin compiling record in dict form 'message_args'
-            message_args['name'] = bosses[boss_idx]
-            message_args['channel'] = boss_channel
+            message_args[ 'name'] = bosses[boss_idx]
+            message_args[ 'channel'] = boss_channel
             if maps_idx >= 0:
-                message_args['map'] = bosslo[message_args['name']][maps_idx]
-            elif not message_args['name'] in bossfl:
-                message_args['map'] = bosslo[message_args['name']][0]
+                message_args[ 'map'] = bosslo[message_args[ 'name']][maps_idx]
+            elif not message_args[ 'name'] in bossfl:
+                message_args[ 'map'] = bosslo[message_args[ 'name']][0]
             else:
-                message_args['map'] = 'N/A'
+                message_args[ 'map'] = 'N/A'
 
             # process time
             #     antemeridian
@@ -812,20 +480,20 @@ async def on_message(message):
             print(wait_time)
             bhour = bhour + (int(wait_time.seconds) / 3600) # bhour in Pacific/local
             print(wait_time.seconds)
-            if message_args['name'] in boseve and vaivora_constants.regex.boss.status.anchored.match(command[1]):
+            if message_args[ 'name'] in boseve and vaivora_constants.regex.boss.status.anchored.match(command[1]):
                 return await error(message.author, message.channel, \
                                    vaivora_constants.command.syntax.cmd_error\
                                    [vaivora_constants.command.syntax.R]\
                                    [vaivora_constants.command.syntax.BAD]\
                                    [vaivora_constants.command.syntax.BOSS][5], \
                                    vaivora_constants.regex.commands.boss, msg=command[1])
-            elif message_args['name'] in bos02s or vaivora_constants.regex.boss.status.warning.match(command[1]):
+            elif message_args[ 'name'] in bos02s or vaivora_constants.regex.boss.status.warning.match(command[1]):
                 if bhour < 2:
                     bhour += 22
                     btday -= 1
                 else:
                     bhour -= 2
-            elif message_args['name'] in bos16s:
+            elif message_args[ 'name'] in bos16s:
                 bhour += 12 # 12 + 4 = 16
                 
             print(bhour)
@@ -837,13 +505,13 @@ async def on_message(message):
                 byear = tomorrow.year
 
             # add them to dict
-            message_args['hour']      = bhour
-            message_args['mins']      = bminu
-            message_args['day']       = btday
-            message_args['month']     = btmon
-            message_args['year']      = byear
-            message_args['status']    = command[1] # anchored or died
-            message_args['srvchn']    = message.channel.id
+            message_args[ 'hour']      = bhour
+            message_args[ 'mins']      = bminu
+            message_args[ 'day']       = btday
+            message_args[ 'month']     = btmon
+            message_args[ 'year']      = byear
+            message_args[ 'status']    = command[1] # anchored or died
+            message_args[ 'srvchn']    = message.channel.id
 
             status  = await func_discord_db(command_server, validate_discord_db)
             if not status: # db is not valid
@@ -866,12 +534,12 @@ async def on_message(message):
 
             await client.send_message(message.channel, message.author.mention + " " + \
                                       vaivora_constants.command.boss.acknowledge + \
-                                      message_args['name'] + " " + message_args['status'] + " at " + \
+                                      message_args[ 'name'] + " " + message_args[ 'status'] + " at " + \
                                       ("0" if oribhour < 10 else "") + \
                                       str(oribhour) + ":" + \
-                                      ("0" if message_args['mins'] < 10 else "") + \
-                                      str(message_args['mins']) + ", CH" + str(message_args['channel']) + ": " + \
-                                      (message_args['map'] if message_args['map'] != "N/A" else ""))
+                                      ("0" if message_args[ 'mins'] < 10 else "") + \
+                                      str(message_args[ 'mins']) + ", CH" + str(message_args[ 'channel']) + ": " + \
+                                      (message_args[ 'map'] if message_args[ 'map'] != "N/A" else ""))
 
             #await client.process_commands(message)
             return True # command processed
@@ -1000,7 +668,7 @@ def format_message_boss(boss, status, time, bossmap, channel):
     elif not boss in bossfl:
         bossmap = bosslo[boss]
     elif bossmap == 'N/A':
-        bossmap = ['[Map Unknown]',]
+        bossmap = [ '[Map Unknown]',]
     elif boss == "Blasphemous Deathweaver" and re.search("[Aa]shaq", bossmap):
         bossmap = [m for m in bosslo[boss][2:-1] if m != bossmap]
     elif boss == "Blasphemous Deathweaver":
@@ -1028,9 +696,9 @@ def format_message_boss(boss, status, time, bossmap, channel):
     # if boss not in bos16s and boss not in bos02s:
     #     time_exp    = vaivora_constants.values.time.offset.boss_spawn_04h
     # elif boss in bos16s:
-    #     time_exp    = con['TIME.WAIT.16H']
+    #     time_exp    = con[ 'TIME.WAIT.16H']
     # elif boss in bos02s:
-    #     time_exp    = con['TIME.WAIT.2H']
+    #     time_exp    = con[ 'TIME.WAIT.2H']
     expect_str  = (("between " + (time-timedelta(hours=1)).strftime("%Y/%m/%d %H:%M") + " and ") \
                    if vaivora_constants.regex.boss.status.anchored.match(status) else "at ") + \
                   (time).strftime("%Y/%m/%d %H:%M") + \
@@ -1141,9 +809,9 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
         if etype == vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.R][1]:
             ret_msg.append(user_name + the_following_argument('name') + msg + \
                            ") for `$boss` has multiple matching spawn points:\n")
-            ret_msg.append(cmd_usage['code_block'])
+            ret_msg.append(cmd_usage[ 'code_block'])
             ret_msg.append('\n'.join(bosslo[msg]))
-            ret_msg.append(cmd_usage['code_block'])
+            ret_msg.append(cmd_usage[ 'code_block'])
             ret_msg.append(vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.G][2])
             ret_msg.append(vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.B][2])
             ecode = vaivora_constants.values.error_codes.broad
@@ -1158,9 +826,9 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
         elif etype == vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.R][vaivora_constants.command.syntax.BAD][vaivora_constants.command.syntax.BOSS][1]:
             ret_msg.append(user_name + the_following_argument('name') + msg + \
                            ") is invalid for `$boss`. This is a list of bosses you may use:\n")
-            ret_msg.append(cmd_usage['code_block'])
+            ret_msg.append(cmd_usage[ 'code_block'])
             ret_msg.append('\n'.join(bosses))
-            ret_msg.append(cmd_usage['code_block'])
+            ret_msg.append(cmd_usage[ 'code_block'])
             ret_msg.append(vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.B][1])
             ecode = vaivora_constants.values.error_codes.wrong
         elif etype == vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.R][vaivora_constants.command.syntax.BAD][vaivora_constants.command.syntax.BOSS][5]:
@@ -1172,15 +840,15 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             try_msg.append(user_name + the_following_argument('map') + msg + \
                            ") (number) is invalid for `$boss`. This is a list of maps you may use:\n")
             try: # make sure the data is valid by `try`ing
-              try_msg.append(cmd_usage['code_block'])
+              try_msg.append(cmd_usage[ 'code_block'])
               try_msg.append('\n'.join(bosslo[xmsg]))
-              try_msg.append(cmd_usage['code_block'])
+              try_msg.append(cmd_usage[ 'code_block'])
               try_msg.append(vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.B][2])
               # seems to have succeeded, so extend to original
               ret_msg.extend(try_msg)
               ecode = vaivora_constants.values.error_codes.wrong
             except: # boss not found! 
-              ret_msg.append(user_name + cmd_usage['debug'])
+              ret_msg.append(user_name + cmd_usage[ 'debug'])
               ret_msg.append(vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.G][1])
               ecode = vaivora_constants.values.error_codes.syntax
               with open(vaivora_constants.values.filenames.debug_file, 'a') as f:
@@ -1217,7 +885,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             ret_msg.append(vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.G][1])
             ecode = vaivora_constants.values.error_codes.syntax
         else:
-            ret_msg.append(user_name + cmd_usage['debug'] + "\n" + etype)
+            ret_msg.append(user_name + cmd_usage[ 'debug'] + "\n" + etype)
             ret_msg.append(vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.G][1])
             ecode = vaivora_constants.values.error_codes.syntax
             await client.send_message(channel, '\n'.join(ret_msg))
@@ -1233,7 +901,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
     # todo: reminders, Talt tracking, permissions
     else:
         # todo
-        ret_msg.append(user_name + cmd_usage['debug'])
+        ret_msg.append(user_name + cmd_usage[ 'debug'])
         ret_msg.append(vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.G][1])
         ecode = vaivora_constants.values.error_codes.syntax
         await client.send_message(channel, '\n'.join(ret_msg))
