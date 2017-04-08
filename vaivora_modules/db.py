@@ -6,7 +6,7 @@ from .. import vaivora_constants
 for mod in vaivora_constants.modules:
     im(".." + mod)
 
-class db:
+class Database:
     # constants
     TIME                    = "Time"
     modules                 = ['boss', 'reminders', 'talt', 'permissions' ]
@@ -47,6 +47,7 @@ class db:
         self.db_id          = str(db_id)
         self.db_name        = self.db_id + ".db"
         open_db(self)
+        self.invalid        = check_if_invalid(self)
         if self.invalid:
             create_db(self, invalid)
         save_db(self)        
