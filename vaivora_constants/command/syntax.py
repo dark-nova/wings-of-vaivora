@@ -3,6 +3,10 @@
 # cmd['talt']                 = "Command: Talt Tracker" ####TODO
 # cmd['reminders']            = "Command: Reminders"    ####TODO
 
+
+cmd_pre         = "Command: "
+cmd_boss        = cmd_pre + "Boss\n"
+
 heading         = "Usage:\n"
 code_block      = "```"
 back_tick       = "`"
