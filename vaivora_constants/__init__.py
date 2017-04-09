@@ -17,13 +17,14 @@ __all__ = [ #"values", \
             # "command.reminders", \
             "regex.db", \
             "regex.boss.status", \
+            "regex.boss.command", \
             "regex.boss.location", \
             "regex.format.matching", \
             "regex.format.time", \
-            "regex.commands", \
+            #"regex.commands", \
             "fun"
             ]
 
-#vaivora = [ "vaivora_constants" ] * len(__all__)
+vaivora = [ "vaivora_constants" ] * len(__all__)
 
-#modules = [ '.'.join(t) for t in zip(vaivora, __all__) ]
+modules = [ '.'.join(t) for t in zip(vaivora, __all__) ]
