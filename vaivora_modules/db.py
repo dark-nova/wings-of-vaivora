@@ -2,9 +2,9 @@ import sqlite3
 
 # import additional constants
 from importlib import import_module as im
-from .. import vaivora_constants
+import vaivora_constants
 for mod in vaivora_constants.modules:
-    im(".." + mod)
+    im(mod)
 
 class Database:
     # constants
@@ -46,11 +46,11 @@ class Database:
     def __init__(self, db_id):
         self.db_id          = str(db_id)
         self.db_name        = self.db_id + ".db"
-        open_db(self)
-        self.invalid        = check_if_invalid(self)
+        self.open_db()
+        self.invalid        = self.check_if_invalid()
         if self.invalid:
-            create_db(self, invalid)
-        save_db(self)        
+            self.create_db(invalid)
+        self.save_db()
 
     def open_db(self):
         self.connect        = sqlite3.connect(self.db_name)
@@ -59,9 +59,12 @@ class Database:
 
 
     def save_db(self):
-        self.cursor.commit()
-        self.cursor.close()
+        self.connect.commit()
+        self.connect.close()
 
+
+    def get_id(self):
+        return self.db_id
 
     # @func:    create_db(self, list)
     # @post:    no invalid databases
@@ -91,7 +94,7 @@ class Database:
     #           a list containing invalid database module names (str) or None
     def check_if_invalid(self):
         invalid = []
-        for module in modules:
+        for module in self.modules:
             try:
                 self.cursor.execute('select * from ' + module)
             except:
@@ -100,7 +103,7 @@ class Database:
             r = self.cursor.fetchone()
             if not r:
                 continue # it's empty. probably works.
-            if sorted(tuple(r.keys())) != sorted(columns[module]):
+            if sorted(tuple(r.keys())) != sorted(self.columns[module]):
                 invalid.append(module)
                 continue
         return invalid
@@ -114,10 +117,13 @@ class Database:
     # @return:
     #   db_record:
     #           a list containing records or None
-    def check_db_boss(self, bosses=vaivora_constants.command.boss.bosses):
+    def check_db_boss(self, bosses=vaivora_constants.command.boss.bosses, channel=0):
         db_record = list()
         for boss in bosses:
-            self.cursor.execute("select * from boss where name=?", (boss,))
+            if channel:
+                self.cursor.execute("select * from boss where name=? and channel=?", (boss, channel,))
+            else:
+                self.cursor.execute("select * from boss where name=?", (boss,))
             records = self.cursor.fetchall()
             for record in records:
                 db_record.append(tuple(record))
@@ -131,7 +137,7 @@ class Database:
     #   boss_dict:      message_args from on_message(*)
     # @return:
     #   True if successful, False otherwise
-    async def update_db_boss(self, boss_dict):
+    def update_db_boss(self, boss_dict):
         # the following two bosses rotate per spawn
         if boss_dict['name'] == 'Mirtis' or boss_dict['name'] == 'Helgasercle':
             self.cursor.execute("select * from boss where name=?", ('Mirtis',))
@@ -154,92 +160,59 @@ class Database:
         # invalid case: more than one entry for this combination
         #### TODO: keep most recent time? 
         if   boss_dict['name'] != "Blasphemous Deathweaver" and len(contents) >= 1:
-            await rm_entry_db_boss(self, boss_dict)
+            self.rm_entry_db_boss(boss_name=boss_dict['name'], boss_map=boss_dict['map'])
         elif boss_dict['name'] == "Blasphemous Deathweaver" and len(contents) >= 2:
-            await rm_entry_db_boss(self, boss_dict)
+            self.rm_entry_db_boss(boss_name=boss_dict['name'])
 
         # if entry has newer data, discard previousit's 
         if contents and (int(contents[0][5]) < boss_dict['year'] or \
                          int(contents[0][6]) < boss_dict['month'] or \
                          int(contents[0][7]) < boss_dict['day'] or \
                          int(contents[0][8]) < boss_dict['hour'] - 3):
-            await rm_entry_db_boss(self, boss_dict)
+            self.rm_entry_db_boss(boss_name=boss_dict['name'])
 
         #try: # boss database structure
         self.cursor.execute("insert into boss values (?,?,?,?,?,?,?,?,?,?)", \
-                            (str(boss_dict['name']), \
+                            (str(boss_dict['name'   ]), \
                              int(boss_dict['channel']), \
-                             str(boss_dict['map']), \
-                             str(boss_dict['status']), \
-                             str(boss_dict['srvchn']), \
-                             int(boss_dict['year']), \
-                             int(boss_dict['month']), \
-                             int(boss_dict['day']), \
-                             int(boss_dict['hour']), \
-                             int(boss_dict['mins'])))
+                             str(boss_dict['map'    ]), \
+                             str(boss_dict['status' ]), \
+                             str(boss_dict['srvchn' ]), \
+                             int(boss_dict['year'   ]), \
+                             int(boss_dict['month'  ]), \
+                             int(boss_dict['day'    ]), \
+                             int(boss_dict['hour'   ]), \
+                             int(boss_dict['mins'   ])))
         # except:
         #     return False
         return True
 
-
-
-##### Utility/helper functions #####
-
-    # @func:    formmat_message_boss(str, str, datetime, str, int)
+    # @func:    rm_entry_db_boss(, dict, int)
     # @arg:
-    #   boss:
-    #       str
-    def format_message_boss(boss, status, time, bossmap, channel):
-        kubas_ch    = ''
-        if vaivora_constants.regex.boss.status.warning.match(status):
-            bossmap     = [(bossmap,)]
-        elif boss in vaivora_constants.command.boss.bosses_world:
-            bossmap     = [(vaivora_constants.command.boss.boss_loc[boss],)]
-        elif bossmap == 'N/A':
-            bossmap     = ['[Map Unknown]',]
-        elif boss == "Blasphemous Deathweaver" and vaivora_constants.regex.boss.location.AS.search(bossmap):
-            bossmap     = [m for m in vaivora_constants.command.boss.boss_loc[boss][2:-1] if m != bossmap]
-        elif boss == "Blasphemous Deathweaver":
-            bossmap     = [m for m in vaivora_constants.command.boss.boss_loc[boss][0:2] if m != bossmap]
-        else:
-            bossmap     = [m for m in vaivora_constants.command.boss.boss_loc[boss] if m != bossmap]
-
-        if boss == "Kubas Event":
-            kubas_ch    = 1 if channel == 2 else 2
-            kubas_ch    = " Machine of Riddles, ch."  + str(kubas_ch) + "."
-
-        if vaivora_constants.regex.boss.status.anchored.search(status):
-            report_time = time+timedelta(hours=-3)
-            status_str  = " was anchored"
-        elif vaivora_constants.regex.boss.status.warning.search(status):
-            report_time = time+timedelta(hours=-2)
-            status_str  = " was warned to spawn"
-        else:
-            if   boss in boss_spawn_02h:
-                report_time = time+timedelta(hours=-2)
-            elif boss in boss_spawn_16h:
-                report_time = time+timedelta(hours=-16)
-                print(report_time)
+    #   c:              the sqlite3 connection cursor
+    #   boss_dict:      message_args from on_message(*)
+    #   ch:             Default: None; the channel to remove
+    # @return:
+    #   True if successful, False otherwise
+    def rm_entry_db_boss(self, boss_list=vaivora_constants.command.boss.bosses, boss_ch=0, boss_map=''):
+        for boss in boss_list:
+            if boss_ch:
+                self.cursor.execute("delete from boss where name=? and channel=?", (boss, boss_ch,))
+            elif boss_map:
+                ####TODO: make more generalized case. Currently applies only to Deathweaver
+                dw_idx  = vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
+                if dw_idx == 0 or dw_idx == 1: # crystal mine
+                    dw_idx = [(dw_idx + 1) % 2,]
+                else:
+                    dw_idx = [(dw_idx % 3 + 2, (dw_idx-1) % 3 + 2,)]
+                for idx in dw_idx:
+                    try:
+                        self.cursor.execute("delete from boss where name=? and map=?", \
+                                            (boss, vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'][idx],))
+                    except:
+                        continue
             else:
-                report_time = time+timedelta(hours=-4)
-            status_str = " died"
-
-        status_str  = status_str + " in ch." + str(int(channel)) + " at "
-        # if boss not in bos16s and boss not in bos02s:
-        #     time_exp    = vaivora_constants.values.time.offset.boss_spawn_04h
-        # elif boss in bos16s:
-        #     time_exp    = con['TIME.WAIT.16H']
-        # elif boss in bos02s:
-        #     time_exp    = con['TIME.WAIT.2H']
-        expect_str  = (("between " + (time-timedelta(hours=1)).strftime("%Y/%m/%d %H:%M") + " and ") \
-                       if vaivora_constants.regex.boss.status.anchored.match(status) else "at ") + \
-                      (time).strftime("%Y/%m/%d %H:%M") + \
-                      " (in " + str(int((time-datetime.now()+vaivora_constants.values.time.offset.server2pacific).seconds/60)) + " minutes)"
-
-        if "[Map Unknown]" in bossmap:
-            map_str     = '.'
-        else:
-            map_str     = ", in one of the the following maps:" + '\n#    ' + '\n#    '.join(bossmap[0:])
-        message     = "\"" + boss + "\"" + status_str + report_time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
-                      expect_str + map_str + kubas_ch + "\n"
-        return message
+                self.cursor.execute("delete from boss where name=?", (boss,))
+        except:
+            return False
+        return True
