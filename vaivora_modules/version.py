@@ -15,7 +15,7 @@ status_n.append(milestone)
 date_n.append("2017/03/29")
 
 def check_revisions(srv_ver):
-    count   = 0
+    count   = -1
     srv_ver = srv_ver.split('.')
 
     if not srv_ver[1][0:-1]:
@@ -32,22 +32,20 @@ def check_revisions(srv_ver):
            subver_n[count]  == subver           and \
            hotfix_n[count]  == hotfix           and \
            status_n[count]  <= srv_ver[0][0]):
+        print(hotfix_n[count], hotfix)
         count -= 1
 
-    return count
+    return (count+1)
 
 
 def get_current_version():
-    return status_n[count] + version_n[count] + "." + subver_n[count] + hotfix_n[count]
+    return status_n[-1] + version_n[-1] + "." + subver_n[-1] + hotfix_n[-1]
 
 
 def get_header():
-    return """
-    ```ini
-    [Version:] """ + get_current_version() + """\n
-    [Date:]    """ + date_n[count] + """\n
-    ```
-    """
+    return """```ini
+[Version:] """ + get_current_version() + """
+[Date:]    """ + date_n[-1] + """```"""
 
 
 def get_index(st, v, su, h):
@@ -55,7 +53,7 @@ def get_index(st, v, su, h):
     for n, status, version, subver, hotfix in zip(range(len(version_n)), status_n, version_n, subver_n, hotfix_n):
         if st == status and v == version and su == subver and h == hotfix:
             return n
-    return count
+    return -1
 
 
 def get_changelogs(idx=0):
@@ -63,8 +61,7 @@ def get_changelogs(idx=0):
 
 
 current     = get_header() + \
-"""
-```diff
+"""```diff
 + 'Wings of Vaivora' has been rewritten using a separate module for constants. Performance should subsequently be higher.
 + The welcome message should now be clearer with a brighter display.
 
@@ -79,21 +76,53 @@ current     = get_header() + \
 changelog.append(current)
 
 
+version_n.append('1')
+subver_n.append('1')
+hotfix_n.append('')
+status_n.append(milestone)
+date_n.append("2017/04/09")
 
-# version_n.append('')
-# subver_n.append('')
-# hotfix_n.append('')
-# status_n.append(milestone) # or nightly
-# date_n.append("2017/12/12")
+current     = get_header() + \
+"""```diff
++ 'Wings of Vaivora' has been rewritten fully with the constants module in place.
++ Squished some bugs related to the migration of modules.
++ Actually published this. Sorry for the delay on the downtime!
 
-# version     = status_now + str(version_n) + "." + \
-#               str(subver_n) + hotfix_n
-# version_l   = version # uncomment below line if nightly/unstable version is in development
+- Upcoming changes:
+  + Talt Tracker to be developed next
+  + Custom settings, including the option to 'unsubscribe' from these notifications, will be implemented after.
+  + Custom permissions will also be included.
+```"""
 
-# header     = \
-# """
-# ```ini
-# [Version:]""" + status_n[count] + version_n[count] + "." + subver_n[count] + hotfix_n[count] + """\n
-# [Date:]   """ + date_n[count] + """\n
-# ```
-# """
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('1')
+hotfix_n.append('a')
+status_n.append(milestone)
+date_n.append("2017/04/09")
+
+current     = get_header() + \
+"""```diff
++ Versioning corrected.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('1')
+hotfix_n.append('b')
+status_n.append(milestone)
+date_n.append("2017/04/09")
+
+current     = get_header() + \
+"""```diff
++ Versioning _really_ corrected.
++ Several bugs related to file creation also fixed.
+```"""
+
+changelog.append(current)

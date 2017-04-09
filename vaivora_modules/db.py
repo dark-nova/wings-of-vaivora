@@ -49,8 +49,7 @@ class Database:
         self.open_db()
         self.invalid        = self.check_if_invalid()
         if self.invalid:
-            self.create_db(invalid)
-        self.save_db()
+            self.create_db(self.invalid)
 
     def open_db(self):
         self.connect        = sqlite3.connect(self.db_name)
@@ -60,7 +59,7 @@ class Database:
 
     def save_db(self):
         self.connect.commit()
-        self.connect.close()
+        #self.connect.close()
 
 
     def get_id(self):
@@ -76,13 +75,15 @@ class Database:
     # @return:
     #   None
     def create_db(self, invalid=modules):
+        #self.open_db()
         for invalid_module in invalid:
             self.cursor.execute('drop table if exists {}'.format(invalid_module))
-            self.cursor.execute('create table {}({})'.format((invalid_module, ','.join(dbs[invalid_module]),)))
+            self.cursor.execute('create table {}({})'.format(invalid_module, ','.join(self.dbs[invalid_module])))
         # else:
         #     for module in modules:
         #         self.cursor.execute('create table {}({})'.format((module, ','.join(dbs[module]),)))
         self.invalid = []
+        self.save_db()
         return
 
 
@@ -93,6 +94,7 @@ class Database:
     #   invalid:
     #           a list containing invalid database module names (str) or None
     def check_if_invalid(self):
+        #self.open_db()
         invalid = []
         for module in self.modules:
             try:
@@ -106,6 +108,7 @@ class Database:
             if sorted(tuple(r.keys())) != sorted(self.columns[module]):
                 invalid.append(module)
                 continue
+        self.save_db()
         return invalid
 
 
@@ -118,6 +121,7 @@ class Database:
     #   db_record:
     #           a list containing records or None
     def check_db_boss(self, bosses=vaivora_constants.command.boss.bosses, channel=0):
+        #self.open_db()
         db_record = list()
         for boss in bosses:
             if channel:
@@ -127,6 +131,7 @@ class Database:
             records = self.cursor.fetchall()
             for record in records:
                 db_record.append(tuple(record))
+        self.save_db()
         # return a list of records
         return db_record
 
@@ -138,6 +143,7 @@ class Database:
     # @return:
     #   True if successful, False otherwise
     def update_db_boss(self, boss_dict):
+        #self.open_db()
         # the following two bosses rotate per spawn
         if boss_dict['name'] == 'Mirtis' or boss_dict['name'] == 'Helgasercle':
             self.cursor.execute("select * from boss where name=?", ('Mirtis',))
@@ -160,16 +166,16 @@ class Database:
         # invalid case: more than one entry for this combination
         #### TODO: keep most recent time? 
         if   boss_dict['name'] != "Blasphemous Deathweaver" and len(contents) >= 1:
-            self.rm_entry_db_boss(boss_name=boss_dict['name'], boss_map=boss_dict['map'])
+            self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
         elif boss_dict['name'] == "Blasphemous Deathweaver" and len(contents) >= 2:
-            self.rm_entry_db_boss(boss_name=boss_dict['name'])
+            self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_map=boss_dict['map'])
 
         # if entry has newer data, discard previousit's 
         if contents and (int(contents[0][5]) < boss_dict['year'] or \
                          int(contents[0][6]) < boss_dict['month'] or \
                          int(contents[0][7]) < boss_dict['day'] or \
                          int(contents[0][8]) < boss_dict['hour'] - 3):
-            self.rm_entry_db_boss(boss_name=boss_dict['name'])
+            self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
 
         #try: # boss database structure
         self.cursor.execute("insert into boss values (?,?,?,?,?,?,?,?,?,?)", \
@@ -183,8 +189,7 @@ class Database:
                              int(boss_dict['day'    ]), \
                              int(boss_dict['hour'   ]), \
                              int(boss_dict['mins'   ])))
-        # except:
-        #     return False
+        self.save_db()
         return True
 
     # @func:    rm_entry_db_boss(, dict, int)
@@ -195,6 +200,7 @@ class Database:
     # @return:
     #   True if successful, False otherwise
     def rm_entry_db_boss(self, boss_list=vaivora_constants.command.boss.bosses, boss_ch=0, boss_map=''):
+        #self.open_db()
         for boss in boss_list:
             if boss_ch:
                 self.cursor.execute("delete from boss where name=? and channel=?", (boss, boss_ch,))
@@ -202,17 +208,16 @@ class Database:
                 ####TODO: make more generalized case. Currently applies only to Deathweaver
                 dw_idx  = vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
                 if dw_idx == 0 or dw_idx == 1: # crystal mine
-                    dw_idx = [(dw_idx + 1) % 2,]
+                    dw_idx = [((dw_idx + 1) % 2,)]
                 else:
                     dw_idx = [(dw_idx % 3 + 2, (dw_idx-1) % 3 + 2,)]
                 for idx in dw_idx:
                     try:
                         self.cursor.execute("delete from boss where name=? and map=?", \
-                                            (boss, vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'][idx],))
+                                            (boss, vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'][idx]))
                     except:
                         continue
             else:
                 self.cursor.execute("delete from boss where name=?", (boss,))
-        except:
-            return False
+        self.save_db()
         return True
