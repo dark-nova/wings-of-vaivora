@@ -32,7 +32,6 @@ def check_revisions(srv_ver):
            subver_n[count]  == subver           and \
            hotfix_n[count]  == hotfix           and \
            status_n[count]  <= srv_ver[0][0]):
-        print(hotfix_n[count], hotfix)
         count -= 1
 
     return (count+1)
@@ -57,7 +56,7 @@ def get_index(st, v, su, h):
 
 
 def get_changelogs(idx=0):
-    return '\n'.join(changelog[idx:])
+    return changelog[idx:]
 
 
 current     = get_header() + \
@@ -123,6 +122,132 @@ current     = get_header() + \
 """```diff
 + Versioning _really_ corrected.
 + Several bugs related to file creation also fixed.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('1')
+hotfix_n.append('c')
+status_n.append(milestone)
+date_n.append("2017/04/09")
+
+current     = get_header() + \
+"""```diff
++ Fixed issues with databases not connecting.
++ Fixed issues with commands.
++ Stopped Wings of Vaivora from shouting changelogs everytime. (MAYBE.)
+
+  * Thanks to Jiyuu for the feedback on all this.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('1')
+hotfix_n.append('d')
+status_n.append(milestone)
+date_n.append("2017/04/10")
+
+current     = get_header() + \
+"""```diff
++ Fixed issues with Deathweaver's map not recording.
+
+  * Thanks to Term for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('2')
+hotfix_n.append('')
+status_n.append(milestone)
+date_n.append("2017/04/10")
+
+current     = get_header() + \
+"""```diff
++ Fixed issues with Deathweaver's map not recording. (For real!)
+  + Corrected some other issues with the code. No more duplicate Deathweaver entries, for example.
++ Entries should be checked properly for time to prevent overlap.
+  + New error message for overlapping times.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('2')
+hotfix_n.append('a')
+status_n.append(milestone)
+date_n.append("2017/04/11")
+
+current     = get_header() + \
+"""```diff
++ Fixed logic with missing/broken references -- imported all the relevant modules.
+  + This may have impacted boss alerts. Sorry.
++ Changed the changelog delivery to server owners. Changelogs will come in separate messages. Apologies if you don't want notifications!
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('2')
+hotfix_n.append('b')
+status_n.append(milestone)
+date_n.append("2017/04/11")
+
+current     = get_header() + \
+"""```diff
++ Fixed logic with record files (not databases) that kept deleting contents.
+  + Sorry for the notifications. (Will be many like this for server owners... :( )
++ Fixed issuee with Deathweaver. You are now required to list map for Deathweaver.
+  
+  * Thanks to Term for the bug report, once again.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('2')
+hotfix_n.append('c')
+status_n.append(milestone)
+date_n.append("2017/04/12")
+
+current     = get_header() + \
+"""```diff
++ Fixed a misreferenced variable that caused issues with recording bosses.
+  
+  * Thanks to Kiito for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('2')
+hotfix_n.append('d')
+status_n.append(milestone)
+date_n.append("2017/04/12")
+
+current     = get_header() + \
+"""```diff
++ Identified the issue linked to records not reporting within threshold of 15 mminutes.
+  + Identified several other issues related to this.
+    + The "no repeat" file used to archive announced records was repeatedly erased. I suppose I learned a lesson in "a" and "a+" file modes.
+  
+  * Thanks to Kiito for the bug report.
 ```"""
 
 changelog.append(current)

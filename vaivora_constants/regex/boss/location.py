@@ -16,10 +16,14 @@ DN          = "Demon Prison District, no numbers"
 
 loc         = dict()
 loc[DW]     = dict()
-loc[DW][A]  = re.compile(r'(ashaq|c(rystal)? ?m(ine)?)', re.IGNORECASE)
-loc[DW][CM] = re.compile(r'c(rystal)? ?m(ine)?', re.IGNORECASE)
+loc[DW][A]  = re.compile(r'(ashaq|c(rystal)? ?m(ines?)?) ?', re.IGNORECASE)
+loc[DW][CM] = re.compile(r'c(rystal)? ?m(ines?)? ?', re.IGNORECASE)
 loc[DW][AS] = re.compile(r'ashaq[a-z ]*', re.IGNORECASE)
 loc[HA]     = dict()
 loc[HA][A]  = re.compile(r'd(emon)? ?p(ris(on?))? ?', re.IGNORECASE)
 loc[HA][DP] = re.compile(r'(d ?(ist(rict)?)?)?[125]', re.IGNORECASE)
 loc[HA][DN] = re.compile(r'(d ?(ist(rict)?)?)?', re.IGNORECASE)
+
+DW_A        = loc[DW][A]
+DW_AS       = loc[DW][AS]
+DW_CM       = loc[DW][CM]

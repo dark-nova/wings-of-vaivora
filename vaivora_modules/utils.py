@@ -1,4 +1,5 @@
 # import additional constants
+from datetime import timedelta, datetime
 from importlib import import_module as im
 import vaivora_constants
 for mod in vaivora_constants.modules:
@@ -11,21 +12,21 @@ for mod in vaivora_constants.modules:
 def format_message_boss(boss, status, time, bossmap, channel):
     kubas_ch    = ''
     if vaivora_constants.regex.boss.status.warning.match(status):
-        bossmap     = [(bossmap,)]
+        bossmap     = [bossmap,]
     elif boss in vaivora_constants.command.boss.bosses_world:
-        bossmap     = [(vaivora_constants.command.boss.boss_loc[boss],)]
+        bossmap     = vaivora_constants.command.boss.boss_locs[boss]
     elif bossmap == 'N/A':
         bossmap     = ['[Map Unknown]',]
-    elif boss == "Blasphemous Deathweaver" and vaivora_constants.regex.boss.location.AS.search(bossmap):
-        bossmap     = [m for m in vaivora_constants.command.boss.boss_loc[boss][2:-1] if m != bossmap]
+    elif boss == "Blasphemous Deathweaver" and vaivora_constants.regex.boss.location.DW_AS.search(bossmap):
+        bossmap     = [m for m in vaivora_constants.command.boss.boss_locs[boss][2:-1] if m != bossmap]
     elif boss == "Blasphemous Deathweaver":
-        bossmap     = [m for m in vaivora_constants.command.boss.boss_loc[boss][0:2] if m != bossmap]
+        bossmap     = [m for m in vaivora_constants.command.boss.boss_locs[boss][0:2] if m != bossmap]
     else:
-        bossmap     = [m for m in vaivora_constants.command.boss.boss_loc[boss] if m != bossmap]
+        bossmap     = [m for m in vaivora_constants.command.boss.boss_locs[boss] if m != bossmap]
 
     if boss == "Kubas Event":
-        kubas_ch    = 1 if channel == 2 else 2
-        kubas_ch    = " Machine of Riddles, ch."  + str(kubas_ch) + "."
+        kubas_ch    = 1 if int(channel) == 2 else 2
+        kubas_ch    = " [Machine of Riddles, ch."  + str(kubas_ch) + "]."
 
     if vaivora_constants.regex.boss.status.anchored.search(status):
         report_time = time+timedelta(hours=-3)
@@ -34,16 +35,15 @@ def format_message_boss(boss, status, time, bossmap, channel):
         report_time = time+timedelta(hours=-2)
         status_str  = " was warned to spawn"
     else:
-        if   boss in boss_spawn_02h:
+        if   boss in vaivora_constants.command.boss.boss_spawn_02h:
             report_time = time+timedelta(hours=-2)
-        elif boss in boss_spawn_16h:
+        elif boss in vaivora_constants.command.boss.boss_spawn_16h:
             report_time = time+timedelta(hours=-16)
-            print(report_time)
         else:
             report_time = time+timedelta(hours=-4)
         status_str = " died"
 
-    status_str  = status_str + " in ch." + str(int(channel)) + " at "
+    status_str  = status_str + " in ch." + str(int(float(channel))) + " at "
     # if boss not in bos16s and boss not in bos02s:
     #     time_exp    = vaivora_constants.values.time.offset.boss_spawn_04h
     # elif boss in bos16s:
