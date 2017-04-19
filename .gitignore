@@ -6,6 +6,7 @@ discordtoken
 *.pyc
 wings*
 *.old
+*.bak
 
 # directories
 test
