@@ -5,6 +5,7 @@ discordtoken
 *.db
 *.pyc
 wings*
+*.old
 
 # directories
 test
@@ -12,3 +13,4 @@ venv_ttos
 db.backup
 db.bak
 snapshot
+old
