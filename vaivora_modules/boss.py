@@ -1,4 +1,5 @@
 # import additional constants
+from datetime import datetime, timedelta
 from importlib import import_module as im
 import vaivora_constants
 for mod in vaivora_constants.modules:
@@ -31,12 +32,13 @@ def check_boss(entry):
 
     return vaivora_constants.command.boss.bosses.index(match)
 
-# @func:    check_maps(str, str): begin code for checking map validity
+# @func:    check_maps(str, str) : int
+#       begin code for checking map validity
 # @arg:
-#     maps: str; map name from raw input
-#     boss: str; the corresponding boss, as guaranteed by variable
+#       maps: map name from raw input
+#       boss: the corresponding boss, as guaranteed by variable
 # @return:
-#     map index in list, or -1 if not found or too many maps matched
+#       map index in list, or -1 if not found or too many maps matched
 def check_maps(maps, boss):
     map_number  = ''
     mapidx      = -1
@@ -73,13 +75,46 @@ def check_maps(maps, boss):
 
     return mapidx
 
-# @func:    get_syns(str)
-def get_syns(boss):
-    idx     = check_boss(boss)
-    boss    = vaivora_constants.command.boss.bosses[idx]
-    return "#   " + '\n#   '.join(vaivora_constants.command.boss.boss_synonyms[boss])
 
+# @func:    get_syns(str) : str
+# @arg:
+#       boss: the name of the boss
+# @return:
+#       a str containing a list of synonyms for boss
+def get_syns(boss):
+    return boss + " can be called using the following aliases: ```python\n" + \
+           "#   " + '\n#   '.join(vaivora_constants.command.boss.boss_synonyms[boss]) + "```\n"
+
+# @func:    get_maps(str) : str
+# @arg:
+#       boss: the name of the boss
+# @return:
+#       a str containing the list of maps for a boss
 def get_maps(boss):
-    idx     = check_boss(boss)
-    boss    = vaivora_constants.command.boss.bosses[idx]
-    return "#   " + '\n#   '.join(vaivora_constants.command.boss.boss_locs[boss])
+    return boss + " can be found in the following maps: ```python\n" + \
+           "#   " + '\n#   '.join(vaivora_constants.command.boss.boss_locs[boss]) + "```\n"
+
+# @func:    get_bosses_world() : str
+# @return:
+#       a str containing the list of world bosses
+def get_bosses_world():
+    return "The following bosses are considered world bosses: ```python\n" + \
+           "#   " + '\n#   '.join(vaivora_constants.command.boss.bosses_world) + "```\n"
+
+# @func:    get_bosses_field() : str
+# @return:
+#       a str containing the list of field bosses
+def get_bosses_field():
+    return "The following bosses are considered field bosses: ```python\n" + \
+           "#   " + '\n#   '.join(vaivora_constants.command.boss.bosses_field) + "```\n"
+
+# @func:    validate_channel(str) : int
+# @arg:
+#       boss: the name of the boss
+# @return:
+#       the channel parsed, or 1 (default) if ch could not be parsed or incorrect
+def validate_channel(ch):
+    if vaivora_constants.regex.boss.location.channel.match(ch):
+        return int(vaivora_constants.regex.format.matching.letters.sub('', ch))
+    else:
+        return 1

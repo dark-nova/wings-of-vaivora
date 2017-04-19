@@ -212,6 +212,8 @@ class Database:
     #   True if successful, False otherwise
     def rm_entry_db_boss(self, boss_list=vaivora_constants.command.boss.bosses, boss_ch=0, boss_map=''):
         #self.open_db()
+        if not boss_list:
+            boss_list = vaivora_constants.command.boss.bosses
         for boss in boss_list:
             if boss_ch:
                 self.cursor.execute("delete from boss where name=? and channel=?", (boss, boss_ch,))
