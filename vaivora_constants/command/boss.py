@@ -12,6 +12,8 @@ H               =   "help"
 
 A               =   "type A"
 B               =   "type B"
+C               =   "type C"
+D               =   "type D"
 
 arg             =   dict()
 arg[N]          =   dict()
@@ -19,9 +21,12 @@ arg[N][0]       =   "[prefix]"
 arg[N][1]       =   dict()
 arg[N][1][A]    =   "[boss|all]"
 arg[N][1][B]    =   "[boss]"
+arg[N][1][C]    =   "[all]"
 arg[N][2]       =   dict()
 arg[N][2][A]    =   "[died|anchored|warned]"
 arg[N][2][B]    =   "[erase|list]"
+arg[N][2][C]    =   "[synonyms|maps]"
+arg[N][2][D]    =   "[world|field]"
 arg[N][3]       =   "(time)"
 arg[O]          =   dict()
 arg[O][1]       =   "(chN)"
@@ -30,19 +35,30 @@ arg[H]          =   "help"
 
 usage       =   arg[N][0] + " " + arg[N][1][B] + " " + arg[N][2][A] + " " + arg[N][3] + " " + arg[O][1] + " " + arg[O][2] + " " + "\n" + \
                 arg[N][0] + " " + arg[N][1][A] + " " + arg[N][2][B] + " " + arg[O][2] + "\n" + \
+                arg[N][0] + " " + arg[N][1][B] + " " + arg[N][2][C] + "\n" + \
+                arg[N][0] + " " + arg[N][1][C] + " " + arg[N][2][D] + "\n" + \
                 arg[N][0] + " " + arg[N][1][B] + " " + arg[H] + "\n"
 
 command     +=  usage
 
 arg_info    =   list()
+arg_info.append(arg[N][0] + "\n" + \
+                "    [$boss] or [Vaivora, boss]\n")
 arg_info.append(arg[N][1][B]  + "\n" + \
                 "    Either part of, or full name- if spaced, enclose in double-quotes (`\"`)\n" + \
                 "    [all] for all bosses\n")
 arg_info.append(arg[N][2][A]  + "\n" + \
-                "    Valid for [boss] only, to indicate its status. Do not use with [erase] or [list].\n")
+                "    Valid for [boss] only, to indicate its status.\n" + \
+                "    Do not use with [erase], [list], [synonyms], [maps], [world], or [field].\n")
 arg_info.append(arg[N][2][B]  + "\n" + \
                 "    Valid for both [boss] and [all] to [erase] or [list] entries.\n" + \
-                "    Do not use with [died], [anchored], or [warned].\n")
+                "    Do not use with [died], [anchored], [warned], [synonyms], [maps], [world], or [field].\n")
+arg_info.append(arg[N][2][C]  + "\n" + \
+                "    Valid for [boss] only, to print aliases of bosses (short-hand) or maps that the boss may wander.\n" + \
+                "    Do not use with [died], [anchored], [warned], [erase], [list], [world], or [field].\n")
+arg_info.append(arg[N][2][D]  + "\n" + \
+                "    Valid for [all] only, to print out either [world bosses] or [field bosses].\n" + \
+                "    Do not use with [died], [anchored], [warned], [erase], [list], [synonyms], or [maps].\n")
 arg_info.append(arg[N][3]     + " ; required for [died] and [anchored]\n" + \
                 "    Remove spaces. 12 hour and 24 hour times acceptable, with valid delimiters \":\" and \".\". Use server time.\n")
 arg_info.append(arg[O][2]     + " ; optional\n" + \
