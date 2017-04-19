@@ -46,7 +46,7 @@ arg_info.append(arg[N][2][B]  + "\n" + \
 arg_info.append(arg[N][3]     + " ; required for [died] and [anchored]\n" + \
                 "    Remove spaces. 12 hour and 24 hour times acceptable, with valid delimiters \":\" and \".\". Use server time.\n")
 arg_info.append(arg[O][2]     + " ; optional\n" + \
-                "    Handy for field bosses[*] only. If unlisted, this will be unassumed.\n")
+                "    Suitable only for field bosses.[*] If unlisted, this will be unassumed.\n")
 arg_info.append(arg[O][1]     + " ; optional\n" + \
                 "    Suitable only for world bosses.[*] If unlisted, CH[1] will be assumed.\n" + "\n")
 arg_info.append("[*] ; Notes about world and field bosses:\n" + \
@@ -57,8 +57,8 @@ arg_info.append("[*] ; Notes about world and field bosses:\n" + \
 command     +=  ''.join(arg_info)
 
 examples    =   "\n" + vaivora_constants.command.syntax.example + \
-                "[$boss cerb died 12:00pm 4f]        ; channel can be omitted for field bosses\n" + \
-                "[Vaivora, boss crab died 14:00 ch2] ; map can be omitted for world bosses\n"
+                "[$boss cerb died 12:00pm 4f]        ; channel should be omitted for field bosses\n" + \
+                "[Vaivora, boss crab died 14:00 ch2] ; map should be omitted for world bosses\n"
 
 command     +=  examples
 
@@ -67,6 +67,9 @@ command     += "\n" + vaivora_constants.command.syntax.code_block
 
 arg_min     = 3
 arg_max     = 5
+
+arg_del_min = 2
+arg_del_max = 3
 
 acknowledge = "Thank you! Your command has been acknowledged and recorded.\n"
 
