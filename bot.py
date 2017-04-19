@@ -4,6 +4,7 @@ import logging
 import sqlite3
 import shlex
 import asyncio
+import json
 import re
 import os
 from datetime import datetime, timedelta
@@ -213,7 +214,7 @@ async def boss_cmd(message):
         # begin checking validity
         #     arg validity
         #         count
-        #             [3,5] - killed/anchored
+        #             [3,4] - killed/anchored
         #             [2,3] - erase
         if len(command) < 2:
 
@@ -294,104 +295,47 @@ async def boss_cmd(message):
             return True
 
 
-        #         other misc arguments
-        if vaivora_constants.command.boss.bosses[boss_idx] == "Blasphemous Deathweaver":
-
-            # map is mandatory as of v.1.2b!
-            try:
-
-                maps_idx = await check_maps(command[3], vaivora_constants.command.boss.bosses[boss_idx])
-
-            except:
-
-                return await error( message.author, message.channel, \
-                                    vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.R]\
-                                    [vaivora_constants.command.syntax.BAD]_boss_map, \
-                                    vaivora_constants.command.syntax.cmd_boss, msg="None", xmsg="Blasphemous Deathweaver")
-
-            if maps_idx < 0 or maps_idx >= len(vaivora_constants.command.boss.boss_locs[vaivora_constants.command.boss.bosses[boss_idx]]):
-
-                return await error( message.author, message.channel, \
-                                    vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.R]\
-                                    [vaivora_constants.command.syntax.BAD]_boss_map, \
-                                    vaivora_constants.command.syntax.cmd_boss, xmsg="Blasphemous Deathweaver")
-
-            boss_channel = 1
-
-        elif vaivora_constants.command.boss.bosses[boss_idx] in vaivora_constants.command.boss.bosses_field:
-
-            # field bosses
-            boss_channel = 1
-            maps_idx = await check_maps(command[3], vaivora_constants.command.boss.bosses[boss_idx])
-
-        else:
-
-            # world bosses
-            try:
-                
-                else:
-                    boss_channel = 1
-            except:
-                boss_channel = 1
-            maps_idx = 0    
-
-
-        #         check if boss is a field boss, and discard if boss channel is not 1
-        if vaivora_constants.command.boss.bosses[boss_idx] in vaivora_constants.command.boss.bosses_field and boss_channel != 1:
-            return await error(message.author, message.channel, \
-                               vaivora_constants.command.syntax.cmd_error[vaivora_constants.command.syntax.R]\
-                               [vaivora_constants.command.syntax.BAD]_boss_channel, \
-                               vaivora_constants.command.syntax.cmd_boss, boss_channel, vaivora_constants.command.boss.bosses[boss_idx])
-
-        # boss erase
-        if vaivora_constants.regex.boss.command.arg_erase.match(command[1]):
-            
-            boss_ch     = 0 if len(command) < 3 else command[2]
-            vdbs[command_server].rm_entry_db_boss(lookup_boss, boss_ch)
-            await client.send_message(message.channel, message.author.mention + " Record successfully erased.\n")
-            return True
-
+     
         # boss list
-        valid_boss_records = list()
-
         if vaivora_constants.regex.boss.command.arg_list.match(command[1]):
 
-            lookup_boss = '' if vaivora_constants.regex.boss.command.arg_all.match(command[0]) else [vaivora_constants.command.boss.bosses[boss_idx],]
-            boss_record = vdbs[command_server].check_db_boss(lookup_boss) # possible return
-            if not boss_record: # empty
+            valid_boss_records = list()
+            boss_records = vdbs[command_server].check_db_boss(lookup_boss) # possible return
+            if not boss_records: # empty
+
                 await client.send_message(message.channel, message.author.mention + " No results found! Try a different boss.\n")
                 return True
-            for b_rec in boss_record:
-                # following block should be made into function
-                record_date = datetime(int(b_rec[5]), \
-                                       int(b_rec[6]), \
-                                       int(b_rec[7]), \
-                                       int(b_rec[8]), \
-                                       int(b_rec[9])) \
-                              + vaivora_constants.values.time.offset.pacific2server
+
+            for boss_record in boss_records:
+
+                record_date = [int(rec) for rec in boss_record[5:10]]
+                record_date = datetime(*record_date) + \
+                              vaivora_constants.values.time.offset.pacific2server
                 tense = " and "
                 tense_time = " minutes "
-                difftime = datetime.now()+vaivora_constants.values.time.offset.pacific2server-record_date
-                if int(difftime.days) >= 0:
+                time_diff = datetime.now() + vaivora_constants.values.time.offset.pacific2server - record_date
+                if int(time_diff.days) >= 0:
                     tense += "should have respawned at "
                     tense_time += "ago"
-                    tense_mins = int(difftime.seconds / 60)
+                    tense_mins = int(time_diff.seconds / 60)
                 else:
                     tense += "will respawn around "
                     tense_time += "from now"
-                    tense_mins = int((vaivora_constants.values.time.seconds.in_day - difftime.seconds) / 60)
+                    tense_mins = int((vaivora_constants.values.time.seconds.in_day - time_diff.seconds) / 60)
 
                 if tense_mins > 99:
-                    tense_mins = str(int(tense_mins/60)) + " hours, " + str(tense_mins % 60)
+                    tense_mins = str(int(tense_mins / 60)) + " hours, " + str(tense_mins % 60)
                 elif tense_mins < 0:
-                    tense_mins = str(int(24 + tense_mins/60)) + " hours, " + str(tense_mins % 60)
+                    tense_mins = str(int(24 + tense_mins / 60)) + " hours, " + str(tense_mins % 60)
                 else:
                     tense_mins = str(tense_mins)
 
-                valid_boss_records.append("\"" + b_rec[0] + "\" " + b_rec[3] + " in ch." + str(int(b_rec[1])) + tense + \
-                                   record_date.strftime("%Y/%m/%d \"%H:%M\"") + \
-                                   " (" + str(tense_mins) + tense_time + ")" + \
-                                   ". Last known map: # " + b_rec[2])
+                valid_boss_records.append("\"" + boss_record[0] + "\" " + boss_record[3] + \
+                                          " in ch." + str(int(boss_record[1])) + tense + \
+                                          record_date.strftime("%Y/%m/%d \"%H:%M\"") + \
+                                          " (" + str(tense_mins) + tense_time + ")" + \
+                                          ".\n Last known map: # " + boss_record[2])
+
             await client.send_message(message.channel, message.author.mention + " Records: ```python\n" + \
                                       '\n\n'.join(valid_boss_records) + "\n```")
             return True
