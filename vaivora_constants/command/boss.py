@@ -337,6 +337,11 @@ boss_loc_synonyms = [ 'crystal mine', 'ashaq', \
                       'arcus', 'phamer', 'ghibulinas', 'mollogheo', \
                       'tevhrin'
                     ]
-# probably won't be using this, in hindsight.
 
-# end of boss related variables
+bosses_with_floors    =   [ 'Blasphemous Deathweaver', \
+                            'Bleak Chapparition', \
+                            'Violent Cerberus', \
+                            'Noisy Mineloader', \
+                            'Wrathful Harpeia', \
+                            'Demon Lord Blut'
+                          ]

@@ -9,7 +9,7 @@ for mod in vaivora_constants.modules:
 class Database:
     # constants
     TIME                    = "Time"
-    modules                 = ['boss', 'reminders', 'talt', 'permissions' ]
+    modules                 = [ 'boss', 'reminders', 'talt', 'permissions' ]
     # BOSS        = "Module: Boss"
     # REMINDERS   = "Module: Reminders"
     # TALT        = "Module: Talt Tracker"
@@ -143,52 +143,63 @@ class Database:
     # @return:
     #   True if successful, False otherwise
     def update_db_boss(self, boss_dict):
+        contents = []
         #self.open_db()
         # the following two bosses rotate per spawn
         if boss_dict['name'] == 'Mirtis' or boss_dict['name'] == 'Helgasercle':
             self.cursor.execute("select * from boss where name=?", ('Mirtis',))
-            contents = self.cursor.fetchall()
+            contents.extend(self.cursor.fetchall())
             self.cursor.execute("select * from boss where name=?", ('Helgasercle',))
-            contents += self.cursor.fetchall()
+            contents.extend(self.cursor.fetchall())
         elif boss_dict['name'] == 'Demon Lord Marnox' or boss_dict['name'] == 'Rexipher':
             self.cursor.execute("select * from boss where name=?", ('Demon Lord Marnox',))
-            contents = self.cursor.fetchall()
+            contents.extend(self.cursor.fetchall())
             self.cursor.execute("select * from boss where name=?", ('Rexipher',))
-            contents += self.cursor.fetchall()
+            contents.extend(self.cursor.fetchall())
         elif boss_dict['name'] == 'Blasphemous Deathweaver':
-            self.cursor.execute("select * from boss where name=? and map=?", \
-                                (boss_dict['name'], boss_dict['map'],))
-            contents = self.cursor.fetchall()
+            for dw_map in vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver']:
+                self.cursor.execute("select * from boss where name=? and map=?", \
+                                    (boss_dict['name'], dw_map,))
+                contents.extend(self.cursor.fetchall())
         else:
             self.cursor.execute("select * from boss where name=? and channel=?", (boss_dict['name'], boss_dict['channel'],))
-            contents = self.cursor.fetchall()
+            contents.extend(self.cursor.fetchall())
 
         # invalid case: more than one entry for this combination
-        #### TODO: keep most recent time? 
-        if   boss_dict['name'] != "Blasphemous Deathweaver" and len(contents) >= 1:
-            self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
-        elif boss_dict['name'] == "Blasphemous Deathweaver" and len(contents) >= 2:
-            self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_map=boss_dict['map'])
+        ####TODO: Re-examine code. probably not necessary anymore.
+        # if   boss_dict['name'] != "Blasphemous Deathweaver" and len(contents) > 1:
+        #     self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
+        # elif boss_dict['name'] == "Blasphemous Deathweaver" and len(contents) > 2:
+        #     self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_map=boss_dict['map'])
 
-        # if entry has newer data, discard previousit's 
-        if contents and (int(contents[0][5]) < boss_dict['year'] or \
-                         int(contents[0][6]) < boss_dict['month'] or \
-                         int(contents[0][7]) < boss_dict['day'] or \
-                         int(contents[0][8]) < boss_dict['hour'] - 3):
-            self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
+        # handle similar times
+
+        if contents and (int(contents[0][5]) == boss_dict['year'] and \
+                         int(contents[0][6]) == boss_dict['month'] and \
+                         int(contents[0][7]) == boss_dict['day'] and \
+                         int(contents[0][8]) >  boss_dict['hour']):
+            return False
+        elif contents and (int(contents[0][5]) <= boss_dict['year'] or \
+                           int(contents[0][6]) <= boss_dict['month'] or \
+                           int(contents[0][7]) <= boss_dict['day'] or \
+                           int(contents[0][8]) <= boss_dict['hour'] - 3):
+            if boss_dict['name'] == "Blasphemous Deathweaver":
+                self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_map=boss_dict['map'])
+            else:                
+                self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
 
         #try: # boss database structure
         self.cursor.execute("insert into boss values (?,?,?,?,?,?,?,?,?,?)", \
-                            (str(boss_dict['name'   ]), \
-                             int(boss_dict['channel']), \
-                             str(boss_dict['map'    ]), \
-                             str(boss_dict['status' ]), \
-                             str(boss_dict['srvchn' ]), \
-                             int(boss_dict['year'   ]), \
-                             int(boss_dict['month'  ]), \
-                             int(boss_dict['day'    ]), \
-                             int(boss_dict['hour'   ]), \
-                             int(boss_dict['mins'   ])))
+                        (str(boss_dict['name'   ]), \
+                         int(boss_dict['channel']), \
+                         str(boss_dict['map'    ]), \
+                         str(boss_dict['status' ]), \
+                         str(boss_dict['srvchn' ]), \
+                         int(boss_dict['year'   ]), \
+                         int(boss_dict['month'  ]), \
+                         int(boss_dict['day'    ]), \
+                         int(boss_dict['hour'   ]), \
+                         int(boss_dict['mins'   ])))
         self.save_db()
         return True
 
@@ -208,9 +219,9 @@ class Database:
                 ####TODO: make more generalized case. Currently applies only to Deathweaver
                 dw_idx  = vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
                 if dw_idx == 0 or dw_idx == 1: # crystal mine
-                    dw_idx = [((dw_idx + 1) % 2,)]
+                    dw_idx = [(dw_idx + 1) % 2,]
                 else:
-                    dw_idx = [(dw_idx % 3 + 2, (dw_idx-1) % 3 + 2,)]
+                    dw_idx = [dw_idx % 3 + 2, (dw_idx-1) % 3 + 2,]
                 for idx in dw_idx:
                     try:
                         self.cursor.execute("delete from boss where name=? and map=?", \

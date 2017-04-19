@@ -1,0 +1,85 @@
+# import additional constants
+from importlib import import_module as im
+import vaivora_constants
+for mod in vaivora_constants.modules:
+    im(mod)
+
+# @func:    check_boss(str) : int
+#   checks boss validity
+# @arg:
+#     boss: str; boss name from raw input
+# @return:
+#     boss index in list, or -1 if not found or more than 1 matching
+def check_boss(entry):
+    match = ''
+    for boss in vaivora_constants.command.boss.bosses:
+        if entry in boss.lower():
+            if not match:
+                match = boss
+            else:
+                return -1
+        
+    if not match and entry in vaivora_constants.command.boss.boss_syns:
+        for b, syns in vaivora_constants.command.boss.boss_synonyms.items():
+            if entry in syns and not match:
+                match = b
+            elif entry in syns:
+                return -1
+    
+    if not match:
+        return -1
+
+    return vaivora_constants.command.boss.bosses.index(match)
+
+# @func:    check_maps(str, str): begin code for checking map validity
+# @arg:
+#     maps: str; map name from raw input
+#     boss: str; the corresponding boss, as guaranteed by variable
+# @return:
+#     map index in list, or -1 if not found or too many maps matched
+def check_maps(maps, boss):
+    map_number  = ''
+    mapidx      = -1
+    maps        = maps.lower()
+    # Deathweaver map did not match
+    if boss == "Blasphemous Deathweaver" and not vaivora_constants.regex.boss.location.DW_A.search(maps):
+        return -1
+
+    elif boss in vaivora_constants.command.boss.bosses_with_floors:
+        # rearrange letters, and remove map name
+        if boss == "Wrathful Harpeia" or boss == "Demon Lord Blut":
+            map_number = vaivora_constants.regex.boss.location.floors_fmt.sub(r'\g<floornumber>', maps)
+        else:
+            map_number = vaivora_constants.regex.boss.location.floors_fmt.sub(r'\g<district>\g<basement>\g<floornumber>\g<floor>', maps)
+
+    if boss == "Blasphemous Deathweaver" and vaivora_constants.regex.boss.location.DW_CM.search(maps):
+        maps = "Crystal Mine " + map_number
+    elif boss == "Blasphemous Deathweaver":
+        maps = "Ashaq Underground Prison " + map_number
+    elif map_number:
+        maps = map_number
+    elif not map_number:
+        return -1
+    
+    for m in vaivora_constants.command.boss.boss_locs[boss]:
+        if m.lower() in maps:
+            if mapidx != -1:
+                return -1 # map is too vague and has matched more than 1
+            mapidx = vaivora_constants.command.boss.boss_locs[boss].index(m)
+        elif maps in m.lower():
+            if mapidx != -1:
+                return -1
+            mapidx = vaivora_constants.command.boss.boss_locs[boss].index(m)
+
+    return mapidx
+
+# @func:    get_syns(str)
+def get_syns(boss):
+    idx     = check_boss(boss)
+    boss    = vaivora_constants.command.boss.bosses[idx]
+    return "#   " + '\n#   '.join(vaivora_constants.command.boss.boss_synonyms[boss])
+
+def get_maps(boss):
+    idx     = check_boss(boss)
+    boss    = vaivora_constants.command.boss.bosses[idx]
+    return "#   " + '\n#   '.join(vaivora_constants.command.boss.boss_locs[boss])
