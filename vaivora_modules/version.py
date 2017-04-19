@@ -251,3 +251,25 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('3')
+hotfix_n.append('')
+status_n.append(milestone)
+date_n.append("2017/04/19")
+
+current     = get_header() + \
+"""```diff
++ Migrated boss modules out of the main script, and began the process of developing custom settings.
++ You can now query for boss aliases (less typing) and boss locations to scout for them better.
+  * Thanks to Jiyuu for the feature request.
+
+- Upcoming changes:
+  + Talt Tracker. For real!
+  + Custom settings. This will be done by JSON within Python, most likely.
+  + A way to send bug reports. This will take awhile, but I intend to bake this into the script.
+```"""
+
+changelog.append(current)
