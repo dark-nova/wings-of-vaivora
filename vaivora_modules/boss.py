@@ -63,6 +63,7 @@ def check_maps(maps, boss):
     elif not map_number:
         return -1
     
+
     for m in vaivora_constants.command.boss.boss_locs[boss]:
         if m.lower() in maps:
             if mapidx != -1:
