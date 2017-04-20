@@ -47,12 +47,18 @@ def check_maps(maps, boss):
     if boss == "Blasphemous Deathweaver" and not vaivora_constants.regex.boss.location.DW_A.search(maps):
         return -1
 
-    elif boss in vaivora_constants.command.boss.bosses_with_floors:
+    if boss in vaivora_constants.command.boss.bosses_with_floors:
         # rearrange letters, and remove map name
         if boss == "Wrathful Harpeia" or boss == "Demon Lord Blut":
-            map_number = vaivora_constants.regex.boss.location.floors_fmt.sub(r'\g<floornumber>', maps)
+            map_number = vaivora_constants.regex.format.matching.letters.sub('', maps)
+            map_number = vaivora_constants.regex.boss.location.floors_arr.sub(r'\g<floornumber>', map_number)
+        elif not vaivora_constants.regex.boss.location.floors_fmt.match(maps):
+            map_number = vaivora_constants.regex.boss.location.floors_ltr.sub('', maps)
+            map_number = vaivora_constants.regex.boss.location.floors_arr.sub(r'\g<basement>\g<floornumber>\g<floor>', map_number)
         else:
-            map_number = vaivora_constants.regex.boss.location.floors_fmt.sub(r'\g<district>\g<basement>\g<floornumber>\g<floor>', maps)
+            map_number = vaivora_constants.regex.boss.location.floors_ltr.sub('', maps)
+
+    #vaivora_constants.regex.format.matching.letters.sub(map_number)
 
     if boss == "Blasphemous Deathweaver" and vaivora_constants.regex.boss.location.DW_CM.search(maps):
         maps = "Crystal Mine " + map_number
@@ -63,13 +69,10 @@ def check_maps(maps, boss):
     elif not map_number:
         return -1
     
+    maps    = maps.lower()
 
     for m in vaivora_constants.command.boss.boss_locs[boss]:
-        if m.lower() in maps:
-            if mapidx != -1:
-                return -1 # map is too vague and has matched more than 1
-            mapidx = vaivora_constants.command.boss.boss_locs[boss].index(m)
-        elif maps in m.lower():
+        if maps in m.lower():
             if mapidx != -1:
                 return -1
             mapidx = vaivora_constants.command.boss.boss_locs[boss].index(m)

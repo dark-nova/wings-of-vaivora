@@ -27,11 +27,11 @@ arg[N][2][A]    =   "[died|anchored|warned]"
 arg[N][2][B]    =   "[erase|list]"
 arg[N][2][C]    =   "[synonyms|maps]"
 arg[N][2][D]    =   "[world|field]"
-arg[N][3]       =   "(time)"
+arg[N][3]       =   "[time]"
 arg[O]          =   dict()
 arg[O][1]       =   "(chN)"
 arg[O][2]       =   "(map)"
-arg[H]          =   "help"
+arg[H]          =   "[help]"
 
 usage       =   arg[N][0] + " " + arg[N][1][B] + " " + arg[N][2][A] + " " + arg[N][3] + " " + arg[O][1] + " " + arg[O][2] + " " + "\n" + \
                 arg[N][0] + " " + arg[N][1][A] + " " + arg[N][2][B] + " " + arg[O][2] + "\n" + \
@@ -42,10 +42,11 @@ usage       =   arg[N][0] + " " + arg[N][1][B] + " " + arg[N][2][A] + " " + arg[
 command     +=  usage
 
 arg_info    =   list()
+arg_info.append(";================\n")
 arg_info.append(arg[N][0] + "\n" + \
                 "    [$boss] or [Vaivora, boss]\n")
 arg_info.append(arg[N][1][B]  + "\n" + \
-                "    Either part of, or full name- if spaced, enclose in double-quotes (`\"`)\n" + \
+                "    Either part of, or full name- if spaced, enclose in double-quotes ([\"])\n" + \
                 "    [all] for all bosses\n")
 arg_info.append(arg[N][2][A]  + "\n" + \
                 "    Valid for [boss] only, to indicate its status.\n" + \

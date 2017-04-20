@@ -154,25 +154,28 @@ async def on_server_join(server):
 #     True if succeeded, False otherwise
 @client.event
 async def on_message(message):
-    command_server  = message.server.id # changed to id
-    command_message = message.content
     
     # 'name' channel processing
     if not message.channel or not message.channel.name:
         # ignore direct messages for now
         return
 
-    if "$debug" in command_message:
-        return await client.send_message(message.author, "server: " + message.server.name + ", id: " + command_server + "\n")
+    if "$debug" in message.content:
+
+        return await client.send_message(message.author, "server: " + message.server.name + ", id: " + message.server.id + "\n")
 
     ####TODO: replace with custom setting
     if "timer" in message.channel.name or "boss" in message.channel.name:
+
         return await boss_cmd(message)
 
     if vaivora_constants.fun.ohoho.search(message.content):
+
         await client.send_message(message.channel, "https://youtu.be/XzBCBIVC7Qg?t=12s")
         return True
+
     elif vaivora_constants.fun.meme.match(message.content):
+
         await client.send_message(message.channel, message.author.mention + " " + "http://i.imgur.com/xiuxzUW.png")
         return True
 
@@ -242,7 +245,7 @@ async def boss_cmd(message):
                  vaivora_constants.regex.boss.command.arg_boss.match(command[1]))) or \
           (vaivora_constants.regex.boss.status.all_status.match(command[1]) and \
            not vaivora_constants.regex.format.time.full.match(command[2])):
-            print(command[0], command[1])
+            
             return await error(message.author, message.channel, \
                                vaivora_constants.command.syntax.cmd_error_bad_syntax, \
                                vaivora_constants.command.syntax.cmd_boss)
@@ -284,12 +287,12 @@ async def boss_cmd(message):
             if vaivora_constants.regex.boss.command.arg_syns.match(command[1]):
 
                 await client.send_message(message.channel, message.author.mention + " " + \
-                                          vaivora_modules.boss.get_syns(lookup_boss))
+                                          vaivora_modules.boss.get_syns(lookup_boss[0]))
             
             else:
 
                 await client.send_message(message.channel, message.author.mention + " " + \
-                                          vaivora_modules.boss.get_maps(lookup_boss))
+                                          vaivora_modules.boss.get_maps(lookup_boss[0]))
 
             return True
 
@@ -343,7 +346,7 @@ async def boss_cmd(message):
         if len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_field:
 
             boss_ch     = 1
-            xmsg  = lookup_boss[0] if lookup_boss[0] == "Blasphemous Deathweaver" else ""
+            xmsg        = lookup_boss[0] if lookup_boss[0] == "Blasphemous Deathweaver" else ""
 
             try:
 
@@ -533,7 +536,7 @@ async def check_databases():
         with open(vaivora_constants.values.filenames.no_repeat, 'r') as f:
             for line in f:
                 no_repeat.append(line.strip())
-        print("Valid DBs: ", len(vdbs))
+        print(today.strftime("%Y/%m/%d %H:%M"), "- Valid DBs: ", len(vdbs))
         for vdb_id, valid_db in vdbs.items():
             results[vdb_id] = []
             ####TODO: replace 900 with custom setting for warning
