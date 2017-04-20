@@ -20,7 +20,7 @@ def check_revisions(srv_ver):
 
     if not srv_ver[1][0:-1]:
         hotfix = ''
-        subver = srv_ver
+        subver = srv_ver[1]
     else:
         hotfix = srv_ver[1][-1]
         subver = srv_ver[1][0:-1]
@@ -270,6 +270,22 @@ current     = get_header() + \
   + Talt Tracker. For real!
   + Custom settings. This will be done by JSON within Python, most likely.
   + A way to send bug reports. This will take awhile, but I intend to bake this into the script.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('3')
+hotfix_n.append('a')
+status_n.append(milestone)
+date_n.append("2017/04/19")
+
+current     = get_header() + \
+"""```diff
++ Fixed issue with map and boss detection. Partial map names should now be interpreted correctly.
+  * Thanks to Jiyuu for the bug report.
 ```"""
 
 changelog.append(current)
