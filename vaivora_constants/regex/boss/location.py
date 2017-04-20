@@ -2,7 +2,9 @@
 import re
 
 floors_chk  = re.compile(r'[bfd]?[0-9][bfd]?$', re.IGNORECASE)
-floors_fmt  = re.compile(r'.*(?P<basement>b?)(?P<floor>f?)(?P<district>(d ?(ist(rict)?)?)?) ?(?P<floornumber>[0-9]) ?(?P=basement)?(?P=floor)?(?P=district)?$', re.IGNORECASE)
+floors_arr  = re.compile(r'[^1-5bdf]*(?P<floor>f)? ?(?P<floornumber>[1-5]) ?(?P<basement>b)?$', re.IGNORECASE)
+floors_fmt  = re.compile(r'[^1-5bdf]*(?P<basement>b)? ?(?P<floornumber>[1-5]) ?(?P<floor>f)?$', re.IGNORECASE)
+floors_ltr  = re.compile(r'[^1-5bdf]', re.IGNORECASE)
 channel     = re.compile(r'ch?[1-4]$', re.IGNORECASE)
 
 DW          = "Blasphemous Deathweaver"
