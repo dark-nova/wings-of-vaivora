@@ -25,8 +25,8 @@ def format_message_boss(boss, status, time, bossmap, channel):
         bossmap     = [m for m in vaivora_constants.command.boss.boss_locs[boss] if m != bossmap]
 
     if boss == "Kubas Event":
-        kubas_ch    = 1 if int(channel) == 2 else 2
-        kubas_ch    = " [Machine of Riddles, ch."  + str(kubas_ch) + "]."
+        kubas_ch    = 1 if int(float(channel)) == 2 else 2
+        kubas_ch    = " [Machine of Riddles, ch."  + str(kubas_ch) + "]"
 
     if vaivora_constants.regex.boss.status.anchored.search(status):
         report_time = time+timedelta(hours=-3)
@@ -62,3 +62,4 @@ def format_message_boss(boss, status, time, bossmap, channel):
     message     = "\"" + boss + "\"" + status_str + report_time.strftime("%Y/%m/%d %H:%M") + ", and should spawn " + \
                   expect_str + map_str + kubas_ch + "\n"
     return message
+    

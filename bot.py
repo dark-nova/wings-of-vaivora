@@ -16,10 +16,9 @@ import vaivora_constants
 for mod in vaivora_constants.modules:
     im(mod)
 
-import vaivora_modules.db
-import vaivora_modules.version
-import vaivora_modules.utils
-import vaivora_modules.boss
+import vaivora_modules
+for mod in vaivora_modules.modules:
+    im(mod)
 
 # basic declarations and initializations
 client    = discord.Client()
@@ -157,8 +156,10 @@ async def on_message(message):
     
     # 'name' channel processing
     if not message.channel or not message.channel.name:
-        # ignore direct messages for now
-        return
+        if vaivora_constants.regex.boss.command.prefix.match(message.content):
+            if vaivora_constants.regex.boss.command.arg_help.search(message.content):
+                return await boss_cmd(message, pm=True)
+        return True
 
     if "$debug" in message.content:
 
@@ -182,10 +183,19 @@ async def on_message(message):
 
     #await client.process_commands(message)
     
-# 
+# @func:    boss_cmd(discord.Message, bool) : bool
+# @arg:
+#       message:
+#           the message to process
+#       pm:
+#           (default: False)
+#           if the message was a direct message or not
+# @return:
+#       True if successful, False otherwise
 @client.event
-async def boss_cmd(message):
-    command_server  = message.server.id # changed to id
+async def boss_cmd(message, pm=False):
+    if not pm:
+        command_server  = message.server.id # changed to id
     command_message = message.content
       
     if not vaivora_constants.regex.boss.command.prefix.match(command_message):
@@ -208,11 +218,16 @@ async def boss_cmd(message):
                                vaivora_constants.command.syntax.cmd_error_bad_syntax_quote, \
                                vaivora_constants.command.syntax.cmd_boss)
 
-        if command[0] == "help":
+        if command[0] == "help" and not pm:
             await client.send_message(message.channel, message.author.mention + " " + \
                                       vaivora_constants.command.boss.command)
             return True
-
+        elif command[0] == "help" and pm:
+            await client.send_message(message.author, \
+                                      vaivora_constants.command.boss.command)
+            return True
+        elif pm:
+            return False
         
         # begin checking validity
         #     arg validity
@@ -345,8 +360,8 @@ async def boss_cmd(message):
 
         if len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_field:
 
-            boss_ch     = 1
-            xmsg        = lookup_boss[0] if lookup_boss[0] == "Blasphemous Deathweaver" else ""
+            boss_channel    = 1
+            xmsg            = lookup_boss[0] if lookup_boss[0] == "Blasphemous Deathweaver" else ""
 
             try:
 
@@ -363,19 +378,19 @@ async def boss_cmd(message):
 
         elif len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_world:
 
-            boss_ch     = 0 if len(command) == 2 else vaivora_modules.boss.validate_channel(command[arg_map_idx])
-            maps_idx    = 0
+            boss_channel    = 0 if len(command) == arg_map_idx else vaivora_modules.boss.validate_channel(command[arg_map_idx])
+            maps_idx        = 0
 
         else:
 
-            boss_ch     = 0
-            maps_idx    = 0
+            boss_channel    = 0
+            maps_idx        = 0
 
         
         # boss erase
         if vaivora_constants.regex.boss.command.arg_erase.match(command[1]):
             
-            vdbs[command_server].rm_entry_db_boss(lookup_boss, boss_ch)
+            vdbs[command_server].rm_entry_db_boss(lookup_boss, boss_channel)
             await client.send_message(message.channel, message.author.mention + " Record successfully erased.\n")
             return True
 
@@ -518,8 +533,14 @@ async def boss_cmd(message):
 
         #await client.process_commands(message)
         return True # command processed
+####
+#
     
-   
+
+
+# begin periodic database check
+####
+
 # @func:    check_databases() : void
 #       Checks databases routinely, by minute.
 async def check_databases():
@@ -632,26 +653,64 @@ async def check_databases():
         #await client.process_commands(message)
                
         await asyncio.sleep(1)
+####
+# end of periodic database check
+
+
 
 # begin async functions for vaivora_modules.boss
+####
+
+# @func:    check_boss(str) : str
+# @arg:
+#       boss:
+#           the boss to check
+# @return:
+#       a str containing the boss idx
 async def check_boss(boss):
     return vaivora_modules.boss.check_boss(boss)
 
+# @func:    check_maps(str, str) : str
+# @arg:
+#       boss:
+#           the boss to check
+# @return:
+#       a str containing the maps to boss
 async def check_maps(maps, boss):
     return vaivora_modules.boss.check_maps(maps, boss)
+
+####
 # end of async functions for vaivora_modules.boss
 
-# @func:  error(**): begin code for error message printing to user
+
+
+# error handling
+####
+
+# @func:  error(args**) : int
+#       begin code for error message printing to user
 # @arg:
-#     user:     Discord.user
-#     channel:  server channel
-#     etype:    [e]rror type
-#     ecmd:     [e]rror (invoked by) command
-#     msg:      (optional) message for better error clarity
+#       user:
+#           Discord.user
+#       channel:
+#           server channel
+#       etype:
+#           [e]rror type
+#       ecmd:
+#           [e]rror (invoked by) command
+#       msg:
+#           (default: '') (optional)
+#           message for better error clarity
+#       xmsg:
+#           (default: '') (optional)
+#           secondary message for better error clarity
 # @return:
-#     -1:     BROAD:  the command was correctly formed but the argument is too broad
-#     -2:     WRONG:  the command was correctly formed but could not validate arguments
-#     -127:   SYNTAX: malformed command: quote mismatch, argument count
+#       -1:
+#           BROAD:  the command was correctly formed but the argument is too broad
+#       -2:
+#           WRONG:  the command was correctly formed but could not validate arguments
+#       -127:
+#           SYNTAX: malformed command: quote mismatch, argument count
 async def error(user, channel, etype, ecmd, msg='', xmsg=''):
     # get the user in mentionable string
     user_name = user.mention
@@ -772,8 +831,13 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
         error_code = vaivora_constants.values.error_codes.syntax
         await client.send_message(channel, '\n'.join(ret_msg))
         return error_code 
+####
 # end of error
 
+
+
+# misc
+####
 # @func:  the_following_argument(str): begin concatenated string
 # @arg:
 #     arg: str; e.g. boss, map, time
@@ -783,7 +847,12 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
 def the_following_argument(arg, val):
     return " The following argument `" + arg + "` (*" + val + "*)"
 # end of the_following_argument
+####
+#
 
+
+
+# begin everything
 with open('discordtoken', 'r') as f:
     secret = f.read()
 
