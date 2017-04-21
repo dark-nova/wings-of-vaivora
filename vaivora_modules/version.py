@@ -289,3 +289,19 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('3')
+hotfix_n.append('b')
+status_n.append(milestone)
+date_n.append("2017/04/20")
+
+current     = get_header() + \
+"""```diff
++ Fixed potential issue with Kubas interfering with boss reporting.
++ Fixed issue with channel for world bosses not recording.
+```"""
+
+changelog.append(current)
