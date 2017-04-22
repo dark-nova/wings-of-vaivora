@@ -305,3 +305,59 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('3')
+hotfix_n.append('c')
+status_n.append(milestone)
+date_n.append("2017/04/21")
+
+current     = get_header() + \
+"""```diff
++ Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.
+  * Thanks to Jiyuu and Wolfy for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('3')
+hotfix_n.append('d')
+status_n.append(milestone)
+date_n.append("2017/04/21")
+
+current     = get_header() + \
+"""```diff
++ Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.
+  * Thanks to Jiyuu and Wolfy for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('4')
+hotfix_n.append('')
+status_n.append(milestone)
+date_n.append("2017/04/21")
+
+current     = get_header() + \
+"""```diff
++ Fixed issue with world bosses with no channel recorded as recorded as ch.0.
++ Added "$subscribe" and "$unsubscribe" to DM commands.
+  + You can subscribe to changelogs even if you're not a server owner.
++ Added a small status to show when things are ready.
+  * Thanks to Jiyuu for the feature request.
+
+- Upcoming changes:
+  + Talt T...I keep mentioning this.
+  + Ways to fetch changelogs
+  + Better help system, and DM commands including feedback
+```"""
+
+changelog.append(current)

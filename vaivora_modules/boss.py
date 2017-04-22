@@ -14,20 +14,31 @@ for mod in vaivora_constants.modules:
 def check_boss(entry):
     match = ''
     for boss in vaivora_constants.command.boss.bosses:
+
         if entry in boss.lower():
+
             if not match:
+
                 match = boss
+
             else:
+
                 return -1
-        
+    
     if not match and entry in vaivora_constants.command.boss.boss_syns:
+
         for b, syns in vaivora_constants.command.boss.boss_synonyms.items():
+
             if entry in syns and not match:
+
                 match = b
+
             elif entry in syns:
+
                 return -1
     
     if not match:
+
         return -1
 
     return vaivora_constants.command.boss.bosses.index(match)
@@ -66,13 +77,16 @@ def check_maps(maps, boss):
         maps = "Ashaq Underground Prison " + map_number
     elif map_number:
         maps = map_number
-    elif not map_number:
+    elif boss in vaivora_constants.command.boss.bosses_with_floors and not map_number:
         return -1
     
     maps    = maps.lower()
 
+    print(boss, maps, vaivora_constants.command.boss.boss_locs[boss])
+
     for m in vaivora_constants.command.boss.boss_locs[boss]:
         if maps in m.lower():
+            print(maps, m)
             if mapidx != -1:
                 return -1
             mapidx = vaivora_constants.command.boss.boss_locs[boss].index(m)
