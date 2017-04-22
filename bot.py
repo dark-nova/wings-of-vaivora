@@ -159,11 +159,29 @@ async def on_server_join(server):
 @client.event
 async def on_message(message):
     
-    # 'name' channel processing
+    # direct message processing
     if not message.channel or not message.channel.name:
+
         if vaivora_constants.regex.boss.command.prefix.match(message.content):
+
             if vaivora_constants.regex.boss.command.arg_help.search(message.content):
+
                 return await boss_cmd(message, pm=True)
+
+        elif vaivora_constants.regex.dm.command.prefix.match(message.content):
+
+            if vaivora_constants.regex.dm.command.cmd_unsub.search(message.content):
+
+                if await check_subscription(message.author, mode="unsubscribe"):
+
+                    await client.send_message(message.author, "Your subscription preference for changelogs has been updated.\n")
+
+                else:
+
+                    await client.send_message(message.author, "You are already " + mode + "d.\n")
+
+                return True
+
         return True
 
     if "$debug" in message.content:
@@ -185,8 +203,42 @@ async def on_message(message):
         await client.send_message(message.channel, message.author.mention + " " + "http://i.imgur.com/xiuxzUW.png")
         return True
 
-
     #await client.process_commands(message)
+
+
+# @func:    check_subscription(discord.User, str) : bool
+# @arg:
+#       user:
+#           the user requesting change
+#       mode:
+#           (default: subscribe)
+#           the requested change to subscription to updates
+# @return:
+#       True if succeeded, False otherwise
+async def check_subscription(user, mode="subscribe"):
+    file_lines  = []
+    status      = True
+    try:
+        with open(vaivora_constants.values.filenames.unsubbed, 'r') as f:
+            for line in f:
+                if user in line and mode == "subscribe":
+                    continue
+                elif user in line and mode == "unsubscribe":
+                    status = False
+                file_lines.append()
+    except:
+        with open(vaivora_constants.values.filenames.unsubbed, 'w+') as f:
+            if mode == "unsubscribe":
+                f.write(user.name + "\n")
+                return True
+            else:
+                return False       
+
+    with open(vaivora_constants.values.filenames.unsubbed, 'w+') as f:
+        f.write('\n'.join(file_lines) + "\n")
+
+    return True
+    
     
 # @func:    boss_cmd(discord.Message, bool) : bool
 # @arg:
