@@ -40,6 +40,8 @@ async def on_ready():
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
 
+    client.change_status(game=discord.Game(name="with startup"), idle=True)
+
     valid_dbs = []
 
     # check each authorized server if welcomed or not -- possibly obsolete
@@ -67,6 +69,9 @@ async def on_ready():
     for server in client.servers:
         vdbs[str(server.id)] = vaivora_modules.db.Database(str(server.id))
     await send_news()
+
+    client.change_status(game=discord.Game(name="with records; DM [$boss help] for info"), idle=False)
+
     return
 
 @client.event
@@ -366,6 +371,7 @@ async def boss_cmd(message, pm=False):
             try:
 
                 maps_idx = await check_maps(command[arg_map_idx], lookup_boss[0])
+                print(maps_idx)
                 if maps_idx < 0 or maps_idx >= len(vaivora_constants.command.boss.boss_locs[lookup_boss[0]]):
 
                     raise
@@ -405,6 +411,7 @@ async def boss_cmd(message, pm=False):
         message_args['name']    = lookup_boss[0]
         message_args['channel'] = boss_channel
 
+
         if maps_idx >= 0:
 
             message_args['map'] = vaivora_constants.command.boss.boss_locs[message_args['name']][maps_idx]
@@ -441,7 +448,7 @@ async def boss_cmd(message, pm=False):
 
         boss_minutes = int(boss_time[1])
         original_boss_hour  = boss_hour
-        approx_server_time = datetime.now() + vaivora_constants.values.time.offset.pacific2server
+        approx_server_time  = datetime.now() + vaivora_constants.values.time.offset.pacific2server
         boss_day    = approx_server_time.day if boss_hour <= int(approx_server_time.hour) \
                                              else (approx_server_time.day-1)
         boss_month  = approx_server_time.month
@@ -485,6 +492,8 @@ async def boss_cmd(message, pm=False):
 
             boss_hour += 12 # 12 + 4 = 16
             
+
+
         if int(boss_hour / 24):
 
             boss_hour = boss_hour % 24
@@ -524,11 +533,13 @@ async def boss_cmd(message, pm=False):
 
         await client.send_message(message.channel, message.author.mention + " " + \
                                   vaivora_constants.command.boss.acknowledge + \
-                                  message_args['name'] + " " + message_args['status'] + " at " + \
+                                  message_args['name'] + " " + \
+                                  message_args['status'] + " at " + \
                                   ("0" if original_boss_hour < 10 else "") + \
                                   str(original_boss_hour) + ":" + \
                                   ("0" if message_args['mins'] < 10 else "") + \
-                                  str(message_args['mins']) + ", in ch." + str(message_args['channel']) + ": " + \
+                                  str(message_args['mins']) + \
+                                  ", in ch." + str(message_args['channel']) + ": " + \
                                   (message_args['map'] if message_args['map'] != "N/A" else ""))
 
         #await client.process_commands(message)
@@ -553,7 +564,7 @@ async def check_databases():
     while not client.is_closed:
         no_repeat = []
         #await asyncio.sleep(6)
-        await asyncio.sleep(60)
+        await asyncio.sleep(59)
         with open(vaivora_constants.values.filenames.no_repeat, 'r') as f:
             for line in f:
                 no_repeat.append(line.strip())
