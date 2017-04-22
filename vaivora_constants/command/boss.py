@@ -225,7 +225,10 @@ boss_synonyms = { 'Blasphemous Deathweaver':        [ 'dw', \
                   'Mirtis':                         [ 'mirtis' ], 
                   'Rexipher':                       [ 'rexipher', \
                                                       'rexi', \
-                                                      'rexifer' 
+                                                      'rexifer', \
+                                                      'racksifur', \
+                                                      'sexipher', \
+                                                      'goth'
                                                     ], 
                   'Helgasercle':                    [ 'helga', \
                                                       'helgasercle' 

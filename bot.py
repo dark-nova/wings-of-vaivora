@@ -40,7 +40,7 @@ async def on_ready():
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
 
-    client.change_status(game=discord.Game(name="with startup"), idle=True)
+    await client.change_presence(game=discord.Game(name="with startup"), status=discord.Status.idle)
 
     valid_dbs = []
 
@@ -67,10 +67,13 @@ async def on_ready():
     # open(vaivora_constants.values.filenames.welcomed_t, 'w').close()  
 
     for server in client.servers:
+        if server.unavailable:
+            continue
         vdbs[str(server.id)] = vaivora_modules.db.Database(str(server.id))
     await send_news()
 
-    client.change_status(game=discord.Game(name="with records; DM [$boss help] for info"), idle=False)
+    await asyncio.sleep(3)
+    await client.change_presence(game=discord.Game(name="# DM [$boss help] for info"), status=discord.Status.online)
 
     return
 
@@ -78,35 +81,104 @@ async def on_ready():
 async def send_news():
     vaivora_version   = vaivora_modules.version.get_current_version()
     if os.stat(vaivora_constants.values.filenames.welcomed).st_size == 0:
+
         await write_anew(client.servers)
         return True
-    #try:
+    
+    do_not_msg  = await get_unsubscribed()
+    print('\n'.join(do_not_msg))
+
     with open(vaivora_constants.values.filenames.welcomed, 'r') as original:
+
         with open(vaivora_constants.values.filenames.welcomed_t, 'w+') as temporary:
+
             for line in original:
+
                 if not line or line.isspace():
+
                     continue
+
                 srv_tup = line.split(':')
                 srv_ver = srv_tup[1].rstrip('\n')
                 srv_sid = srv_tup[0]
                 srv_chk = vaivora_modules.version.check_revisions(srv_ver)
                 if srv_chk:
+
+                    owner = client.get_server(srv_sid).owner
+                    print(owner.id)
+
+                    if owner.id in do_not_msg:
+
+
+                        temporary.write(line)
+                        continue
+
                     for vaivora_log in vaivora_modules.version.get_changelogs(srv_chk):
-                        await client.send_message(client.get_server(srv_sid).owner, vaivora_log)
+
+                        await client.send_message(owner, vaivora_log)
+
                     temporary.write(srv_sid + ":" + vaivora_version + "\n") # updated
+
                 else:
+
                     temporary.write(line)
-                # write back over
+
+    # write back over
     with open(vaivora_constants.values.filenames.welcomed_t, 'r') as temporary:
+
         with open(vaivora_constants.values.filenames.welcomed, 'w+') as original:
+
             for line in temporary:
+
                 original.write(line)
-    #except:
-        # file most likely does not exist or is empty. redo.
-        #await write_anew(client.servers)
-        #pass
-    
+
     open(vaivora_constants.values.filenames.welcomed_t, 'w').close()
+
+    sub_list    = []
+
+    with open(vaivora_constants.values.filenames.subbed, 'r') as subbed_users:
+
+        for s_user in subbed_users:
+
+            if not line or line.isspace():
+
+                continue
+
+            usr_tup = line.split(':')
+            usr_ver = srv_tup[1].rstrip('\n')
+            usr_sid = srv_tup[0]
+            usr_chk = vaivora_modules.version.check_revisions(usr_ver)
+            if usr_chk:
+
+                print(usr_sid)
+                usr = client.get_user_info(usr_sid)
+                
+                for vaivora_log in vaivora_modules.version.get_changelogs(usr_chk):
+
+                    #await client.send_message(usr, vaivora_log)
+                    pass
+
+                sub_list.append(usr_sid + ":" + vaivora_version) # updated
+
+            else:
+
+                sub_list.append(line)
+
+
+    with open(vaivora_constants.values.filenames.subbed, 'w+') as subbed_users:
+
+        if len(sub_list) == 0:
+
+            pass
+
+        elif len(sub_list) > 1:
+
+            unsubbed.write('\n'.join(sub_list))
+
+        if len(sub_list) >= 1:
+
+            unsubbed.write(sub_list[-1] + "\n")
+        
     return True
 
 
@@ -158,7 +230,7 @@ async def on_server_join(server):
 #     True if succeeded, False otherwise
 @client.event
 async def on_message(message):
-    
+    await client.wait_until_ready()
     # direct message processing
     if not message.channel or not message.channel.name:
 
@@ -174,11 +246,25 @@ async def on_message(message):
 
                 if await check_subscription(message.author, mode="unsubscribe"):
 
-                    await client.send_message(message.author, "Your subscription preference for changelogs has been updated.\n")
+                    await client.send_message(message.author, \
+                                              "Your subscription preference for changelogs has been updated: `unsubscribed`.\n")
 
                 else:
 
-                    await client.send_message(message.author, "You are already " + mode + "d.\n")
+                    await client.send_message(message.author, "You are already unsubscribed.\n")
+
+                return True
+
+            elif vaivora_constants.regex.dm.command.cmd_sub.search(message.content):
+
+                if await check_subscription(message.author):
+
+                    await client.send_message(message.author, \
+                                              "Your subscription preference for changelogs has been updated: `subscribed`.\n") 
+
+                else:
+
+                    await client.send_message(message.author, "You are already subscribed.\n")
 
                 return True
 
@@ -216,29 +302,141 @@ async def on_message(message):
 # @return:
 #       True if succeeded, False otherwise
 async def check_subscription(user, mode="subscribe"):
-    file_lines  = []
+    file_unsub  = []
+    file_sub    = []
     status      = True
+    vaivora_version   = vaivora_modules.version.get_current_version()
     try:
-        with open(vaivora_constants.values.filenames.unsubbed, 'r') as f:
-            for line in f:
-                if user in line and mode == "subscribe":
+
+        status_hit  = False
+        with open(vaivora_constants.values.filenames.unsubbed, 'r') as unsubbed:
+
+            for line in unsubbed:
+
+                if vaivora_constants.regex.dm.command.empty_line.match(line):
+
                     continue
-                elif user in line and mode == "unsubscribe":
+
+                if user.id in line and mode == "subscribe":
+
+                    status_hit  = True
+                    continue
+
+                elif user.id in line and mode == "unsubscribe":
+
                     status = False
-                file_lines.append()
+                    status_hit  = True
+
+                file_unsub.append(line)
+
+        if not status_hit and mode == "unsubscribe":
+
+            file_unsub.append(user.id)
+
+        with open(vaivora_constants.values.filenames.unsubbed, 'w+') as unsubbed:
+
+            if len(file_unsub) == 0:
+
+                pass
+
+            elif len(file_unsub) > 1:
+
+                unsubbed.write('\n'.join(file_unsub))
+
+            if len(file_unsub) >= 1:
+
+                unsubbed.write(file_unsub[-1] + "\n")
+
     except:
+
         with open(vaivora_constants.values.filenames.unsubbed, 'w+') as f:
+
             if mode == "unsubscribe":
-                f.write(user.name + "\n")
-                return True
+
+                f.write(user.id + "\n")
+                status = True
+
             else:
-                return False       
 
-    with open(vaivora_constants.values.filenames.unsubbed, 'w+') as f:
-        f.write('\n'.join(file_lines) + "\n")
+                status = False       
 
-    return True
-    
+    try:
+
+        status_hit  = False
+        with open(vaivora_constants.values.filenames.subbed, 'r') as subbed:
+
+            for line in subbed:
+
+                if vaivora_constants.regex.dm.command.empty_line.match(line):
+
+                    continue
+
+                if user.id in line and mode == "subscribe":
+
+                    status = False
+                    status_hit  = True
+
+                elif user.id in line and mode == "unsubscribe":
+
+                    status_hit  = True
+                    continue
+
+                file_sub.append(line)
+                
+        if not status_hit and mode == "subscribe":
+
+            file_sub.append(user.id)
+
+        with open(vaivora_constants.values.filenames.subbed, 'w+') as subbed:
+
+            if vaivora_constants.regex.dm.command.empty_line.match(line):
+
+                pass
+
+            elif len(file_sub) > 1:
+
+                subbed.write((':' + vaivora_version + '\n').join(file_sub))
+
+            if len(file_sub) >= 1:
+
+                subbed.write(file_sub[-1] + ":" + vaivora_version + "\n")
+
+    except:
+
+        with open(vaivora_constants.values.filenames.subbed, 'w+') as f:
+
+            if mode == "subscribe":
+
+                f.write(user.id + ":" + vaivora_version + "\n")
+                status = True
+
+            else:
+
+                status = False  
+
+    return status
+
+
+
+# @func:    get_unsubscribed() : list
+# @return:
+#       list of unsubscribed users
+async def get_unsubscribed():
+
+    unsubbed    = []
+    try:
+
+        with open(vaivora_constants.values.filenames.unsubbed, 'r') as f:
+
+            for line in f:
+
+                unsubbed.append(line.rstrip('\n'))
+
+        return unsubbed
+
+    except:
+
+        return []
     
 # @func:    boss_cmd(discord.Message, bool) : bool
 # @arg:
@@ -423,7 +621,6 @@ async def boss_cmd(message, pm=False):
             try:
 
                 maps_idx = await check_maps(command[arg_map_idx], lookup_boss[0])
-                print(maps_idx)
                 if maps_idx < 0 or maps_idx >= len(vaivora_constants.command.boss.boss_locs[lookup_boss[0]]):
 
                     raise
@@ -620,7 +817,7 @@ async def check_databases():
         with open(vaivora_constants.values.filenames.no_repeat, 'r') as f:
             for line in f:
                 no_repeat.append(line.strip())
-        print(today.strftime("%Y/%m/%d %H:%M"), "- Valid DBs: ", len(vdbs))
+        print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- Valid DBs: ", len(vdbs))
         for vdb_id, valid_db in vdbs.items():
             results[vdb_id] = []
             ####TODO: replace 900 with custom setting for warning
