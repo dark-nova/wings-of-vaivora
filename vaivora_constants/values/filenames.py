@@ -13,6 +13,8 @@ no_repeat_t = wings + "no_repeat"
 no_repeat   = no_repeat_t           + txt
 welcomed    = wings + "welcomed"    + txt
 welcomed_t  = wings + "welcomed"    + tmp
+unsubbed    = wings + "unsubbed"    + txt
+subbed      = wings + "subbed"      + txt
 
 log_file    = logger                + log
 debug_file  = wings + "debug"       + log
