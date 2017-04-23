@@ -361,3 +361,19 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('5')
+hotfix_n.append('')
+status_n.append(milestone)
+date_n.append("2017/04/22")
+
+current     = get_header() + \
+"""```diff
++ Added "$help" for commands. Give it a try in any channel or DM!
++ Added a small status to show when things are ready. Slightly better now.
+```"""
+
+changelog.append(current)
