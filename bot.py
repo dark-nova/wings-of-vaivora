@@ -40,7 +40,7 @@ async def on_ready():
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
 
-    await client.change_presence(game=discord.Game(name="with startup"), status=discord.Status.idle)
+    await client.change_presence(game=discord.Game(name="with startup. Wait 5 seconds..."), status=discord.Status.idle)
 
     valid_dbs = []
 
@@ -73,7 +73,7 @@ async def on_ready():
     await send_news()
 
     await asyncio.sleep(3)
-    await client.change_presence(game=discord.Game(name="# DM [$boss help] for info"), status=discord.Status.online)
+    await client.change_presence(game=discord.Game(name="# [$help] or [Vaivora, help] for info"), status=discord.Status.online)
 
     return
 
@@ -86,8 +86,7 @@ async def send_news():
         return True
     
     do_not_msg  = await get_unsubscribed()
-    print('\n'.join(do_not_msg))
-
+    
     with open(vaivora_constants.values.filenames.welcomed, 'r') as original:
 
         with open(vaivora_constants.values.filenames.welcomed_t, 'w+') as temporary:
@@ -98,30 +97,35 @@ async def send_news():
 
                     continue
 
-                srv_tup = line.split(':')
-                srv_ver = srv_tup[1].rstrip('\n')
-                srv_sid = srv_tup[0]
-                srv_chk = vaivora_modules.version.check_revisions(srv_ver)
-                if srv_chk:
+                try:
 
-                    owner = client.get_server(srv_sid).owner
-                    print(owner.id)
+                    srv_tup = line.split(':')
+                    srv_ver = srv_tup[1].rstrip('\n')
+                    srv_sid = srv_tup[0]
+                    srv_chk = vaivora_modules.version.check_revisions(srv_ver)
 
-                    if owner.id in do_not_msg:
+                    if srv_chk:
 
+                        owner = client.get_server(srv_sid).owner
+
+                        if owner.id in do_not_msg:
+
+                            temporary.write(line)
+                            continue
+
+                        for vaivora_log in vaivora_modules.version.get_changelogs(srv_chk):
+
+                            await client.send_message(owner, vaivora_log)
+
+                        temporary.write(srv_sid + ":" + vaivora_version + "\n") # updated
+
+                    else:
 
                         temporary.write(line)
-                        continue
 
-                    for vaivora_log in vaivora_modules.version.get_changelogs(srv_chk):
+                except:
 
-                        await client.send_message(owner, vaivora_log)
-
-                    temporary.write(srv_sid + ":" + vaivora_version + "\n") # updated
-
-                else:
-
-                    temporary.write(line)
+                    continue
 
     # write back over
     with open(vaivora_constants.values.filenames.welcomed_t, 'r') as temporary:
@@ -136,48 +140,51 @@ async def send_news():
 
     sub_list    = []
 
-    with open(vaivora_constants.values.filenames.subbed, 'r') as subbed_users:
+    try:
 
-        for s_user in subbed_users:
+        with open(vaivora_constants.values.filenames.subbed, 'r') as subbed_users:
 
-            if not line or line.isspace():
+            for s_user in subbed_users:
 
-                continue
+                if not line or line.isspace():
 
-            usr_tup = line.split(':')
-            usr_ver = srv_tup[1].rstrip('\n')
-            usr_sid = srv_tup[0]
-            usr_chk = vaivora_modules.version.check_revisions(usr_ver)
-            if usr_chk:
+                    continue
 
-                print(usr_sid)
-                usr = client.get_user_info(usr_sid)
-                
-                for vaivora_log in vaivora_modules.version.get_changelogs(usr_chk):
+                usr_tup = line.split(':')
+                usr_ver = srv_tup[1].rstrip('\n')
+                usr_sid = srv_tup[0]
+                usr_chk = vaivora_modules.version.check_revisions(usr_ver)
+                if usr_chk:
 
-                    #await client.send_message(usr, vaivora_log)
-                    pass
+                    usr = client.get_user_info(usr_sid)
+                    for vaivora_log in vaivora_modules.version.get_changelogs(usr_chk):
 
-                sub_list.append(usr_sid + ":" + vaivora_version) # updated
+                        #await client.send_message(usr, vaivora_log)
+                        pass
 
-            else:
+                    sub_list.append(usr_sid + ":" + vaivora_version) # updated
 
-                sub_list.append(line)
+                else:
 
+                    sub_list.append(line)
 
-    with open(vaivora_constants.values.filenames.subbed, 'w+') as subbed_users:
+        with open(vaivora_constants.values.filenames.subbed, 'w+') as subbed_users:
 
-        if len(sub_list) == 0:
+            if len(sub_list) == 0:
 
-            pass
+                pass
 
-        elif len(sub_list) > 1:
+            elif len(sub_list) > 1:
 
-            unsubbed.write('\n'.join(sub_list))
+                unsubbed.write('\n'.join(sub_list))
 
-        if len(sub_list) >= 1:
+            if len(sub_list) >= 1:
 
-            unsubbed.write(sub_list[-1] + "\n")
+                unsubbed.write(sub_list[-1] + "\n")
+
+    except FileNotFoundError:
+
+        pass
         
     return True
 
@@ -234,14 +241,17 @@ async def on_message(message):
     # direct message processing
     if not message.channel or not message.channel.name:
 
+        # boss help
         if vaivora_constants.regex.boss.command.prefix.match(message.content):
 
             if vaivora_constants.regex.boss.command.arg_help.search(message.content):
 
                 return await boss_cmd(message, pm=True)
 
+        # general
         elif vaivora_constants.regex.dm.command.prefix.match(message.content):
 
+            # subscribe
             if vaivora_constants.regex.dm.command.cmd_unsub.search(message.content):
 
                 if await check_subscription(message.author, mode="unsubscribe"):
@@ -255,6 +265,7 @@ async def on_message(message):
 
                 return True
 
+            # unsubscribe
             elif vaivora_constants.regex.dm.command.cmd_sub.search(message.content):
 
                 if await check_subscription(message.author):
@@ -268,16 +279,24 @@ async def on_message(message):
 
                 return True
 
+            # help
+            elif vaivora_constants.regex.dm.command.cmd_help.search(message.content):
+
+                return await client.send_message(message.author, 
+                                                 vaivora_constants.values.words.message.helpmsg)
+
         return True
 
     if "$debug" in message.content:
 
         return await client.send_message(message.author, "server: " + message.server.name + ", id: " + message.server.id + "\n")
 
-    ####TODO: replace with custom setting
-    if "timer" in message.channel.name or "boss" in message.channel.name:
+    if vaivora_constants.regex.dm.command.prefix.match(message.content):
 
-        return await boss_cmd(message)
+        if vaivora_constants.regex.dm.command.cmd_help.search(message.content):
+
+            return await client.send_message(message.channel, message.author.mention + " " + \
+                                             vaivora_constants.values.words.message.helpmsg)
 
     if vaivora_constants.fun.ohoho.search(message.content):
 
@@ -288,6 +307,12 @@ async def on_message(message):
 
         await client.send_message(message.channel, message.author.mention + " " + "http://i.imgur.com/xiuxzUW.png")
         return True
+
+
+    ####TODO: replace with custom setting
+    if "timer" in message.channel.name or "boss" in message.channel.name:
+
+        return await boss_cmd(message)
 
     #await client.process_commands(message)
 
@@ -354,11 +379,7 @@ async def check_subscription(user, mode="subscribe"):
             if mode == "unsubscribe":
 
                 f.write(user.id + "\n")
-                status = True
 
-            else:
-
-                status = False       
 
     try:
 
@@ -408,11 +429,6 @@ async def check_subscription(user, mode="subscribe"):
             if mode == "subscribe":
 
                 f.write(user.id + ":" + vaivora_version + "\n")
-                status = True
-
-            else:
-
-                status = False  
 
     return status
 
@@ -505,6 +521,7 @@ async def boss_cmd(message, pm=False):
             return await error(message.author, message.channel, \
                                vaivora_constants.command.syntax.cmd_error_bad_syntax_arg_ct, \
                                vaivora_constants.command.syntax.cmd_boss, len(command))
+
 
         #         status
         if (not vaivora_constants.regex.format.matching.letters.match(command[0]) or \
@@ -613,7 +630,7 @@ async def boss_cmd(message, pm=False):
             return True
 
 
-        if len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_field:
+        if len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_field and len(command) > 2:
 
             boss_channel    = 1
             xmsg            = lookup_boss[0] if lookup_boss[0] == "Blasphemous Deathweaver" else ""
