@@ -382,7 +382,7 @@ async def settings_cmd(message):
                 temp_users = []
                 # get roles auth
                 if vaivora_constants.regex.settings.command.cmd_role_a.search(command[2]):
-                    users = vdst[message.server.id].get_role(role="auth")
+                    users = vdst[message.server.id].get_role(role="authorized")
                     for uid in users:
                         uname = await client.get_user_info(uid)
                         uname = "#   " + str(uname)

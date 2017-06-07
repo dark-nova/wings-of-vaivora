@@ -8,6 +8,7 @@ wings*
 *.old
 *.bak
 *secrets*
+*.json
 
 # directories
 test
@@ -17,3 +18,4 @@ db.bak
 snapshot
 old
 mods
+server_settings
