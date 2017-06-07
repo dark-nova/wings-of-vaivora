@@ -10,6 +10,7 @@ __all__ =   [
                   "command.syntax", \
                   # command.boss requires command.syntax
                   "command.boss", \
+                  "command.settings", \
                   # values.words.message requires command.boss
                   "values.words.message", \
                   "values.filenames", \
@@ -23,6 +24,7 @@ __all__ =   [
                   "regex.format.matching", \
                   "regex.format.time", \
                   "regex.dm.command", \
+                  "regex.settings.command", \
                   #"regex.commands", \
                   "fun"
             ]

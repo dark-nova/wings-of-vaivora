@@ -5,8 +5,9 @@ import vaivora_constants.command.boss
 reason  =   "Reason: "
 welcome =   "Thank you for inviting me to your server! " + "\n"  + \
             "I am a representative bot for the Wings of Vaivora, here to help you record your journey." + "\n" + "\n" + \
-            "Here are some useful commands:" + "\n" + "\n"  + \
-            vaivora_constants.command.boss.command + '\n' + "\n"  + \
+            "Here are some useful commands:" + "\n" + \
+            """```ini
+            [$boss ...] or [Vaivora, boss ...] ; refer to [$boss help] or [Vaivora, boss help] for more info ```""" + \
             "(To be implemented) Talt, Reminders, and Permissions. Check back soon!" + "\n" 
             # '\n'.join(cmd_usage['talt']) # + \
             # '\n'.join(cmd_usage['remi']) # + \

@@ -1,7 +1,9 @@
 __all__ =   [     "db", \
                   "version", \
                   "utils", \
-                  "boss"
+                  "boss", \
+                  "settings", \
+                  "secrets"
             ]
 
 vaivora = [ "vaivora_modules" ] * len(__all__)
