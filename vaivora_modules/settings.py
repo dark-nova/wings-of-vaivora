@@ -21,17 +21,17 @@ class Settings:
     settings['periodic_quota']          = 0
     settings['guild_level']             = 0
     settings['users']                   = dict()
-    settings['users']['auth']           = []
+    settings['users']['authorized']     = []
     settings['users']['member']         = []
-    settings['users']['s-auth']         = []
+    settings['users']['s-authorized']   = []
     settings['group']                   = dict()
-    settings['group']['auth']           = []
+    settings['group']['authorized']     = []
     settings['group']['member']         = []
-    settings['group']['s-auth']         = [] # compatability. do not use
+    settings['group']['s-authorized']   = [] # compatability. do not use
     settings['gname']                   = dict()
-    settings['gname']['auth']           = []
+    settings['gname']['authorized']     = []
     settings['gname']['member']         = []
-    settings['gname']['s-auth']         = [] # compatability. do not use
+    settings['gname']['s-authorized']   = [] # compatability. do not use
     settings['prefix']                  = []
     settings['channel']                 = dict()
     settings['channel']['boss']         = []
@@ -102,8 +102,8 @@ class Settings:
 
     def change_role(self, user, utype, role=None):
         if not role:
-            if user in self.settings[utype]['auth']:
-                self.settings[utype]['auth'].remove(user)
+            if user in self.settings[utype]['authorized']:
+                self.settings[utype]['authorized'].remove(user)
             if user in self.settings[utype]['member']:
                 self.settings[utype]['member'].remove(user)
             return True
@@ -112,28 +112,28 @@ class Settings:
             return self.set_boss(user)
 
         if user == "users" and role == "super authorized":
-            if not user in self.settings[utype]['auth']:
-                self.settings[utype]['auth'].append(user)
+            if not user in self.settings[utype]['authorized']:
+                self.settings[utype]['authorized'].append(user)
             if not user in self.settings[utype]['member']:
                 self.settings[utype]['member'].append(user)
-            if not user in self.settings[utype]['s-auth']:
-                self.settings[utype]['s-auth'].append(user) 
+            if not user in self.settings[utype]['s-authorized']:
+                self.settings[utype]['s-authorized'].append(user) 
         elif role == "authorized":
             # users should not be allowed to modify super authorized
-            if user == "users" and user in self.settings[utype]['s-auth']:
+            if user == "users" and user in self.settings[utype]['s-authorized']:
                 return False
-            if not user in self.settings[utype]['auth']:
-                self.settings[utype]['auth'].append(user)
+            if not user in self.settings[utype]['authorized']:
+                self.settings[utype]['authorized'].append(user)
             if not user in self.settings[utype]['member']:
                 self.settings[utype]['member'].append(user)
         else:
             # users should not be allowed to modify super authorized
-            if user == "users" and user in self.settings[utype]['s-auth']:
+            if user == "users" and user in self.settings[utype]['s-authorized']:
                 return False
             if not user in self.settings[utype]['member']:
                 self.settings[utype]['member'].append(user)
-            if user in self.settings[utype]['auth']:
-                self.settings[utype]['auth'].remove(user)
+            if user in self.settings[utype]['authorized']:
+                self.settings[utype]['authorized'].remove(user)
         if utype == "users":
             try:
                 self.settings['talt'][user]
@@ -149,9 +149,9 @@ class Settings:
         return role_call
 
     def get_role_user(self, user):
-        if user in self.settings['users']['s-auth']:
+        if user in self.settings['users']['s-authorized']:
             return "super authorized"
-        elif user in self.settings['users']['auth']:
+        elif user in self.settings['users']['authorized']:
             return "authorized"
         elif user in self.settings['users']['member']:
             return "member"
@@ -162,7 +162,7 @@ class Settings:
         highest = "none"
         for role in roles:
             # groups cannot be super authorized
-            if role in self.settings['group']['auth']:
+            if role in self.settings['group']['authorized']:
                 return "authorized"
             elif role in self.settings['group']['member']:
                 highest = "member"
@@ -194,7 +194,7 @@ class Settings:
         return True
 
     def set_quota_talt(self, user, amount):
-        if not auth_user in settings['users']['auth'] or amount <= 0:
+        if not auth_user in settings['users']['authorized'] or amount <= 0:
             return False
         self.settings['periodic_quota'] = amount
         self.save_file()
@@ -204,7 +204,7 @@ class Settings:
         return self.settings['periodic_quota']
 
     def get_quota_talt_user(self, user, targets=None):
-        if not auth_user in settings['users']['auth'] and targets:
+        if not auth_user in settings['users']['authorized'] and targets:
             return False
         if not targets:
             return [self.settings['quota'][user]]
@@ -220,8 +220,8 @@ class Settings:
 
     def add_talt(self, user, amount, unit, target=None):
         amount  = int(amount)
-        if not user in self.settings['users']['s-auth'] and \
-          not user in self.settings['users']['auth'] and \
+        if not user in self.settings['users']['s-authorized'] and \
+          not user in self.settings['users']['authorized'] and \
           not user in self.settings['users']['member']:
             return False
         if unit != "Talt":
@@ -231,7 +231,7 @@ class Settings:
         else:
             divisor = 1
         talt_pt = amount/divisor
-        if user in self.settings['users']['auth'] or user in self.settings['users']['s-auth']:
+        if user in self.settings['users']['authorized'] or user in self.settings['users']['s-authorized']:
             if not target:
                 self.update_guild_talt(talt_pt)
                 self.settings['talt'][user]     += talt_pt
@@ -244,7 +244,7 @@ class Settings:
         return True
 
     def validate_talt(self, auth_user, users=None):
-        if not auth_user in settings['users']['auth']:
+        if not auth_user in settings['users']['authorized']:
             return False
         elif not users:
             for user, talt_pt in self.talt_temporary.values():
