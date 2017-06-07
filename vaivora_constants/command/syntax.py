@@ -6,6 +6,7 @@
 
 cmd_pre         = "Command: "
 cmd_boss        = cmd_pre + "Boss\n"
+cmd_settings    = cmd_pre + "Settings\n"
 
 heading         = "Usage:\n"
 code_block      = "```"
@@ -81,3 +82,11 @@ cmd_error[R][BAD][BOSS][4]      = R + BAD + BOSS + "Channel (Field)\n"
 cmd_error_bad_boss_channel      = cmd_error[R][BAD][BOSS][4]
 cmd_error[R][BAD][BOSS][5]      = R + BAD + BOSS + "Status (Anchor)\n"
 cmd_error_bad_boss_status       = cmd_error[R][BAD][BOSS][5]
+
+# Settings-specific
+cmd_error_unauthorized          = "You are not authorized to do this.\n"
+cmd_error_no_users              = "You did not enter at least one user.\n"
+cmd_error_bad_roles             = "You did not enter a correct role.\n"
+cmd_error_bad_settings          = "Your settings were incorrect.\n"
+cmd_error_bad_channel           = "You used the wrong channel.\n"
+cmd_error_not_mgmt_channel      = "You tried using this command in a non-management channel.\n"

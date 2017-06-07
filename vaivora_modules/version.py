@@ -61,8 +61,9 @@ def get_changelogs(idx=0):
 
 current     = get_header() + \
 """```diff
-+ 'Wings of Vaivora' has been rewritten using a separate module for constants. Performance should subsequently be higher.
-+ The welcome message should now be clearer with a brighter display.
++ Added features:
+  + 'Wings of Vaivora' has been rewritten using a separate module for constants. Performance should subsequently be higher.
+  + The welcome message should now be clearer with a brighter display.
 
 - Upcoming changes:
   + Previous modules will be migrated over to separate modules, like constants.
@@ -83,9 +84,12 @@ date_n.append("2017/04/09")
 
 current     = get_header() + \
 """```diff
-+ 'Wings of Vaivora' has been rewritten fully with the constants module in place.
-+ Squished some bugs related to the migration of modules.
-+ Actually published this. Sorry for the delay on the downtime!
++ Added features:
+  + 'Wings of Vaivora' has been rewritten fully with the constants module in place.
+
++ Fixes:
+  + Squished some bugs related to the migration of modules.
+  + Actually published this. Sorry for the delay on the downtime!
 
 - Upcoming changes:
   + Talt Tracker to be developed next
@@ -105,7 +109,8 @@ date_n.append("2017/04/09")
 
 current     = get_header() + \
 """```diff
-+ Versioning corrected.
++ Fixes:
+  + Versioning corrected.
 ```"""
 
 changelog.append(current)
@@ -120,8 +125,9 @@ date_n.append("2017/04/09")
 
 current     = get_header() + \
 """```diff
-+ Versioning _really_ corrected.
-+ Several bugs related to file creation also fixed.
++ Fixes:
+  + Versioning _really_ corrected.
+  + Several bugs related to file creation also fixed.
 ```"""
 
 changelog.append(current)
@@ -136,11 +142,11 @@ date_n.append("2017/04/09")
 
 current     = get_header() + \
 """```diff
-+ Fixed issues with databases not connecting.
-+ Fixed issues with commands.
-+ Stopped Wings of Vaivora from shouting changelogs everytime. (MAYBE.)
-
-  * Thanks to Jiyuu for the feedback on all this.
++ Fixes:
+  + Fixed issues with databases not connecting.
+  + Fixed issues with commands.
+  + Stopped Wings of Vaivora from shouting changelogs everytime. (MAYBE.)
+    * Thanks to Jiyuu for the feedback on all this.
 ```"""
 
 changelog.append(current)
@@ -155,9 +161,9 @@ date_n.append("2017/04/10")
 
 current     = get_header() + \
 """```diff
-+ Fixed issues with Deathweaver's map not recording.
-
-  * Thanks to Term for the bug report.
++ Fixes:
+  + Fixed issues with Deathweaver's map not recording.
+    * Thanks to Term for the bug report.
 ```"""
 
 changelog.append(current)
@@ -172,10 +178,11 @@ date_n.append("2017/04/10")
 
 current     = get_header() + \
 """```diff
-+ Fixed issues with Deathweaver's map not recording. (For real!)
-  + Corrected some other issues with the code. No more duplicate Deathweaver entries, for example.
-+ Entries should be checked properly for time to prevent overlap.
-  + New error message for overlapping times.
++ Fixes:
+  + Fixed issues with Deathweaver's map not recording. (For real!)
+    + Corrected some other issues with the code. No more duplicate Deathweaver entries, for example.
+  + Entries should be checked properly for time to prevent overlap.
+    + New error message for overlapping times.
 ```"""
 
 changelog.append(current)
@@ -190,9 +197,12 @@ date_n.append("2017/04/11")
 
 current     = get_header() + \
 """```diff
-+ Fixed logic with missing/broken references -- imported all the relevant modules.
-  + This may have impacted boss alerts. Sorry.
-+ Changed the changelog delivery to server owners. Changelogs will come in separate messages. Apologies if you don't want notifications!
++ Added features:
+  + Changed the changelog delivery to server owners. Changelogs will come in separate messages. Apologies if you don't want notifications!
+
++ Fixes:
+  + Fixed logic with missing/broken references -- imported all the relevant modules.
+    + This may have impacted boss alerts. Sorry.
 ```"""
 
 changelog.append(current)
@@ -207,11 +217,11 @@ date_n.append("2017/04/11")
 
 current     = get_header() + \
 """```diff
-+ Fixed logic with record files (not databases) that kept deleting contents.
-  + Sorry for the notifications. (Will be many like this for server owners... :( )
-+ Fixed issuee with Deathweaver. You are now required to list map for Deathweaver.
-  
-  * Thanks to Term for the bug report, once again.
++ Fixes:
+  + Fixed logic with record files (not databases) that kept deleting contents.
+    + Sorry for the notifications. (Will be many like this for server owners... :( )
+  + Fixed issuee with Deathweaver. You are now required to list map for Deathweaver.
+    * Thanks to Term for the bug report, once again.
 ```"""
 
 changelog.append(current)
@@ -226,9 +236,9 @@ date_n.append("2017/04/12")
 
 current     = get_header() + \
 """```diff
-+ Fixed a misreferenced variable that caused issues with recording bosses.
-  
-  * Thanks to Kiito for the bug report.
++ Fixes:
+  + Fixed a misreferenced variable that caused issues with recording bosses.
+    * Thanks to Kiito for the bug report.
 ```"""
 
 changelog.append(current)
@@ -243,11 +253,11 @@ date_n.append("2017/04/12")
 
 current     = get_header() + \
 """```diff
-+ Identified the issue linked to records not reporting within threshold of 15 mminutes.
-  + Identified several other issues related to this.
-    + The "no repeat" file used to archive announced records was repeatedly erased. I suppose I learned a lesson in "a" and "a+" file modes.
-  
-  * Thanks to Kiito for the bug report.
++ Fixes:
+  + Identified the issue linked to records not reporting within threshold of 15 mminutes.
+    + Identified several other issues related to this.
+      + The "no repeat" file used to archive announced records was repeatedly erased. I suppose I learned a lesson in "a" and "a+" file modes.
+    * Thanks to Kiito for the bug report.
 ```"""
 
 changelog.append(current)
@@ -262,9 +272,12 @@ date_n.append("2017/04/19")
 
 current     = get_header() + \
 """```diff
-+ Migrated boss modules out of the main script, and began the process of developing custom settings.
-+ You can now query for boss aliases (less typing) and boss locations to scout for them better.
-  * Thanks to Jiyuu for the feature request.
++ Added features:
+  + You can now query for boss aliases (less typing) and boss locations to scout for them better.
+    * Thanks to Jiyuu for the feature request.
+
++ Fixes:
+  + Migrated boss modules out of the main script, and began the process of developing custom settings.
 
 - Upcoming changes:
   + Talt Tracker. For real!
@@ -284,8 +297,9 @@ date_n.append("2017/04/19")
 
 current     = get_header() + \
 """```diff
-+ Fixed issue with map and boss detection. Partial map names should now be interpreted correctly.
-  * Thanks to Jiyuu for the bug report.
++ Fixes:
+  + Fixed issue with map and boss detection. Partial map names should now be interpreted correctly.
+    * Thanks to Jiyuu for the bug report.
 ```"""
 
 changelog.append(current)
@@ -300,8 +314,9 @@ date_n.append("2017/04/20")
 
 current     = get_header() + \
 """```diff
-+ Fixed potential issue with Kubas interfering with boss reporting.
-+ Fixed issue with channel for world bosses not recording.
++ Fixes:
+  + Fixed potential issue with Kubas interfering with boss reporting.
+  + Fixed issue with channel for world bosses not recording.
 ```"""
 
 changelog.append(current)
@@ -316,8 +331,9 @@ date_n.append("2017/04/21")
 
 current     = get_header() + \
 """```diff
-+ Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.
-  * Thanks to Jiyuu and Wolfy for the bug report.
++ Fixes:
+  + Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.
+    * Thanks to Jiyuu and Wolfy for the bug report.
 ```"""
 
 changelog.append(current)
@@ -332,8 +348,9 @@ date_n.append("2017/04/21")
 
 current     = get_header() + \
 """```diff
-+ Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.
-  * Thanks to Jiyuu and Wolfy for the bug report.
++ Fixes:
+  + Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.
+    * Thanks to Jiyuu and Wolfy for the bug report.
 ```"""
 
 changelog.append(current)
@@ -348,11 +365,14 @@ date_n.append("2017/04/21")
 
 current     = get_header() + \
 """```diff
-+ Fixed issue with world bosses with no channel recorded as recorded as ch.0.
-+ Added "$subscribe" and "$unsubscribe" to DM commands.
-  + You can subscribe to changelogs even if you're not a server owner.
-+ Added a small status to show when things are ready.
-  * Thanks to Jiyuu for the feature request.
++ Added features:
+  + Added "$subscribe" and "$unsubscribe" to DM commands.
+    + You can subscribe to changelogs even if you're not a server owner.
+  + Added a small status to show when things are ready.
+    * Thanks to Jiyuu for the feature request.
+
++ Fixes:
+  + Fixed issue with world bosses with no channel recorded as recorded as ch.0.
 
 - Upcoming changes:
   + Talt T...I keep mentioning this.
@@ -372,8 +392,142 @@ date_n.append("2017/04/22")
 
 current     = get_header() + \
 """```diff
-+ Added "$help" for commands. Give it a try in any channel or DM!
-+ Added a small status to show when things are ready. Slightly better now.
++ Added features:
+  + Added "$help" for commands. Give it a try in any channel or DM!
+
++ Fixes:
+  + Added a small status to show when things are ready. Slightly better now.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('5')
+hotfix_n.append('a')
+status_n.append(milestone)
+date_n.append("2017/04/23")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected issue with specific deletions. Field boss records can now be deleted without issue.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('5')
+hotfix_n.append('b')
+status_n.append(milestone)
+date_n.append("2017/04/23")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected issue with adding to (un)subscriptions.
+    * Thanks to Wolfy for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('5')
+hotfix_n.append('c')
+status_n.append(milestone)
+date_n.append("2017/05/08")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected issue with recording bosses on multiple channels.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('5')
+hotfix_n.append('d')
+status_n.append(milestone)
+date_n.append("2017/05/15")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected issue with some commands not printing.
+    + Subsequently, you may reeceive more than 1 message/response when you ask for help on a command.
+      * Thanks to Onesan for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('5')
+hotfix_n.append('e')
+status_n.append(milestone)
+date_n.append("2017/05/19")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Fixed argument count check. Preparing to condense some modules later for code clarity. Open Source SoonTM
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('5')
+hotfix_n.append('f')
+status_n.append(milestone)
+date_n.append("2017/05/19")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Revert previous "fix".
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('5')
+hotfix_n.append('g')
+status_n.append(milestone)
+date_n.append("2017/06/06")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Removed @here notification in preparation of custom setting. For now, you may use a role called "Boss Hunter" (caps important).
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('')
+status_n.append(milestone)
+date_n.append("2017/06/07")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + Check out the new Settings module! [$settings help] for more info.
 ```"""
 
 changelog.append(current)

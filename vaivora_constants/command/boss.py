@@ -2,7 +2,11 @@
 #requires: vaivora_constants.command.syntax
 import vaivora_constants.command.syntax
 
-command         =   vaivora_constants.command.syntax.code_block + "ini\n" + "[$boss] commands" + "\n" + \
+modname         =   "boss"
+
+command         =   []
+
+cmd_frag        =   vaivora_constants.command.syntax.code_block + "ini\n" + "[$boss] commands" + "\n" + \
                     ";================" + "\n" + \
                     vaivora_constants.command.syntax.heading + "\n"
 
@@ -18,69 +22,79 @@ D               =   "type D"
 arg             =   dict()
 arg[N]          =   dict()
 arg[N][0]       =   "[prefix]"
-arg[N][1]       =   dict()
-arg[N][1][A]    =   "[boss|all]"
-arg[N][1][B]    =   "[boss]"
-arg[N][1][C]    =   "[all]"
+arg[N][1]       =   "[boss]"
 arg[N][2]       =   dict()
-arg[N][2][A]    =   "[died|anchored|warned]"
-arg[N][2][B]    =   "[erase|list]"
-arg[N][2][C]    =   "[synonyms|maps]"
-arg[N][2][D]    =   "[world|field]"
-arg[N][3]       =   "[time]"
+arg[N][2][A]    =   "[boss|all]"
+arg[N][2][B]    =   "[boss]"
+arg[N][2][C]    =   "[all]"
+arg[N][3]       =   dict()
+arg[N][3][A]    =   "[died|anchored|warned]"
+arg[N][3][B]    =   "[erase|list]"
+arg[N][3][C]    =   "[synonyms|maps]"
+arg[N][3][D]    =   "[world|field]"
+arg[N][4]       =   "[time]"
 arg[O]          =   dict()
 arg[O][1]       =   "(chN)"
 arg[O][2]       =   "(map)"
 arg[H]          =   "[help]"
 
-usage       =   arg[N][0] + " " + arg[N][1][B] + " " + arg[N][2][A] + " " + arg[N][3] + " " + arg[O][1] + " " + arg[O][2] + " " + "\n" + \
-                arg[N][0] + " " + arg[N][1][A] + " " + arg[N][2][B] + " " + arg[O][2] + "\n" + \
-                arg[N][0] + " " + arg[N][1][B] + " " + arg[N][2][C] + "\n" + \
-                arg[N][0] + " " + arg[N][1][C] + " " + arg[N][2][D] + "\n" + \
-                arg[N][0] + " " + arg[N][1][B] + " " + arg[H] + "\n"
+usage           =   arg[N][0] + " " + arg[N][1] + " " + arg[N][2][B] + " " + arg[N][3][A] + " " + arg[N][4] + " " + arg[O][1] + " " + arg[O][2] + " " + "\n" + \
+                    arg[N][0] + " " + arg[N][1] + " " + arg[N][2][A] + " " + arg[N][3][B] + " " + arg[O][2] + "\n" + \
+                    arg[N][0] + " " + arg[N][1] + " " + arg[N][2][B] + " " + arg[N][3][C] + "\n" + \
+                    arg[N][0] + " " + arg[N][1] + " " + arg[N][2][C] + " " + arg[N][3][D] + "\n" + \
+                    arg[N][0] + " " + arg[N][1] + " " + arg[N][2][B] + " " + arg[H] + "\n"
+usage           +=  vaivora_constants.command.syntax.code_block
 
-command     +=  usage
+cmd_frag        +=  usage
+command.append(cmd_frag)
 
-arg_info    =   list()
+arg_info        =   list()
+arg_info.append(vaivora_constants.command.syntax.code_block + "ini\n")
 arg_info.append(";================\n")
 arg_info.append(arg[N][0] + "\n" + \
-                "    [$boss] or [Vaivora, boss]\n")
-arg_info.append(arg[N][1][B]  + "\n" + \
+                "    (default) [$] or [Vaivora, ]; this server may have others. Run [$settings get prefix] to check.\n")
+arg_info.append(arg[N][1] + "\n" + \
+                "    (always) [" + modname + "]; goes after prefix. e.g. [$" + modname + "], [Vaivora, " + modname + "]\n")
+arg_info.append(arg[N][2][B]  + "\n" + \
                 "    Either part of, or full name- if spaced, enclose in double-quotes ([\"])\n" + \
                 "    [all] for all bosses\n")
-arg_info.append(arg[N][2][A]  + "\n" + \
+arg_info.append(arg[N][3][A]  + "\n" + \
                 "    Valid for [boss] only, to indicate its status.\n" + \
                 "    Do not use with [erase], [list], [synonyms], [maps], [world], or [field].\n")
-arg_info.append(arg[N][2][B]  + "\n" + \
+arg_info.append(arg[N][3][B]  + "\n" + \
                 "    Valid for both [boss] and [all] to [erase] or [list] entries.\n" + \
                 "    Do not use with [died], [anchored], [warned], [synonyms], [maps], [world], or [field].\n")
-arg_info.append(arg[N][2][C]  + "\n" + \
+arg_info.append(arg[N][3][C]  + "\n" + \
                 "    Valid for [boss] only, to print aliases of bosses (short-hand) or maps that the boss may wander.\n" + \
                 "    Do not use with [died], [anchored], [warned], [erase], [list], [world], or [field].\n")
-arg_info.append(arg[N][2][D]  + "\n" + \
+arg_info.append(arg[N][3][D]  + "\n" + \
                 "    Valid for [all] only, to print out either [world bosses] or [field bosses].\n" + \
                 "    Do not use with [died], [anchored], [warned], [erase], [list], [synonyms], or [maps].\n")
-arg_info.append(arg[N][3]     + " ; required for [died] and [anchored]\n" + \
+arg_info.append(arg[N][4]     + "\n" + \
+                "; required for [died] and [anchored]\n" + \
                 "    Remove spaces. 12 hour and 24 hour times acceptable, with valid delimiters \":\" and \".\". Use server time.\n")
-arg_info.append(arg[O][2]     + " ; optional\n" + \
+arg_info.append(arg[O][2]     + "\n" + \
+                "; optional\n" + \
                 "    Suitable only for field bosses.[*] If unlisted, this will be unassumed.\n")
-arg_info.append(arg[O][1]     + " ; optional\n" + \
+arg_info.append(arg[O][1]     + "\n" + \
+                "; optional\n" + \
                 "    Suitable only for world bosses.[*] If unlisted, CH[1] will be assumed.\n" + "\n")
 arg_info.append("[*] ; Notes about world and field bosses:\n" + \
                 "    ; Field bosses in channels other than 1 are considered 'world boss' variants.\n" + \
                 "    ; and should not be recorded because they spawn unpredictably, because they're jackpot bosses.\n" + \
                 "    ; Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.\n")
+arg_info.append(vaivora_constants.command.syntax.code_block)
 
-command     +=  ''.join(arg_info)
+cmd_frag        =  ''.join(arg_info)
+command.append(cmd_frag)
 
-examples    =   "\n" + vaivora_constants.command.syntax.example + \
-                "[$boss cerb died 12:00pm 4f]        ; channel should be omitted for field bosses\n" + \
-                "[Vaivora, boss crab died 14:00 ch2] ; map should be omitted for world bosses\n"
+examples        =   vaivora_constants.command.syntax.example + \
+                    "[$boss cerb died 12:00pm 4f]        ; channel should be omitted for field bosses\n" + \
+                    "[Vaivora, boss crab died 14:00 ch2] ; map should be omitted for world bosses\n"
 
-command     +=  examples
-
-command     += "\n" + vaivora_constants.command.syntax.code_block
-
+cmd_frag        =  vaivora_constants.command.syntax.code_block + "ini\n" + examples
+cmd_frag        += vaivora_constants.command.syntax.code_block
+command.append(cmd_frag)
 
 arg_min     = 3
 arg_max     = 5
@@ -217,14 +231,10 @@ boss_synonyms = { 'Blasphemous Deathweaver':        [ 'dw', \
                   'Starving Ellaganos':             [ 'ella', \
                                                       'ellaganos' 
                                                     ], 
-                  'Prison Manager Prison Cutter':   [ 'cutter', \
-                                                      'prison cutter', \
-                                                      'prison manager', \
-                                                      'prison manager cutter' 
+                  'Prison Manager Prison Cutter':   [ 'pcutter'
                                                     ], 
                   'Mirtis':                         [ 'mirtis' ], 
-                  'Rexipher':                       [ 'rexipher', \
-                                                      'rexi', \
+                  'Rexipher':                       [ 'rex', \
                                                       'rexifer', \
                                                       'racksifur', \
                                                       'sexipher', \
@@ -325,12 +335,14 @@ boss_locs = { 'Blasphemous Deathweaver':        [ 'Crystal Mine 2F', \
                                                   'Nobreer Forest', \
                                                   'Emmet Forest', \
                                                   'Pystis Forest', \
-                                                  'Syla Forest'
+                                                  'Syla Forest', \
+                                                  'Mishekan Forest'
                                                 ],
               'Demon Lord Zaura':               [ 'Arcus Forest', \
                                                   'Phamer Forest', \
                                                   'Ghibulinas Forest', \
-                                                  'Mollogheo Forest'
+                                                  'Mollogheo Forest', \
+                                                  'Alembique Cave'
                                                 ],
               'Demon Lord Blut':                [ 'Tevhrin Stalactite Cave Section 1', \
                                                   'Tevhrin Stalactite Cave Section 2', \

@@ -12,33 +12,21 @@ for mod in vaivora_constants.modules:
 # @return:
 #     boss index in list, or -1 if not found or more than 1 matching
 def check_boss(entry):
+    print(entry)
     match = ''
     for boss in vaivora_constants.command.boss.bosses:
-
         if entry in boss.lower():
-
             if not match:
-
                 match = boss
-
             else:
-
                 return -1
-    
     if not match and entry in vaivora_constants.command.boss.boss_syns:
-
         for b, syns in vaivora_constants.command.boss.boss_synonyms.items():
-
             if entry in syns and not match:
-
                 match = b
-
             elif entry in syns:
-
-                return -1
-    
+                return -1    
     if not match:
-
         return -1
 
     return vaivora_constants.command.boss.bosses.index(match)
