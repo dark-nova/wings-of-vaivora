@@ -27,6 +27,11 @@ class Settings:
     settings['group']                   = dict()
     settings['group']['auth']           = []
     settings['group']['member']         = []
+    settings['group']['s-auth']         = [] # compatability. do not use
+    settings['gname']                   = dict()
+    settings['gname']['auth']           = []
+    settings['gname']['member']         = []
+    settings['gname']['s-auth']         = [] # compatability. do not use
     settings['prefix']                  = []
     settings['channel']                 = dict()
     settings['channel']['boss']         = []
@@ -106,7 +111,7 @@ class Settings:
         if role == "boss":
             return self.set_boss(user)
 
-        if role == "super authorized":
+        if user == "users" and role == "super authorized":
             if not user in self.settings[utype]['auth']:
                 self.settings[utype]['auth'].append(user)
             if not user in self.settings[utype]['member']:
@@ -115,7 +120,7 @@ class Settings:
                 self.settings[utype]['s-auth'].append(user) 
         elif role == "authorized":
             # users should not be allowed to modify super authorized
-            if user in self.settings['s-auth']:
+            if user == "users" and user in self.settings[utype]['s-auth']:
                 return False
             if not user in self.settings[utype]['auth']:
                 self.settings[utype]['auth'].append(user)
@@ -123,7 +128,7 @@ class Settings:
                 self.settings[utype]['member'].append(user)
         else:
             # users should not be allowed to modify super authorized
-            if user in self.settings['s-auth']:
+            if user == "users" and user in self.settings[utype]['s-auth']:
                 return False
             if not user in self.settings[utype]['member']:
                 self.settings[utype]['member'].append(user)
@@ -140,7 +145,7 @@ class Settings:
     def get_role(self, role="member"):
         role_call = []
         role_call.extend(self.settings["users"][role])
-        role_call.extend(self.settings["group"][role])
+        #role_call.extend(self.settings["group"][role])
         return role_call
 
     def get_role_user(self, user):
