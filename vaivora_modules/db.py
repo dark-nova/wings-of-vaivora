@@ -185,8 +185,11 @@ class Database:
                            int(contents[0][8]) <= boss_dict['hour'] - 3):
             if boss_dict['name'] == "Blasphemous Deathweaver":
                 self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_map=boss_dict['map'])
-            else:                
+            elif boss_dict['name'] in vaivora_constants.command.boss.bosses_world:
+                self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_ch=boss_dict['channel'])
+            else:
                 self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
+
 
         #try: # boss database structure
         self.cursor.execute("insert into boss values (?,?,?,?,?,?,?,?,?,?)", \
