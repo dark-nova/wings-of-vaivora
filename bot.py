@@ -485,7 +485,7 @@ async def settings_cmd(message):
                                        vaivora_constants.command.syntax.cmd_error_bad_roles, \
                                        vaivora_constants.command.syntax.cmd_settings, command[2])
                 errs    = []
-                for mention in message.mentions:
+                for mention in (message.mentions + message.role_mentions):
                     if type(mention) == discord.User or type(mention) == discord.Member:
                         utype = "users"
                     else:
@@ -496,6 +496,10 @@ async def settings_cmd(message):
                     return await error(message.author, message.channel, \
                                        vaivora_constants.command.syntax.cmd_error_bad_settings, \
                                        vaivora_constants.command.syntax.cmd_settings, "mentions", errs)
+                elif not message.mentions and not message.role_mentions:
+                    await client.send_message(message.channel, message.author.mention + " " + \
+                                              "(But nothing happened...)\n")
+                    return False
                 else:
                     await client.send_message(message.channel, message.author.mention + " " + \
                                               vaivora_constants.command.settings.acknowledge + \
@@ -539,7 +543,7 @@ async def settings_cmd(message):
             return await error(message.author, message.channel, \
                                vaivora_constants.command.syntax.cmd_error_unauthorized, \
                                vaivora_constants.command.syntax.cmd_settings, "None")
-        if not message.mentions:
+        if not message.mentions and not message.role_mentions:
             return await error(message.author, message.channel, \
                                vaivora_constants.command.syntax.cmd_error_no_users, \
                                vaivora_constants.command.syntax.cmd_settings)
@@ -548,7 +552,7 @@ async def settings_cmd(message):
         else:
             mode = "demote"
         errs = []
-        for mention in message.mentions:
+        for mention in (message.mentions + message.role_mentions):
             if type(mention) == discord.User or type(mention) == discord.Member:
                 utype = "users"
             else:
