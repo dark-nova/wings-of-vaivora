@@ -41,28 +41,29 @@ class Settings:
     settings['role']                    = dict()
     settings['role']['boss']            = []
     talt_temporary                      = dict()
+    talt_temporary_actual               = dict()
     talt_level                          = []
     talt_level.append(0)
-    talt_level.append(0)
-    talt_level.append(50)
-    talt_level.append(125)
-    talt_level.append(250)
-    talt_level.append(450)
-    talt_level.append(886)
-    talt_level.append(1598)
-    talt_level.append(2907)
-    talt_level.append(4786)
-    talt_level.append(7483)
-    talt_level.append(11353)
-    talt_level.append(16907)
-    talt_level.append(24876)
-    talt_level.append(36314)
-    talt_level.append(52726)
-    talt_level.append(160712)
-    talt_level.append(345531)
-    talt_level.append(742891)
-    talt_level.append(1597216)
-    talt_level.append(3434015)
+    talt_level.append(0)            # 1
+    talt_level.append(50)           # 2
+    talt_level.append(125)          # 3
+    talt_level.append(250)          # 4
+    talt_level.append(450)          # 5
+    talt_level.append(886)          # 6
+    talt_level.append(1598)         # 7
+    talt_level.append(2907)         # 8
+    talt_level.append(4786)         # 9
+    talt_level.append(7483)         # 10
+    talt_level.append(11353)        # 11
+    talt_level.append(16907)        # 12
+    talt_level.append(24876)        # 13
+    talt_level.append(36313)        # 14
+    talt_level.append(52726)        # 15
+    talt_level.append(160712)       # 16
+    talt_level.append(345531)       # 17
+    talt_level.append(742891)       # 18
+    talt_level.append(1597216)      # 19
+    talt_level.append(3434015)      # 20
     role_level                          = []
     role_level.append("none")
     role_level.append("member")
@@ -111,16 +112,16 @@ class Settings:
         if role == "boss":
             return self.set_boss(user)
 
-        if user == "users" and role == "super authorized":
+        if utype == "users" and role == "super authorized":
             if not user in self.settings[utype]['authorized']:
                 self.settings[utype]['authorized'].append(user)
             if not user in self.settings[utype]['member']:
                 self.settings[utype]['member'].append(user)
             if not user in self.settings[utype]['s-authorized']:
-                self.settings[utype]['s-authorized'].append(user) 
+                self.settings[utype]['s-authorized'].append(user)
         elif role == "authorized":
             # users should not be allowed to modify super authorized
-            if user == "users" and user in self.settings[utype]['s-authorized']:
+            if utype == "users" and user in self.settings[utype]['s-authorized']:
                 return False
             if not user in self.settings[utype]['authorized']:
                 self.settings[utype]['authorized'].append(user)
@@ -143,8 +144,12 @@ class Settings:
         return True
 
     def get_role(self, role="member"):
+        if role == "boss":
+            utype = "role"
+        else:
+            utype = "users"
         role_call = []
-        role_call.extend(self.settings["users"][role])
+        role_call.extend(self.settings[utype][role])
         #role_call.extend(self.settings["group"][role])
         return role_call
 
@@ -178,11 +183,14 @@ class Settings:
     #     return True
 
     def validate_points(self, points):
-        return points < 0 or points % 20 != 0
+        return points > 0 and points % 20 == 0
 
     def set_remainder_talt(self, guild_level, points):
+        guild_level = int(guild_level)
+        points = int(points)
         if guild_level > len(self.talt_level) or guild_level < 1 or \
-          points > self.talt_level[guild_level] or self.validate_points(points):
+          points/20 > self.talt_level[guild_level+1] or not self.validate_points(points):
+            print('what now')
             return False
         self.settings['guild_level'] = guild_level
         current_talt    = self.talt_level[guild_level] + points/20
@@ -190,11 +198,12 @@ class Settings:
             return False
         self.settings['talt']['remainder']  = current_talt - self.settings['talt']['guild']
         self.settings['talt']['guild']  = current_talt
+        self.rebase_guild_talt()
         self.save_file()
         return True
 
     def set_quota_talt(self, user, amount):
-        if not auth_user in settings['users']['authorized'] or amount <= 0:
+        if not auth_user in self.settings['users']['authorized'] or amount <= 0:
             return False
         self.settings['periodic_quota'] = amount
         self.save_file()
@@ -204,7 +213,7 @@ class Settings:
         return self.settings['periodic_quota']
 
     def get_quota_talt_user(self, user, targets=None):
-        if not auth_user in settings['users']['authorized'] and targets:
+        if not auth_user in self.settings['users']['authorized'] and targets:
             return False
         if not targets:
             return [self.settings['quota'][user]]
@@ -213,17 +222,29 @@ class Settings:
 
     def update_guild_talt(self, talt):
         self.settings['talt']['guild']  += talt
-        while self.settings['talt']['guild'] > self.talt_level[self.settings['guild_level']]:
+        while self.settings['talt']['guild'] >= self.talt_level[self.settings['guild_level']]:
             self.settings['guild_level'] += 1
+        self.settings['guild_level'] -= 1
         self.save_file()
+        return True
+
+    def rebase_guild_talt(self):
+        # reset
+        self.settings['talt']['guild']  = 0
+        self.settings['guild_level']    = 0
+        self.save_file()
+        talt = 0
+        for key, value in self.settings['talt'].items():
+            talt += value
+        self.update_guild_talt(talt)
         return True
 
     def add_talt(self, user, amount, unit, target=None):
         amount  = int(amount)
-        if not user in self.settings['users']['s-authorized'] and \
-          not user in self.settings['users']['authorized'] and \
-          not user in self.settings['users']['member']:
-            return False
+        # if not user in self.settings['users']['s-authorized'] and \
+        #   not user in self.settings['users']['authorized'] and \
+        #   not user in self.settings['users']['member']:
+        #     return False
         if unit != "Talt":
             divisor = 20
             if not self.validate_points(amount):
@@ -234,26 +255,38 @@ class Settings:
         if user in self.settings['users']['authorized'] or user in self.settings['users']['s-authorized']:
             if not target:
                 self.update_guild_talt(talt_pt)
-                self.settings['talt'][user]     += talt_pt
+                try:
+                    self.settings['talt'][user]     += talt_pt
+                except:
+                    self.settings['talt'][user]     = talt_pt
             else:
                 self.update_guild_talt(talt_pt)
-                self.settings['talt'][target]   += talt_pt
+                try:
+                    self.settings['talt'][target]   += talt_pt
+                except:
+                    self.settings['talt'][target]   = talt_pt
         else: #elif user in settings['users']['member']:
             self.talt_temporary[user]           = talt_pt
         self.save_file()
         return True
 
-    def validate_talt(self, auth_user, users=None):
-        if not auth_user in settings['users']['authorized']:
+    def validate_talt(self, auth_user, mode, user=None):
+        if not auth_user in self.settings['users']['authorized'] and \
+           not auth_user in self.settings['users']['s-authorized']:
             return False
-        elif not users:
-            for user, talt_pt in self.talt_temporary.values():
-                self.settings['talt'][user] += talt_pt
-                self.update_guild_talt(talt_pt)
+        elif not user:
+            if mode == "validate":
+                for user, talt_pt in self.talt_temporary.items():
+                    self.settings['talt'][user] += talt_pt
+                    self.talt_temporary[user]   = 0
+                    self.update_guild_talt(talt_pt)
+            else:
+                self.talt_temporary = dict()
         else:
-            for user in users:
+            if mode == "validate":
                 self.settings['talt'][user] += self.talt_temporary[user]
                 self.update_guild_talt(self.talt_temporary[user])
+            talt_temporary[user] = 0
         self.save_file()
         return True
 
@@ -264,7 +297,44 @@ class Settings:
             try:
                 return str(int(self.settings['talt'][user]))
             except:
-                return 0
+                return str(0)
+
+    def get_temp_talt(self):
+        return self.talt_temporary
+
+    def set_talt(self, user, amount, unit, target=None):
+        amount  = int(amount)
+        # if not user in self.settings['users']['s-authorized'] and \
+        #   not user in self.settings['users']['authorized'] and \
+        #   not user in self.settings['users']['member']:
+        #     return False
+        if unit != "Talt":
+            divisor = 20
+            if not self.validate_points(amount):
+                return False
+        else:
+            divisor = 1
+        talt_pt = amount/divisor
+        if user in self.settings['users']['authorized'] or user in self.settings['users']['s-authorized']:
+            if not target:
+                self.update_guild_talt(talt_pt)
+                self.settings['talt'][user]     = talt_pt
+            else:
+                self.update_guild_talt(talt_pt)
+                self.settings['talt'][target]   = talt_pt
+        else: #elif user in settings['users']['member']:
+            self.talt_temporary_actual[user]    = talt_pt
+        self.rebase_guild_talt()
+        self.save_file()
+        return True
+
+    def reset_talt(self, user):
+        self.settings['talt'][user] = 0
+        self.rebase_guild_talt()
+        return True
+
+    def get_all_talt(self):
+        return self.settings['talt']
 
     def get_talt_for_nextlevel(self):
         if self.settings['guild_level'] == 20:

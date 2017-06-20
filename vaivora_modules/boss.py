@@ -12,7 +12,6 @@ for mod in vaivora_constants.modules:
 # @return:
 #     boss index in list, or -1 if not found or more than 1 matching
 def check_boss(entry):
-    print(entry)
     match = ''
     for boss in vaivora_constants.command.boss.bosses:
         if entry in boss.lower():
@@ -70,11 +69,8 @@ def check_maps(maps, boss):
     
     maps    = maps.lower()
 
-    print(boss, maps, vaivora_constants.command.boss.boss_locs[boss])
-
     for m in vaivora_constants.command.boss.boss_locs[boss]:
         if maps in m.lower():
-            print(maps, m)
             if mapidx != -1:
                 return -1
             mapidx = vaivora_constants.command.boss.boss_locs[boss].index(m)
