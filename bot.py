@@ -100,7 +100,7 @@ async def send_news():
                 usr_sid = srv_tup[0]
                 usr_chk = vaivora_modules.version.check_revisions(usr_ver)
                 if usr_chk:
-                    usr = client.get_user_info(usr_sid)
+                    usr = await client.get_user_info(usr_sid)
                     for vaivora_log in vaivora_modules.version.get_changelogs(usr_chk):
                         #await client.send_message(usr, vaivora_log)
                         pass
@@ -207,7 +207,7 @@ async def on_message(message):
     #     return await client.send_message(message.author, "server: " + message.server.name + ", id: " + message.server.id + "\n")
     # help message handling
     if vaivora_constants.regex.dm.command.prefix.match(message.content):
-        if vaivora_constants.regex.dm.command.cmd_help.search(message.content):
+        if vaivora_constants.regex.dm.command.cmd_help.match(message.content):
             return await client.send_message(message.channel, message.author.mention + " " + \
                                              vaivora_constants.values.words.message.helpmsg)
 
@@ -224,12 +224,24 @@ async def on_message(message):
         await client.send_message(message.channel, "https://youtu.be/XzBCBIVC7Qg?t=12s")
         return True
     elif vaivora_constants.fun.meme.match(message.content):
-        await client.send_message(message.channel, message.author.mention + " " + "http://i.imgur.com/xiuxzUW.png")
+        await client.send_message(message.channel, message.author.mention + " " + "http://i.imgur.com/kW3o6eC.png")
+        return True
+    elif vaivora_constants.fun.stab.search(message.content):
+        await client.add_reaction(message, "🗡")
+        await client.add_reaction(message, "⚔")
+        for emoji in message.server.emojis:
+            if emoji.name == "Manamana":
+                await client.add_reaction(message, emoji)
+                return True
         return True
     # boss commands handling
     if vaivora_constants.regex.boss.command.prefix.match(message.content):
+        print(boss_ch)
         if boss_ch and not message.channel.mention in boss_ch:
+            print('failed')
             return False
+        elif boss_ch:
+            return await boss_cmd(message)
         elif not boss_ch and "timer" in message.channel.name or "boss" in message.channel.name:
             return await boss_cmd(message)
     #await client.process_commands(message)
@@ -330,8 +342,14 @@ async def settings_cmd(message):
         return False
     user_role       = vdst[message.server.id].get_role_user(message.author.id)
     grp_role        = vdst[message.server.id].get_role_group([role.id for role in message.author.roles])
-    user_role_idx   = vaivora_modules.settings.Settings.role_level.index(user_role)
-    grp_role_idx    = vaivora_modules.settings.Settings.role_level.index(grp_role)
+    if user_role:
+        user_role_idx   = vaivora_modules.settings.Settings.role_level.index(user_role)
+    else:
+        user_role_idx   = 0
+    if grp_role:
+        grp_role_idx    = vaivora_modules.settings.Settings.role_level.index(grp_role)
+    else:
+        grp_role_idx    = 0
     highest_role    = vaivora_modules.settings.Settings.role_level[user_role_idx if user_role_idx >= grp_role_idx else grp_role_idx]
     command_message = message.content
     command_message = vaivora_constants.regex.settings.command.prefix.sub('', command_message)
@@ -344,8 +362,51 @@ async def settings_cmd(message):
         return await error(message.author, message.channel, \
                            vaivora_constants.command.syntax.cmd_error_bad_syntax_quote, \
                            vaivora_constants.command.syntax.cmd_settings)
+    if command[0] == "help":
+        for cmd_frag in vaivora_constants.command.settings.command:
+            await client.send_message(message.author, cmd_frag)
+            await asyncio.sleep(1)
+        return True
+    # rebase
+    if vaivora_constants.regex.settings.command.cmd_rebase.match(command[0]):
+        vdst[message.server.id].rebase_guild_talt()
+        await client.send_message(message.channel, message.author.mention + " Guild Talt values have been rebased. Run `$settings get talt` to verify.\n")
+        return True   
+    # validate
+    if vaivora_constants.regex.settings.command.cmd_valid.search(command[0]):
+        if vaivora_constants.regex.settings.command.cmd_un.match(command[0]):
+            mode = "invalidate"
+        else:
+            mode = "validate"
+        if not message.mentions:
+            if not vdst[message.server.id].validate_talt(message.author.id, mode):
+                return await error(message.author, message.channel, \
+                                   vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                   vaivora_constants.command.syntax.cmd_settings, highest_role)
+            await client.send_message(message.channel, message.author.mention + " " + \
+                                      "Your command has been successfully recorded.\n" + \
+                                      "Member contributions have been " + mode + "d.\n")
+            return True
+        else:
+            errs = []
+            for mention in message.mentions:
+                mentname = (mention.nick if mention.nick else mention.name)
+                if not vdst[message.server.id].validate_talt(message.author.id, mode, mention.id):
+                    errs.append(mentname)
+            if len(errs) == len(message.mentions):
+                return await error(message.author, message.channel, \
+                                   vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                   vaivora_constants.command.syntax.cmd_settings, "None")
+            elif errs:
+                return await error(message.author, message.channel, \
+                                   vaivora_constants.command.syntax.cmd_error_bad_settings, \
+                                   vaivora_constants.command.syntax.cmd_settings, "mentions", errs)
+    if len(command) == 1:
+        return await error(message.author, message.channel, \
+                           vaivora_constants.command.syntax.cmd_error_bad_syntax, \
+                           vaivora_constants.command.syntax.cmd_settings)
     # set & get
-    if vaivora_constants.regex.settings.command.cmd_getset.search(command[0]):
+    if vaivora_constants.regex.settings.command.cmd_getset.match(command[0]):
         #message_args['command'] = "get" if vaivora_constants.regex.settings.command.cmd_get.search(command[0]) else "set"
         if not vaivora_constants.regex.settings.command.cmd_gs2.search(command[1]):
             return False
@@ -363,12 +424,22 @@ async def settings_cmd(message):
                                               "is level " + vdst[message.server.id].get_guild_level() + ", and needs " + \
                                               vdst[message.server.id].get_talt_for_nextlevel() + " Talt to reach the next level.\n")
                     return True
+                elif vaivora_constants.regex.settings.command.cmd_temp.match(command[2]):
+                    talt_list   = vdst[message.server.id].get_temp_talt()
+                    talt_msg    = "This guild currently has the following records temporarily stored: "
+                # get talt all
+                elif vaivora_constants.regex.settings.command.cmd_tallt.match(command[2]):
+                    talt_list   = vdst[message.server.id].get_all_talt()
+                    talt_msg    = "This guild thanks the following for contributing: "
+                    await client.send_message(message.channel, message.author.mention + " " + \
+                                              "This request may take some time. Please wait.\n")
                 # get talt, user or users
                 else:
                     contribs    = str()
                     for mention in message.mentions:
                         if type(mention) == discord.User or type(mention) == discord.Member:
-                            contribs += "\n`" + mention.name + "` has contributed `" + vdst[message.server.id].get_talt(user=mention.id) + "` Talt."
+                            talt_cont = int(vdst[message.server.id].get_talt(user=mention.id))
+                            contribs += "\n`" + mention.name + "` has contributed `" + str(talt_cont) + "` Talt, or `" + str(talt_cont*20) + "` Points."
                     if contribs:
                         await client.send_message(message.channel, message.author.mention + contribs)
                     else:
@@ -377,31 +448,55 @@ async def settings_cmd(message):
                                                   "is level " + vdst[message.server.id].get_guild_level() + ", and needs " + \
                                                   vdst[message.server.id].get_talt_for_nextlevel() + " Talt to reach the next level.\n")
                     return True
-            # get roles
+                if talt_msg:
+                    talt_list = sorted(talt_list.items(), key=itemgetter(1), reverse=True)
+                    fmtt_list = []
+                    for member, talt in talt_list:
+                        if talt == 0 or member == "remainder" or member == "guild":
+                            continue
+                        talt_user = await client.get_user_info(member)
+                        fmtt_list.append("#   " + talt_user.name + ": " + str(int(talt)) + " T: " + str(int(talt)*20) + "P")
+                    await client.send_message(message.channel, message.author.mention + " " + \
+                                              talt_msg + "```python\n" + \
+                                              ("\n".join(fmtt_list) if fmtt_list else "*crickets chirping*") + "```\n")
+                    return True
+            # get role
             elif vaivora_constants.regex.settings.command.cmd_role.search(command[1]):
                 temp_users = []
-                # get roles auth
+                # get role auth
                 if vaivora_constants.regex.settings.command.cmd_role_a.search(command[2]):
                     users = vdst[message.server.id].get_role(role="authorized")
-                    for uid in users:
-                        uname = await client.get_user_info(uid)
-                        uname = "#   " + str(uname)
-                        temp_users.append(uname)
-                    users = temp_users
-                # get roles member
+                # get role member
                 elif vaivora_constants.regex.settings.command.cmd_role_m.search(command[2]):
                     users = vdst[message.server.id].get_role(role="member")
+                # get role boss
+                elif vaivora_constants.regex.settings.command.cmd_ch_boss.search(command[2]):
+                    users = vdst[message.server.id].get_role(role="boss")
+                # get role, default (all)
+                else:
+                    users = [ ("#  " + usr) for usr in message.server.members ]
+                if users:
                     for uid in users:
-                        uname = await client.get_user_info(uid)
+                        try:
+                            uname = discord.utils.get(message.server.roles, mention=uid).name
+                        except:
+                            uname = await client.get_user_info(uid)
+                        if uname == None:
+                            await client.send_message(message.channel, message.author.mention + " " + \
+                                                      "(But nothing happened...)\n")
+                            return False
                         uname = "#   " + str(uname)
                         temp_users.append(uname)
                     users = temp_users
-                # get roles, default (all)
+                if users and users[0] != None:
+                    await client.send_message(message.channel, message.author.mention + \
+                                              "\nHere are the `" + command[2] + "` users:```python\n" + \
+                                              '\n'.join(users) + "```\n")
+                    return True
                 else:
-                    users = [ ("#  " + usr) for usr in message.server.members ]
-                await client.send_message(message.channel, message.author.mention + \
-                                          "\nHere are the `" + command[2] + "` users:```python\n" + \
-                                          '\n'.join(users) + "```\n")
+                    await client.send_message(message.channel, message.author.mention + " " + \
+                                              "(But nothing happened...)\n")
+                    return False
             else:
                 return await error(message.author, message.channel, \
                                    vaivora_constants.command.syntax.cmd_error_bad_syntax, \
@@ -415,34 +510,30 @@ async def settings_cmd(message):
                     return await error(message.author, message.channel, \
                                        vaivora_constants.command.syntax.cmd_error_bad_syntax, \
                                        vaivora_constants.command.syntax.cmd_settings, command[2])
+                if highest_role == "none":
+                    return await error(message.author, message.channel, \
+                                       vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                       vaivora_constants.command.syntax.cmd_settings, highest_role)
                 # set talt, default (no user): $settings 
-                if len(command) >= 3 and len(command) <= 4:
+                if len(command) >= 3 and len(command) <= 4 and not message.mentions:
                     if len(command) == 3:
                         unit    = "Talt"
                     elif vaivora_constants.regex.settings.command.cmd_tpoint.search(command[2] + " " + command[3]):
                         unit    = "Points"
                     elif vaivora_constants.regex.settings.command.cmd_talts.search(command[2] + " " + command[3]):
                         unit    = "Talt"
-                    vdst[message.server.id].add_talt(message.author.id, command[2], unit)
-                    if highest_role == "authorized" or highest_role == "super authorized":
-                        talt    = vdst[message.server.id].get_talt(message.author.id)
-                        confirm_msg = "`" + command[2] + " Talt`"
-                        confirm_msg += " has been credited to your account. Your new balance is: `"
-                        confirm_msg += str(int(talt))
-                        confirm_msg += " Talt`.\n"
-                    elif user_role == "member":
-                        talt    = vdst[message.server.id].get_talt(message.author.id)
-                        confirm_msg = "`" + command[2] + " Talt`"
-                        confirm_msg += " has been temporarily recorded. Your balance, once confirmed, will be: `"
-                        confirm_msg += str(talt + int(command[2]))
-                        confirm_msg += " Talt.` (Currently: `" + str(talt) + "Talt.`)\n"
-                    else:
-                        confirm_msg = ""
+                    if not vdst[message.server.id].set_talt(message.author.id, command[2], unit):
+                        return await error(message.author, message.channel, \
+                                           vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                           vaivora_constants.command.syntax.cmd_settings, highest_role)
+                    confirm_msg = msg_talt(message, highest_role, command[2], unit)
+                    if not confirm_msg:
                         return await error(message.author, message.channel, \
                                            vaivora_constants.command.syntax.cmd_error_unauthorized, \
                                            vaivora_constants.command.syntax.cmd_settings, "None")
                     await client.send_message(message.channel, message.author.mention + " " + \
                                               vaivora_constants.command.settings.acknowledge + \
+                                              "Your changes to the Talt Tracker have been saved.\n" + \
                                               confirm_msg)
                     return True
 
@@ -452,46 +543,73 @@ async def settings_cmd(message):
                                        vaivora_constants.command.syntax.cmd_settings)
                 # set talt, points with users: $settings set n unit @user...
                 elif message.mentions:
+                    if vaivora_constants.regex.settings.command.cmd_tpoint.search(command[2] + " " + command[3]):
+                        unit    = "Points"
+                    elif vaivora_constants.regex.settings.command.cmd_talts.search(command[2] + " " + command[3]):
+                        unit    = "Talt"
                     errs    = []
+                    succ    = []
                     for mention in message.mentions:
+                        mentname    = (mention.nick if mention.nick else mention.name)
                         if type(mention) == discord.User or type(mention) == discord.Member:
-                            if not vdst[message.server.id].add_talt(message.author.id, command[2], unit, mention.id):
-                                errs.append(mention.nick)
+                            if not vdst[message.server.id].set_talt(message.author.id, command[2], unit, mention.id):
+                                errs.append(mentname)
+                            else:
+                                talt    = vdst[message.server.id].get_talt(mention.id)
+                                succ.append("`" + command[2] + " " + unit + "` has been modified for `" + mentname + "`; his or her new balance is " + talt + " Talt.")
                         else:
-                            errs.append(mention.nick)
-                    if errs:
+                            errs.append(mentname)
+                    if errs and len(errs) == 1 and errs[0] == None:
+                        return await error(message.author, message.channel, \
+                                       vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                       vaivora_constants.command.syntax.cmd_settings, highest_role)
+                    elif errs:
                         return await error(message.author, message.channel, \
                                            vaivora_constants.command.syntax.cmd_error_bad_settings, \
                                            vaivora_constants.command.syntax.cmd_settings, "mentions", errs)
                     else:
                         await client.send_message(message.channel, message.author.mention + " " + \
                                                   vaivora_constants.command.settings.acknowledge + \
-                                                  "Your changes to the Talt Tracker have been saved.\n")
+                                                  "Your changes to the Talt Tracker have been saved.\n" + \
+                                                  '\n'.join(succ))
                         return True
                 # set talt, points; self: $settings set n unit
-                elif not vdst[message.server.id].add_talt(message.author.id, command[2], unit):
+                elif not vdst[message.server.id].set_talt(message.author.id, command[2], unit):
                     return await error(message.author, message.channel, \
                                        vaivora_constants.command.syntax.cmd_error_bad_syntax, \
                                        vaivora_constants.command.syntax.cmd_settings, message.id)
                 else:
+                    confirm_msg = msg_talt(message, highest_role, command[2], unit)
+                    if not confirm_msg:
+                        return await error(message.author, message.channel, \
+                                           vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                           vaivora_constants.command.syntax.cmd_settings, "None")
                     await client.send_message(message.channel, message.author.mention + " " + \
                                               vaivora_constants.command.settings.acknowledge + \
-                                              "Your changes to the Talt Tracker have been saved.\n")
+                                              "Your changes to the Talt Tracker have been saved.\n" + \
+                                              confirm_msg)
                     return True
             # set role
             elif vaivora_constants.regex.settings.command.cmd_role.search(command[1]):
+                if highest_role != "authorized" and highest_role != "super authorized":
+                    return await error(message.author, message.channel, \
+                                       vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                       vaivora_constants.command.syntax.cmd_settings, highest_role)
                 if not vaivora_constants.regex.settings.command.cmd_roles.match(command[2]):
                     return await error(message.author, message.channel, \
                                        vaivora_constants.command.syntax.cmd_error_bad_roles, \
                                        vaivora_constants.command.syntax.cmd_settings, command[2])
                 errs    = []
                 for mention in (message.mentions + message.role_mentions):
+                    mentname = (mention.nick if mention.nick else mention.name)
                     if type(mention) == discord.User or type(mention) == discord.Member:
                         utype = "users"
+                        id_change = mention.id
                     else:
                         utype = "group"
-                    if not vdst[message.server.id].change_role(mention.id, utype, command[2]):
-                        errs.append(mention.nick)
+                        id_change = mention.mention
+                    if not vdst[message.server.id].change_role(id_change, utype, command[2]):
+                        errs.append(mentname)
                 if errs:
                     return await error(message.author, message.channel, \
                                        vaivora_constants.command.syntax.cmd_error_bad_settings, \
@@ -537,12 +655,110 @@ async def settings_cmd(message):
                                               vaivora_constants.command.settings.acknowledge + \
                                               "Your new " + ch_type + " channels are set.\n")
                     return True
+            # set guild LV CUR
+            elif vaivora_constants.regex.settings.command.cmd_guild.match(command[1]):
+                if vaivora_constants.regex.settings.command.cmd_numbers.match(command[2]):
+                    if vaivora_constants.regex.settings.command.cmd_numbers.match(command[3]):
+                        if not vdst[message.server.id].set_remainder_talt(command[2], command[3]):
+                            return await error(message.author, message.channel, \
+                                               vaivora_constants.command.syntax.cmd_error_bad_settings, \
+                                               vaivora_constants.command.syntax.cmd_settings, "`guild command`", (command[2:4]))
+                        await client.send_message(message.channel, message.author.mention + " " + \
+                                                  vaivora_constants.command.settings.acknowledge + \
+                                                  "Your guild has been set to Lv." + command[2] + "; you need " + \
+                                                  vdst[message.server.id].get_talt_for_nextlevel() + " Talt for next level.\n")
+    elif vaivora_constants.regex.settings.command.cmd_add.search(command[0]):
+        unit    = "Talt"
+        if vaivora_constants.regex.settings.command.cmd_talt.search(command[1]):
+            if not vaivora_constants.regex.format.matching.numbers.search(command[2]):
+                return await error(message.author, message.channel, \
+                                   vaivora_constants.command.syntax.cmd_error_bad_syntax, \
+                                   vaivora_constants.command.syntax.cmd_settings, command[2])
+            if highest_role == "none":
+                return await error(message.author, message.channel, \
+                                   vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                   vaivora_constants.command.syntax.cmd_settings, highest_role)
+            # add talt, default (no user): $settings 
+            if len(command) >= 3 and len(command) <= 4 and not message.mentions:
+                if len(command) == 3:
+                    unit    = "Talt"
+                elif vaivora_constants.regex.settings.command.cmd_tpoint.search(command[2] + " " + command[3]):
+                    unit    = "Points"
+                elif vaivora_constants.regex.settings.command.cmd_talts.search(command[2] + " " + command[3]):
+                    unit    = "Talt"
+                if not vdst[message.server.id].add_talt(message.author.id, command[2], unit):
+                    return await error(message.author, message.channel, \
+                                       vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                       vaivora_constants.command.syntax.cmd_settings, highest_role)
+                confirm_msg = msg_talt(message, highest_role, command[2], unit)
+                if not confirm_msg:
+                    return await error(message.author, message.channel, \
+                                       vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                       vaivora_constants.command.syntax.cmd_settings, "None")
+                await client.send_message(message.channel, message.author.mention + " " + \
+                                          vaivora_constants.command.settings.acknowledge + \
+                                          "Your changes to the Talt Tracker have been saved.\n" + \
+                                          confirm_msg)
+                return True
+
+            elif not message.mentions:
+                return await error(message.author, message.channel, \
+                                   vaivora_constants.command.syntax.cmd_error_bad_syntax, \
+                                   vaivora_constants.command.syntax.cmd_settings)
+            # set talt, points with users: $settings set n unit @user...
+            elif message.mentions:
+                if vaivora_constants.regex.settings.command.cmd_tpoint.search(command[2] + " " + command[3]):
+                    unit    = "Points"
+                elif vaivora_constants.regex.settings.command.cmd_talts.search(command[2] + " " + command[3]):
+                    unit    = "Talt"
+                errs    = []
+                succ    = []
+                for mention in message.mentions:
+                    if type(mention) == discord.User or type(mention) == discord.Member:
+                        mentname = (mention.nick if mention.nick else mention.name)
+                        if not vdst[message.server.id].add_talt(message.author.id, command[2], unit, mention.id):
+                            errs.append(mentname)
+                        else:
+                            talt    = vdst[message.server.id].get_talt(mention.id)
+                            succ.append("`" + command[2] + " " + unit + "` has been credited to `" + mentname + "`; his or her new balance is " + talt + " Talt.")
+                    else:
+                        errs.append(mentname)
+                if errs and len(errs) == 1 and errs[0] == None:
+                    return await error(message.author, message.channel, \
+                                   vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                   vaivora_constants.command.syntax.cmd_settings, highest_role)
+                elif errs:
+                    return await error(message.author, message.channel, \
+                                       vaivora_constants.command.syntax.cmd_error_bad_settings, \
+                                       vaivora_constants.command.syntax.cmd_settings, "mentions", errs)
+                else:
+                    await client.send_message(message.channel, message.author.mention + " " + \
+                                              vaivora_constants.command.settings.acknowledge + \
+                                              "Your changes to the Talt Tracker have been saved.\n" + \
+                                              '\n'.join(succ))
+                    return True
+            # set talt, points; self: $settings set n unit
+            elif not vdst[message.server.id].add_talt(message.author.id, command[2], unit):
+                return await error(message.author, message.channel, \
+                                   vaivora_constants.command.syntax.cmd_error_bad_syntax, \
+                                   vaivora_constants.command.syntax.cmd_settings, message.id)
+            else:
+                confirm_msg = msg_talt(message, highest_role, command[2], unit)
+                if not confirm_msg:
+                    return await error(message.author, message.channel, \
+                                       vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                       vaivora_constants.command.syntax.cmd_settings, "None")
+                await client.send_message(message.channel, message.author.mention + " " + \
+                                          vaivora_constants.command.settings.acknowledge + \
+                                          "Your changes to the Talt Tracker have been saved.\n" + \
+                                          confirm_msg)
+                return True
     # promote & demote
     elif vaivora_constants.regex.settings.command.cmd_prdm.search(command[1]):
-        if user_role != "authorized" or user_role != "super authorized":
+        if highest_role != "authorized" and highest_role != "super authorized":
             return await error(message.author, message.channel, \
                                vaivora_constants.command.syntax.cmd_error_unauthorized, \
-                               vaivora_constants.command.syntax.cmd_settings, "None")
+                               vaivora_constants.command.syntax.cmd_settings, highest_role)
         if not message.mentions and not message.role_mentions:
             return await error(message.author, message.channel, \
                                vaivora_constants.command.syntax.cmd_error_no_users, \
@@ -554,20 +770,22 @@ async def settings_cmd(message):
         errs = []
         for mention in (message.mentions + message.role_mentions):
             if type(mention) == discord.User or type(mention) == discord.Member:
+                mentname = (mention.nick if mention.nick else mention.name)
                 utype = "users"
             else:
+                mentname = mention.name
                 utype = "group"
-            user_role = vdst[message.server.id].get_role_user(mention.id)
-            if mode == "promote" and user_role == None:
+            ment_role = vdst[message.server.id].get_role_user(mention.id)
+            if mode == "promote" and ment_role == None:
                 vdst[message.server.id].change_role(mention.id, utype, "member")
-            elif mode == "promote" and user_role == "member":
+            elif mode == "promote" and ment_role == "member":
                 vdst[message.server.id].change_role(mention.id, utype, "authorized")
-            elif mode == "demote" and user_role == "member":
+            elif mode == "demote" and ment_role == "member":
                 vdst[message.server.id].change_role(mention.id, utype)
-            elif mode == "demote" and user_role == "authorized":
+            elif mode == "demote" and ment_role == "authorized":
                 vdst[message.server.id].change_role(mention.id, utype, "member")
             else:
-                errs.append(mention.nick)
+                errs.append(mentname)
         if errs:
             return await error(message.author, message.channel, \
                                vaivora_constants.command.syntax.cmd_error_bad_settings, \
@@ -582,7 +800,7 @@ async def settings_cmd(message):
         if highest_role != "authorized" and highest_role != "super authorized":
             return await error(message.author, message.channel, \
                                vaivora_constants.command.syntax.cmd_error_unauthorized, \
-                               vaivora_constants.command.syntax.cmd_settings, "None")
+                               vaivora_constants.command.syntax.cmd_settings, highest_role)
         # rm boss users
         if vaivora_constants.regex.settings.command.cmd_role.search(command[1]):
             if not vaivora_constants.regex.settings.command.cmd_ch_boss.match(command[2]):
@@ -591,8 +809,9 @@ async def settings_cmd(message):
                                    vaivora_constants.command.syntax.cmd_settings, command[2])
             errs    = []
             for mention in message.mentions:
+                mentname = (mention.nick if mention.nick else mention.name)
                 if not vdst[message.server.id].rm_boss(mention.id):
-                    errs.append(mention.nick)
+                    errs.append(mentname)
             if errs:
                 return await error(message.author, message.channel, \
                                    vaivora_constants.command.syntax.cmd_error_bad_settings, \
@@ -634,8 +853,46 @@ async def settings_cmd(message):
                                    vaivora_constants.command.syntax.cmd_settings, "channels", errs)
             else:
                 return True
+    # reset
+    elif vaivora_constants.regex.settings.command.cmd_reset.search(command[0]):
+        if vaivora_constants.regex.settings.command.cmd_talt.search(command[1]):
+            if not message.mentions:
+                vdst[message.server.id].reset_talt(message.author.id)
+                await client.send_message(message.channel, message.author.mention + " " + \
+                                          "You have reset your own Talt contribution.\n")
+                return True
+            elif highest_role != "authorized" and highest_role != "super authorized":
+                return await error(message.author, message.channel, \
+                                   vaivora_constants.command.syntax.cmd_error_unauthorized, \
+                                   vaivora_constants.command.syntax.cmd_settings, highest_role)
+            else:
+                for mention in message.mentions:
+                    vdst[message.server.id].reset_talt(mention.id)
+                    await client.send_message(message.channel, message.author.mention + " " + \
+                                              "Your command has been processed.\n" + \
+                                              "You have reset the Talt contributions of the users mentioned.\n")
+                    return True
+
 ####
 #             
+
+
+def msg_talt(message, highest_role, taltn, unit):
+    if highest_role == "authorized" or highest_role == "super authorized":
+        talt    = vdst[message.server.id].get_talt(message.author.id)
+        confirm_msg = "`" + taltn + " " + unit + "` "
+        confirm_msg += ("have" if int(taltn) > 1 else "has") + " been credited to your account. Your new balance is: `"
+        confirm_msg += str(int(talt))
+        confirm_msg += " Talt`.\n"
+    elif highest_role == "member":
+        talt    = vdst[message.server.id].get_talt(message.author.id)
+        confirm_msg = "`" + taltn + " " + unit + "` "
+        confirm_msg += ("have" if int(taltn) > 1 else "has") + " been temporarily recorded. Your balance, once confirmed, will be: `"
+        confirm_msg += str(int(talt) + int(taltn))
+        confirm_msg += " Talt.` (Currently: `" + str(talt) + "Talt.`)\n"
+    else:
+        confirm_msg = ""
+    return confirm_msg
 
 
 # @func:    convert_id_to_user(str) : discord.User
@@ -645,7 +902,7 @@ async def settings_cmd(message):
 # @return:
 #       the user who has the uid
 # def convert_id_to_user(uid):
-#     return client.get_user_info(uid)
+#     return await client.get_user_info(uid)
 
 
 
@@ -681,14 +938,13 @@ async def boss_cmd(message, pm=False):
                            vaivora_constants.command.syntax.cmd_boss)
     if len(command) < 1 or command[0] == "help" and not pm:
         for cmd_frag in vaivora_constants.command.boss.command:
-
-            await client.send_message(message.channel, message.author.mention + " " + \
-                                      cmd_frag)
+            await client.send_message(message.author, cmd_frag)
+            await asyncio.sleep(1)
         return True
     elif command[0] == "help" and pm:
         for cmd_frag in vaivora_constants.command.boss.command:
-            await client.send_message(message.author, \
-                                      cmd_frag)
+            await client.send_message(message.author, cmd_frag)
+            await asyncio.sleep(1)
         return True
     elif pm:
         return False
@@ -758,6 +1014,7 @@ async def boss_cmd(message, pm=False):
                                       "No results found! Try a different boss.\n")
             return True
         for boss_record in boss_records:
+            boss_st     = (boss_record[3] if boss_record[3] == "died" else ("was " + boss_record[3]))
             record_date = [int(rec) for rec in boss_record[5:10]]
             record_date = datetime(*record_date) + \
                           vaivora_constants.values.time.offset.pacific2server
@@ -767,19 +1024,21 @@ async def boss_cmd(message, pm=False):
             if int(time_diff.days) >= 0:
                 tense += "should have respawned at "
                 tense_time += "ago"
-                tense_mins = int(time_diff.seconds / 60)
+                tense_mins = int(time_diff.seconds / 60) + int(time_diff.days)*vaivora_constants.values.time.seconds.in_day
             else:
-                tense += "will respawn around "
+                tense += "will respawn " + ("around " if boss_record[3] != "anchored" else "as early as ")
                 tense_time += "from now"
                 tense_mins = int((vaivora_constants.values.time.seconds.in_day - time_diff.seconds) / 60)
 
             if tense_mins > 99:
                 tense_mins = str(int(tense_mins / 60)) + " hours, " + str(tense_mins % 60)
+                if int(time_diff.days) >= 1:
+                    tense_mins = str(time_diff.days) + " day(s), " + tense_mins
             elif tense_mins < 0:
                 tense_mins = str(int(24 + tense_mins / 60)) + " hours, " + str(tense_mins % 60)
             else:
                 tense_mins = str(tense_mins)
-            valid_boss_records.append("\"" + boss_record[0] + "\" " + boss_record[3] + \
+            valid_boss_records.append("\"" + boss_record[0] + "\" " + boss_st + \
                                       " in ch." + str(int(boss_record[1])) + tense + \
                                       record_date.strftime("%Y/%m/%d \"%H:%M\"") + \
                                       " (" + str(tense_mins) + tense_time + ")" + \
@@ -787,23 +1046,23 @@ async def boss_cmd(message, pm=False):
         await client.send_message(message.channel, message.author.mention + " Records: ```python\n" + \
                                   '\n\n'.join(valid_boss_records) + "\n```")
         return True
-    if len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_field and len(command) > 2:
+    if len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_field and len(command) > 3:
         boss_channel    = 1
         xmsg            = lookup_boss[0] if lookup_boss[0] == "Blasphemous Deathweaver" else ""
         try:
             maps_idx = await check_maps(command[arg_map_idx], lookup_boss[0])
-            if maps_idx < 0 or maps_idx >= len(vaivora_constants.command.boss.boss_locs[lookup_boss[0]]):
+            if maps_idx >= len(vaivora_constants.command.boss.boss_locs[lookup_boss[0]]):
                 raise
         except:
             return await error(message.author, message.channel, \
                                vaivora_constants.command.syntax.cmd_error_bad_boss_map, \
                                vaivora_constants.command.syntax.cmd_boss, xmsg=xmsg)
     elif len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_world:
-        boss_channel    = 0 if len(command) == arg_map_idx else vaivora_modules.boss.validate_channel(command[arg_map_idx])
+        boss_channel    = 1 if len(command) == arg_map_idx else vaivora_modules.boss.validate_channel(command[arg_map_idx])
         maps_idx        = 0
     else:
-        boss_channel    = 0
-        maps_idx        = 0
+        boss_channel    = 1
+        maps_idx        = -1
     # boss erase
     if vaivora_constants.regex.boss.command.arg_erase.match(command[1]):
         vdbs[command_server].rm_entry_db_boss(lookup_boss, boss_channel)
@@ -862,7 +1121,7 @@ async def boss_cmd(message, pm=False):
                            vaivora_constants.command.syntax.cmd_error_bad_boss_status, \
                            vaivora_constants.command.syntax.cmd_boss, msg=command[1])
     elif message_args['name'] in vaivora_constants.command.boss.boss_spawn_02h or \
-         vaivora_constants.regex.boss.status.warning.match(command[1]):
+      vaivora_constants.regex.boss.status.warning.match(command[1]):
         if boss_hour < 2:
             boss_hour += 22
             boss_day -= 1
@@ -870,6 +1129,8 @@ async def boss_cmd(message, pm=False):
             boss_hour -= 2
     elif message_args['name'] in vaivora_constants.command.boss.boss_spawn_16h:
         boss_hour += 12 # 12 + 4 = 16
+    elif vaivora_constants.regex.boss.status.anchored.match(command[1]):
+        boss_hour -= 1
     if int(boss_hour / 24):
         boss_hour = boss_hour % 24
         tomorrow = (datetime(boss_year, boss_month, boss_day)+timedelta(days=1))
@@ -892,14 +1153,15 @@ async def boss_cmd(message, pm=False):
                            msg=(datetime(boss_year, boss_month, boss_day, original_boss_hour, boss_minutes).strftime("%Y/%m/%d %H:%M")))
     await client.send_message(message.channel, message.author.mention + " " + \
                               vaivora_constants.command.boss.acknowledge + \
-                              message_args['name'] + " " + \
+                              "```python\n"
+                              "\"" + message_args['name'] + "\" " + \
                               message_args['status'] + " at " + \
                               ("0" if original_boss_hour < 10 else "") + \
                               str(original_boss_hour) + ":" + \
                               ("0" if message_args['mins'] < 10 else "") + \
                               str(message_args['mins']) + \
                               ", in ch." + str(message_args['channel']) + ": " + \
-                              (message_args['map'] if message_args['map'] != "N/A" else ""))
+                              (("\"" + message_args['map'] + "\"") if message_args['map'] != "N/A" else "") + "```\n")
     #await client.process_commands(message)
     return True # command processed
 ####
@@ -938,7 +1200,7 @@ async def check_databases():
                     with open(vaivora_constants.values.filenames.no_repeat, "r") as original:
                         for line in original:
                             archive.write(line)
-                # erase contents after transferring
+                # erase contents after transferring$setting
                 open(vaivora_constants.values.filenames.no_repeat, "w").close()
                 inactive = True
             # check all timers
@@ -951,6 +1213,8 @@ async def check_databases():
             # sort by time - yyyy, mm, dd, hh, mm
             results[vdb_id].sort(key=itemgetter(5,6,7,8,9))
             for result in results[vdb_id]:
+                message_to_send   = list()
+                cur_channel       = str()
                 list_time = [ int(t) for t in result[5:10] ]
                 try:
                     entry_time    = datetime(*list_time)
@@ -983,14 +1247,26 @@ async def check_databases():
             else:
                 inactive_time = timedelta(0)
                 inactive      = False
-            ####TODO: replace "@here" with custom setting of role
-            role_str = "@here"
-            time_str = "15"
+            role_str = str()
             srv = client.get_server(vaivora_constants.regex.db.ext.sub('', vdb_id))
-            for role in srv.roles:
-                if role.mentionable and role.name == "Boss Hunter":
-                    role_str= role.mention
-                    break
+            for uid in vdst[vdb_id].get_role("boss"):
+                try:    
+                    # group mention
+                    if discord.utils.get(srv.roles, mention=uid):
+                        role_str    += uid + " "
+                    else:
+                        boss_user   = await client.get_user_info(uid)
+                        role_str    += boss_user.mention + " "
+                except:
+                    # user mention
+                    boss_user   = await client.get_user_info(uid)
+                    role_str    += boss_user.mention + " "
+            role_str = role_str if role_str else ""
+            time_str = "15"
+            # for role in srv.roles:
+            #     if role.mentionable and role.name == "Boss Hunter":
+            #         role_str = role.mention
+            #         break
             cur_channel = ''
             for message in message_to_send:
                 if cur_channel != message[-1] and not vaivora_constants.regex.format.matching.letters.match(message[-1]):
@@ -1189,7 +1465,7 @@ async def error(user, channel, etype, ecmd, msg='', xmsg=''):
             error_code = vaivora_constants.values.error_codes.syntax
         elif etype == vaivora_constants.command.syntax.cmd_error_bad_settings:
             ret_msg.append(user_name + " Your following " + msg + " could not be processed: ```\n")
-            ret_msg.append('\n'.join(xmsg) + "```\n")
+            ret_msg.append(('\n'.join(xmsg) if type(xmsg) == list else xmsg) + "```\n")
             ret_msg.append("Check the Vaivora settings of these " + msg + ".\n")
             error_code = vaivora_constants.values.error_codes.wrong
         elif etype == vaivora_constants.command.syntax.cmd_error_bad_roles:

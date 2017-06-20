@@ -220,7 +220,7 @@ class Database:
         for boss in boss_list:
             if boss_ch:
                 self.cursor.execute("delete from boss where name=? and channel=?", (boss, boss_ch,))
-            elif boss_map and boss == "Blasphemous Deathweaver":
+            elif boss_map and boss_map != "N/A" and boss == "Blasphemous Deathweaver":
                 ####TODO: make more generalized case. Currently applies only to Deathweaver
                 dw_idx  = vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
                 if dw_idx == 0 or dw_idx == 1: # crystal mine

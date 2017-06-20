@@ -1,5 +1,6 @@
 milestone   = "[m]"
 unstable    = "[n]" # nightly
+bugfix      = "[b]" # incremental
 
 version_n   = []
 subver_n    = []
@@ -528,6 +529,299 @@ current     = get_header() + \
 """```diff
 + Added features:
   + Check out the new Settings module! [$settings help] for more info.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('a')
+status_n.append(milestone)
+date_n.append("2017/06/07")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected issues with Talt Tracker.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('b')
+status_n.append(milestone)
+date_n.append("2017/06/07")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected issues with Talt Tracker: issues with individual permission comparison fixed.
+    * Thanks to Sunshine for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('c')
+status_n.append(milestone)
+date_n.append("2017/06/07")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Added `$settings help`.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('d')
+status_n.append(milestone)
+date_n.append("2017/06/09")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected an issue with field boss entries not recording when map is omitted.
+    * Thanks to Wolfy for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('e')
+status_n.append(milestone)
+date_n.append("2017/06/10")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + Talt verification is now in place.
+    + $settings verify|validate [@user ...]
+    + $settings unverify|invalidate [@user ...]
+    + Leave the mentions blank to mass (in)validate. Suitable only for "Authorized" roles only.
+  + Changed an easter egg.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('f')
+status_n.append(milestone)
+date_n.append("2017/06/10")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected logic issue with assigning permissions.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('g')
+status_n.append(milestone)
+date_n.append("2017/06/10")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + Correctly mentions people in "boss" specific features, if assigned "boss" role.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('h')
+status_n.append(milestone)
+date_n.append("2017/06/10")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Identified and fixed issue with adding Talt for others. Was impromperly recorded to command user, not the target.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('i')
+status_n.append(milestone)
+date_n.append("2017/06/10")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + "$settings get talt all" - to get all your guild's contribution
+  + "$settings reset talt [@user ...]" - to reset a user's contribution (to fix)
+  + "$settings rebase" - to rebuild Talt levels if you think something's wrong
+
++ Fixes:
+  + Corrected issue with Guild Level corresponding to Talt.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('j')
+status_n.append(bugfix)
+date_n.append("2017/06/11")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Fixed issues with member level & Talt contribution.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('k')
+status_n.append(bugfix)
+date_n.append("2017/06/11")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Fixed issues with mentions on boss notice.
+    * Thanks to Galoal for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('l')
+status_n.append(bugfix)
+date_n.append("2017/06/11")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + Change release system from [milestone, nightly] to [milestone, nightly, bugfix]
++ Fixes:
+  + Adjusted logic for mentioning group or users with boss alerts.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('m')
+status_n.append(bugfix)
+date_n.append("2017/06/14")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Adjusted logic for mentioning group or users with boss alerts. For real this time.
+    + Please message Nova#6732 if you've had issues with this so it can be corrected.
+    * Thanks to Wolfy for the bug report and additional testing.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('n')
+status_n.append(milestone)
+date_n.append("2017/06/15")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + Better output for Talt commands.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('o')
+status_n.append(bugfix)
+date_n.append("2017/06/15")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + Changed the vocabulary of "add"ing and "set"ting Talt.
+    + $settings set talt ... ; sets target's Talt directly.
+    + $settings add talt ... ; the former behavior of "set talt"; adds Talt.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('p')
+status_n.append(bugfix)
+date_n.append("2017/06/15")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected old boss record printing completely.
+    * Thanks to Wolfy for the bug report.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('q')
+status_n.append(bugfix)
+date_n.append("2017/06/18")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected an issue with "anchor" keyword for "$boss".
++ Upcoming changes:
+  + Code rewrite before publishing as open source. Estimated time: 1-2 weeks
 ```"""
 
 changelog.append(current)
