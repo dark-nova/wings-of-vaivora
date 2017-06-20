@@ -63,6 +63,7 @@ cmd_frag    +=  usage
 command.append(cmd_frag)
 
 arg_info    =   list()
+arg_info.append(vaivora_constants.command.syntax.code_block + "ini\n")
 arg_info.append(";===================\n")
 arg_info.append(arg[N][0] + "\n" + \
                 "    (default) [$] or [Vaivora, ]; this server may have others. Run [$settings get prefix] to check.\n")
@@ -91,6 +92,12 @@ arg_info.append(arg[N][3][C]  + "\n" + \
 arg_info.append(arg[N][3][D]  + "\n" + \
                 "; requires [set], [get], [unset], or [rm]\n" + \
                 "    Adds or remove a custom [prefix] for the server to use.\n")
+arg_info.append(vaivora_constants.command.syntax.code_block)
+cmd_frag        =  ''.join(arg_info)
+command.append(cmd_frag)
+
+arg_info    =   list()
+arg_info.append(vaivora_constants.command.syntax.code_block + "ini\n")
 arg_info.append(arg[N][4][A]  + "\n" + \
                 "; requires [set] and [rm], with [talt]\n" + \
                 "    Registers the [talt] contribution for the associated target's or targets'.\n")
@@ -117,7 +124,7 @@ arg_info.append(arg[O][3]     + "\n" + \
                 "    Suitable only for [channel] settings. Directly names channels to be assigned types.\n")
 arg_info.append(vaivora_constants.command.syntax.code_block)
 
-cmd_frag        +=  ''.join(arg_info)
+cmd_frag        =  ''.join(arg_info)
 command.append(cmd_frag)
 
 examples        =   vaivora_constants.command.syntax.example + \
@@ -131,7 +138,7 @@ examples        =   vaivora_constants.command.syntax.example + \
                     "[$settings set talt 1000] ; boy, you're rich!\n" + \
                     "[$settings set channel boss #bus_times] ; this is totally appropriate\n"
 
-cmd_frag        =  vaivora_constants.command.syntax.code_block + "ini\n" + examples
+cmd_frag        = vaivora_constants.command.syntax.code_block + "ini\n" + examples
 
 cmd_frag        += vaivora_constants.command.syntax.code_block
 command.append(cmd_frag)
