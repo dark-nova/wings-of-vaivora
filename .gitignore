@@ -1,0 +1,28 @@
+# files
+# private files
+discordtoken
+*secrets*
+wings*
+# files by extension
+*~
+*.db
+*.pyc
+*.old
+*.bak
+*.json
+*_test.py
+# unrelated files
+index.py
+srvcheck.py
+
+# directories
+# private directories
+venv_ttos
+server_*
+db.backup
+db.bak
+# specific directories
+test
+snapshot
+old
+mods
