@@ -1,21 +1,28 @@
 # files
-*_test.py
+# private files
 discordtoken
+*secrets*
+wings*
+# files by extension
 *~
 *.db
 *.pyc
-wings*
 *.old
 *.bak
-*secrets*
 *.json
+*_test.py
+# unrelated files
+index.py
+srvcheck.py
 
 # directories
-test
+# private directories
 venv_ttos
+server_settings*
 db.backup
 db.bak
+# specific directories
+test
 snapshot
 old
 mods
-server_settings*
