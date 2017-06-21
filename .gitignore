@@ -22,6 +22,7 @@ server_*
 db.backup
 db.bak
 # specific directories
+*__pycache__/*
 test
 snapshot
 old
