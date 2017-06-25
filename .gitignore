@@ -11,6 +11,7 @@ wings*
 *.bak
 *.json
 *_test.py
+*.log
 # unrelated files
 index.py
 srvcheck.py

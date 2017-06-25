@@ -2,8 +2,9 @@
 import discord
 import logging
 import sqlite3
-import shlex
 import asyncio
+import random
+import shlex
 import json
 import re
 import os
@@ -226,7 +227,11 @@ async def on_message(message):
     elif vaivora_constants.fun.meme.match(message.content):
         await client.send_message(message.channel, message.author.mention + " " + "http://i.imgur.com/kW3o6eC.png")
         return True
-    elif vaivora_constants.fun.stab.search(message.content):
+    elif vaivora_constants.fun.stab2.match(message.content) or vaivora_constants.fun.stab3.match(message.content) or \
+      vaivora_constants.fun.stab4.match(message.content) or vaivora_constants.fun.stab5.match(message.content):
+        random.seed()
+        if int(random.random() * 100) % 17 != 0:
+            return True
         await client.add_reaction(message, "🗡")
         await client.add_reaction(message, "⚔")
         for emoji in message.server.emojis:
@@ -236,9 +241,7 @@ async def on_message(message):
         return True
     # boss commands handling
     if vaivora_constants.regex.boss.command.prefix.match(message.content):
-        print(boss_ch)
         if boss_ch and not message.channel.mention in boss_ch:
-            print('failed')
             return False
         elif boss_ch:
             return await boss_cmd(message)
@@ -1196,7 +1199,7 @@ async def check_databases():
                 today = loop_time
             if inactive_time.seconds > 900 and not inactive:
                 no_repeat = []
-                with open(vaivora_constants.values.filenames.no_repeat_t + today.strftime("_%Y%m%d") + ".txt", "a") as archive:
+                with open(vaivora_constants.values.filenames.no_repeat_t + today.strftime("_%Y%m%d") + ".bak", "a") as archive:
                     with open(vaivora_constants.values.filenames.no_repeat, "r") as original:
                         for line in original:
                             archive.write(line)
