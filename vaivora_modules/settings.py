@@ -23,7 +23,7 @@ class Settings:
     settings['users']                   = dict()
     settings['users']['authorized']     = []
     settings['users']['member']         = []
-    settings['users']['s-authorized']   = []
+    settings['users']['s-authorized']   = [] # compatability. do not use
     settings['group']                   = dict()
     settings['group']['authorized']     = []
     settings['group']['member']         = []
