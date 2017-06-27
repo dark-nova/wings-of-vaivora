@@ -37,6 +37,12 @@ def check_revisions(srv_ver):
 
     return (count+1)
 
+def get_revisions():
+    return len(version_n)
+
+def get_subscription_msg():
+    return "Remember, if you ever want to stop receiving these changelogs, type `$unsubscribe` in this DM.\n" + \
+           "To receive changelogs again, just `$subscribe` back.\n"
 
 def get_current_version():
     return status_n[-1] + version_n[-1] + "." + subver_n[-1] + hotfix_n[-1]
