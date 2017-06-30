@@ -188,8 +188,14 @@ class Settings:
     def set_remainder_talt(self, guild_level, points):
         guild_level = int(guild_level)
         points = int(points)
+<<<<<<< HEAD
         if guild_level >= len(self.talt_level) or guild_level < 1 or \
           points/20 > self.talt_level[guild_level+1] or not self.validate_points(points):
+=======
+        if guild_level > len(self.talt_level) or guild_level < 1 or \
+          points/20 > self.talt_level[guild_level+1] or not self.validate_points(points):
+            print('what now')
+>>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
             return False
         self.settings['guild_level'] = guild_level
         current_talt    = self.talt_level[guild_level] + points/20
@@ -197,8 +203,13 @@ class Settings:
             return False
         self.settings['talt']['remainder']  = current_talt - self.settings['talt']['guild']
         self.settings['talt']['guild']  = current_talt
+<<<<<<< HEAD
         self.save_file()
         self.rebase_guild_talt()
+=======
+        self.rebase_guild_talt()
+        self.save_file()
+>>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
         return True
 
     def set_quota_talt(self, user, amount):
@@ -234,8 +245,11 @@ class Settings:
         self.save_file()
         talt = 0
         for key, value in self.settings['talt'].items():
+<<<<<<< HEAD
             if key == "guild":
                 continue
+=======
+>>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
             talt += value
         self.update_guild_talt(talt)
         return True
