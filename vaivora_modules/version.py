@@ -1,6 +1,6 @@
 milestone   = "[m]"
 unstable    = "[n]" # nightly
-bugfix      = "[b]" # incremental
+bugfix      = "[i]" # incremental
 
 version_n   = []
 subver_n    = []
@@ -37,6 +37,12 @@ def check_revisions(srv_ver):
 
     return (count+1)
 
+def get_revisions():
+    return len(version_n)
+
+def get_subscription_msg():
+    return "Remember, if you ever want to stop receiving these changelogs, type `$unsubscribe` in this DM.\n" + \
+           "To receive changelogs again, just `$subscribe` back.\n"
 
 def get_current_version():
     return status_n[-1] + version_n[-1] + "." + subver_n[-1] + hotfix_n[-1]
@@ -822,6 +828,24 @@ current     = get_header() + \
   + Corrected an issue with "anchor" keyword for "$boss".
 + Upcoming changes:
   + Code rewrite before publishing as open source. Estimated time: 1-2 weeks
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('6')
+hotfix_n.append('r')
+status_n.append(bugfix)
+date_n.append("2017/06/28")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Server join issue.
+  + Talt Tracker issue for setting remainder Talt via "$settings set (0-20) (current points)".
+    + Send a DM to Nova#6732 if you've had issues with the Talt Tracker module.
 ```"""
 
 changelog.append(current)

@@ -130,8 +130,14 @@ async def write_anew(servers):
         for server in servers:
             original.write(server.id + ':' + vaivora_version)
             await client.send_message(server.owner, vaivora_constants.values.words.message.welcome)
+            n_revs = vaivora_modules.version.get_revisions()
+            i = 1
             for vaivora_log in vaivora_modules.version.get_changelogs():
-                await client.send_message(server.owner, vaivora_log)
+                i += 1
+                await client.send_message(server.owner, "Changelog " + i + " of " + n_revs + "\n" + \
+                                          vaivora_log)
+            await client.send_message(server.owner, \
+                                      vaivora_modules.version.get_subscription_msg())
 
 
 # @func:    on_server_available(discord.Server) : bool
@@ -146,15 +152,17 @@ async def on_server_join(server):
     server_id         = str(server.id)
     if not re.match(r'[0-9]{18,}', server_id):
         return False # somehow invalid.
-    with open(vaivora_constants.values.filenames.valid_db, 'a') as f:
-        for line in f:
-            if server_id in line:
-                already   = True
-                return True
-        if not already:
-            vdbs[server_id]     = vaivora_modules.db.Database(server_id)
-            o_id                = client.get_server(srv_sid).owner.id
-            vdst[server_id]     = vaivora_modules.settings.Settings(server_id, o_id)
+    with open(vaivora_constants.values.filenames.valid_db, 'r') as valid_file:
+        f = valid_file.read()
+    for line in f:
+        if server_id in line:
+            already   = True
+            return True
+    if not already:
+        vdbs[server_id]     = vaivora_modules.db.Database(server_id)
+        o_id                = client.get_server(server_id).owner.id
+        vdst[server_id]     = vaivora_modules.settings.Settings(server_id, o_id)
+        with open(vaivora_constants.values.filenames.valid_db, 'a') as f:
             f.write(server_id)
             await write_anew([server,])
         # else:
@@ -1189,6 +1197,7 @@ async def check_databases():
                 no_repeat.append(line.strip())
         print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- Valid DBs: ", len(vdbs))
         for vdb_id, valid_db in vdbs.items():
+            print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- in DB ", vdb_id)
             results[vdb_id] = []
             ####TODO: replace 900 with custom setting for warning
             loop_time = datetime.today()
