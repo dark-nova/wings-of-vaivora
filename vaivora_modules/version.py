@@ -1,10 +1,6 @@
 milestone   = "[m]"
 unstable    = "[n]" # nightly
-<<<<<<< HEAD
 bugfix      = "[i]" # incremental
-=======
-bugfix      = "[b]" # incremental
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
 
 version_n   = []
 subver_n    = []
@@ -41,15 +37,12 @@ def check_revisions(srv_ver):
 
     return (count+1)
 
-<<<<<<< HEAD
 def get_revisions():
     return len(version_n)
 
 def get_subscription_msg():
     return "Remember, if you ever want to stop receiving these changelogs, type `$unsubscribe` in this DM.\n" + \
            "To receive changelogs again, just `$subscribe` back.\n"
-=======
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
 
 def get_current_version():
     return status_n[-1] + version_n[-1] + "." + subver_n[-1] + hotfix_n[-1]
@@ -838,7 +831,6 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
-<<<<<<< HEAD
 
 
 
@@ -857,5 +849,3 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
-=======
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c

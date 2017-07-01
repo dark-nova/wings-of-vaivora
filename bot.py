@@ -2,14 +2,10 @@
 import discord
 import logging
 import sqlite3
-<<<<<<< HEAD
 import asyncio
 import random
 import shlex
-=======
-import shlex
 import asyncio
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
 import json
 import re
 import os
@@ -136,7 +132,6 @@ async def write_anew(servers):
         for server in servers:
             original.write(server.id + ':' + vaivora_version)
             await client.send_message(server.owner, vaivora_constants.values.words.message.welcome)
-<<<<<<< HEAD
             n_revs = vaivora_modules.version.get_revisions()
             i = 1
             for vaivora_log in vaivora_modules.version.get_changelogs():
@@ -145,10 +140,8 @@ async def write_anew(servers):
                                           vaivora_log)
             await client.send_message(server.owner, \
                                       vaivora_modules.version.get_subscription_msg())
-=======
             for vaivora_log in vaivora_modules.version.get_changelogs():
                 await client.send_message(server.owner, vaivora_log)
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
 
 
 # @func:    on_server_available(discord.Server) : bool
@@ -163,7 +156,6 @@ async def on_server_join(server):
     server_id         = str(server.id)
     if not re.match(r'[0-9]{18,}', server_id):
         return False # somehow invalid.
-<<<<<<< HEAD
     with open(vaivora_constants.values.filenames.valid_db, 'r') as valid_file:
         f = valid_file.read()
     for line in f:
@@ -175,21 +167,8 @@ async def on_server_join(server):
         o_id                = client.get_server(server_id).owner.id
         vdst[server_id]     = vaivora_modules.settings.Settings(server_id, o_id)
         with open(vaivora_constants.values.filenames.valid_db, 'a') as f:
-=======
-    with open(vaivora_constants.values.filenames.valid_db, 'a') as f:
-        for line in f:
-            if server_id in line:
-                already   = True
-                return True
-        if not already:
-            vdbs[server_id]     = vaivora_modules.db.Database(server_id)
-            o_id                = client.get_server(srv_sid).owner.id
-            vdst[server_id]     = vaivora_modules.settings.Settings(server_id, o_id)
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
             f.write(server_id)
             await write_anew([server,])
-        # else:
-        #     await send_news()
     return True
 
 
@@ -257,15 +236,12 @@ async def on_message(message):
     elif vaivora_constants.fun.meme.match(message.content):
         await client.send_message(message.channel, message.author.mention + " " + "http://i.imgur.com/kW3o6eC.png")
         return True
-<<<<<<< HEAD
     elif vaivora_constants.fun.stab2.match(message.content) or vaivora_constants.fun.stab3.match(message.content) or \
       vaivora_constants.fun.stab4.match(message.content) or vaivora_constants.fun.stab5.match(message.content):
         random.seed()
         if int(random.random() * 100) % 17 != 0:
             return True
-=======
     elif vaivora_constants.fun.stab.search(message.content):
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
         await client.add_reaction(message, "🗡")
         await client.add_reaction(message, "⚔")
         for emoji in message.server.emojis:
@@ -275,13 +251,7 @@ async def on_message(message):
         return True
     # boss commands handling
     if vaivora_constants.regex.boss.command.prefix.match(message.content):
-<<<<<<< HEAD
         if boss_ch and not message.channel.mention in boss_ch:
-=======
-        print(boss_ch)
-        if boss_ch and not message.channel.mention in boss_ch:
-            print('failed')
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
             return False
         elif boss_ch:
             return await boss_cmd(message)
@@ -643,7 +613,6 @@ async def settings_cmd(message):
                                        vaivora_constants.command.syntax.cmd_error_bad_roles, \
                                        vaivora_constants.command.syntax.cmd_settings, command[2])
                 errs    = []
-<<<<<<< HEAD
                 for mention in message.mentions:
                     utype = "users"
                     id_change = mention.id
@@ -654,16 +623,6 @@ async def settings_cmd(message):
                     utype = "group"
                     id_change = mention.mention
                     mentname = mention.name
-=======
-                for mention in (message.mentions + message.role_mentions):
-                    mentname = (mention.nick if mention.nick else mention.name)
-                    if type(mention) == discord.User or type(mention) == discord.Member:
-                        utype = "users"
-                        id_change = mention.id
-                    else:
-                        utype = "group"
-                        id_change = mention.mention
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
                     if not vdst[message.server.id].change_role(id_change, utype, command[2]):
                         errs.append(mentname)
                 if errs:
@@ -1245,26 +1204,12 @@ async def check_databases():
                 no_repeat.append(line.strip())
         print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- Valid DBs: ", len(vdbs))
         for vdb_id, valid_db in vdbs.items():
-<<<<<<< HEAD
             print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- in DB ", vdb_id)
-=======
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
             results[vdb_id] = []
             ####TODO: replace 900 with custom setting for warning
             loop_time = datetime.today()
             if today.day != loop_time.day:
                 today = loop_time
-<<<<<<< HEAD
-            # if inactive_time.seconds > 900 and not inactive:
-            #     no_repeat = []
-            #     with open(vaivora_constants.values.filenames.no_repeat_t + today.strftime("_%Y%m%d") + ".bak", "a") as archive:
-            #         with open(vaivora_constants.values.filenames.no_repeat, "r") as original:
-            #             for line in original:
-            #                 archive.write(line)
-            #     # erase contents after transferring$setting
-            #     open(vaivora_constants.values.filenames.no_repeat, "w").close()
-            #     inactive = True
-=======
             if inactive_time.seconds > 900 and not inactive:
                 no_repeat = []
                 with open(vaivora_constants.values.filenames.no_repeat_t + today.strftime("_%Y%m%d") + ".txt", "a") as archive:
@@ -1274,7 +1219,6 @@ async def check_databases():
                 # erase contents after transferring$setting
                 open(vaivora_constants.values.filenames.no_repeat, "w").close()
                 inactive = True
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
             # check all timers
             message_to_send   = list()
             cur_channel       = str()
@@ -1285,10 +1229,7 @@ async def check_databases():
             # sort by time - yyyy, mm, dd, hh, mm
             results[vdb_id].sort(key=itemgetter(5,6,7,8,9))
             for result in results[vdb_id]:
-<<<<<<< HEAD
-=======
                 message_to_send   = list()
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
                 cur_channel       = str()
                 list_time = [ int(t) for t in result[5:10] ]
                 try:
@@ -1317,7 +1258,6 @@ async def check_databases():
                         message_to_send.append(boss_entry)
                         no_repeat.append(boss_rec)
             if len(message_to_send) == 0:
-<<<<<<< HEAD
                 # inactive_time += (datetime.today()-loop_time)
                 continue # empty record for this server
             # else:
@@ -1325,15 +1265,6 @@ async def check_databases():
             #     inactive      = False
             role_str = str()
             srv = client.get_server(vdb_id)
-=======
-                inactive_time += (datetime.today()-loop_time)
-                continue # empty record for this server
-            else:
-                inactive_time = timedelta(0)
-                inactive      = False
-            role_str = str()
-            srv = client.get_server(vaivora_constants.regex.db.ext.sub('', vdb_id))
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
             for uid in vdst[vdb_id].get_role("boss"):
                 try:    
                     # group mention
