@@ -102,19 +102,17 @@
         - *Optional*
         - Suitable only for *field* bosses.`*` If unlisted, this will be unassumed.
 
-    `*` 
-```
-    Notes about world and field bosses:
-    
-    Field bosses in channels other than 1 are considered 'world boss' variants, and should not be recorded because they spawn unpredictably, because they're jackpot bosses.
-    
-    Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.
-    
-    You should record the channel for world bosses because they can spawn in any of the channels in their respective maps.
-```
-
     6. `help`
         - Sends a direct message to you about how to use the command.
+
+    +   `*` 
+        Notes about world and field bosses:
+        
+        Field bosses in channels other than 1 are considered 'world boss' variants, and should not be recorded because they spawn unpredictably, because they're jackpot bosses.
+        
+        Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.
+        
+        You should record the channel for world bosses because they can spawn in any of the channels in their respective maps.
 
 ---
 ---
