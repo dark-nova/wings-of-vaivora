@@ -5,7 +5,7 @@
 # Features
 +   ### Boss Tracking
 
-    #### *Recommended user level:* **member** & **moderator** *(for specific commands)*
+    #### *Recommended user level:* **member**
 
     ##### Purpose: to allow `members` to record bosses
     ___
@@ -19,49 +19,94 @@
 
     ---
 
-    ### Syntax:
+    ### Syntax
+    `[prefix]boss [target]:[boss] [status] [time] [channel] [map]`
+    `[prefix]boss [target]:([boss], all) [entry] [map]`
+    `[prefix]boss [target]:[boss] [query]`
+    `[prefix]boss [target]:all [type]`
+    `[prefix]boss help`
 
-        $boss BossName|"boss name" died|anchored time [chN] [Map|"Map"]
-        $boss BossName|"boss name" verified|erase [chN]
-        $boss BossName|"boss name" list [chN]
-        $boss all list
+    ### Examples
+    `$boss cerb died 12:00pm 4f`; channel should be omitted for field bosses
+    `Vaivora, boss crab died 14:00 ch2`; map should be omitted for world bosses
 
     ### Arguments
+    0.  Prefix: `$`, `Vaivora, `
+        Module: "boss"
+        e.g. `$boss`, `Vaivora, boss`
+          
+    1.  **[target]:** [boss], `all`
+        + [boss]:
+            - Either part of, or full name; if spaced, enclose in double-quotes (`"`)
+        + `all`:
+            - For 'all' bosses.
+        Some commands only take specific options, so check first.
 
-    1.  Boss Name or `all` **(required)**
+    2.  
+        - **[status]:** `died`, `anchored`, `warned`
+            + `died`:
+                * The boss died or despawned (if field boss).
+            + `anchored`:
+                * The *world* boss was anchored. You or someone else has stayed in the map, leading to spawn.
+            + `warned`:
+                * The *field* boss was warned to spawn, i.e. `The field boss will appear in awhile.`
+            + *Do not use with **[entry]**, **[query]**, or **[type]** commands.*
+        - **[entry]:** `list`, `erase`
+            + `list`:
+                * Lists the entries for the boss you have chosen. If `all`, all records will be printed.
+            + `erase`:
+                * Erases the entries matching the boss or `all`. Optional parameter **[map]** restricts which records to erase.
+            + *Do not use with **[status]**, **[query]**, or **[type]** commands.*
+        - **[query]:** `synonyms`, `maps`
+            + `synonyms`:
+                * Synonyms for the boss to use, for shorthand for **[status]** and **[entry]** commands.
+                * e.g. `spider` used in place of `Blasphemous Deathweaver`
+            + `maps`:
+                * Maps for the boss you choose.
+            + *Valid for **[target]:[boss]** only.*
+            + *Do not use with **[status]**, **[entry]**, or **[type]** commands.*
+        - **[type]**: `world`, `field`
+            + `world`:
+                * Bosses that spawn on specific mechanics and do not wander maps. They can spawn in all channels.
+                * Debuffs have no effect on them, and they do not give the 'Field Boss Cube Unobtainable' debuff.
+                * Cubes drop loosely on the ground and must be claimed.
+            + `field`:
+                * Bosses that spawn in a series of maps, only on Channel 1 in regular periods.
+                * If you do not have the 'Field Boss Cube Unobtainable' debuff, upon killing, you obtain it.
+                * The debuff lasts 8 hours roughly and you do not need to be online for it to tick down.
+                * The debuff prevents you from contributing to other field bosses (no damage contribution),
+                * so you cannot provide for your party even if your partymates do not have the debuff.
+                * Cubes automatically go into inventory of parties of highest damage contributors.
+    3.  **[time]**
+        - e.g. 9:00p
+        - e.g. 21:00
+            + Both these times are equivalent. Make sure to reccord 'AM' or 'PM' if you're using 12 hour format.
+        - *Required for **[status]** commands.
+        - Remove spaces. 12 hour and 24 hour times acceptable, with valid delimiters `:` and `.`. Use server time.
 
-        Either part of, or full name; if spaced, enclose in double-quotes (`"`)
+    4.  **[channel]**
+        - e.g. ch1
+        - e.g. 1
+            + Both these channels are equivalent. You may drop the `CH`.
+        - *Optional*
+        - Suitable only for *world* bosses.`*` If unlisted, CH`1` will be assumed.
 
-        `all` when used with `list` will display all valid entries.
+    5.  **[map]**
+        - e.g. `vid`
+            + Corresponds to `Videntis Shrine`, a map where `Starving Ellaganos` spawns.
+        - *Optional*
+        - Suitable only for *field* bosses.`*` If unlisted, this will be unassumed.
 
-    2.  `died`, `anchored`, `verified`, `erase`, or `list` **(required)**
-
-        + `died` to represent a *kill*
-        + `anchored` to represent an *initial spawn*
-        + `verified` to represent a *confirmation of last known entry*
-        + `erase` to remove an entry - **suggestion: moderator and higher only**
-        + `list` to display all entries for *Argument 1*
-
-
-    3.  time **(required *for* ** `died` ***and*** `anchored` **)**
-
-        You may go with short format (24H default) or specify A(m) or P(m). e.g. `13:00`, `1:00a`, `1:00AM`, etc.
-
-        This *must* be recorded in server time.
-
-    4.  *Channel* `N` *(optional)*
-
-        + Field bosses: do not list a channel - it will be stripped regardless.
-        + World bosses: default `N` is `1`.
-
-        You may omit `Ch`, but fill in the `N` which is valid from 1 to 4 inclusive, or less depending on boss.
-
-    5.  Map *(optional)*
-
-        Handy for field bosses only. World bosses don't move across maps. This is optional and if unlisted will be unassumed.
-
-    #### *Vaivora* command:
-        Vaivora, boss
+`*`
+> Notes about world and field bosses:
+> Field bosses in channels other than 1 are considered 'world boss' variants,
+> and should not be recorded because they spawn unpredictably, because they're jackpot bosses.
+> Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.
+> You should record the channel for world bosses because
+> they can spawn in any of the channels in their respective maps.
+> 
+    6. `help`
+        - Sends a direct message to you about how to use the command.
 
 ---
 ---
