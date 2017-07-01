@@ -21,13 +21,18 @@
 
     ### Syntax
     `[prefix]boss [target]:[boss] [status] [time] [channel] [map]`
+
     `[prefix]boss [target]:([boss], all) [entry] [map]`
+
     `[prefix]boss [target]:[boss] [query]`
+
     `[prefix]boss [target]:all [type]`
+
     `[prefix]boss help`
 
     ### Examples
     `$boss cerb died 12:00pm 4f`; channel should be omitted for field bosses
+
     `Vaivora, boss crab died 14:00 ch2`; map should be omitted for world bosses
 
     ### Arguments
@@ -35,7 +40,7 @@
         Module: "boss"
         e.g. `$boss`, `Vaivora, boss`
           
-    1.  **[target]:** [boss], `all`
+    1.  **[target]:** **[boss]**, `all`
         + [boss]:
             - Either part of, or full name; if spaced, enclose in double-quotes (`"`)
         + `all`:
@@ -97,14 +102,18 @@
         - *Optional*
         - Suitable only for *field* bosses.`*` If unlisted, this will be unassumed.
 
-`*`
-> Notes about world and field bosses:
-> Field bosses in channels other than 1 are considered 'world boss' variants,
-> and should not be recorded because they spawn unpredictably, because they're jackpot bosses.
-> Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.
-> You should record the channel for world bosses because
-> they can spawn in any of the channels in their respective maps.
-> 
+    `*`
+    > Notes about world and field bosses:
+    > 
+    > Field bosses in channels other than 1 are considered 'world boss' variants,
+    > and should not be recorded because they spawn unpredictably, because they're jackpot bosses.
+    > 
+    > Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.
+    > 
+    > You should record the channel for world bosses because
+    > they can spawn in any of the channels in their respective maps.
+
+   
     6. `help`
         - Sends a direct message to you about how to use the command.
 
