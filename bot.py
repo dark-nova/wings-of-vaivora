@@ -1229,7 +1229,6 @@ async def check_databases():
             # sort by time - yyyy, mm, dd, hh, mm
             results[vdb_id].sort(key=itemgetter(5,6,7,8,9))
             for result in results[vdb_id]:
-                message_to_send   = list()
                 cur_channel       = str()
                 list_time = [ int(t) for t in result[5:10] ]
                 try:
