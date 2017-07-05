@@ -5,6 +5,9 @@ from importlib import import_module as im
 import vaivora_constants
 for mod in vaivora_constants.modules:
     im(mod)
+import vaivora_modules
+for mod in vaivora_modules.modules:
+    im(mod)
 
 # BGN CONST
 
@@ -242,6 +245,10 @@ rgx_query   = re.compile(r'(syn(onyms|s)?|alias(es)?)', re.IGNORECASE)
 rgx_type    = re.compile(r'(wor|fie)ld', re.IGNORECASE)
 #rgx_type_w  = re.compile(r'world', re.IGNORECASE)
 rgx_type_f  = re.compile(r'field', re.IGNORECASE)
+rgx_time    = re.compile(r'[0-2]?[0-9][:.]?[0-5][0-9] ?([ap]m?)*', re.IGNORECASE)
+rgx_time_ap = re.compile(r'am?', re.IGNORECASE)
+rgx_time_pm = re.compile(r'pm?', re.IGNORECASE)
+rgx_time_dl = re.compile(r'[:.]')
 
 # END REGEX
 
@@ -651,19 +658,30 @@ def validate_channel(ch):
     else:
         return 1
 
-# @func:    process_command()
-def process_command(arg_list):
+# @func:    process_command(str, list) : str
+# @arg:
+#       server_id : str
+#           id of the server of the originating message
+#       arg_list : list
+#           list of arguments supplied for the command
+# @return:
+#       an appropriate message for success or fail of command
+def process_command(server_id, arg_list):
+    #vaivora_modules.db.Database(server_id)
     # $boss help
     if rgx_help.match(arg_list[0]):
         return command
     arg_len   = len(arg_list)
+
     # error: not enough arguments
     if arg_len < arg_min or arg_len > arg_max:
         return "You supplied " + arg_len + " arguments; commands must have at least " + \
                arg_min + " or at most " + arg_max + " arguments.\n" + msg_help
+
     # $boss all ...
     if rgx_tg_all.match(arg_list[1]):
         cmd_boss  = bosses
+
     # $boss [boss] ...
     else:
         boss_idx  = check_boss(arg_list[1])
@@ -671,6 +689,7 @@ def process_command(arg_list):
             return arg_list[1] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#    " + \
                    '\n#    '.join(bosses) + "```\n" + msg_help
         cmd_boss  = [bosses[boss_idx], ]
+
     # error: invalid argument 2
     if not rgx_status.match(arg_list[2]) and \
        not rgx_entry.match(arg_list[2]) and \
@@ -684,4 +703,57 @@ def process_command(arg_list):
     if not rgx_query.match(arg_list[2]) and rgx_info.match(arg_list[2]) and len(cmd_boss) > 1:
         return arg_list[2] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
 
+    # $boss [boss] [status] ...
+    if rgx_status.match(arg_list[2]):
+        # $boss [boss] died ...
+        if rgx_st_died.match(arg_list[2]):
+            # error: invalid time
+            if not rgx_time.match(arg_list[3]):
+                return arg_list[3] + " is not a valid time for `$boss`:`" + arg_list[2] + \
+                       "`:`time`. Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+
+            offset  = 0
+
+            # $boss [boss] died [time?]
+            # $boss [boss] died [time:am/pm]
+            if rgx_time_ap.search(arg_list[3]):
+                # $boss [boss] died [time:pm]
+                if rgx_time_pm.search(arg_list[3]):
+                    offset  = 12
+                arg_time    = rgx_time_ap.sub('', arg_list[3])
+            else:
+                arg_time    = arg_list[3]
+            delim   = rgx_time_dl.search(arg_time)
+            if delim:
+                hours, minutes  =   [int(t) for t in arg_time.split(delim.group(0))]
+                hours           +=  offset
+            # $boss [boss] died [time:no delimiter]
+            else:
+                minutes =   int(arg_time[::-1][0:2][::-1])
+                hours   =   int(re.sub(str(minutes), '', arg_time))
+                hours   +=  offset
+
+            # error: invalid hours
+            if hours > 23 or hours < 0:
+                return arg_list[3] + " is not a valid time for `$boss`:`" + arg_list[2] + \
+                       "`:`time`. Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+
+            # $boss [boss] died [time] ...
+
+
+    # if   vaivora_constants.regex.format.time.am.search(command[arg_map_idx - 1]):
+    #     boss_time   = vaivora_constants.regex.format.time.delim.split(vaivora_constants.regex.format.time.am.sub('', command[arg_map_idx - 1]))
+    #     boss_hour   = int(boss_time[0]) % 12
+    # #     postmeridian
+    # elif vaivora_constants.regex.format.time.pm.search(command[arg_map_idx - 1]):
+    #     boss_time   = vaivora_constants.regex.format.time.delim.split(vaivora_constants.regex.format.time.pm.sub('', command[arg_map_idx - 1]))
+    #     boss_hour   = (int(boss_time[0]) % 12) + 12
+    # #     24h time
+    # else:
+    #     boss_time   = command[arg_map_idx - 1].split(':')
+    #     boss_hour   = int(boss_time[0])
+    # if boss_hour > 24:
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_boss_time, \
+    #                        vaivora_constants.command.syntax.cmd_boss, msg=command[arg_map_idx - 1])
     pass
