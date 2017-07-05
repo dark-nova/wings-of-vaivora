@@ -261,6 +261,20 @@ rgx_time_ap = re.compile(r'am?', re.IGNORECASE)
 rgx_time_pm = re.compile(r'pm?', re.IGNORECASE)
 rgx_time_dl = re.compile(r'[:.]')
 rgx_channel = re.compile(r'(ch?)*.?([1-4])$', re.IGNORECASE)
+rgx_letters = re.compile(r'[a-z -]+', re.IGNORECASE)
+
+
+floors_chk  = re.compile(r'[bfd]?[0-9][bfd]?$', re.IGNORECASE)
+rgx_floors  = re.compile(r'[^1-5bdf]*((?P<basement>b)|(?P<floor>f))? ?(?P<floornumber>[1-5]) ?((?P<basement>b)|(?P<floor>f))?$', re.IGNORECASE)
+#floors_fmt  = re.compile(r'[^1-5bdf]*(?P<basement>b)? ?(?P<floornumber>[1-5]) ?(?P<floor>f)?$', re.IGNORECASE)
+rgx_loc_az  = re.compile(r'[^1-5bdf]', re.IGNORECASE)
+
+rgx_loc_dw  = re.compile(r'(ashaq|c(rystal)? ?m(ines?)?) ?', re.IGNORECASE)
+rgx_loc_dwc = re.compile(r'c(rystal)? ?m(ines?)? ?', re.IGNORECASE)
+rgx_loc_dwa = re.compile(r'ashaq[a-z ]*', re.IGNORECASE)
+rgx_loc_h   = re.compile(r'd(emon)? ?p(ris(on?))? ?', re.IGNORECASE)
+rgx_loc_hno = re.compile(r'(d ?(ist(rict)?)?)?[125]', re.IGNORECASE)
+rgx_loc_haz = re.compile(r'(d ?(ist(rict)?)?)?', re.IGNORECASE)
 
 # END REGEX
 
@@ -624,43 +638,35 @@ def check_boss(entry):
 #       map index in list, or -1 if not found or too many maps matched
 def check_maps(maps, boss):
     map_number  = ''
-    mapidx      = -1
-    maps        = maps.lower()
-    # Deathweaver map did not match
-    if boss == "Blasphemous Deathweaver" and not vaivora_constants.regex.boss.location.DW_A.search(maps):
-        return -1
-
-    if boss in bosses_with_floors:
-        # rearrange letters, and remove map name
-        if boss == "Wrathful Harpeia" or boss == "Demon Lord Blut":
-            map_number = vaivora_constants.regex.format.matching.letters.sub('', maps)
-            map_number = vaivora_constants.regex.boss.location.floors_arr.sub(r'\g<floornumber>', map_number)
-        elif not vaivora_constants.regex.boss.location.floors_fmt.match(maps):
-            map_number = vaivora_constants.regex.boss.location.floors_ltr.sub('', maps)
-            map_number = vaivora_constants.regex.boss.location.floors_arr.sub(r'\g<basement>\g<floornumber>\g<floor>', map_number)
-        else:
-            map_number = vaivora_constants.regex.boss.location.floors_ltr.sub('', maps)
-
-    #vaivora_constants.regex.format.matching.letters.sub(map_number)
-
-    if boss == "Blasphemous Deathweaver" and vaivora_constants.regex.boss.location.DW_CM.search(maps):
-        maps = "Crystal Mine " + map_number
-    elif boss == "Blasphemous Deathweaver":
-        maps = "Ashaq Underground Prison " + map_number
-    elif map_number:
-        maps = map_number
-    elif boss in bosses_with_floors and not map_number:
-        return -1
+    map_idx     = -1
     
-    maps    = maps.lower()
+    if boss in bosses_with_floors:
+        map_match   = rgx_floors.match(maps)
+        map_floor   = map_match.group('floornumber')
 
-    for m in boss_locs[boss]:
-        if maps in m.lower():
-            if mapidx != -1:
-                return -1
-            mapidx = boss_locs[boss].index(m)
+    # Deathweaver map did not match
+    if boss == "Blasphemous Deathweaver" and not rgx_loc_dw.search(maps):
+        return map_idx
+    elif boss == "Blasphemous Deathweaver" and rgx_loc_dwc.search(maps):
+        tg_map  =   "Crystal Mine " + map_floor
+    # process of elimination: Ashaq
+    elif boss == "Blasphemous Deathweaver":
+        tg_map  =   "Ashaq Underground Prison " + map_floor
+    elif boss == "Bleak Chapparition":
+        tg_map  =   map_match.group('basement') + map_floor + map_match.group(floor) # one of these must be true, and the other null
+    else:
+        tg_map  =   maps # default
 
-    return mapidx
+    if boss in bosses_with_floors and not map_number:
+        return map_idx
+    
+    for boss_map in boss_locs[boss]:
+        if re.match(tg_map, boss_map, re.IGNORECASE):
+            if map_idx != -1:
+                return -1 # too many matches
+            map_idx = boss_locs[boss].index(boss_map)
+
+    return map_idx
 
 
 # @func:    get_syns(str) : str
@@ -714,7 +720,7 @@ def validate_channel(ch):
 #           list of arguments supplied for the command
 # @return:
 #       an appropriate message for success or fail of command
-def process_command(server_id, arg_list):
+def process_command(server_id, msg_channel, arg_list):
     #vaivora_modules.db.Database(server_id)
     # $boss help
     if rgx_help.match(arg_list[0]):
@@ -760,15 +766,18 @@ def process_command(server_id, arg_list):
         target['boss']      =   cmd_boss[0] # reassign to 'target boss'
 
         if len(arg_list) > 3:
-            channel =   rgx_channel.match(arg_list[3])
-            if channel and channel.group(2) != '1' and not target['boss'] in bosses_world:
-                return arg_list[3] + " is invalid for `$boss`:`channel` because " + target['boss'] + " is a field boss.\n" + \
-                       "Field bosses that spawn in channels other than 1 are always jackpot bosses, world boss forms of " + \
-                       "the equivalent field boss.\n" + msg_help
-            elif channel and target['boss'] in bosses_world:
-                target['channel']  =   int(channel.group(2))
-            else:
-                target['channel']  =   1 # default; if null or field, use 1
+            for cmd_arg in arg_list[3:]:
+                channel =   rgx_channel.match(cmd_arg)
+                if channel and channel.group(2) != '1' and not target['boss'] in bosses_world:
+                    return cmd_arg + " is invalid for `$boss`:`channel` because " + target['boss'] + " is a field boss.\n" + \
+                           "Field bosses that spawn in channels other than 1 are always jackpot bosses, world boss forms of " + \
+                           "the equivalent field boss.\n" + msg_help
+                elif channel and target['boss'] in bosses_world:
+                    target['channel']  =   int(channel.group(2)) # use channel provided by command
+                else: # possibly map instead
+                    target['channel']  =   1 # default; if null or field, use 1
+                    if cmd_arg: # not null; must be map
+
 
         # $boss [boss] died ...
         if rgx_st_died.match(arg_list[1]):
