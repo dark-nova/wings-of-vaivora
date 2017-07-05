@@ -256,33 +256,34 @@ rgx_time_dl = re.compile(r'[:.]')
 
 # 'bosses'
 #   list of boss names in full
-bosses  =                                           [ 'Blasphemous Deathweaver', \
-                                                      'Bleak Chapparition', \
-                                                      'Hungry Velnia Monkey', \
-                                                      'Abomination', \
-                                                      'Earth Templeshooter', \
-                                                      'Earth Canceril', \
-                                                      'Earth Archon', \
-                                                      'Violent Cerberus', \
-                                                      'Necroventer', \
-                                                      'Forest Keeper Ferret Marauder', \
-                                                      'Kubas Event', \
-                                                      'Noisy Mineloader', \
-                                                      'Burning Fire Lord', \
-                                                      'Wrathful Harpeia', \
-                                                      'Glackuman', \
-                                                      'Marionette', \
-                                                      'Dullahan Event', \
-                                                      'Starving Ellaganos', \
-                                                      'Prison Manager Prison Cutter', \
-                                                      'Mirtis', \
-                                                      'Rexipher', \
-                                                      'Helgasercle', \
-                                                      'Demon Lord Marnox', \
-                                                      'Demon Lord Nuaele', \
-                                                      'Demon Lord Zaura', \
-                                                      'Demon Lord Blut', \
-                                                      'Legwyn Crystal Event' 
+bosses  =                                           [ 
+                                                        'Blasphemous Deathweaver', \
+                                                        'Bleak Chapparition', \
+                                                        'Hungry Velnia Monkey', \
+                                                        'Abomination', \
+                                                        'Earth Templeshooter', \
+                                                        'Earth Canceril', \
+                                                        'Earth Archon', \
+                                                        'Violent Cerberus', \
+                                                        'Necroventer', \
+                                                        'Forest Keeper Ferret Marauder', \
+                                                        'Kubas Event', \
+                                                        'Noisy Mineloader', \
+                                                        'Burning Fire Lord', \
+                                                        'Wrathful Harpeia', \
+                                                        'Glackuman', \
+                                                        'Marionette', \
+                                                        'Dullahan Event', \
+                                                        'Starving Ellaganos', \
+                                                        'Prison Manager Prison Cutter', \
+                                                        'Mirtis', \
+                                                        'Rexipher', \
+                                                        'Helgasercle', \
+                                                        'Demon Lord Marnox', \
+                                                        'Demon Lord Nuaele', \
+                                                        'Demon Lord Zaura', \
+                                                        'Demon Lord Blut', \
+                                                        'Legwyn Crystal Event' 
                                                     ]
 
 bosses_field    =                                   bosses[0:3] + \
@@ -301,108 +302,124 @@ bosses_alt      =                                   [ 'Mirtis', \
 
 # bosses that spawn in...
 # ...two hours
-boss_spawn_02h  =   [ 'Abomination', \
-                      'Dullahan Event'
-                    ]
+boss_spawn_02h  =                                   [ 
+                                                        'Abomination', \
+                                                        'Dullahan Event'
+                                                    ]
 # ...sixteen hours
-boss_spawn_16h  =   [ 'Demon Lord Nuaele', \
-                      'Demon Lord Zaura', \
-                      'Demon Lord Blut'
-                    ]
+boss_spawn_16h  =                                   [
+                                                        'Demon Lord Nuaele', \
+                                                        'Demon Lord Zaura', \
+                                                        'Demon Lord Blut'
+                                                    ]
 
 # event based timers
-bosses_events   =   [ 'Kubas Event', \
-                      'Dullahan Event', \
-                      'Legwyn Crystal Event'
-                    ]
+bosses_events   =                                   [ 
+                                                        'Kubas Event', \
+                                                        'Dullahan Event', \
+                                                        'Legwyn Crystal Event'
+                                                    ]
 
 
-boss_synonyms = { 'Blasphemous Deathweaver':        [ 'dw', \
-                                                      'spider', \
-                                                      'deathweaver'
+boss_synonyms = { 'Blasphemous Deathweaver':        [ 
+                                                        'dw', \
+                                                        'spider', \
+                                                        'deathweaver'
                                                     ],
-                  'Bleak Chapparition':             [ 'chap', \
-                                                      'chapparition' 
+                  'Bleak Chapparition':             [ 
+                                                        'chap', \
+                                                        'chapparition' 
                                                     ], 
-                  'Hungry Velnia Monkey':           [ 'monkey', \
-                                                      'velnia', \
-                                                      'velniamonkey', \
-                                                      'velnia monkey' 
+                  'Hungry Velnia Monkey':           [ 
+                                                        'monkey', \
+                                                        'velnia', \
+                                                        'velniamonkey', \
+                                                        'velnia monkey' 
                                                     ], 
-                  'Abomination':                    [ 'abom', \
-                                                      'abomination' 
+                  'Abomination':                    [   'abom' ], 
+                  'Earth Templeshooter':            [ 
+                                                        'temple shooter', \
+                                                        'TS', \
+                                                        'ETS', \
+                                                        'templeshooter' 
                                                     ], 
-                  'Earth Templeshooter':            [ 'temple shooter', \
-                                                      'TS', \
-                                                      'ETS', \
-                                                      'templeshooter' 
+                  'Earth Canceril':                 [ 
+                                                        'canceril', \
+                                                        'crab', \
+                                                        'ec' 
                                                     ], 
-                  'Earth Canceril':                 [ 'canceril', \
-                                                      'crab', \
-                                                      'ec' 
-                                                    ], 
-                  'Earth Archon':                   [ 'archon' ], 
-                  'Violent Cerberus':               [ 'cerb', \
-                                                      'dog', \
-                                                      'doge', \
-                                                      'cerberus' 
+                  'Earth Archon':                   [   'archon' ], 
+                  'Violent Cerberus':               [ 
+                                                        'cerb', \
+                                                        'dog', \
+                                                        'doge', \
+                                                        'cerberus' 
                                                     ], 
                   'Necroventer':              
-                                                    [ 'nv', \
-                                                      'necro', \
-                                                      'necroventer' 
+                                                    [ 
+                                                        'nv', \
+                                                        'necro'
                                                     ], 
-                  'Forest Keeper Ferret Marauder':  [ 'ferret', \
-                                                      'marauder'
+                  'Forest Keeper Ferret Marauder':  [ 
+                                                        'ferret', \
+                                                        'marauder'
                                                     ], 
-                  'Kubas Event':                    [ 'kubas' ], 
-                  'Noisy Mineloader':               [ 'ml', \
-                                                      'mineloader' 
+                  'Kubas Event':                    [   'kubas' ], 
+                  'Noisy Mineloader':               [ 
+                                                        'ml', \
+                                                        'mineloader' 
                                                     ], 
-                  'Burning Fire Lord':              [ 'firelord', \
-                                                      'fl', \
-                                                      'fire lord' 
+                  'Burning Fire Lord':              [ 
+                                                        'firelord', \
+                                                        'fl', \
+                                                        'fire lord' 
                                                     ], 
-                  'Wrathful Harpeia':               [ 'harp',\
-                                                      'harpy', \
-                                                      'harpie', \
-                                                      'harpeia' 
+                  'Wrathful Harpeia':               [ 
+                                                        'harp',\
+                                                        'harpy', \
+                                                        'harpie', \
+                                                        'harpeia' 
                                                     ], 
-                  'Glackuman':                      [ 'glack', \
-                                                      'glackuman' 
+                  'Glackuman':                      [ 
+                                                        'glack', \
+                                                        'glackuman' 
                                                     ], 
-                  'Marionette':                     [ 'mario', \
-                                                      'marionette' 
+                  'Marionette':                     [ 
+                                                        'mario', \
+                                                        'marionette' 
                                                     ], 
-                  'Dullahan Event':                 [ 'dull', \
-                                                      'dulla', \
-                                                      'dullachan' 
+                  'Dullahan Event':                 [ 
+                                                        'dull', \
+                                                        'dulla', \
+                                                        'dullachan' 
                                                     ], 
-                  'Starving Ellaganos':             [ 'ella', \
-                                                      'ellaganos' 
+                  'Starving Ellaganos':             [ 
+                                                        'ella', \
+                                                        'ellaganos' 
                                                     ], 
-                  'Prison Manager Prison Cutter':   [ 'pcutter'
+                  'Prison Manager Prison Cutter':   [   'pcutter' ], 
+                  'Mirtis':                         [   'mirtis' ], 
+                  'Rexipher':                       [ 
+                                                        'rex', \
+                                                        'rexifer', \
+                                                        'racksifur', \
+                                                        'sexipher', \
+                                                        'goth'
                                                     ], 
-                  'Mirtis':                         [ 'mirtis' ], 
-                  'Rexipher':                       [ 'rex', \
-                                                      'rexifer', \
-                                                      'racksifur', \
-                                                      'sexipher', \
-                                                      'goth'
+                  'Helgasercle':                    [   'helga' ], 
+                  'Demon Lord Marnox':              [   
+                                                        'marnox',\
+                                                        'marn' 
                                                     ], 
-                  'Helgasercle':                    [ 'helga', \
-                                                      'helgasercle' 
+                  'Demon Lord Nuaele':              [   'nuaele' ], 
+                  'Demon Lord Zaura':               [   'zaura' ], 
+                  'Demon Lord Blut':                [ 
+                                                        'blut', \
+                                                        'butt'
                                                     ], 
-                  'Demon Lord Marnox':              [ 'marnox',\
-                                                      'marn' 
-                                                    ], 
-                  'Demon Lord Nuaele':              [ 'nuaele' ], 
-                  'Demon Lord Zaura':               [ 'zaura' ], 
-                  'Demon Lord Blut':                [ 'blut', \
-                                                      'butt'
-                                                    ], 
-                  'Legwyn Crystal Event':           [ 'legwyn', \
-                                                      'crystal' 
+                  'Legwyn Crystal Event':           [ 
+                                                        'legwyn', \
+                                                        'crystal' 
                                                     ]
                 }
 
@@ -414,127 +431,146 @@ for l in list(boss_synonyms.values()):
 # 'boss location'
 # - keys: boss names (var `bosses`)
 # - values: list of locations, full name
-boss_locs = { 'Blasphemous Deathweaver':            [ 'Crystal Mine 2F', \
-                                                      'Crystal Mine 3F', \
-                                                      'Ashaq Underground Prison 1F', \
-                                                      'Ashaq Underground Prison 2F', \
-                                                      'Ashaq Underground Prison 3F'
+boss_locs = { 'Blasphemous Deathweaver':            [ 
+                                                        'Crystal Mine 2F', \
+                                                        'Crystal Mine 3F', \
+                                                        'Ashaq Underground Prison 1F', \
+                                                        'Ashaq Underground Prison 2F', \
+                                                        'Ashaq Underground Prison 3F'
                                                     ],
-              'Bleak Chapparition':                 [ 'Tenet Church B1', \
-                                                      'Tenet Church 1F' 
+              'Bleak Chapparition':                 [ 
+                                                        'Tenet Church B1', \
+                                                        'Tenet Church 1F' 
                                                     ],
-              'Hungry Velnia Monkey':               [ 'Novaha Assembly Hall', \
-                                                      'Novaha Annex', \
-                                                      'Novaha Institute'
+              'Hungry Velnia Monkey':               [ 
+                                                        'Novaha Assembly Hall', \
+                                                        'Novaha Annex', \
+                                                        'Novaha Institute'
                                                     ],
-              'Abomination':                        [ 'Guards\' Graveyard'],
-              'Earth Templeshooter':                [ 'Royal Mausoleum Workers\' Lodge' ],
-              'Earth Canceril':                     [ 'Royal Mausoleum Constructors\' Chapel' ],
-              'Earth Archon':                       [ 'Royal Mausoleum Storage' ],
-              'Violent Cerberus':                   [ 'Royal Mausoleum 4F', \
-                                                      'Royal Mausoleum 5F'
+              'Abomination':                        [   'Guards\' Graveyard'],
+              'Earth Templeshooter':                [   'Royal Mausoleum Workers\' Lodge' ],
+              'Earth Canceril':                     [   'Royal Mausoleum Constructors\' Chapel' ],
+              'Earth Archon':                       [   'Royal Mausoleum Storage' ],
+              'Violent Cerberus':                   [ 
+                                                        'Royal Mausoleum 4F', \
+                                                        'Royal Mausoleum 5F'
                                                     ],
-              'Necroventer':                        [ 'Residence of the Fallen Legwyn Family' ],
-              'Forest Keeper Ferret Marauder':      [ 'Bellai Rainforest',
-                                                      'Zeraha',
-                                                      'Seir Rainforest'
+              'Necroventer':                        [   'Residence of the Fallen Legwyn Family' ],
+              'Forest Keeper Ferret Marauder':      [ 
+                                                        'Bellai Rainforest',
+                                                        'Zeraha',
+                                                        'Seir Rainforest'
                                                     ],
-              'Kubas Event':                        [ 'Crystal Mine Lot 2 - 2F' ],
-              'Noisy Mineloader':                   [ 'Mage Tower 4F', \
-                                                      'Mage Tower 5F'
+              'Kubas Event':                        [   'Crystal Mine Lot 2 - 2F' ],
+              'Noisy Mineloader':                   [ 
+                                                        'Mage Tower 4F', \
+                                                        'Mage Tower 5F'
                                                     ],
-              'Burning Fire Lord':                  [ 'Main Chamber', \
-                                                      'Sanctuary'
+              'Burning Fire Lord':                  [ 
+                                                        'Main Chamber', \
+                                                        'Sanctuary'
                                                     ],
-              'Wrathful Harpeia':                   [ 'Demon Prison District 1', \
-                                                      'Demon Prison District 2', \
-                                                      'Demon Prison District 5'
+              'Wrathful Harpeia':                   [ 
+                                                        'Demon Prison District 1', \
+                                                        'Demon Prison District 2', \
+                                                        'Demon Prison District 5'
                                                     ],
-              'Glackuman':                          [ '2nd Demon Prison' ],
-              'Marionette':                         [ 'Roxona Reconstruction Agency East Building' ],
-              'Dullahan Event':                     [ 'Roxona Reconstruction Agency West Building' ],
-              'Starving Ellaganos':                 [ 'Mokusul Chamber', \
-                                                      'Videntis Shrine'
+              'Glackuman':                          [   '2nd Demon Prison' ],
+              'Marionette':                         [   'Roxona Reconstruction Agency East Building' ],
+              'Dullahan Event':                     [   'Roxona Reconstruction Agency West Building' ],
+              'Starving Ellaganos':                 [ 
+                                                        'Mokusul Chamber', \
+                                                        'Videntis Shrine'
                                                     ],
-              'Prison Manager Prison Cutter':       [ 'Drill Ground of Confliction', \
-                                                      'Resident Quarter', \
-                                                      'Storage Quarter', \
-                                                      'Fortress Battlegrounds'
+              'Prison Manager Prison Cutter':       [ 
+                                                        'Drill Ground of Confliction', \
+                                                        'Resident Quarter', \
+                                                        'Storage Quarter', \
+                                                        'Fortress Battlegrounds'
                                                     ],
-              'Mirtis':                             [ 'Kalejimas Visiting Room', \
-                                                      'Storage', \
-                                                      'Solitary Cells', \
-                                                      'Workshop', \
-                                                      'Investigation Room'
+              'Mirtis':                             [ 
+                                                        'Kalejimas Visiting Room', \
+                                                        'Storage', \
+                                                        'Solitary Cells', \
+                                                        'Workshop', \
+                                                        'Investigation Room'
                                                     ],
-              'Helgasercle':                        [ 'Kalejimas Visiting Room', \
-                                                      'Storage', \
-                                                      'Solitary Cells', \
-                                                      'Workshop', \
-                                                      'Investigation Room'
+              'Helgasercle':                        [ 
+                                                        'Kalejimas Visiting Room', \
+                                                        'Storage', \
+                                                        'Solitary Cells', \
+                                                        'Workshop', \
+                                                        'Investigation Room'
                                                     ],
-              'Rexipher':                           [ 'Thaumas Trail', \
-                                                      'Salvia Forest', \
-                                                      'Sekta Forest', \
-                                                      'Rasvoy Lake', \
-                                                      'Ouaas Memorial'
+              'Rexipher':                           [ 
+                                                        'Thaumas Trail', \
+                                                        'Salvia Forest', \
+                                                        'Sekta Forest', \
+                                                        'Rasvoy Lake', \
+                                                        'Ouaas Memorial'
                                                     ],
-              'Demon Lord Marnox':                  [ 'Thaumas Trail', \
-                                                      'Salvia Forest', \
-                                                      'Sekta Forest', \
-                                                      'Rasvoy Lake', \
-                                                      'Ouaas Memorial'
+              'Demon Lord Marnox':                  [ 
+                                                        'Thaumas Trail', \
+                                                        'Salvia Forest', \
+                                                        'Sekta Forest', \
+                                                        'Rasvoy Lake', \
+                                                        'Ouaas Memorial'
                                                     ],
-              'Demon Lord Nuaele':                  [ 'Yudejan Forest', \
-                                                      'Nobreer Forest', \
-                                                      'Emmet Forest', \
-                                                      'Pystis Forest', \
-                                                      'Syla Forest', \
-                                                      'Mishekan Forest'
+              'Demon Lord Nuaele':                  [ 
+                                                        'Yudejan Forest', \
+                                                        'Nobreer Forest', \
+                                                        'Emmet Forest', \
+                                                        'Pystis Forest', \
+                                                        'Syla Forest', \
+                                                        'Mishekan Forest'
                                                     ],
-              'Demon Lord Zaura':                   [ 'Arcus Forest', \
-                                                      'Phamer Forest', \
-                                                      'Ghibulinas Forest', \
-                                                      'Mollogheo Forest', \
-                                                      'Alembique Cave'
+              'Demon Lord Zaura':                   [ 
+                                                        'Arcus Forest', \
+                                                        'Phamer Forest', \
+                                                        'Ghibulinas Forest', \
+                                                        'Mollogheo Forest', \
+                                                        'Alembique Cave'
                                                     ],
-              'Demon Lord Blut':                    [ 'Tevhrin Stalactite Cave Section 1', \
-                                                      'Tevhrin Stalactite Cave Section 2', \
-                                                      'Tevhrin Stalactite Cave Section 3', \
-                                                      'Tevhrin Stalactite Cave Section 4', \
-                                                      'Tevhrin Stalactite Cave Section 5'
+              'Demon Lord Blut':                    [ 
+                                                        'Tevhrin Stalactite Cave Section 1', \
+                                                        'Tevhrin Stalactite Cave Section 2', \
+                                                        'Tevhrin Stalactite Cave Section 3', \
+                                                        'Tevhrin Stalactite Cave Section 4', \
+                                                        'Tevhrin Stalactite Cave Section 5'
                                                     ],
-              'Legwyn Crystal Event':               [ 'Residence of the Fallen Legwyn Family' ]
+              'Legwyn Crystal Event':               [   'Residence of the Fallen Legwyn Family' ]
      }
 
 # synonyms for boss locations
-boss_loc_synonyms =                                 [ 'crystal mine', 'ashaq', \
-                                                      'tenet', \
-                                                      'novaha', \
-                                                      'guards', 'graveyard', \
-                                                      'maus', 'mausoleum', \
-                                                      'legwyn', \
-                                                      'bellai', 'zeraha', 'seir', \
-                                                      'mage tower', 'mt', \
-                                                      'demon prison', 'dp', \
-                                                      'main chamber', 'sanctuary', 'sanc', \
-                                                      'roxona', \
-                                                      'mokusul', 'videntis', \
-                                                      'drill', 'quarter', 'battlegrounds', \
-                                                      'kalejimas', 'storage', 'solitary', 'workshop', 'investigation', \
-                                                      'thaumas', 'salvia', 'sekta', 'rasvoy', 'oasseu', \
-                                                      'yudejan', 'nobreer', 'emmet', 'pystis', 'syla', \
-                                                      'arcus', 'phamer', 'ghibulinas', 'mollogheo', \
-                                                      'tevhrin'
+boss_loc_synonyms =                                 [ 
+                                                        'crystal mine', 'ashaq', \
+                                                        'tenet', \
+                                                        'novaha', \
+                                                        'guards', 'graveyard', \
+                                                        'maus', 'mausoleum', \
+                                                        'legwyn', \
+                                                        'bellai', 'zeraha', 'seir', \
+                                                        'mage tower', 'mt', \
+                                                        'demon prison', 'dp', \
+                                                        'main chamber', 'sanctuary', 'sanc', \
+                                                        'roxona', \
+                                                        'mokusul', 'videntis', \
+                                                        'drill', 'quarter', 'battlegrounds', \
+                                                        'kalejimas', 'storage', 'solitary', 'workshop', 'investigation', \
+                                                        'thaumas', 'salvia', 'sekta', 'rasvoy', 'oasseu', \
+                                                        'yudejan', 'nobreer', 'emmet', 'pystis', 'syla', \
+                                                        'arcus', 'phamer', 'ghibulinas', 'mollogheo', \
+                                                        'tevhrin'
                                                     ]
 
 # bosses that spawn in maps with floors or numbered maps
-bosses_with_floors    =                             [ 'Blasphemous Deathweaver', \
-                                                      'Bleak Chapparition', \
-                                                      'Violent Cerberus', \
-                                                      'Noisy Mineloader', \
-                                                      'Wrathful Harpeia', \
-                                                      'Demon Lord Blut'
+bosses_with_floors    =                             [   
+                                                        'Blasphemous Deathweaver', \
+                                                        'Bleak Chapparition', \
+                                                        'Violent Cerberus', \
+                                                        'Noisy Mineloader', \
+                                                        'Wrathful Harpeia', \
+                                                        'Demon Lord Blut'
                                                     ]
 
 # END BOSS
@@ -671,7 +707,7 @@ def process_command(server_id, arg_list):
     # $boss help
     if rgx_help.match(arg_list[0]):
         return command
-    arg_len   = len(arg_list)
+    arg_len     = len(arg_list)
 
     # error: not enough arguments
     if arg_len < arg_min or arg_len > arg_max:
@@ -756,4 +792,7 @@ def process_command(server_id, arg_list):
     #     return await error(message.author, message.channel, \
     #                        vaivora_constants.command.syntax.cmd_error_bad_boss_time, \
     #                        vaivora_constants.command.syntax.cmd_boss, msg=command[arg_map_idx - 1])
+    pass
+
+def process_time(hours, minutes, offset):
     pass
