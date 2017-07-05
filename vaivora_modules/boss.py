@@ -221,12 +221,23 @@ arg_info.append("```")
 cmd_fragment    =   ''.join(arg_info)
 command.append(cmd_fragment)
 
-arg_min     = 2
-arg_max     = 5
+arg_min         =   2
+arg_max         =   5
 
-acknowledge = "Thank you! Your command has been acknowledged and recorded.\n"
-msg_help    = "Please run `" + arg_defcmd + "` for syntax.\n"
+acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
+msg_help        =   "Please run `" + arg_defcmd + "` for syntax.\n"
 
+pacific2server  =   3
+server2pacific  =   -3
+time_died       =   4
+time_anchored   =   3
+time_warned     =   2
+time_rel_2h     =   -2
+time_rel_16h    =   12
+
+status_died     =   "died"
+status_warned   =   "was warned"
+status_anchored =   "was anchored"
 
 # BGN REGEX
 
@@ -249,6 +260,7 @@ rgx_time    = re.compile(r'[0-2]?[0-9][:.]?[0-5][0-9] ?([ap]m?)*', re.IGNORECASE
 rgx_time_ap = re.compile(r'am?', re.IGNORECASE)
 rgx_time_pm = re.compile(r'pm?', re.IGNORECASE)
 rgx_time_dl = re.compile(r'[:.]')
+rgx_channel = re.compile(r'(ch?)*.?([1-4])$', re.IGNORECASE)
 
 # END REGEX
 
@@ -715,83 +727,149 @@ def process_command(server_id, arg_list):
                arg_min + " or at most " + arg_max + " arguments.\n" + msg_help
 
     # $boss all ...
-    if rgx_tg_all.match(arg_list[1]):
+    if rgx_tg_all.match(arg_list[0]):
         cmd_boss  = bosses
 
     # $boss [boss] ...
     else:
-        boss_idx  = check_boss(arg_list[1])
+        boss_idx  = check_boss(arg_list[0])
         if boss_idx == -1:
-            return arg_list[1] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#    " + \
+            return arg_list[0] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#    " + \
                    '\n#    '.join(bosses) + "```\n" + msg_help
         cmd_boss  = [bosses[boss_idx], ]
 
     # error: invalid argument 2
-    if not rgx_status.match(arg_list[2]) and \
-       not rgx_entry.match(arg_list[2]) and \
-       not rgx_info.match(arg_list[2]) and \
-       not rgx_type.match(arg_list[2]):
-        return arg_list[2] + " is invalid for `$boss`, argument position 2.\n" + msg_help
-    if rgx_status.match(arg_list[2]) and len(cmd_boss) > 1:
-        return arg_list[2] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
-    if rgx_query.match(arg_list[2]) and len(cmd_boss) == 1:
-        return arg_list[2] + " is invalid for `$boss`:`" + cmd_boss[0] + "`, argument position 2.\n" + msg_help
-    if not rgx_query.match(arg_list[2]) and rgx_info.match(arg_list[2]) and len(cmd_boss) > 1:
-        return arg_list[2] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
+    if not rgx_status.match(arg_list[1]) and \
+       not rgx_entry.match(arg_list[1]) and \
+       not rgx_info.match(arg_list[1]) and \
+       not rgx_type.match(arg_list[1]):
+        return arg_list[1] + " is invalid for `$boss`, argument position 2.\n" + msg_help
+    if rgx_status.match(arg_list[1]) and len(cmd_boss) > 1:
+        return arg_list[1] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
+    if rgx_query.match(arg_list[1]) and len(cmd_boss) == 1:
+        return arg_list[1] + " is invalid for `$boss`:`" + cmd_boss[0] + "`, argument position 2.\n" + msg_help
+    if not rgx_query.match(arg_list[1]) and rgx_info.match(arg_list[1]) and len(cmd_boss) > 1:
+        return arg_list[1] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
 
     # $boss [boss] [status] ...
-    if rgx_status.match(arg_list[2]):
+    if rgx_status.match(arg_list[1]):
+
+        offset      =   0
+        target      = dict()
+
+        target['boss']      =   cmd_boss[0] # reassign to 'target boss'
+
+        if len(arg_list) > 3:
+            channel =   rgx_channel.match(arg_list[3])
+            if channel and channel.group(2) != '1' and not target['boss'] in bosses_world:
+                return arg_list[3] + " is invalid for `$boss`:`channel` because " + target['boss'] + " is a field boss.\n" + \
+                       "Field bosses that spawn in channels other than 1 are always jackpot bosses, world boss forms of " + \
+                       "the equivalent field boss.\n" + msg_help
+            elif channel and target['boss'] in bosses_world:
+                target['channel']  =   int(channel.group(2))
+            else:
+                target['channel']  =   1 # default; if null or field, use 1
+
         # $boss [boss] died ...
-        if rgx_st_died.match(arg_list[2]):
-            # error: invalid time
-            if not rgx_time.match(arg_list[3]):
-                return arg_list[3] + " is not a valid time for `$boss`:`" + arg_list[2] + \
-                       "`:`time`. Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+        if rgx_st_died.match(arg_list[1]):
+            time_offset = timedelta(hours=time_died)
+            target['status']    =   status_died
+        elif rgx_st_warn.match(arg_list[1]):
+            if not target['boss'] in bosses_field:
+                return target['boss'] + " is invalid for `$boss`:`time`:`" + arg_list[1] + "`. " + \
+                       "Only field bosses have warnings.\n" + msg_help
+            time_offset = timedelta(hours=time_warned)
+            target['status']    =   status_warned
+        else:
+            if not target['boss'] in bosses_world:
+                return target['boss'] + " is invalid for `$boss`:`time`:`" + arg_list[1] + "`. " + \
+                       "Only world bosses can be anchored.\n" + msg_help
+            time_offset = timedelta(hours=time_anchored)
+            target['status']    =   status_anchored
 
-            offset  = 0
+        # error: invalid time
+        if not rgx_time.match(arg_list[2]):
+            return arg_list[2] + " is not a valid time for `$boss`:`" + arg_list[1] + \
+                   "`:`time`. Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
 
-            # $boss [boss] died [time?]
-            # $boss [boss] died [time:am/pm]
-            if rgx_time_ap.search(arg_list[3]):
-                # $boss [boss] died [time:pm]
-                if rgx_time_pm.search(arg_list[3]):
-                    offset  = 12
-                arg_time    = rgx_time_ap.sub('', arg_list[3])
-            else:
-                arg_time    = arg_list[3]
-            delim   = rgx_time_dl.search(arg_time)
-            if delim:
-                hours, minutes  =   [int(t) for t in arg_time.split(delim.group(0))]
-                hours           +=  offset
-            # $boss [boss] died [time:no delimiter]
-            else:
-                minutes =   int(arg_time[::-1][0:2][::-1])
-                hours   =   int(re.sub(str(minutes), '', arg_time))
-                hours   +=  offset
+        # $boss [boss] died [time?]
+        # $boss [boss] died [time:am/pm]
+        if rgx_time_ap.search(arg_list[2]):
+            # $boss [boss] died [time:pm]
+            if rgx_time_pm.search(arg_list[2]):
+                offset  = 12
+            arg_time    = rgx_time_ap.sub('', arg_list[2])
+        else:
+            arg_time    = arg_list[2]
 
-            # error: invalid hours
-            if hours > 23 or hours < 0:
-                return arg_list[3] + " is not a valid time for `$boss`:`" + arg_list[2] + \
-                       "`:`time`. Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+        delim   = rgx_time_dl.search(arg_time)
+        # $boss [boss] died [time:delimiter]
+        if delim:
+            hours, minutes  =   [int(t) for t in arg_time.split(delim.group(0))]
+            hours           +=  offset
+        # $boss [boss] died [time:no delimiter]
+        else:
+            minutes =   int(arg_time[::-1][0:2][::-1])
+            hours   =   int(re.sub(str(minutes), '', arg_time))
+            hours   +=  offset
 
-            # $boss [boss] died [time] ...
+        # error: invalid hours
+        if hours > 23 or hours < 0:
+            return arg_list[2] + " is not a valid time for `$boss`:`" + arg_list[1] + \
+                   "`:`time`. Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+
+        # $boss [boss] died [time] ...
+        server_date = datetime.now() + timedelta(hours=pacific2server)
+
+        record          =   dict()
+        if hours > int(server_date.hour):
+            server_date += timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
+
+        # dates handled like above example, e.g. record on 23:59, December 31st but recorded on New Years Day
+        record['year']  =   int(server_date.year) 
+        record['month'] =   int(server_date.month)
+        record['day']   =   int(server_date.day)
+        record['hour']  =   hours
+        record['mins']  =   minutes
+
+        # reconstruct boss kill time
+        record_date     =   datetime(*record.values())
+        record_date     +=  time_offset # value generated by arguments [died, warned, anchored]
+
+        if target['boss'] in boss_spawn_02h:
+            record_date +=  timedelta(hours=time_rel_2h) # 2 hour spawn
+        elif target['boss'] in boss_spawn_16h:
+            record_date +=  timedelta(hours=time_rel_16h) # 16 hour spawn
+
+        # reassign to target data
+        target['year']  =   int(record_date.year)
+        target['month'] =   int(record_date.month)
+        target['day']   =   int(record_date.day)
+        target['hour']  =   int(record_date.hour)
+        target['mins']  =   int(record_date.minute)
+
+        
+        # status = vdbs[command_server].update_db_boss(message_args)
+        # if not status: # update_db_boss failed
+        #     return await error(message.author, message.channel, \
+        #                        vaivora_constants.command.syntax.cmd_error_bad_boss_time_wrap, \
+        #                        vaivora_constants.command.syntax.cmd_boss, \
+        #                        msg=(datetime(boss_year, boss_month, boss_day, original_boss_hour, boss_minutes).strftime("%Y/%m/%d %H:%M")))
+        # await client.send_message(message.channel, message.author.mention + " " + \
+        #                           vaivora_constants.command.boss.acknowledge + \
+        #                           "```python\n"
+        #                           "\"" + message_args['name'] + "\" " + \
+        #                           message_args['status'] + " at " + \
+        #                           ("0" if original_boss_hour < 10 else "") + \
+        #                           str(original_boss_hour) + ":" + \
+        #                           ("0" if message_args['mins'] < 10 else "") + \
+        #                           str(message_args['mins']) + \
+        #                           ", in ch." + str(message_args['channel']) + ": " + \
+        #                           (("\"" + message_args['map'] + "\"") if message_args['map'] != "N/A" else "") + "```\n")
+        # #await client.process_commands(message)
+        # return True # command processed
 
 
-    # if   vaivora_constants.regex.format.time.am.search(command[arg_map_idx - 1]):
-    #     boss_time   = vaivora_constants.regex.format.time.delim.split(vaivora_constants.regex.format.time.am.sub('', command[arg_map_idx - 1]))
-    #     boss_hour   = int(boss_time[0]) % 12
-    # #     postmeridian
-    # elif vaivora_constants.regex.format.time.pm.search(command[arg_map_idx - 1]):
-    #     boss_time   = vaivora_constants.regex.format.time.delim.split(vaivora_constants.regex.format.time.pm.sub('', command[arg_map_idx - 1]))
-    #     boss_hour   = (int(boss_time[0]) % 12) + 12
-    # #     24h time
-    # else:
-    #     boss_time   = command[arg_map_idx - 1].split(':')
-    #     boss_hour   = int(boss_time[0])
-    # if boss_hour > 24:
-    #     return await error(message.author, message.channel, \
-    #                        vaivora_constants.command.syntax.cmd_error_bad_boss_time, \
-    #                        vaivora_constants.command.syntax.cmd_boss, msg=command[arg_map_idx - 1])
     pass
 
 def process_time(hours, minutes, offset):
