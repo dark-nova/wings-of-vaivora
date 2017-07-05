@@ -1,5 +1,6 @@
 # import additional constants
 from datetime import datetime, timedelta
+import re
 from importlib import import_module as im
 import vaivora_constants
 for mod in vaivora_constants.modules:
@@ -11,161 +12,298 @@ module_name     =   "boss"
 
 command         =   []
 
-cmd_frag        =   "```ini\n" + "[$boss] commands" + "\n" + \
-                    ";================" + "\n" + \
-                    vaivora_constants.command.syntax.heading + "\n"
+arg_prefix      =   "[prefix]"
+arg_prefix_alt  =   "\"$\", \"Vaivora, \""
+arg_module      =   "[module]"
+arg_cmd         =   module_name
+arg_defcmd      =   "$" + module_name
 
-# N               =   "necessary"
-# O               =   "optional"
-# H               =   "help"
+# options for argument 1
+arg_n_1         =   "[target]"
+arg_n_1_alt     =   "[boss], all"
+arg_n_1_A       =   arg_n_1 + ":(" + arg_n_1_alt + ")"
+arg_n_1_B       =   arg_n_1 + ":[boss]" 
+arg_n_1_C       =   arg_n_1 + ":all"
 
-# A               =   "type A"
-# B               =   "type B"
-# C               =   "type C"
-# D               =   "type D"
+# options for argument 2
+arg_n_2_A       =   "[status]" # "[died|anchored|warned]"
+arg_n_2_A_alt   =   "\"died\", \"anchored\", \"warned\""
+arg_n_2_B       =   "[entry]" # "[erase|list]"
+arg_n_2_B_alt   =   "\"list\", \"erase\""
+arg_n_2_C       =   "[query]" # "[synonyms|maps]"
+arg_n_2_C_alt   =   "\"synonyms\", \"maps\""
+arg_n_2_D       =   "[type]" # "[world, field]"
+arg_n_2_D_alt   =   "\"world\", \"field\""
 
-arg             =   dict()
-arg[N]          =   dict()
-arg[N][0]       =   "[prefix]"
-arg[N][1]       =   "[boss]"
-arg[N][2]       =   dict()
-arg[N][2][A]    =   "[boss|all]"
-arg[N][2][B]    =   "[boss]"
-arg[N][2][C]    =   "[all]"
-arg[N][3]       =   dict()
-arg[N][3][A]    =   "[died|anchored|warned]"
-arg[N][3][B]    =   "[erase|list]"
-arg[N][3][C]    =   "[synonyms|maps]"
-arg[N][3][D]    =   "[world|field]"
-arg[N][4]       =   "[time]"
-arg[O]          =   dict()
-arg[O][1]       =   "(chN)"
-arg[O][2]       =   "(map)"
-arg[H]          =   "[help]"
+# options for argument 3
+arg_n_3         =   "[time]"
 
-usage           =   arg[N][0] + " " + arg[N][1] + " " + arg[N][2][B] + " " + arg[N][3][A] + " " + arg[N][4] + " " + arg[O][1] + " " + arg[O][2] + " " + "\n" + \
-                    arg[N][0] + " " + arg[N][1] + " " + arg[N][2][A] + " " + arg[N][3][B] + " " + arg[O][2] + "\n" + \
-                    arg[N][0] + " " + arg[N][1] + " " + arg[N][2][B] + " " + arg[N][3][C] + "\n" + \
-                    arg[N][0] + " " + arg[N][1] + " " + arg[N][2][C] + " " + arg[N][3][D] + "\n" + \
-                    arg[N][0] + " " + arg[N][1] + " " + arg[N][2][B] + " " + arg[H] + "\n"
-usage           +=  vaivora_constants.command.syntax.code_block
+# optional arguments
+arg_opt_1       =   "[channel]"
+arg_opt_2       =   "[map]"
 
-cmd_frag        +=  usage
-command.append(cmd_frag)
+# auxiliary arguments
+arg_help        =   "help"
+arg_arg         =   "Argument"
+#                   $boss
+arg_pre_cmd     =   arg_prefix + arg_cmd
 
-arg_info        =   list()
-arg_info.append(vaivora_constants.command.syntax.code_block + "ini\n")
-arg_info.append(";================\n")
-arg_info.append(arg[N][0] + "\n" + \
-                "    (default) [$] or [Vaivora, ]; this server may have others. Run [$settings get prefix] to check.\n")
-arg_info.append(arg[N][1] + "\n" + \
-                "    (always) [" + modname + "]; goes after prefix. e.g. [$" + modname + "], [Vaivora, " + modname + "]\n")
-arg_info.append(arg[N][2][B]  + "\n" + \
-                "    Either part of, or full name- if spaced, enclose in double-quotes ([\"])\n" + \
-                "    [all] for all bosses\n")
-arg_info.append(arg[N][3][A]  + "\n" + \
-                "    Valid for [boss] only, to indicate its status.\n" + \
-                "    Do not use with [erase], [list], [synonyms], [maps], [world], or [field].\n")
-arg_info.append(arg[N][3][B]  + "\n" + \
-                "    Valid for both [boss] and [all] to [erase] or [list] entries.\n" + \
-                "    Do not use with [died], [anchored], [warned], [synonyms], [maps], [world], or [field].\n")
-arg_info.append(arg[N][3][C]  + "\n" + \
-                "    Valid for [boss] only, to print aliases of bosses (short-hand) or maps that the boss may wander.\n" + \
-                "    Do not use with [died], [anchored], [warned], [erase], [list], [world], or [field].\n")
-arg_info.append(arg[N][3][D]  + "\n" + \
-                "    Valid for [all] only, to print out either [world bosses] or [field bosses].\n" + \
-                "    Do not use with [died], [anchored], [warned], [erase], [list], [synonyms], or [maps].\n")
-arg_info.append(arg[N][4]     + "\n" + \
-                "; required for [died] and [anchored]\n" + \
-                "    Remove spaces. 12 hour and 24 hour times acceptable, with valid delimiters \":\" and \".\". Use server time.\n")
-arg_info.append(arg[O][2]     + "\n" + \
-                "; optional\n" + \
-                "    Suitable only for field bosses.[*] If unlisted, this will be unassumed.\n")
-arg_info.append(arg[O][1]     + "\n" + \
-                "; optional\n" + \
-                "    Suitable only for world bosses.[*] If unlisted, CH[1] will be assumed.\n" + "\n")
-arg_info.append("[*] ; Notes about world and field bosses:\n" + \
-                "    ; Field bosses in channels other than 1 are considered 'world boss' variants.\n" + \
-                "    ; and should not be recorded because they spawn unpredictably, because they're jackpot bosses.\n" + \
-                "    ; Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.\n")
-arg_info.append(vaivora_constants.command.syntax.code_block)
 
-cmd_frag        =  ''.join(arg_info)
-command.append(cmd_frag)
+cmd_fragment    =   "```diff\n" + "- " + "[" + arg_defcmd + "] commands" + " -" + "\n" + \
+                    "+ Usage" + "```"
+command.append(cmd_fragment)
 
-examples        =   vaivora_constants.command.syntax.example + \
-                    "[$boss cerb died 12:00pm 4f]        ; channel should be omitted for field bosses\n" + \
+usage           =  "```ini\n"
+#                   $boss               [target: boss]      [status command]    [time]              [channel]           [map]
+usage           +=  arg_pre_cmd + " " + arg_n_1_B + " " +   arg_n_2_A + " " +   arg_n_3 + " " +     arg_opt_1 + " " +   arg_opt_2 + "\n"
+#                   $boss               [target: any]       [entry command]     [map]
+usage           +=  arg_pre_cmd + " " + arg_n_1_A + " " +   arg_n_2_B + " " +   arg_opt_2 + "\n"
+#                   $boss               [target: boss]      [query command]
+usage           +=  arg_pre_cmd + " " + arg_n_1_B + " " +   arg_n_2_C + "\n"
+#                   $boss               [target: all]       [type command]
+usage           +=  arg_pre_cmd + " " + arg_n_1_C + " " +   arg_n_2_D + "\n"
+#                   $boss               help
+usage           +=  arg_pre_cmd + " " + arg_help + "\n"
+usage           +=  "```"
+
+cmd_fragment    =  usage
+command.append(cmd_fragment)
+
+# examples
+cmd_fragment    =   "```diff\n" + "+ Examples\n" + "```"
+command.append(cmd_fragment)
+
+examples        =   "[$boss cerb died 12:00pm 4f]        ; channel should be omitted for field bosses\n" + \
                     "[Vaivora, boss crab died 14:00 ch2] ; map should be omitted for world bosses\n"
 
-cmd_frag        =  vaivora_constants.command.syntax.code_block + "ini\n" + examples
-cmd_frag        += vaivora_constants.command.syntax.code_block
-command.append(cmd_frag)
+cmd_fragment    =  "```ini\n" + examples
+cmd_fragment    += "```"
+command.append(cmd_fragment)
 
-arg_min     = 3
+# arguments
+cmd_fragment    =   "```diff\n" + "+ Arguments \n" + "```"
+command.append(cmd_fragment)
+
+# immutable
+arg_info        =   list()
+arg_info.append("```ini\n")
+arg_info.append("Prefix=\"" +   arg_prefix +    "\": " + arg_prefix_alt + "\n" + \
+                "; default: [$] or [Vaivora, ]\n" + \
+                "This server may have others. Run [$settings get prefix] to check.\n")
+arg_info.append("\n---\n\n")
+arg_info.append("Module=\"" +   arg_module +    "\": '" + arg_cmd + "'\n" + \
+                "; required\n"
+                "(always) [" + arg_cmd + "]; goes after prefix. e.g. [$" + arg_cmd + "], [Vaivora, " + arg_cmd + "]\n")
+arg_info.append("\n---\n\n")
+
+# target
+arg_info.append("Argument=\"" + arg_n_1 +       "\": " + arg_n_1_alt + "\n" + \
+                "Opt=\"[boss]\":\n" + \
+                "    Either part of, or full name. If spaced, enclose in double-quotes (\").\n" + \
+                "Opt=\"all\":\n" + \
+                "    For 'all' bosses.\n" + \
+                "Some commands only take specific options, so check first.\n")
+arg_info.append("\n---\n\n")
+
+# status commands
+arg_info.append("Argument=\"" + arg_n_2_A +     "\": " + arg_n_2_A_alt + "\n" + \
+                "Opt=\"died\":\n" + \
+                "    The boss died or despawned (if field boss).\n" + \
+                "Opt=\"anchored\":\n" + \
+                "    The world boss was anchored. You or someone else has stayed in the map, leading to spawn.\n" + \
+                "Opt=\"warned\":\n" + \
+                "    The field boss was warned to spawn, i.e. 'The field boss will appear in awhle.'\n" + \
+                "Valid for [target]:[boss] only, to indicate its status.\n" + \
+                "Do not use with [entry], [query], or [type] commands.\n")
+arg_info.append("\n---\n\n")
+arg_info.append("```")
+
+cmd_fragment    =   ''.join(arg_info)
+command.append(cmd_fragment)
+
+arg_info        =   list()
+arg_info.append("```ini\n")
+
+# entry commands
+arg_info.append("Argument=\"" + arg_n_2_B +     "\": " + arg_n_2_B_alt + "\n" + \
+                "Opt=\"list\":\n" + \
+                "    Lists the entries for the boss you have chosen. If 'all', all records will be printed.\n" + \
+                "Opt=\"erase\":\n" + \
+                "    Erases the entries matching the boss or 'all'. Optional parameter [map] restricts which records to erase.\n" + \
+                "Valid for both [target]:[boss] and [target]:'all' to 'list' or 'erase' entries.\n" + \
+                "Do not use with [status], [query], or [type] commands.\n")
+arg_info.append("\n---\n\n")
+
+# query commands
+arg_info.append("Argument=\"" + arg_n_2_C +     "\": " + arg_n_2_C_alt + "\n" + \
+                "Opt=\"synonyms\":\n" + \
+                "    Synonyms for the boss to use, for shorthand for [status] and [entry] commands.\n" + \
+                "    e.g. 'spider' used in place of 'Blasphemous Deathweaver'\n" + \
+                "Opt=\"maps\":\n" + \
+                "    Maps for the boss you choose.\n" + \
+                "Valid for [target]:[boss] only.\n" + \
+                "Do not use with [status], [entry], or [type] commands.\n")
+arg_info.append("\n---\n\n")
+arg_info.append("```")
+
+cmd_fragment    =   ''.join(arg_info)
+command.append(cmd_fragment)
+
+arg_info        =   list()
+arg_info.append("```ini\n")
+
+# type commands
+arg_info.append("Argument=\"" + arg_n_2_D +     "\": " + arg_n_2_D_alt + "\n" + \
+                "Opt=\"world\":\n" + \
+                "    Bosses that spawn on specific mechanics and do not wander maps. They can spawn in all channels.\n" + \
+                "    Debuffs have no effect on them, and they do not give the 'Field Boss Cube Unobtainable' debuff.\n" + \
+                "    Cubes drop loosely on the ground and must be claimed.\n" + \
+                "Opt=\"field\":\n" + \
+                "    Bosses that spawn in a series of maps, only on Channel 1 in regular periods.\n" + \
+                "    If you do not have the 'Field Boss Cube Unobtainable' debuff, upon killing, you obtain it.\n" + \
+                "    The debuff lasts 8 hours roughly and you do not need to be online for it to tick down.\n" + \
+                "    The debuff prevents you from contributing to other field bosses (no damage contribution),\n" + \
+                "    so you cannot provide for your party even if your partymates do not have the debuff.\n" + \
+                "    Cubes automatically go into inventory of parties of highest damage contributors.\n" + \
+                "Valid for [target]:\"all\" only.\n" + \
+                "Do not use with [status], [entry], or [type] commands.\n")
+arg_info.append("\n---\n\n")
+arg_info.append("```")
+
+cmd_fragment    =   ''.join(arg_info)
+command.append(cmd_fragment)
+
+arg_info        =   list()
+arg_info.append("```ini\n")
+
+# time
+arg_info.append("Argument=\"" + arg_n_3   + "\"\n" + \
+                "eg=\"9:00p\"\n" + \
+                "eg=\"21:00\"\n" + \
+                "    Both these times are equivalent. Make sure to record 'AM' or 'PM' if you're using 12 hour format.\n" + \
+                "Required for [status] commands.\n" + \
+                "Remove spaces. 12 hour and 24 hour times acceptable, with valid delimiters \":\" and \".\". Use server time.\n")
+arg_info.append("\n---\n\n")
+
+# channel
+arg_info.append("Argument=\"" + arg_opt_1 + "\"\n" + \
+                "eg=\"ch1\"\n" + \
+                "eg=\"1\"\n" + \
+                "   Both these channels are equivalent. You may drop the 'CH'.\n" + \
+                "; optional\n" + \
+                "Suitable only for world bosses.[*] If unlisted, CH[1] will be assumed.\n")
+arg_info.append("\n---\n\n")
+
+# map
+arg_info.append("Argument=\"" + arg_opt_2 + "\"\n" + \
+                "eg=\"vid\"\n" + \
+                "    Corresponds to 'Videntis Shrine', a map where 'Starving Ellaganos' spawns.\n"
+                "; optional\n" + \
+                "Suitable only for field bosses.[*] If unlisted, this will be unassumed.\n")
+arg_info.append("\n---\n\n")
+
+arg_info.append("[*] ; Notes about world and field bosses:\n" + \
+                "    ; Field bosses in channels other than 1 are considered 'world boss' variants,\n" + \
+                "    ; and should not be recorded because they spawn unpredictably, because they're jackpot bosses.\n" + \
+                "    ; Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.\n" + \
+                "    ; You should record the channel for world bosses because\n" + \
+                "    ; they can spawn in any of the channels in their respective maps.\n")
+arg_info.append("\n---\n\n")
+
+# help
+arg_info.append("Argument=\"" + arg_help + "\"\n" + \
+                "Prints this series of messages.\n")
+arg_info.append("```")
+
+cmd_fragment    =   ''.join(arg_info)
+command.append(cmd_fragment)
+
+arg_min     = 2
 arg_max     = 5
 
-arg_del_min = 2
-arg_del_max = 3
-
 acknowledge = "Thank you! Your command has been acknowledged and recorded.\n"
+msg_help    = "Please run `" + arg_defcmd + "` for syntax.\n"
 
 
-# begin boss related variables
+# BGN REGEX
+
+prefix      = re.compile(r'(va?i(v|b)ora, |\$)boss', re.IGNORECASE)
+rgx_help    = re.compile(r'help', re.IGNORECASE)
+rgx_tg_all  = re.compile(r'all', re.IGNORECASE)
+rgx_status  = re.compile(r'(di|kill|anchor|warn)(ed)?', re.IGNORECASE)
+rgx_st_died = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
+rgx_st_warn = re.compile(r'warn(ed)?', re.IGNORECASE)
+rgx_entry   = re.compile(r'(li?st?|erase|del(ete)?|cl(ea)?r)', re.IGNORECASE)
+#rgx_list    = re.compile(r'li?st?', re.IGNORECASE)
+rgx_erase   = re.compile(r'(erase|del(ete)?|cl(ea)?r)', re.IGNORECASE)
+rgx_info    = re.compile(r'(syn(onyms|s)?|alias(es)?|maps?)', re.IGNORECASE)
+rgx_query   = re.compile(r'(syn(onyms|s)?|alias(es)?)', re.IGNORECASE)
+#rgx_maps    = re.compile(r'maps?', re.IGNORECASE)
+rgx_type    = re.compile(r'(wor|fie)ld', re.IGNORECASE)
+#rgx_type_w  = re.compile(r'world', re.IGNORECASE)
+rgx_type_f  = re.compile(r'field', re.IGNORECASE)
+
+# END REGEX
+
+# BGN BOSS
 
 # 'bosses'
 #   list of boss names in full
-bosses  =   [ 'Blasphemous Deathweaver', \
-              'Bleak Chapparition', \
-              'Hungry Velnia Monkey', \
-              'Abomination', \
-              'Earth Templeshooter', \
-              'Earth Canceril', \
-              'Earth Archon', \
-              'Violent Cerberus', \
-              'Necroventer', \
-              'Forest Keeper Ferret Marauder', \
-              'Kubas Event', \
-              'Noisy Mineloader', \
-              'Burning Fire Lord', \
-              'Wrathful Harpeia', \
-              'Glackuman', \
-              'Marionette', \
-              'Dullahan Event', \
-              'Starving Ellaganos', \
-              'Prison Manager Prison Cutter', \
-              'Mirtis', \
-              'Rexipher', \
-              'Helgasercle', \
-              'Demon Lord Marnox', \
-              'Demon Lord Nuaele', \
-              'Demon Lord Zaura', \
-              'Demon Lord Blut', \
-              'Legwyn Crystal Event' 
-            ]
+bosses  =                                           [ 'Blasphemous Deathweaver', \
+                                                      'Bleak Chapparition', \
+                                                      'Hungry Velnia Monkey', \
+                                                      'Abomination', \
+                                                      'Earth Templeshooter', \
+                                                      'Earth Canceril', \
+                                                      'Earth Archon', \
+                                                      'Violent Cerberus', \
+                                                      'Necroventer', \
+                                                      'Forest Keeper Ferret Marauder', \
+                                                      'Kubas Event', \
+                                                      'Noisy Mineloader', \
+                                                      'Burning Fire Lord', \
+                                                      'Wrathful Harpeia', \
+                                                      'Glackuman', \
+                                                      'Marionette', \
+                                                      'Dullahan Event', \
+                                                      'Starving Ellaganos', \
+                                                      'Prison Manager Prison Cutter', \
+                                                      'Mirtis', \
+                                                      'Rexipher', \
+                                                      'Helgasercle', \
+                                                      'Demon Lord Marnox', \
+                                                      'Demon Lord Nuaele', \
+                                                      'Demon Lord Zaura', \
+                                                      'Demon Lord Blut', \
+                                                      'Legwyn Crystal Event' 
+                                                    ]
 
-bosses_field    =   bosses[0:3] + \
-                    [bosses[7], bosses[9],] + \
-                    bosses[11:14] + \
-                    bosses[17:-1]
+bosses_field    =                                   bosses[0:3] + \
+                                                    [bosses[7], bosses[9],] + \
+                                                    bosses[11:14] + \
+                                                    bosses[17:-1]
 
-bosses_world    =   [ b for b in bosses if b not in bosses_field ]
+bosses_world    =                                   [ b for b in bosses if b not in bosses_field ]
 
 # bosses that 'alt'ernate
-bosses_alt      =   [ 'Mirtis', \
-                      'Rexipher', \
-                      'Helgasercle', \
-                      'Demon Lord Marnox'
-                    ]
+bosses_alt      =                                   [ 'Mirtis', \
+                                                      'Rexipher', \
+                                                      'Helgasercle', \
+                                                      'Demon Lord Marnox'
+                                                    ]
 
+# bosses that spawn in...
+# ...two hours
 boss_spawn_02h  =   [ 'Abomination', \
                       'Dullahan Event'
                     ]
-
+# ...sixteen hours
 boss_spawn_16h  =   [ 'Demon Lord Nuaele', \
                       'Demon Lord Zaura', \
                       'Demon Lord Blut'
                     ]
 
+# event based timers
 bosses_events   =   [ 'Kubas Event', \
                       'Dullahan Event', \
                       'Legwyn Crystal Event'
@@ -253,7 +391,9 @@ boss_synonyms = { 'Blasphemous Deathweaver':        [ 'dw', \
                                                     ], 
                   'Demon Lord Nuaele':              [ 'nuaele' ], 
                   'Demon Lord Zaura':               [ 'zaura' ], 
-                  'Demon Lord Blut':                [ 'blut' ], 
+                  'Demon Lord Blut':                [ 'blut', \
+                                                      'butt'
+                                                    ], 
                   'Legwyn Crystal Event':           [ 'legwyn', \
                                                       'crystal' 
                                                     ]
@@ -267,138 +407,138 @@ for l in list(boss_synonyms.values()):
 # 'boss location'
 # - keys: boss names (var `bosses`)
 # - values: list of locations, full name
-boss_locs = { 'Blasphemous Deathweaver':        [ 'Crystal Mine 2F', \
-                                                  'Crystal Mine 3F', \
-                                                  'Ashaq Underground Prison 1F', \
-                                                  'Ashaq Underground Prison 2F', \
-                                                  'Ashaq Underground Prison 3F'
-                                                ],
-              'Bleak Chapparition':             [ 'Tenet Church B1', \
-                                                  'Tenet Church 1F' 
-                                                ],
-              'Hungry Velnia Monkey':           [ 'Novaha Assembly Hall', \
-                                                  'Novaha Annex', \
-                                                  'Novaha Institute'
-                                                ],
-              'Abomination':                    [ 'Guards\' Graveyard'],
-              'Earth Templeshooter':            [ 'Royal Mausoleum Workers\' Lodge' ],
-              'Earth Canceril':                 [ 'Royal Mausoleum Constructors\' Chapel' ],
-              'Earth Archon':                   [ 'Royal Mausoleum Storage' ],
-              'Violent Cerberus':               [ 'Royal Mausoleum 4F', \
-                                                  'Royal Mausoleum 5F'
-                                                ],
-              'Necroventer':                    [ 'Residence of the Fallen Legwyn Family' ],
-              'Forest Keeper Ferret Marauder':  [ 'Bellai Rainforest',
-                                                  'Zeraha',
-                                                  'Seir Rainforest'],
-              'Kubas Event':                    [ 'Crystal Mine Lot 2 - 2F' ],
-              'Noisy Mineloader':               [ 'Mage Tower 4F', \
-                                                  'Mage Tower 5F'
-                                                ],
-              'Burning Fire Lord':              [ 'Main Chamber', \
-                                                  'Sanctuary'
-                                                ],
-              'Wrathful Harpeia':               [ 'Demon Prison District 1', \
-                                                  'Demon Prison District 2', \
-                                                  'Demon Prison District 5'
-                                                ],
-              'Glackuman':                      [ '2nd Demon Prison' ],
-              'Marionette':                     [ 'Roxona Reconstruction Agency East Building' ],
-              'Dullahan Event':                 [ 'Roxona Reconstruction Agency West Building' ],
-              'Starving Ellaganos':             [ 'Mokusul Chamber', \
-                                                  'Videntis Shrine'],
-              'Prison Manager Prison Cutter':   [ 'Drill Ground of Confliction', \
-                                                  'Resident Quarter', \
-                                                  'Storage Quarter', \
-                                                  'Fortress Battlegrounds'
-                                                ],
-              'Mirtis':                         [ 'Kalejimas Visiting Room', \
-                                                  'Storage', \
-                                                  'Solitary Cells', \
-                                                  'Workshop', \
-                                                  'Investigation Room'
-                                                ],
-              'Helgasercle':                    [ 'Kalejimas Visiting Room', \
-                                                  'Storage', \
-                                                  'Solitary Cells', \
-                                                  'Workshop', \
-                                                  'Investigation Room'
-                                                ],
-              'Rexipher':                       [ 'Thaumas Trail', \
-                                                  'Salvia Forest', \
-                                                  'Sekta Forest', \
-                                                  'Rasvoy Lake', \
-                                                  'Ouaas Memorial'
-                                                ],
-              'Demon Lord Marnox':              [ 'Thaumas Trail', \
-                                                  'Salvia Forest', \
-                                                  'Sekta Forest', \
-                                                  'Rasvoy Lake', \
-                                                  'Ouaas Memorial'
-                                                ],
-              'Demon Lord Nuaele':              [ 'Yudejan Forest', \
-                                                  'Nobreer Forest', \
-                                                  'Emmet Forest', \
-                                                  'Pystis Forest', \
-                                                  'Syla Forest', \
-                                                  'Mishekan Forest'
-                                                ],
-              'Demon Lord Zaura':               [ 'Arcus Forest', \
-                                                  'Phamer Forest', \
-                                                  'Ghibulinas Forest', \
-                                                  'Mollogheo Forest', \
-                                                  'Alembique Cave'
-                                                ],
-              'Demon Lord Blut':                [ 'Tevhrin Stalactite Cave Section 1', \
-                                                  'Tevhrin Stalactite Cave Section 2', \
-                                                  'Tevhrin Stalactite Cave Section 3', \
-                                                  'Tevhrin Stalactite Cave Section 4', \
-                                                  'Tevhrin Stalactite Cave Section 5'
-                                                ],
-              'Legwyn Crystal Event':           [ 'Residence of the Fallen Legwyn Family' ]
+boss_locs = { 'Blasphemous Deathweaver':            [ 'Crystal Mine 2F', \
+                                                      'Crystal Mine 3F', \
+                                                      'Ashaq Underground Prison 1F', \
+                                                      'Ashaq Underground Prison 2F', \
+                                                      'Ashaq Underground Prison 3F'
+                                                    ],
+              'Bleak Chapparition':                 [ 'Tenet Church B1', \
+                                                      'Tenet Church 1F' 
+                                                    ],
+              'Hungry Velnia Monkey':               [ 'Novaha Assembly Hall', \
+                                                      'Novaha Annex', \
+                                                      'Novaha Institute'
+                                                    ],
+              'Abomination':                        [ 'Guards\' Graveyard'],
+              'Earth Templeshooter':                [ 'Royal Mausoleum Workers\' Lodge' ],
+              'Earth Canceril':                     [ 'Royal Mausoleum Constructors\' Chapel' ],
+              'Earth Archon':                       [ 'Royal Mausoleum Storage' ],
+              'Violent Cerberus':                   [ 'Royal Mausoleum 4F', \
+                                                      'Royal Mausoleum 5F'
+                                                    ],
+              'Necroventer':                        [ 'Residence of the Fallen Legwyn Family' ],
+              'Forest Keeper Ferret Marauder':      [ 'Bellai Rainforest',
+                                                      'Zeraha',
+                                                      'Seir Rainforest'
+                                                    ],
+              'Kubas Event':                        [ 'Crystal Mine Lot 2 - 2F' ],
+              'Noisy Mineloader':                   [ 'Mage Tower 4F', \
+                                                      'Mage Tower 5F'
+                                                    ],
+              'Burning Fire Lord':                  [ 'Main Chamber', \
+                                                      'Sanctuary'
+                                                    ],
+              'Wrathful Harpeia':                   [ 'Demon Prison District 1', \
+                                                      'Demon Prison District 2', \
+                                                      'Demon Prison District 5'
+                                                    ],
+              'Glackuman':                          [ '2nd Demon Prison' ],
+              'Marionette':                         [ 'Roxona Reconstruction Agency East Building' ],
+              'Dullahan Event':                     [ 'Roxona Reconstruction Agency West Building' ],
+              'Starving Ellaganos':                 [ 'Mokusul Chamber', \
+                                                      'Videntis Shrine'
+                                                    ],
+              'Prison Manager Prison Cutter':       [ 'Drill Ground of Confliction', \
+                                                      'Resident Quarter', \
+                                                      'Storage Quarter', \
+                                                      'Fortress Battlegrounds'
+                                                    ],
+              'Mirtis':                             [ 'Kalejimas Visiting Room', \
+                                                      'Storage', \
+                                                      'Solitary Cells', \
+                                                      'Workshop', \
+                                                      'Investigation Room'
+                                                    ],
+              'Helgasercle':                        [ 'Kalejimas Visiting Room', \
+                                                      'Storage', \
+                                                      'Solitary Cells', \
+                                                      'Workshop', \
+                                                      'Investigation Room'
+                                                    ],
+              'Rexipher':                           [ 'Thaumas Trail', \
+                                                      'Salvia Forest', \
+                                                      'Sekta Forest', \
+                                                      'Rasvoy Lake', \
+                                                      'Ouaas Memorial'
+                                                    ],
+              'Demon Lord Marnox':                  [ 'Thaumas Trail', \
+                                                      'Salvia Forest', \
+                                                      'Sekta Forest', \
+                                                      'Rasvoy Lake', \
+                                                      'Ouaas Memorial'
+                                                    ],
+              'Demon Lord Nuaele':                  [ 'Yudejan Forest', \
+                                                      'Nobreer Forest', \
+                                                      'Emmet Forest', \
+                                                      'Pystis Forest', \
+                                                      'Syla Forest', \
+                                                      'Mishekan Forest'
+                                                    ],
+              'Demon Lord Zaura':                   [ 'Arcus Forest', \
+                                                      'Phamer Forest', \
+                                                      'Ghibulinas Forest', \
+                                                      'Mollogheo Forest', \
+                                                      'Alembique Cave'
+                                                    ],
+              'Demon Lord Blut':                    [ 'Tevhrin Stalactite Cave Section 1', \
+                                                      'Tevhrin Stalactite Cave Section 2', \
+                                                      'Tevhrin Stalactite Cave Section 3', \
+                                                      'Tevhrin Stalactite Cave Section 4', \
+                                                      'Tevhrin Stalactite Cave Section 5'
+                                                    ],
+              'Legwyn Crystal Event':               [ 'Residence of the Fallen Legwyn Family' ]
      }
 
-boss_loc_synonyms = [ 'crystal mine', 'ashaq', \
-                      'tenet', \
-                      'novaha', \
-                      'guards', 'graveyard', \
-                      'maus', 'mausoleum', \
-                      'legwyn', \
-                      'bellai', 'zeraha', 'seir', \
-                      'mage tower', 'mt', \
-                      'demon prison', 'dp', \
-                      'main chamber', 'sanctuary', 'sanc', \
-                      'roxona', \
-                      'mokusul', 'videntis', \
-                      'drill', 'quarter', 'battlegrounds', \
-                      'kalejimas', 'storage', 'solitary', 'workshop', 'investigation', \
-                      'thaumas', 'salvia', 'sekta', 'rasvoy', 'oasseu', \
-                      'yudejan', 'nobreer', 'emmet', 'pystis', 'syla', \
-                      'arcus', 'phamer', 'ghibulinas', 'mollogheo', \
-                      'tevhrin'
-                    ]
+# synonyms for boss locations
+boss_loc_synonyms =                                 [ 'crystal mine', 'ashaq', \
+                                                      'tenet', \
+                                                      'novaha', \
+                                                      'guards', 'graveyard', \
+                                                      'maus', 'mausoleum', \
+                                                      'legwyn', \
+                                                      'bellai', 'zeraha', 'seir', \
+                                                      'mage tower', 'mt', \
+                                                      'demon prison', 'dp', \
+                                                      'main chamber', 'sanctuary', 'sanc', \
+                                                      'roxona', \
+                                                      'mokusul', 'videntis', \
+                                                      'drill', 'quarter', 'battlegrounds', \
+                                                      'kalejimas', 'storage', 'solitary', 'workshop', 'investigation', \
+                                                      'thaumas', 'salvia', 'sekta', 'rasvoy', 'oasseu', \
+                                                      'yudejan', 'nobreer', 'emmet', 'pystis', 'syla', \
+                                                      'arcus', 'phamer', 'ghibulinas', 'mollogheo', \
+                                                      'tevhrin'
+                                                    ]
 
-bosses_with_floors    =   [ 'Blasphemous Deathweaver', \
-                            'Bleak Chapparition', \
-                            'Violent Cerberus', \
-                            'Noisy Mineloader', \
-                            'Wrathful Harpeia', \
-                            'Demon Lord Blut'
-                          ]
+# bosses that spawn in maps with floors or numbered maps
+bosses_with_floors    =                             [ 'Blasphemous Deathweaver', \
+                                                      'Bleak Chapparition', \
+                                                      'Violent Cerberus', \
+                                                      'Noisy Mineloader', \
+                                                      'Wrathful Harpeia', \
+                                                      'Demon Lord Blut'
+                                                    ]
+
+# END BOSS
 
 # END CONST
 
-
-
-
-
-
-
-
 # @func:    check_boss(str) : int
-#   checks boss validity
+#     checks boss validity
 # @arg:
-#     boss: str; boss name from raw input
+#     boss : str
+#         boss name from raw input
 # @return:
 #     boss index in list, or -1 if not found or more than 1 matching
 def check_boss(entry):
@@ -484,7 +624,7 @@ def get_syns(boss):
 #       a str containing the list of maps for a boss
 def get_maps(boss):
     return boss + " can be found in the following maps: ```python\n" + \
-           "#   " + '\n#   '.join(boss_locs[boss]) + "```\n"
+                  "#   " + '\n#   '.join(boss_locs[boss]) + "```\n"
 
 # @func:    get_bosses_world() : str
 # @return:
@@ -510,3 +650,38 @@ def validate_channel(ch):
         return int(vaivora_constants.regex.format.matching.letters.sub('', ch))
     else:
         return 1
+
+# @func:    process_command()
+def process_command(arg_list):
+    # $boss help
+    if rgx_help.match(arg_list[0]):
+        return command
+    arg_len   = len(arg_list)
+    # error: not enough arguments
+    if arg_len < arg_min or arg_len > arg_max:
+        return "You supplied " + arg_len + " arguments; commands must have at least " + \
+               arg_min + " or at most " + arg_max + " arguments.\n" + msg_help
+    # $boss all ...
+    if rgx_tg_all.match(arg_list[1]):
+        cmd_boss  = bosses
+    # $boss [boss] ...
+    else:
+        boss_idx  = check_boss(arg_list[1])
+        if boss_idx == -1:
+            return arg_list[1] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#    " + \
+                   '\n#    '.join(bosses) + "```\n" + msg_help
+        cmd_boss  = [bosses[boss_idx], ]
+    # error: invalid argument 2
+    if not rgx_status.match(arg_list[2]) and \
+       not rgx_entry.match(arg_list[2]) and \
+       not rgx_info.match(arg_list[2]) and \
+       not rgx_type.match(arg_list[2]):
+        return arg_list[2] + " is invalid for `$boss`, argument position 2.\n" + msg_help
+    if rgx_status.match(arg_list[2]) and len(cmd_boss) > 1:
+        return arg_list[2] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
+    if rgx_query.match(arg_list[2]) and len(cmd_boss) == 1:
+        return arg_list[2] + " is invalid for `$boss`:`" + cmd_boss[0] + "`, argument position 2.\n" + msg_help
+    if not rgx_query.match(arg_list[2]) and rgx_info.match(arg_list[2]) and len(cmd_boss) > 1:
+        return arg_list[2] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
+
+    pass
