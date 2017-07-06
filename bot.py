@@ -28,7 +28,7 @@ vdst                = dict()
 command_boss        = "boss"
 command_settings    = "settings"
 
-rgx_help            = "help"
+rgx_help            = re.compile(r'help', re.IGNORECASE)
 
 to_sanitize         = re.compile(r'[^a-z0-9 .:$",-]', re.IGNORECASE)
 
@@ -1200,7 +1200,7 @@ async def sanitize_cmd(message, command_type):
     cmd_message =   to_sanitize.sub('', message.content)
     cmd_message =   cmd_message.lower()
     try:
-        command =   shlex.split(message)
+        command =   shlex.split(cmd_message)
     except ValueError:
         return "Your command for `$" + command_type + "` had misused quotes somewhere.\n"
 
@@ -1210,7 +1210,7 @@ async def sanitize_cmd(message, command_type):
         msg_prefix  =   ""
     else:
         server_id   =   message.server.id
-        msg.channel =   message.channel
+        msg_channel =   message.channel
         msg_prefix  =   message.author.mention + " "
     
     if command_type == command_boss:
