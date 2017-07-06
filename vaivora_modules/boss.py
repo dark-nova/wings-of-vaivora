@@ -676,7 +676,7 @@ def check_maps(boss, maps):
 # @return:
 #       a str containing a list of synonyms for boss
 def get_syns(boss):
-    return boss + " can be called using the following aliases: ```python\n" + \
+    return "**" + boss + "*** can be called using the following aliases: ```python\n" + \
            "#   " + '\n#   '.join(boss_synonyms[boss]) + "```\n"
 
 # @func:    get_maps(str) : str
@@ -685,21 +685,21 @@ def get_syns(boss):
 # @return:
 #       a str containing the list of maps for a boss
 def get_maps(boss):
-    return boss + " can be found in the following maps: ```python\n" + \
-                  "#   " + '\n#   '.join(boss_locs[boss]) + "```\n"
+    return "**" + boss + "** can be found in the following maps: ```python\n" + \
+           "#   " + '\n#   '.join(boss_locs[boss]) + "```\n"
 
 # @func:    get_bosses_world() : str
 # @return:
 #       a str containing the list of world bosses
 def get_bosses_world():
-    return "The following bosses are considered world bosses: ```python\n" + \
+    return "The following bosses are considered \"world\" bosses: ```python\n" + \
            "#   " + '\n#   '.join(bosses_world) + "```\n"
 
 # @func:    get_bosses_field() : str
 # @return:
 #       a str containing the list of field bosses
 def get_bosses_field():
-    return "The following bosses are considered field bosses: ```python\n" + \
+    return "The following bosses are considered \"field\" bosses: ```python\n" + \
            "#   " + '\n#   '.join(bosses_field) + "```\n"
 
 # @func:    validate_channel(str) : int
