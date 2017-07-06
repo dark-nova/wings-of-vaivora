@@ -854,6 +854,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         arg_time    = time
 
     delim   = rgx_time_dl.search(arg_time)
+    record  = dict()
     # $boss [boss] died [time:delimiter]
     if delim:
         hours, minutes  =   [int(t) for t in arg_time.split(delim.group(0))]
