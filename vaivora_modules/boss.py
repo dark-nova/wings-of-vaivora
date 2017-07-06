@@ -810,7 +810,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     target['channel']   =   -1
 
     if len(opt_list) > 0:
-        opts                =   process_cmd_opt(opt_list)
+        opts                =   process_cmd_opt(opt_list, tg_boss)
         target['map']       =   opts['map']
         target['channel']   =   opts['channel']
     # 3 or fewer arguments
@@ -944,8 +944,8 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
         return "Your queried records have successfully been erased.\n"
 
     # implicit non-null opt_list, erase
-    elif rgx_erase.match(entry):
-        opts                =   process_cmd_opt(opt_list)
+    elif rgx_erase.match(entry) and len(tg_bosses) == 1:
+        opts    =   process_cmd_opt(opt_list, tg_bosses[0])
 
         # process opts
         # too many bosses but only one map
@@ -972,6 +972,10 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
         else:
             vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts['channel'], boss_map=opts['map'])
             return "Your queried records have successfully been erased.\n"
+
+    elif rgx_erase.match(entry):
+        vaivora_modules.db.Database(server_id).rm_entry_db_boss()
+        return "All records have successfully been erased.\n"
 
     # implicit list
     else:
@@ -1089,25 +1093,25 @@ def process_cmd_type(btype):
 #           any optional parameters, of 1 length or more
 # @return:
 #       dict containing k:v 'map' and 'channel', both str
-def process_cmd_opt(opt_list):
+def process_cmd_opt(opt_list, opt_boss):
     target  =   dict()
     for cmd_arg in opt_list:
         channel     =   rgx_channel.match(cmd_arg)
-        if channel and channel.group(2) != '1' and not target['boss'] in bosses_world:
-            return cmd_arg + " is invalid for `$boss`:`channel` because " + target['boss'] + " is a field boss.\n" + \
+        if channel and channel.group(2) != '1' and not opt_boss in bosses_world:
+            return cmd_arg + " is invalid for `$boss`:`channel` because " + opt_boss + " is a field boss.\n" + \
                    "Field bosses that spawn in channels other than 1 are always jackpot bosses, world boss forms of " + \
                    "the equivalent field boss.\n" + msg_help
         # target - channel
-        elif channel and target['boss'] in bosses_world:
+        elif channel and opt_boss and opt_boss in bosses_world:
             target['channel']   =   int(channel.group(2)) # use channel provided by command
-            target['map']       =   boss_locs[target['boss']][0]
-        elif not channel and target['boss'] in bosses_field: # possibly map instead
+            target['map']       =   boss_locs[opt_boss][0]
+        elif not channel and opt_boss and opt_boss in bosses_field: # possibly map instead
             target['channel']   =   1
             if cmd_arg: # must be map if not null
-                map_idx         =   check_maps(target['boss'], cmd_arg)
+                map_idx         =   check_maps(opt_boss, cmd_arg)
             # target - map 
-            if cmd_arg and map_idx >= 0 and map_idx < len(boss_locs[target['boss']]):
-                target['map']   =   boss_locs[target['boss']][map_idx]
+            if cmd_arg and map_idx >= 0 and map_idx < len(boss_locs[opt_boss]):
+                target['map']   =   boss_locs[opt_boss][map_idx]
             else:
                 target['map']   =   "N/A"
     return target
