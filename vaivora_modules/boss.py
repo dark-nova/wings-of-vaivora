@@ -236,7 +236,7 @@ time_rel_2h     =   -2
 time_rel_16h    =   12
 
 status_died     =   "died"
-status_warned   =   "was warned"
+status_warned   =   "was warned to spawn"
 status_anchored =   "was anchored"
 
 # BGN REGEX
@@ -250,8 +250,8 @@ rgx_st_warn = re.compile(r'warn(ed)?', re.IGNORECASE)
 rgx_entry   = re.compile(r'(li?st?|erase|del(ete)?|cl(ea)?r)', re.IGNORECASE)
 #rgx_list    = re.compile(r'li?st?', re.IGNORECASE)
 rgx_erase   = re.compile(r'(erase|del(ete)?|cl(ea)?r)', re.IGNORECASE)
-rgx_info    = re.compile(r'(syn(onyms|s)?|alias(es)?|maps?)', re.IGNORECASE)
-rgx_query   = re.compile(r'(syn(onyms|s)?|alias(es)?)', re.IGNORECASE)
+rgx_query   = re.compile(r'(syn(onyms|s)?|alias(es)?|maps?)', re.IGNORECASE)
+rgx_q_syn   = re.compile(r'(syn(onyms|s)?|alias(es)?)', re.IGNORECASE)
 #rgx_maps    = re.compile(r'maps?', re.IGNORECASE)
 rgx_type    = re.compile(r'(wor|fie)ld', re.IGNORECASE)
 #rgx_type_w  = re.compile(r'world', re.IGNORECASE)
@@ -741,22 +741,28 @@ def process_command(server_id, msg_channel, arg_list):
     else:
         boss_idx  = check_boss(arg_list[0])
         if boss_idx == -1:
-            return arg_list[0] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#    " + \
-                   '\n#    '.join(bosses) + "```\n" + msg_help
+            return arg_list[0] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#   " + \
+                   '\n#   '.join(bosses) + "```\n" + msg_help
         cmd_boss  = [bosses[boss_idx], ]
 
     # error: invalid argument 2
     if not rgx_status.match(arg_list[1]) and \
        not rgx_entry.match(arg_list[1]) and \
-       not rgx_info.match(arg_list[1]) and \
+       not rgx_query.match(arg_list[1]) and \
        not rgx_type.match(arg_list[1]):
         return arg_list[1] + " is invalid for `$boss`, argument position 2.\n" + msg_help
-    if rgx_status.match(arg_list[1]) and len(cmd_boss) > 1:
+
+    # error: invalid [target] argument for argument 2
+    # using 'all' with [status]
+    if rgx_status.match(arg_list[1]) and len(cmd_boss) != 1:
         return arg_list[1] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
-    if rgx_query.match(arg_list[1]) and len(cmd_boss) == 1:
+    # using 'all' with [query]
+    if rgx_query.match(arg_list[1]) and len(cmd_boss) != 1:
+        return arg_list[1] + " is invalid for `$boss`:'all' argument position 2.\n" + msg_help
+    # using [boss] with [type]
+    if rgx_type.match(arg_list[1]) and len(cmd_boss) <= 1:
         return arg_list[1] + " is invalid for `$boss`:`" + cmd_boss[0] + "`, argument position 2.\n" + msg_help
-    if not rgx_query.match(arg_list[1]) and rgx_info.match(arg_list[1]) and len(cmd_boss) > 1:
-        return arg_list[1] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
+    # no such errors with entry, since entry accepts both [boss] and 'all'
 
     # $boss [boss] [status] ...
     if rgx_status.match(arg_list[1]):
@@ -766,6 +772,13 @@ def process_command(server_id, msg_channel, arg_list):
         return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1])
     elif rgx_entry.match(arg_list[1]):
         return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1], arg_list[2:])
+    # $boss [boss] [query]
+    elif rgx_query.match(arg_list[1]):
+        return process_cmd_query(cmd_boss[0], arg_list[1])
+    # $boss all [type]
+    else:
+        return process_cmd_type(arg_list[1])
+
 
 # @func:    process_cmd_status(str, str, str, str, str, list) : str
 # @arg:
@@ -901,8 +914,6 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         return "Your command, `" + ' '.join(arg_list) + "`, could not be processed.\n" + msg_help
 
 
-    pass
-
 # @func:    process_cmd_status(str, str, str, str, str, list) : str
 # @arg:
 #       server_id : str
@@ -961,6 +972,8 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
     # implicit list
     else:
         valid_boss_records = list()
+        valid_boss_records.append("Records:")
+        valid_boss_records.append("```python\n")
         boss_records = vaivora_modules.db.Database(server_id).check_db_boss(bosses=tg_bosses) # possible return
 
         # empty
@@ -968,11 +981,16 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             return "No results found! Try a different boss.\n"
 
         for boss_record in boss_records:
+            boss_name   =   boss_record[0]
+            boss_chan   =   boss_record[1]
+            boss_premap =   boss_record[2]
             boss_status =   boss_record[3]
             record_date =   [int(rec) for rec in boss_record[5:10]]
             record_date =   datetime(*record_date)
-            ret_message =   " and "
-            tense_time = " minutes "
+            # e.g.          "Blasphemous Deathweaver"  died          in ch.      1           and
+            # e.g.          "Earth Canceril"           was anchored  in ch.      2           and
+            # e.g.          "Demon Lord Marnox"        was warned to spawn in ch.1           and
+            ret_message =   "\"" + boss_name + "\" " + boss_status + " in ch." + boss_chan + " and "
             time_diff   = datetime.now() + pacific2server - record_date
 
             # old records
@@ -982,31 +1000,84 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
             # anchored
             elif boss_status == status_anchored:
-                ret_message += "will spawn as early as "
-                mins_left   = (86400-int(time_diff.seconds))/60
+                ret_message +=  "will spawn as early as "
+                mins_left   =   int((86400-int(time_diff.seconds))/60)
 
             # warned & died
             else:
-                ret_message += "will respawn around "
-                mins_left   = (86400-int(time_diff.seconds))/60
+                ret_message +=  "will respawn around "
+                mins_left   =   int((86400-int(time_diff.seconds))/60)
 
+            # absolute date and time for spawn
+            # e.g.              2017/07/06 "14:47"
+            ret_message     +=  record_date.strftime("%Y/%m/%d \"%H:%M\"")
+
+            # open parenthesis for minutes
+            ret_message +=  " ("
+            abs_mins    =   abs(mins_left)
+
+            # print day or days conditionally
             if int(time_diff.days) > 1:
-                ret_message += str(time_diff.days) + " day(s), " + str(int(mins_left / 60)) + " hours, " + str(mins_left % 60)
+                ret_message     +=  str(time_diff.days) + " days, " 
             elif int(time_diff.days) == 1:
-                ret_message += str(time_diff.days) + " day(s), " + str(int(mins_left / 60)) + " hours, " + str(mins_left % 60)
-            elif mins_left > 99:
-                ret_message += str(int(mins_left / 60)) + " hours, " + str(mins_left % 60)
-                
-                    
-            elif mins_left < 0:
-                mins_left = str(int(24 + mins_left / 60)) + " hours, " + str(mins_left % 60)
-            else:
-                mins_left = str(mins_left)
-            valid_boss_records.append("\"" + boss_record[0] + "\" " + boss_st + \
-                                      " in ch." + str(int(boss_record[1])) + tense + \
-                                      record_date.strftime("%Y/%m/%d \"%H:%M\"") + \
-                                      " (" + str(mins_left) + tense_time + ")" + \
-                                      ".\nLast known map: #   " + boss_record[2])
+                ret_message     +=  "1 day, "
+
+            # print hour or hours conditionally
+            if abs_mins > 119:
+                ret_message     +=  str(abs_mins/60) + " hours, "
+            elif abs_mins > 59:
+                ret_message     +=  "1 hour, "
+
+            # print minutes unconditionally
+            # e.g.              0 minutes from now
+            # e.g.              59 minutes ago
+            ret_message     +=  str(abs_mins%60) + " minutes " + \
+                                ("from now" if mins_left < 0 else "ago") + \
+                                ") "
+
+            # print extra anchored message conditionally
+            if boss_status == status_anchored:
+                ret_message     +=  "and as late as one hour later"
+
+            ret_message     += ".\nLast known map: #   " + boss_premap
+
+            valid_boss_records.append(ret_message)
+
+        valid_boss_records.append("```\n")
+        return '\n'.join(valid_boss_records)
+
+
+# @func:    process_cmd_query(str, str, str, str) : str
+# @arg:
+#       boss : str
+#           the boss in question
+#       query: str
+#           the query command, i.e. aliases or maps
+# @return:
+#       an appropriate message for success or fail of command
+def process_cmd_query(tg_boss, query):
+    # $boss [boss] syns
+    if rgx_q_syn.match(query):
+        return get_syns(tg_boss)
+    # $boss [boss] maps
+    else:
+        return get_maps(tg_boss)
+
+
+# @func:    process_cmd_query(str, str, str, str) : str
+# @arg:
+#       btype: str
+#           the btype command, i.e. world or field
+# @return:
+#       an appropriate message for success or fail of command
+def process_cmd_type(server_id, msg_channel, btype):
+    # $boss all field
+    if rgx_type_f.match(btype):
+        return get_bosses_field()
+    # $boss all world
+    else:
+        return get_bosses_world()
+
 
 # @func:    process_cmd_opt(list) : dict
 # @arg:
