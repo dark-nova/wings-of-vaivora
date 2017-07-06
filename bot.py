@@ -1204,6 +1204,11 @@ async def sanitize_cmd(message, command_type):
     except ValueError:
         return "Your command for `$" + command_type + "` had misused quotes somewhere.\n"
 
+    if len(command) == 1:
+        return
+
+    command     =   command[1:]
+
     if rgx_help.match(command[0]) or not message.server:
         server_id   =   message.author.id
         msg_channel =   message.author
@@ -1220,9 +1225,10 @@ async def sanitize_cmd(message, command_type):
     else:
         return # command was incorrect
 
-    await client.send_message(reply_channel, msg_prefix + return_msg[0])
+    await client.send_message(msg_channel, msg_prefix + return_msg[0])
     if len(return_msg) > 1:
         for msg_frag in return_msg[1:]:
+            await asyncio.sleep(1)
             await client.send_message(msg_channel, msg_frag)
 
 
