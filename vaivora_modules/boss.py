@@ -905,7 +905,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         return acknowledge + "```python\n" + \
                "\"" + target['boss'] + "\" " + \
                target['status'] + " at " + \
-               ("0" if hours < 10 else "") + \
+               ("0" if temp_hour < 10 else "") + \
                str(temp_hour) + ":" + \
                ("0" if minutes < 10 else "") + \
                str(minutes) + \
