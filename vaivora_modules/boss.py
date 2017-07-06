@@ -906,11 +906,11 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
                "\"" + target['boss'] + "\" " + \
                target['status'] + " at " + \
                ("0" if hours < 10 else "") + \
-               str(hour) + ":" + \
+               str(hours) + ":" + \
                ("0" if minutes < 10 else "") + \
                str(minutes) + \
                ", in ch." + str(target['channel']) + ": " + \
-               (("\"" + target['map'] + "\"") if target['map'] != "N?A" else "") + "```\n"
+               (("\"" + target['map'] + "\"") if target['map'] != "N/A" else "") + "```\n"
     else:
         return "Your command, `" + ' '.join(arg_list) + "`, could not be processed.\n" + msg_help
 
