@@ -1148,7 +1148,7 @@ def process_record(boss, status, time, boss_map, channel):
         ret_message +=  "\n#   ".join([m for m in boss_locs[boss][0:2] if m != boss_map])
 
     # bosses with only two rotating fields
-    else len(boss_locs[boss]) == 2:
+    elif len(boss_locs[boss]) == 2:
         ret_message =   ", in the following map:\n" + "#   "
         ret_message +=  "\n#   ".join([m for m in boss_locs[boss] if m != boss_map])
 
