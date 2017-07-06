@@ -193,16 +193,16 @@ class Database:
 
         #try: # boss database structure
         self.cursor.execute("insert into boss values (?,?,?,?,?,?,?,?,?,?)", \
-                        (str(boss_dict['name'   ]), \
-                         int(boss_dict['channel']), \
-                         str(boss_dict['map'    ]), \
-                         str(boss_dict['status' ]), \
-                         str(boss_dict['srvchn' ]), \
-                         int(boss_dict['year'   ]), \
-                         int(boss_dict['month'  ]), \
-                         int(boss_dict['day'    ]), \
-                         int(boss_dict['hour'   ]), \
-                         int(boss_dict['mins'   ])))
+                        (str(boss_dict['boss'       ]), \
+                         int(boss_dict['channel'    ]), \
+                         str(boss_dict['map'        ]), \
+                         str(boss_dict['status'     ]), \
+                         str(boss_dict['msg_chan'   ]), \
+                         int(boss_dict['year'       ]), \
+                         int(boss_dict['month'      ]), \
+                         int(boss_dict['day'        ]), \
+                         int(boss_dict['hour'       ]), \
+                         int(boss_dict['mins'       ])))
         self.save_db()
         return True
 
@@ -213,13 +213,15 @@ class Database:
     #   ch:             Default: None; the channel to remove
     # @return:
     #   True if successful, False otherwise
-    def rm_entry_db_boss(self, boss_list=vaivora_constants.command.boss.bosses, boss_ch=0, boss_map=''):
+    def rm_entry_db_boss(self, boss_list=vaivora_modules.boss.bosses, boss_ch=0, boss_map=''):
         #self.open_db()
         if not boss_list:
             boss_list = vaivora_constants.command.boss.bosses
         for boss in boss_list:
             if boss_ch:
                 self.cursor.execute("delete from boss where name=? and channel=?", (boss, boss_ch,))
+            elif not boss_map and boss in vaivora_modules.boss.bosses_field:
+                self.cursor.execute("delete from boss where name=? and boss_map=?", (boss, "N/A"))
             elif boss_map and boss_map != "N/A" and boss == "Blasphemous Deathweaver":
                 ####TODO: make more generalized case. Currently applies only to Deathweaver
                 dw_idx  = vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
