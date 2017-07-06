@@ -636,7 +636,7 @@ def check_boss(entry):
 #       boss: the corresponding boss, as guaranteed by variable
 # @return:
 #       map index in list, or -1 if not found or too many maps matched
-def check_maps(maps, boss):
+def check_maps(boss, maps):
     map_number  = ''
     map_idx     = -1
     
@@ -716,12 +716,13 @@ def validate_channel(ch):
 # @arg:
 #       server_id : str
 #           id of the server of the originating message
+#       msg_channel : str
+#           id of the channel of the originating message
 #       arg_list : list
 #           list of arguments supplied for the command
 # @return:
 #       an appropriate message for success or fail of command
 def process_command(server_id, msg_channel, arg_list):
-    #vaivora_modules.db.Database(server_id)
     # $boss help
     if rgx_help.match(arg_list[0]):
         return command
@@ -759,127 +760,282 @@ def process_command(server_id, msg_channel, arg_list):
 
     # $boss [boss] [status] ...
     if rgx_status.match(arg_list[1]):
+        return process_cmd_status(server_id, msg_channel, cmd_boss[0], arg_list[1], arg_list[2], arg_list[3:])
+    # $boss [boss]|all [entry] ...
+    elif rgx_entry.match(arg_list[1]) and len(arg_list) == 2:
+        return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1])
+    elif rgx_entry.match(arg_list[1]):
+        return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1], arg_list[2:])
 
-        offset      =   0
-        target      = dict()
+# @func:    process_cmd_status(str, str, str, str, str, list) : str
+# @arg:
+#       server_id : str
+#           id of the server of the originating message
+#       msg_channel : str
+#           id of the channel of the originating message
+#       boss : str
+#           the boss in question
+#       status : str
+#           the boss's status, or the status command
+#       time : str
+#           time represented for the associated event
+#       opt_list : list
+#           list containing optional parameters. may be null.
+# @return:
+#       an appropriate message for success or fail of command
+def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
+    offset      =   0
+    target      =   dict()
 
-        target['boss']      =   cmd_boss[0] # reassign to 'target boss'
+    # target - boss
+    target['boss']      =   tg_boss # cmd_boss[0] # reassign to 'target boss'
+    target['msg_chan']  =   msg_channel
+    target['channel']   =   -1
 
-        if len(arg_list) > 3:
-            for cmd_arg in arg_list[3:]:
-                channel =   rgx_channel.match(cmd_arg)
-                if channel and channel.group(2) != '1' and not target['boss'] in bosses_world:
-                    return cmd_arg + " is invalid for `$boss`:`channel` because " + target['boss'] + " is a field boss.\n" + \
-                           "Field bosses that spawn in channels other than 1 are always jackpot bosses, world boss forms of " + \
-                           "the equivalent field boss.\n" + msg_help
-                elif channel and target['boss'] in bosses_world:
-                    target['channel']  =   int(channel.group(2)) # use channel provided by command
-                else: # possibly map instead
-                    target['channel']  =   1 # default; if null or field, use 1
-                    if cmd_arg: # not null; must be map
+    if len(opt_list) > 0:
+        opts                =   process_cmd_opt(opt_list)
+        target['map']       =   opts['map']
+        target['channel']   =   opts['channel']
+    # 3 or fewer arguments
+    elif not target['boss'] in bosses_world:
+        target['map']       =   "N/A"
+        target['channel']   =   1
+    else:
+        target['map']       =   boss_locs[target['boss']][0]
+        target['channel']   =   1
 
 
-        # $boss [boss] died ...
-        if rgx_st_died.match(arg_list[1]):
-            time_offset = timedelta(hours=time_died)
-            target['status']    =   status_died
-        elif rgx_st_warn.match(arg_list[1]):
-            if not target['boss'] in bosses_field:
-                return target['boss'] + " is invalid for `$boss`:`time`:`" + arg_list[1] + "`. " + \
-                       "Only field bosses have warnings.\n" + msg_help
-            time_offset = timedelta(hours=time_warned)
-            target['status']    =   status_warned
-        else:
-            if not target['boss'] in bosses_world:
-                return target['boss'] + " is invalid for `$boss`:`time`:`" + arg_list[1] + "`. " + \
-                       "Only world bosses can be anchored.\n" + msg_help
-            time_offset = timedelta(hours=time_anchored)
-            target['status']    =   status_anchored
+    # $boss [boss] died ...
+    if rgx_st_died.match(status):
+        time_offset         =   timedelta(hours=time_died)
+        target['status']    =   status_died
+    # $boss [boss] warned ...
+    elif rgx_st_warn.match(status):
+        if not target['boss'] in bosses_field:
+            return target['boss'] + " is invalid for `$boss`:`time`:`" + status + "`. " + \
+                   "Only field bosses have warnings.\n" + msg_help
+        time_offset         =   timedelta(hours=time_warned)
+        target['status']    =   status_warned
+    # $boss [boss] anchored ...
+    else:
+        if not target['boss'] in bosses_world:
+            return target['boss'] + " is invalid for `$boss`:`time`:`" + status + "`. " + \
+                   "Only world bosses can be anchored.\n" + msg_help
+        time_offset         =   timedelta(hours=time_anchored)
+        target['status']    =   status_anchored
 
-        # error: invalid time
-        if not rgx_time.match(arg_list[2]):
-            return arg_list[2] + " is not a valid time for `$boss`:`" + arg_list[1] + \
-                   "`:`time`. Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+    # error: invalid time
+    if not rgx_time.match(time):
+        return time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + \
+               "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
 
-        # $boss [boss] died [time?]
-        # $boss [boss] died [time:am/pm]
-        if rgx_time_ap.search(arg_list[2]):
-            # $boss [boss] died [time:pm]
-            if rgx_time_pm.search(arg_list[2]):
-                offset  = 12
-            arg_time    = rgx_time_ap.sub('', arg_list[2])
-        else:
-            arg_time    = arg_list[2]
+    # $boss [boss] died [time?]
+    # $boss [boss] died [time:am/pm]
+    if rgx_time_ap.search(time):
+        # $boss [boss] died [time:pm]
+        if rgx_time_pm.search(time):
+            offset  = 12
+        arg_time    = rgx_time_ap.sub('', time)
+    else:
+        arg_time    = time
 
-        delim   = rgx_time_dl.search(arg_time)
-        # $boss [boss] died [time:delimiter]
-        if delim:
-            hours, minutes  =   [int(t) for t in arg_time.split(delim.group(0))]
-            hours           +=  offset
-        # $boss [boss] died [time:no delimiter]
-        else:
-            minutes =   int(arg_time[::-1][0:2][::-1])
-            hours   =   int(re.sub(str(minutes), '', arg_time))
-            hours   +=  offset
+    delim   = rgx_time_dl.search(arg_time)
+    # $boss [boss] died [time:delimiter]
+    if delim:
+        hours, minutes  =   [int(t) for t in arg_time.split(delim.group(0))]
+        record['hour']  =   hours + offset
+    # $boss [boss] died [time:no delimiter]
+    else:
+        minutes =   int(arg_time[::-1][0:2][::-1])
+        hours   =   int(re.sub(str(minutes), '', arg_time))
+        record['hour']  =   hours + offset
 
-        # error: invalid hours
-        if hours > 23 or hours < 0:
-            return arg_list[2] + " is not a valid time for `$boss`:`" + arg_list[1] + \
-                   "`:`time`. Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+    # error: invalid hours
+    if record['hour'] > 23 or hours < 0:
+        return time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + \
+               "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
 
-        # $boss [boss] died [time] ...
-        server_date = datetime.now() + timedelta(hours=pacific2server)
+    # $boss [boss] died [time] ...
+    server_date = datetime.now() + timedelta(hours=pacific2server)
 
-        record          =   dict()
-        if hours > int(server_date.hour):
-            server_date += timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
+    record          =   dict()
+    if record['hour'] > int(server_date.hour):
+        server_date += timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
 
-        # dates handled like above example, e.g. record on 23:59, December 31st but recorded on New Years Day
-        record['year']  =   int(server_date.year) 
-        record['month'] =   int(server_date.month)
-        record['day']   =   int(server_date.day)
-        record['hour']  =   hours
-        record['mins']  =   minutes
+    # dates handled like above example, e.g. record on 23:59, December 31st but recorded on New Years Day
+    record['year']  =   int(server_date.year) 
+    record['month'] =   int(server_date.month)
+    record['day']   =   int(server_date.day)
+    #record['hour']  =   hours
+    record['mins']  =   minutes
 
-        # reconstruct boss kill time
-        record_date     =   datetime(*record.values())
-        record_date     +=  time_offset # value generated by arguments [died, warned, anchored]
+    # reconstruct boss kill time
+    record_date     =   datetime(*record.values())
+    record_date     +=  time_offset # value generated by arguments [died, warned, anchored]
 
-        if target['boss'] in boss_spawn_02h:
-            record_date +=  timedelta(hours=time_rel_2h) # 2 hour spawn
-        elif target['boss'] in boss_spawn_16h:
-            record_date +=  timedelta(hours=time_rel_16h) # 16 hour spawn
+    if target['boss'] in boss_spawn_02h:
+        record_date +=  timedelta(hours=time_rel_2h) # 2 hour spawn
+    elif target['boss'] in boss_spawn_16h:
+        record_date +=  timedelta(hours=time_rel_16h) # 16 hour spawn
 
-        # reassign to target data
-        target['year']  =   int(record_date.year)
-        target['month'] =   int(record_date.month)
-        target['day']   =   int(record_date.day)
-        target['hour']  =   int(record_date.hour)
-        target['mins']  =   int(record_date.minute)
+    # reassign to target data
+    target['year']  =   int(record_date.year)
+    target['month'] =   int(record_date.month)
+    target['day']   =   int(record_date.day)
+    target['hour']  =   int(record_date.hour)
+    target['mins']  =   int(record_date.minute)
 
-        
-        # status = vdbs[command_server].update_db_boss(message_args)
-        # if not status: # update_db_boss failed
-        #     return await error(message.author, message.channel, \
-        #                        vaivora_constants.command.syntax.cmd_error_bad_boss_time_wrap, \
-        #                        vaivora_constants.command.syntax.cmd_boss, \
-        #                        msg=(datetime(boss_year, boss_month, boss_day, original_boss_hour, boss_minutes).strftime("%Y/%m/%d %H:%M")))
-        # await client.send_message(message.channel, message.author.mention + " " + \
-        #                           vaivora_constants.command.boss.acknowledge + \
-        #                           "```python\n"
-        #                           "\"" + message_args['name'] + "\" " + \
-        #                           message_args['status'] + " at " + \
-        #                           ("0" if original_boss_hour < 10 else "") + \
-        #                           str(original_boss_hour) + ":" + \
-        #                           ("0" if message_args['mins'] < 10 else "") + \
-        #                           str(message_args['mins']) + \
-        #                           ", in ch." + str(message_args['channel']) + ": " + \
-        #                           (("\"" + message_args['map'] + "\"") if message_args['map'] != "N/A" else "") + "```\n")
-        # #await client.process_commands(message)
-        # return True # command processed
+    status = vaivora_modules.db.Database(server_id).update_db_boss(target)
+
+    if status:
+        return acknowledge + "```python\n" + \
+               "\"" + target['boss'] + "\" " + \
+               target['status'] + " at " + \
+               ("0" if hours < 10 else "") + \
+               str(hour) + ":" + \
+               ("0" if minutes < 10 else "") + \
+               str(minutes) + \
+               ", in ch." + str(target['channel']) + ": " + \
+               (("\"" + target['map'] + "\"") if target['map'] != "N?A" else "") + "```\n"
+    else:
+        return "Your command, `" + ' '.join(arg_list) + "`, could not be processed.\n" + msg_help
 
 
     pass
+
+# @func:    process_cmd_status(str, str, str, str, str, list) : str
+# @arg:
+#       server_id : str
+#           id of the server of the originating message
+#       msg_channel : str
+#           id of the channel of the originating message
+#       bosses : list
+#           the bosses/target in question
+#       entry : str
+#           the entry command
+#       opt_list : list
+#           (optional) (default: None)
+#           Contains extra parameters 'map' and/or 'channel'
+# @return:
+#       an appropriate message for success or fail of command
+def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
+    if rgx_erase.match(entry) and not opt_list and tg_bosses == bosses:
+        vaivora_modules.db.Database(server_id).rm_entry_db_boss()
+        return "Your queried records have successfully been erased.\n"
+
+    # specific bosses to erase, but no options
+    elif rgx_erase.match(entry) and not opt_list:
+        vaivora_modules.db.Database(server_id).rm_entry_db_boss(tg_bosses)
+        return "Your queried records have successfully been erased.\n"
+
+    # implicit non-null opt_list, erase
+    elif rgx_erase.match(entry):
+        opts                =   process_cmd_opt(opt_list)
+
+        # process opts
+        # too many bosses but only one map
+        if opts['map'] != "N/A" and len(tg_bosses) > 1:
+            return "Your query:`map`, `" + entry + "`, could not be interpreted.\n" + \
+                   "You listed a map but selected more than one boss.\n" + msg_help
+
+        # map is not null but channel is
+        elif opts['map'] != "N/A" and not opts['channel']:
+            vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_map=opts['map'])
+            return "Your queried records have successfully been erased.\n"
+
+        # error: channel other than 1, and boss is field boss
+        elif opts['channel'] != 1 and not tg_bosses[0] in bosses_world:
+            return "Your query:`channel`, `" + opts['channel'] + "`, could not be interpreted.\n" + \
+                   "Field bosses, like `" + tg_bosses[0] + "`, with regular spawn do not spawn in channels other than 1.\n" + msg_help
+
+        # channel is not null but map is
+        elif opts['channel'] and opts['map'] == "N/A":
+            vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts['channel'])
+            return "Your queried records have successfully been erased.\n"
+
+        # implicit catch-all: match with all conditions
+        else:
+            vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts['channel'], boss_map=opts['map'])
+            return "Your queried records have successfully been erased.\n"
+
+    # implicit list
+    else:
+        valid_boss_records = list()
+        boss_records = vaivora_modules.db.Database(server_id).check_db_boss(bosses=tg_bosses) # possible return
+
+        # empty
+        if not boss_records: # empty
+            return "No results found! Try a different boss.\n"
+
+        for boss_record in boss_records:
+            boss_status =   boss_record[3]
+            record_date =   [int(rec) for rec in boss_record[5:10]]
+            record_date =   datetime(*record_date)
+            ret_message =   " and "
+            tense_time = " minutes "
+            time_diff   = datetime.now() + pacific2server - record_date
+
+            # old records
+            if int(time_diff.days) >= 0:
+                ret_message +=  "should have respawned at "
+                mins_left   =   int(time_diff.seconds)/60 + int(time_diff.days)*86400
+
+            # anchored
+            elif boss_status == status_anchored:
+                ret_message += "will spawn as early as "
+                mins_left   = (86400-int(time_diff.seconds))/60
+
+            # warned & died
+            else:
+                ret_message += "will respawn around "
+                mins_left   = (86400-int(time_diff.seconds))/60
+
+            if int(time_diff.days) > 1:
+                ret_message += str(time_diff.days) + " day(s), " + str(int(mins_left / 60)) + " hours, " + str(mins_left % 60)
+            elif int(time_diff.days) == 1:
+                ret_message += str(time_diff.days) + " day(s), " + str(int(mins_left / 60)) + " hours, " + str(mins_left % 60)
+            elif mins_left > 99:
+                ret_message += str(int(mins_left / 60)) + " hours, " + str(mins_left % 60)
+                
+                    
+            elif mins_left < 0:
+                mins_left = str(int(24 + mins_left / 60)) + " hours, " + str(mins_left % 60)
+            else:
+                mins_left = str(mins_left)
+            valid_boss_records.append("\"" + boss_record[0] + "\" " + boss_st + \
+                                      " in ch." + str(int(boss_record[1])) + tense + \
+                                      record_date.strftime("%Y/%m/%d \"%H:%M\"") + \
+                                      " (" + str(mins_left) + tense_time + ")" + \
+                                      ".\nLast known map: #   " + boss_record[2])
+
+# @func:    process_cmd_opt(list) : dict
+# @arg:
+#       opt_list : list
+#           any optional parameters, of 1 length or more
+# @return:
+#       dict containing k:v 'map' and 'channel', both str
+def process_cmd_opt(opt_list):
+    target  =   dict()
+    for cmd_arg in opt_list:
+        channel     =   rgx_channel.match(cmd_arg)
+        if channel and channel.group(2) != '1' and not target['boss'] in bosses_world:
+            return cmd_arg + " is invalid for `$boss`:`channel` because " + target['boss'] + " is a field boss.\n" + \
+                   "Field bosses that spawn in channels other than 1 are always jackpot bosses, world boss forms of " + \
+                   "the equivalent field boss.\n" + msg_help
+        # target - channel
+        elif channel and target['boss'] in bosses_world:
+            target['channel']   =   int(channel.group(2)) # use channel provided by command
+            target['map']       =   boss_locs[target['boss']][0]
+        elif not channel and target['boss'] in bosses_field: # possibly map instead
+            target['channel']   =   1
+            if cmd_arg: # must be map if not null
+                map_idx         =   check_maps(target['boss'], cmd_arg)
+            # target - map 
+            if cmd_arg and map_idx >= 0 and map_idx < len(boss_locs[target['boss']]):
+                target['map']   =   boss_locs[target['boss']][map_idx]
+            else:
+                target['map']   =   "N/A"
+    return target
 
 def process_time(hours, minutes, offset):
     pass
