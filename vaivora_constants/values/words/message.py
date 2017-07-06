@@ -1,6 +1,6 @@
 #vaivora_constants.values.words.message
 #requires: vaivora_constants.command.boss
-import vaivora_constants.command.boss
+#import vaivora_constants.command.boss
 
 reason  =   "Reason: "
 welcome =   "Thank you for inviting me to your server! " + "\n"  + \
