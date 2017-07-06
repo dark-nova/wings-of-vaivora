@@ -858,30 +858,29 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     # $boss [boss] died [time:delimiter]
     if delim:
         hours, minutes  =   [int(t) for t in arg_time.split(delim.group(0))]
-        record['hour']  =   hours + offset
+        temp_hour       =   hours + offset
     # $boss [boss] died [time:no delimiter]
     else:
-        minutes =   int(arg_time[::-1][0:2][::-1])
-        hours   =   int(re.sub(str(minutes), '', arg_time))
-        record['hour']  =   hours + offset
-
+        minutes         =   int(arg_time[::-1][0:2][::-1])
+        hours           =   int(re.sub(str(minutes), '', arg_time))
+        temp_hour       =   hours + offset
 
     # error: invalid hours
-    if record['hour'] > 23 or hours < 0:
+    if temp_hour > 23 or hours < 0:
         return time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + \
                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
 
     # $boss [boss] died [time] ...
     server_date = datetime.now() + timedelta(hours=pacific2server)
 
-    if record['hour'] > int(server_date.hour):
+    if temp_hour > int(server_date.hour):
         server_date += timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
 
     # dates handled like above example, e.g. record on 23:59, December 31st but recorded on New Years Day
     record['year']  =   int(server_date.year) 
     record['month'] =   int(server_date.month)
     record['day']   =   int(server_date.day)
-    #record['hour']  =   hours
+    record['hour']  =   temp_hour
     record['mins']  =   minutes
 
     # reconstruct boss kill time
