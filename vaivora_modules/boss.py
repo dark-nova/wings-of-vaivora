@@ -265,7 +265,7 @@ rgx_letters = re.compile(r'[a-z -]+', re.IGNORECASE)
 
 
 floors_chk  = re.compile(r'[bfd]?[0-9][bfd]?$', re.IGNORECASE)
-rgx_floors  = re.compile(r'[^1-5bdf]*((?P<basement>b)|(?P<floor>f))? ?(?P<floornumber>[1-5]) ?((?P<basement>b)|(?P<floor>f))?$', re.IGNORECASE)
+rgx_floors  = re.compile(r'[^1-5bdf]*((?P<basement>b)|(?P<floor>f))? ?(?P<floornumber>[1-5]) ?((?P=basement)|(?P=floor))?$', re.IGNORECASE)
 #floors_fmt  = re.compile(r'[^1-5bdf]*(?P<basement>b)? ?(?P<floornumber>[1-5]) ?(?P<floor>f)?$', re.IGNORECASE)
 rgx_loc_az  = re.compile(r'[^1-5bdf]', re.IGNORECASE)
 
@@ -712,7 +712,7 @@ def validate_channel(ch):
     else:
         return 1
 
-# @func:    process_command(str, list) : str
+# @func:    process_command(str, list) : list
 # @arg:
 #       server_id : str
 #           id of the server of the originating message
@@ -755,29 +755,29 @@ def process_command(server_id, msg_channel, arg_list):
     # error: invalid [target] argument for argument 2
     # using 'all' with [status]
     if rgx_status.match(arg_list[1]) and len(cmd_boss) != 1:
-        return arg_list[1] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help
+        return [arg_list[1] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help]
     # using 'all' with [query]
     if rgx_query.match(arg_list[1]) and len(cmd_boss) != 1:
-        return arg_list[1] + " is invalid for `$boss`:'all' argument position 2.\n" + msg_help
+        return [arg_list[1] + " is invalid for `$boss`:'all' argument position 2.\n" + msg_help]
     # using [boss] with [type]
     if rgx_type.match(arg_list[1]) and len(cmd_boss) <= 1:
-        return arg_list[1] + " is invalid for `$boss`:`" + cmd_boss[0] + "`, argument position 2.\n" + msg_help
+        return [arg_list[1] + " is invalid for `$boss`:`" + cmd_boss[0] + "`, argument position 2.\n" + msg_help]
     # no such errors with entry, since entry accepts both [boss] and 'all'
 
     # $boss [boss] [status] ...
     if rgx_status.match(arg_list[1]):
-        return process_cmd_status(server_id, msg_channel, cmd_boss[0], arg_list[1], arg_list[2], arg_list[3:])
+        return [process_cmd_status(server_id, msg_channel, cmd_boss[0], arg_list[1], arg_list[2], arg_list[3:])]
     # $boss [boss]|all [entry] ...
     elif rgx_entry.match(arg_list[1]) and len(arg_list) == 2:
-        return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1])
+        return [process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1])]
     elif rgx_entry.match(arg_list[1]):
-        return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1], arg_list[2:])
+        return [process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1], arg_list[2:])]
     # $boss [boss] [query]
     elif rgx_query.match(arg_list[1]):
-        return process_cmd_query(cmd_boss[0], arg_list[1])
+        return [process_cmd_query(cmd_boss[0], arg_list[1])]
     # $boss all [type]
     else:
-        return process_cmd_type(arg_list[1])
+        return [process_cmd_type(arg_list[1])]
 
 
 # @func:    process_cmd_status(str, str, str, str, str, list) : str

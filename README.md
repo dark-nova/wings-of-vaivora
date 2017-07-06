@@ -105,6 +105,7 @@
     6. `help`
         - Sends a direct message to you about how to use the command.
 
+
     +   `*` 
         Notes about world and field bosses:
         
