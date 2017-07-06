@@ -982,7 +982,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
         for boss_record in boss_records:
             boss_name   =   boss_record[0]
-            boss_chan   =   boss_record[1]
+            boss_chan   =   str(boss_record[1])
             boss_premap =   boss_record[2]
             boss_status =   boss_record[3]
             record_date =   [int(rec) for rec in boss_record[5:10]]
@@ -991,7 +991,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             # e.g.          "Earth Canceril"           was anchored  in ch.      2           and
             # e.g.          "Demon Lord Marnox"        was warned to spawn in ch.1           and
             ret_message =   "\"" + boss_name + "\" " + boss_status + " in ch." + boss_chan + " and "
-            time_diff   = datetime.now() + pacific2server - record_date
+            time_diff   = datetime.now() + timedelta(hours=pacific2server) - record_date
 
             # old records
             if int(time_diff.days) >= 0:
