@@ -865,6 +865,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         hours   =   int(re.sub(str(minutes), '', arg_time))
         record['hour']  =   hours + offset
 
+
     # error: invalid hours
     if record['hour'] > 23 or hours < 0:
         return time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + \
@@ -873,7 +874,6 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     # $boss [boss] died [time] ...
     server_date = datetime.now() + timedelta(hours=pacific2server)
 
-    record          =   dict()
     if record['hour'] > int(server_date.hour):
         server_date += timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
 
