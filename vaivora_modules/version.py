@@ -849,3 +849,19 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('2pre-1')
+status_n.append(unstable)
+date_n.append("2017/07/01")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + Migrated boss module files together, mostly.
+```"""
+
+changelog.append(current)
