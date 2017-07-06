@@ -29,6 +29,7 @@ command_boss        = "boss"
 command_settings    = "settings"
 
 rgx_help            = re.compile(r'help', re.IGNORECASE)
+rgx_boss            = re.compile(r'\$boss .+', re.IGNORECASE)
 
 to_sanitize         = re.compile(r'[^a-z0-9 .:$",-]', re.IGNORECASE)
 
@@ -191,7 +192,7 @@ async def on_message(message):
         return True # do not respond to self
     if not message.channel or not message.channel.name:
         # boss help
-        if vaivora_constants.regex.boss.command.prefix.match(message.content):
+        if rgx_boss.match(message.content):
             if vaivora_constants.regex.boss.command.arg_help.search(message.content):
                 return await sanitize_cmd(message, command_boss)
         # general
@@ -250,7 +251,7 @@ async def on_message(message):
                 return True
         return True
     # boss commands handling
-    if vaivora_constants.regex.boss.command.prefix.match(message.content):
+    if rgx_boss.match(message.content):
         if boss_ch and not message.channel.mention in boss_ch:
             return False
         elif boss_ch:
