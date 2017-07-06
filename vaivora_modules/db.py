@@ -149,31 +149,31 @@ class Database:
         contents = []
         #self.open_db()
         # the following two bosses rotate per spawn
-        if boss_dict['name'] == 'Mirtis' or boss_dict['name'] == 'Helgasercle':
+        if boss_dict['boss'] == 'Mirtis' or boss_dict['boss'] == 'Helgasercle':
             self.cursor.execute("select * from boss where name=?", ('Mirtis',))
             contents.extend(self.cursor.fetchall())
             self.cursor.execute("select * from boss where name=?", ('Helgasercle',))
             contents.extend(self.cursor.fetchall())
-        elif boss_dict['name'] == 'Demon Lord Marnox' or boss_dict['name'] == 'Rexipher':
+        elif boss_dict['boss'] == 'Demon Lord Marnox' or boss_dict['boss'] == 'Rexipher':
             self.cursor.execute("select * from boss where name=?", ('Demon Lord Marnox',))
             contents.extend(self.cursor.fetchall())
             self.cursor.execute("select * from boss where name=?", ('Rexipher',))
             contents.extend(self.cursor.fetchall())
-        elif boss_dict['name'] == 'Blasphemous Deathweaver':
+        elif boss_dict['boss'] == 'Blasphemous Deathweaver':
             for dw_map in vaivora_modules.boss.boss_locs['Blasphemous Deathweaver']:
                 self.cursor.execute("select * from boss where name=? and map=?", \
-                                    (boss_dict['name'], dw_map,))
+                                    (boss_dict['boss'], dw_map,))
                 contents.extend(self.cursor.fetchall())
         else:
-            self.cursor.execute("select * from boss where name=? and channel=?", (boss_dict['name'], boss_dict['channel'],))
+            self.cursor.execute("select * from boss where name=? and channel=?", (boss_dict['boss'], boss_dict['channel'],))
             contents.extend(self.cursor.fetchall())
 
         # invalid case: more than one entry for this combination
         ####TODO: Re-examine code. probably not necessary anymore.
-        # if   boss_dict['name'] != "Blasphemous Deathweaver" and len(contents) > 1:
-        #     self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
-        # elif boss_dict['name'] == "Blasphemous Deathweaver" and len(contents) > 2:
-        #     self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_map=boss_dict['map'])
+        # if   boss_dict['boss'] != "Blasphemous Deathweaver" and len(contents) > 1:
+        #     self.rm_entry_db_boss(boss_list=[boss_dict['boss'],])
+        # elif boss_dict['boss'] == "Blasphemous Deathweaver" and len(contents) > 2:
+        #     self.rm_entry_db_boss(boss_list=[boss_dict['boss'],], boss_map=boss_dict['map'])
 
         # handle similar times
 
@@ -186,12 +186,12 @@ class Database:
                            int(contents[0][6]) <= boss_dict['month'] or \
                            int(contents[0][7]) <= boss_dict['day'] or \
                            int(contents[0][8]) <= boss_dict['hour'] - 3):
-            if boss_dict['name'] == "Blasphemous Deathweaver":
-                self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_map=boss_dict['map'])
-            elif boss_dict['name'] in vaivora_modules.boss.bosses_world:
-                self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_ch=boss_dict['channel'])
+            if boss_dict['boss'] == "Blasphemous Deathweaver":
+                self.rm_entry_db_boss(boss_list=[boss_dict['boss'],], boss_map=boss_dict['map'])
+            elif boss_dict['boss'] in vaivora_modules.boss.bosses_world:
+                self.rm_entry_db_boss(boss_list=[boss_dict['boss'],], boss_ch=boss_dict['channel'])
             else:
-                self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
+                self.rm_entry_db_boss(boss_list=[boss_dict['boss'],])
 
 
         #try: # boss database structure
