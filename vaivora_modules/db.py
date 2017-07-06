@@ -119,11 +119,11 @@ class Database:
     # @arg:
     #   self
     #   bosses:
-    #           list containing bosses to check (default: vaivora_constants.command.boss.bosses)
+    #           list containing bosses to check (default: vaivora_modules.boss.bosses)
     # @return:
     #   db_record:
     #           a list containing records or None
-    def check_db_boss(self, bosses=vaivora_constants.command.boss.bosses, channel=0):
+    def check_db_boss(self, bosses=vaivora_modules.boss.bosses, channel=0):
         #self.open_db()
         db_record = list()
         for boss in bosses:
@@ -160,7 +160,7 @@ class Database:
             self.cursor.execute("select * from boss where name=?", ('Rexipher',))
             contents.extend(self.cursor.fetchall())
         elif boss_dict['name'] == 'Blasphemous Deathweaver':
-            for dw_map in vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver']:
+            for dw_map in vaivora_modules.boss.boss_locs['Blasphemous Deathweaver']:
                 self.cursor.execute("select * from boss where name=? and map=?", \
                                     (boss_dict['name'], dw_map,))
                 contents.extend(self.cursor.fetchall())
@@ -188,7 +188,7 @@ class Database:
                            int(contents[0][8]) <= boss_dict['hour'] - 3):
             if boss_dict['name'] == "Blasphemous Deathweaver":
                 self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_map=boss_dict['map'])
-            elif boss_dict['name'] in vaivora_constants.command.boss.bosses_world:
+            elif boss_dict['name'] in vaivora_modules.boss.bosses_world:
                 self.rm_entry_db_boss(boss_list=[boss_dict['name'],], boss_ch=boss_dict['channel'])
             else:
                 self.rm_entry_db_boss(boss_list=[boss_dict['name'],])
@@ -219,7 +219,7 @@ class Database:
     def rm_entry_db_boss(self, boss_list=vaivora_modules.boss.bosses, boss_ch=0, boss_map=''):
         #self.open_db()
         if not boss_list:
-            boss_list = vaivora_constants.command.boss.bosses
+            boss_list = vaivora_modules.boss.bosses
         for boss in boss_list:
             if boss_ch:
                 self.cursor.execute("delete from boss where name=? and channel=?", (boss, boss_ch,))
@@ -227,7 +227,7 @@ class Database:
                 self.cursor.execute("delete from boss where name=? and boss_map=?", (boss, "N/A"))
             elif boss_map and boss_map != "N/A" and boss == "Blasphemous Deathweaver":
                 ####TODO: make more generalized case. Currently applies only to Deathweaver
-                dw_idx  = vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
+                dw_idx  = vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
                 if dw_idx == 0 or dw_idx == 1: # crystal mine
                     dw_idx = [(dw_idx + 1) % 2,]
                 else:
@@ -235,7 +235,7 @@ class Database:
                 for idx in dw_idx:
                     try:
                         self.cursor.execute("delete from boss where name=? and map=?", \
-                                            (boss, vaivora_constants.command.boss.boss_locs['Blasphemous Deathweaver'][idx]))
+                                            (boss, vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'][idx]))
                     except:
                         continue
             else:
