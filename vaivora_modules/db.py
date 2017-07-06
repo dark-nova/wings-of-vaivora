@@ -224,7 +224,7 @@ class Database:
             if boss_ch:
                 self.cursor.execute("delete from boss where name=? and channel=?", (boss, boss_ch,))
             elif not boss_map and boss in vaivora_modules.boss.bosses_field:
-                self.cursor.execute("delete from boss where name=? and boss_map=?", (boss, "N/A"))
+                self.cursor.execute("delete from boss where name=? and map=?", (boss, "N/A"))
             elif boss_map and boss_map != "N/A" and boss == "Blasphemous Deathweaver":
                 ####TODO: make more generalized case. Currently applies only to Deathweaver
                 dw_idx  = vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
