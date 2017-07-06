@@ -5,6 +5,9 @@ from importlib import import_module as im
 import vaivora_constants
 for mod in vaivora_constants.modules:
     im(mod)
+import vaivora_modules
+for mod in vaivora_modules.modules:
+    im(mod)
 
 class Database:
     # constants

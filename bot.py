@@ -21,9 +21,16 @@ for mod in vaivora_modules.modules:
     im(mod)
 
 # basic declarations and initializations
-client    = discord.Client()
-vdbs      = dict()
-vdst      = dict()
+client              = discord.Client()
+vdbs                = dict()
+vdst                = dict()
+
+command_boss        = "boss"
+command_settings    = "settings"
+
+rgx_help            = "help"
+
+to_sanitize         = re.compile(r'[^a-z0-9 .:$",-]', re.IGNORECASE)
 
 # snippet from discord.py docs
 # logger = logging.getLogger(vaivora_constants.values.filenames.logger)
@@ -186,7 +193,7 @@ async def on_message(message):
         # boss help
         if vaivora_constants.regex.boss.command.prefix.match(message.content):
             if vaivora_constants.regex.boss.command.arg_help.search(message.content):
-                return await boss_cmd(message, pm=True)
+                return await sanitize_cmd(message, command_boss)
         # general
         elif vaivora_constants.regex.dm.command.prefix.match(message.content):
             # subscribe
@@ -244,14 +251,12 @@ async def on_message(message):
         return True
     # boss commands handling
     if vaivora_constants.regex.boss.command.prefix.match(message.content):
-        print(boss_ch)
         if boss_ch and not message.channel.mention in boss_ch:
-            print('failed')
             return False
         elif boss_ch:
-            return await boss_cmd(message)
+            return await sanitize_cmd(message, command_boss)
         elif not boss_ch and "timer" in message.channel.name or "boss" in message.channel.name:
-            return await boss_cmd(message)
+            return await sanitize_cmd(message, command_boss)
     #await client.process_commands(message)
 
 
@@ -922,259 +927,304 @@ def msg_talt(message, highest_role, taltn, unit):
 #           (default: False)
 #           if the message was a direct message or not
 # @return:
-#       True if successful, False otherwise
-@client.event
-async def boss_cmd(message, pm=False):
-    if not pm:
-        command_server  = message.server.id # changed to id
-    command_message = message.content
-    
-    # sanitize & standardize
-    command_message = vaivora_constants.regex.format.matching.to_sanitize.sub('', command_message)
-    command_message = command_message.lower()             
-    # strip leading command/arg
-    command_message = vaivora_constants.regex.boss.command.prefix.sub('', command_message)
-    message_args    = dict() # keys(): name, channel, map, time, 
-    boss_channel    = 1
-    maps_idx        = -1
-    # command: list of arguments
-    try:
-        command = shlex.split(command_message)
-    except ValueError:
-        return await error(message.author, message.channel, \
-                           vaivora_constants.command.syntax.cmd_error_bad_syntax_quote, \
-                           vaivora_constants.command.syntax.cmd_boss)
-    if len(command) < 1 or command[0] == "help" and not pm:
-        for cmd_frag in vaivora_constants.command.boss.command:
-            await client.send_message(message.author, cmd_frag)
-            await asyncio.sleep(1)
-        return True
-    elif command[0] == "help" and pm:
-        for cmd_frag in vaivora_constants.command.boss.command:
-            await client.send_message(message.author, cmd_frag)
-            await asyncio.sleep(1)
-        return True
-    elif pm:
-        return False
-    # begin checking validity
-    #     arg validity
-    #         count
-    #             [3,4] - killed/anchored
-    #             [2,3] - erase
-    if len(command) < 2:
-        return await error(message.author, message.channel, \
-                           vaivora_constants.command.syntax.cmd_error_bad_syntax, \
-                           vaivora_constants.command.syntax.cmd_boss, command_message)
-    if (vaivora_constants.regex.boss.status.all_status.match(command[1]) and \
-        (len(command) < vaivora_constants.command.boss.arg_min or \
-         len(command) > vaivora_constants.command.boss.arg_max)) or \
-       (vaivora_constants.regex.boss.command.arg_erase.match(command[1]) and \
-        (len(command) < vaivora_constants.command.boss.arg_del_min or \
-         len(command) > vaivora_constants.command.boss.arg_del_max)):
-        return await error(message.author, message.channel, \
-                           vaivora_constants.command.syntax.cmd_error_bad_syntax_arg_ct, \
-                           vaivora_constants.command.syntax.cmd_boss, len(command))
-    #         status
-    if (not vaivora_constants.regex.format.matching.letters.match(command[0]) or \
-        not (vaivora_constants.regex.boss.status.all_status.match(command[1]) or \
-             vaivora_constants.regex.boss.command.arg_erase.match(command[1]) or \
-             vaivora_constants.regex.boss.command.arg_list.match(command[1]) or \
-             vaivora_constants.regex.boss.command.arg_info.match(command[1]) or \
-             vaivora_constants.regex.boss.command.arg_boss.match(command[1]))) or \
-      (vaivora_constants.regex.boss.status.all_status.match(command[1]) and \
-       not vaivora_constants.regex.format.time.full.match(command[2])):
-        return await error(message.author, message.channel, \
-                           vaivora_constants.command.syntax.cmd_error_bad_syntax, \
-                           vaivora_constants.command.syntax.cmd_boss)
-    #         boss
-    if vaivora_constants.regex.boss.command.arg_all.match(command[0]):
-        lookup_boss = vaivora_constants.command.boss.bosses
-        if vaivora_constants.regex.boss.command.arg_boss_w.match(command[1]):
-            await client.send_message(message.channel, message.author.mention + " " + \
-                                      vaivora_modules.boss.get_bosses_world())
-            return True
-        elif vaivora_constants.regex.boss.command.arg_boss_f.match(command[1]):
-            await client.send_message(message.channel, message.author.mention + " " + \
-                                      vaivora_modules.boss.get_bosses_field())
-            return True
-    else:
-        boss_idx = await check_boss(command[0])
-        if boss_idx < 0  or boss_idx >= len(vaivora_constants.command.boss.bosses):
-            return await error(message.author, message.channel, \
-                               vaivora_constants.command.syntax.cmd_error_bad_boss_name, \
-                               vaivora_constants.command.syntax.cmd_boss, command[0])
-        lookup_boss = [vaivora_constants.command.boss.bosses[boss_idx],]
-    arg_map_idx     = 3 if vaivora_constants.regex.boss.status.all_status.match(command[1]) else 2
-    if len(lookup_boss) == 1 and vaivora_constants.regex.boss.command.arg_info.match(command[1]):
-        if vaivora_constants.regex.boss.command.arg_syns.match(command[1]):
-            await client.send_message(message.channel, message.author.mention + " " + \
-                                      vaivora_modules.boss.get_syns(lookup_boss[0]))
-        else:
-            await client.send_message(message.channel, message.author.mention + " " + \
-                                      vaivora_modules.boss.get_maps(lookup_boss[0]))
-        return True
-    # boss list
-    if vaivora_constants.regex.boss.command.arg_list.match(command[1]):
-        valid_boss_records = list()
-        boss_records = vdbs[command_server].check_db_boss(lookup_boss) # possible return
-        if not boss_records: # empty
-            await client.send_message(message.channel, message.author.mention + "  " + \
-                                      "No results found! Try a different boss.\n")
-            return True
-        for boss_record in boss_records:
-            boss_st     = (boss_record[3] if boss_record[3] == "died" else ("was " + boss_record[3]))
-            record_date = [int(rec) for rec in boss_record[5:10]]
-            record_date = datetime(*record_date) + \
-                          vaivora_constants.values.time.offset.pacific2server
-            tense = " and "
-            tense_time = " minutes "
-            time_diff = datetime.now() + vaivora_constants.values.time.offset.pacific2server - record_date
-            if int(time_diff.days) >= 0:
-                tense += "should have respawned at "
-                tense_time += "ago"
-                tense_mins = int(time_diff.seconds / 60) + int(time_diff.days)*vaivora_constants.values.time.seconds.in_day
-            else:
-                tense += "will respawn " + ("around " if boss_record[3] != "anchored" else "as early as ")
-                tense_time += "from now"
-                tense_mins = int((vaivora_constants.values.time.seconds.in_day - time_diff.seconds) / 60)
+# #       True if successful, False otherwise
+# @client.event
+# async def boss_cmd(message):
+#     msg_prefix  =   ""
+#     # private dm
+#     if not message.server:
+#         message_srv     =   message.author.id
+#         reply_channel   =   message.author
+#     # server channel
+#     else:
+#         message_srv     =   message.server.id
+#         reply_channel   =   message.channel
+#         msg_prefix      =   message.author.mention + " "
 
-            if tense_mins > 99:
-                tense_mins = str(int(tense_mins / 60)) + " hours, " + str(tense_mins % 60)
-                if int(time_diff.days) >= 1:
-                    tense_mins = str(time_diff.days) + " day(s), " + tense_mins
-            elif tense_mins < 0:
-                tense_mins = str(int(24 + tense_mins / 60)) + " hours, " + str(tense_mins % 60)
-            else:
-                tense_mins = str(tense_mins)
-            valid_boss_records.append("\"" + boss_record[0] + "\" " + boss_st + \
-                                      " in ch." + str(int(boss_record[1])) + tense + \
-                                      record_date.strftime("%Y/%m/%d \"%H:%M\"") + \
-                                      " (" + str(tense_mins) + tense_time + ")" + \
-                                      ".\nLast known map: #   " + boss_record[2])
-        await client.send_message(message.channel, message.author.mention + " Records: ```python\n" + \
-                                  '\n\n'.join(valid_boss_records) + "\n```")
-        return True
-    if len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_field and len(command) > 3:
-        boss_channel    = 1
-        xmsg            = lookup_boss[0] if lookup_boss[0] == "Blasphemous Deathweaver" else ""
-        try:
-            maps_idx = await check_maps(command[arg_map_idx], lookup_boss[0])
-            if maps_idx >= len(vaivora_constants.command.boss.boss_locs[lookup_boss[0]]):
-                raise
-        except:
-            return await error(message.author, message.channel, \
-                               vaivora_constants.command.syntax.cmd_error_bad_boss_map, \
-                               vaivora_constants.command.syntax.cmd_boss, xmsg=xmsg)
-    elif len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_world:
-        boss_channel    = 1 if len(command) == arg_map_idx else vaivora_modules.boss.validate_channel(command[arg_map_idx])
-        maps_idx        = 0
-    else:
-        boss_channel    = 1
-        maps_idx        = -1
-    # boss erase
-    if vaivora_constants.regex.boss.command.arg_erase.match(command[1]):
-        vdbs[command_server].rm_entry_db_boss(lookup_boss, boss_channel)
-        await client.send_message(message.channel, message.author.mention + " Record successfully erased.\n")
-        return True
-    # (implicit) boss status
-    if len(lookup_boss) > 1:
-        return await error(message.author, message.channel, \
-                           vaivora_constants.command.syntax.cmd_error_bad_boss_name, \
-                           vaivora_constants.command.syntax.cmd_boss, command[0])
-    message_args['name']    = lookup_boss[0]
-    message_args['channel'] = boss_channel
-    if maps_idx >= 0:
-        message_args['map'] = vaivora_constants.command.boss.boss_locs[message_args['name']][maps_idx]
-    else:
-        message_args['map'] = 'N/A'
-    # process time
-    #     antemeridian
-    if   vaivora_constants.regex.format.time.am.search(command[arg_map_idx - 1]):
-        boss_time   = vaivora_constants.regex.format.time.delim.split(vaivora_constants.regex.format.time.am.sub('', command[arg_map_idx - 1]))
-        boss_hour   = int(boss_time[0]) % 12
-    #     postmeridian
-    elif vaivora_constants.regex.format.time.pm.search(command[arg_map_idx - 1]):
-        boss_time   = vaivora_constants.regex.format.time.delim.split(vaivora_constants.regex.format.time.pm.sub('', command[arg_map_idx - 1]))
-        boss_hour   = (int(boss_time[0]) % 12) + 12
-    #     24h time
-    else:
-        boss_time   = command[arg_map_idx - 1].split(':')
-        boss_hour   = int(boss_time[0])
-    if boss_hour > 24:
-        return await error(message.author, message.channel, \
-                           vaivora_constants.command.syntax.cmd_error_bad_boss_time, \
-                           vaivora_constants.command.syntax.cmd_boss, msg=command[arg_map_idx - 1])
-    boss_minutes = int(boss_time[1])
-    original_boss_hour  = boss_hour
-    approx_server_time  = datetime.now() + vaivora_constants.values.time.offset.pacific2server
-    boss_day    = approx_server_time.day if boss_hour <= int(approx_server_time.hour) \
-                                         else (approx_server_time.day-1)
-    boss_month  = approx_server_time.month
-    boss_year   = approx_server_time.year
-    # late recorded time; correct with -1 day
-    mdate = datetime(boss_year, boss_month, boss_day, hour=boss_hour, minute=boss_minutes)
-    time_diff = approx_server_time-mdate
-    if time_diff.seconds < 0:  #or time_diff.seconds > 64800:
-        with open(vaivora_constants.values.filenames.debug_file,'a') as f:
-            f.write("server", message.server, "; time_diff", time_diff, "; mdate", mdate)
-        return await error(message.author, message.channel, \
-                           vaivora_constants.command.syntax.cmd_error_bad_boss_time, \
-                           vaivora_constants.command.syntax.cmd_boss, msg=command[arg_map_idx - 1])
-    wait_time = vaivora_constants.values.time.offset.boss_spawn_04h + \
-                vaivora_constants.values.time.offset.server2pacific
-    boss_hour = boss_hour + (int(wait_time.seconds) / 3600) # boss_hour in Pacific/local
-    if message_args['name'] in vaivora_constants.command.boss.bosses_events and \
-      vaivora_constants.regex.boss.status.anchored.match(command[1]):
-        return await error(message.author, message.channel, \
-                           vaivora_constants.command.syntax.cmd_error_bad_boss_status, \
-                           vaivora_constants.command.syntax.cmd_boss, msg=command[1])
-    elif message_args['name'] in vaivora_constants.command.boss.boss_spawn_02h or \
-      vaivora_constants.regex.boss.status.warning.match(command[1]):
-        if boss_hour < 2:
-            boss_hour += 22
-            boss_day -= 1
-        else:
-            boss_hour -= 2
-    elif message_args['name'] in vaivora_constants.command.boss.boss_spawn_16h:
-        boss_hour += 12 # 12 + 4 = 16
-    elif vaivora_constants.regex.boss.status.anchored.match(command[1]):
-        boss_hour -= 1
-    if int(boss_hour / 24):
-        boss_hour = boss_hour % 24
-        tomorrow = (datetime(boss_year, boss_month, boss_day)+timedelta(days=1))
-        boss_day = tomorrow.day
-        boss_month = tomorrow.month
-        boss_year = tomorrow.year
-    # add them to dict
-    message_args['hour']      = boss_hour
-    message_args['mins']      = boss_minutes
-    message_args['day']       = boss_day
-    message_args['month']     = boss_month
-    message_args['year']      = boss_year
-    message_args['status']    = command[1] # anchored or died
-    message_args['srvchn']    = message.channel.id
-    status = vdbs[command_server].update_db_boss(message_args)
-    if not status: # update_db_boss failed
-        return await error(message.author, message.channel, \
-                           vaivora_constants.command.syntax.cmd_error_bad_boss_time_wrap, \
-                           vaivora_constants.command.syntax.cmd_boss, \
-                           msg=(datetime(boss_year, boss_month, boss_day, original_boss_hour, boss_minutes).strftime("%Y/%m/%d %H:%M")))
-    await client.send_message(message.channel, message.author.mention + " " + \
-                              vaivora_constants.command.boss.acknowledge + \
-                              "```python\n"
-                              "\"" + message_args['name'] + "\" " + \
-                              message_args['status'] + " at " + \
-                              ("0" if original_boss_hour < 10 else "") + \
-                              str(original_boss_hour) + ":" + \
-                              ("0" if message_args['mins'] < 10 else "") + \
-                              str(message_args['mins']) + \
-                              ", in ch." + str(message_args['channel']) + ": " + \
-                              (("\"" + message_args['map'] + "\"") if message_args['map'] != "N/A" else "") + "```\n")
-    #await client.process_commands(message)
-    return True # command processed
+#     return_msg  =   await sanitize_cmd(message_srv, reply_channel, message, command_boss)
+
+    
+
+    # # strip leading command/arg
+    # command_message = vaivora_constants.regex.boss.command.prefix.sub('', command_message)
+    # message_args    = dict() # keys(): name, channel, map, time, 
+    # boss_channel    = 1
+    # maps_idx        = -1
+    # # command: list of arguments
+    # try:
+    #     command = shlex.split(command_message)
+    # except ValueError:
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_syntax_quote, \
+    #                        vaivora_constants.command.syntax.cmd_boss)
+    # if len(command) < 1 or command[0] == "help" and not pm:
+    #     for cmd_frag in vaivora_modules.boss.command:
+    #         await client.send_message(message.author, cmd_frag)
+    #         await asyncio.sleep(1)
+    #     return True
+    # elif command[0] == "help" and pm:
+    #     for cmd_frag in vaivora_modules.boss.command:
+    #         await client.send_message(message.author, cmd_frag)
+    #         await asyncio.sleep(1)
+    #     return True
+    # elif pm:
+    #     return False
+    # # begin checking validity
+    # #     arg validity
+    # #         count
+    # #             [3,4] - killed/anchored
+    # #             [2,3] - erase
+    # if len(command) < 2:
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_syntax, \
+    #                        vaivora_constants.command.syntax.cmd_boss, command_message)
+    # if (vaivora_constants.regex.boss.status.all_status.match(command[1]) and \
+    #     (len(command) < vaivora_constants.command.boss.arg_min or \
+    #      len(command) > vaivora_constants.command.boss.arg_max)) or \
+    #    (vaivora_constants.regex.boss.command.arg_erase.match(command[1]) and \
+    #     (len(command) < vaivora_constants.command.boss.arg_del_min or \
+    #      len(command) > vaivora_constants.command.boss.arg_del_max)):
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_syntax_arg_ct, \
+    #                        vaivora_constants.command.syntax.cmd_boss, len(command))
+    # #         status
+    # if (not vaivora_constants.regex.format.matching.letters.match(command[0]) or \
+    #     not (vaivora_constants.regex.boss.status.all_status.match(command[1]) or \
+    #          vaivora_constants.regex.boss.command.arg_erase.match(command[1]) or \
+    #          vaivora_constants.regex.boss.command.arg_list.match(command[1]) or \
+    #          vaivora_constants.regex.boss.command.arg_info.match(command[1]) or \
+    #          vaivora_constants.regex.boss.command.arg_boss.match(command[1]))) or \
+    #   (vaivora_constants.regex.boss.status.all_status.match(command[1]) and \
+    #    not vaivora_constants.regex.format.time.full.match(command[2])):
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_syntax, \
+    #                        vaivora_constants.command.syntax.cmd_boss)
+    # #         boss
+    # if vaivora_constants.regex.boss.command.arg_all.match(command[0]):
+    #     lookup_boss = vaivora_constants.command.boss.bosses
+    #     if vaivora_constants.regex.boss.command.arg_boss_w.match(command[1]):
+    #         await client.send_message(message.channel, message.author.mention + " " + \
+    #                                   vaivora_modules.boss.get_bosses_world())
+    #         return True
+    #     elif vaivora_constants.regex.boss.command.arg_boss_f.match(command[1]):
+    #         await client.send_message(message.channel, message.author.mention + " " + \
+    #                                   vaivora_modules.boss.get_bosses_field())
+    #         return True
+    # else:
+    #     boss_idx = await check_boss(command[0])
+    #     if boss_idx < 0  or boss_idx >= len(vaivora_constants.command.boss.bosses):
+    #         return await error(message.author, message.channel, \
+    #                            vaivora_constants.command.syntax.cmd_error_bad_boss_name, \
+    #                            vaivora_constants.command.syntax.cmd_boss, command[0])
+    #     lookup_boss = [vaivora_constants.command.boss.bosses[boss_idx],]
+    # arg_map_idx     = 3 if vaivora_constants.regex.boss.status.all_status.match(command[1]) else 2
+    # if len(lookup_boss) == 1 and vaivora_constants.regex.boss.command.arg_info.match(command[1]):
+    #     if vaivora_constants.regex.boss.command.arg_syns.match(command[1]):
+    #         await client.send_message(message.channel, message.author.mention + " " + \
+    #                                   vaivora_modules.boss.get_syns(lookup_boss[0]))
+    #     else:
+    #         await client.send_message(message.channel, message.author.mention + " " + \
+    #                                   vaivora_modules.boss.get_maps(lookup_boss[0]))
+    #     return True
+    # # boss list
+    # if vaivora_constants.regex.boss.command.arg_list.match(command[1]):
+    #     valid_boss_records = list()
+    #     boss_records = vdbs[command_server].check_db_boss(lookup_boss) # possible return
+    #     if not boss_records: # empty
+    #         await client.send_message(message.channel, message.author.mention + "  " + \
+    #                                   "No results found! Try a different boss.\n")
+    #         return True
+    #     for boss_record in boss_records:
+    #         boss_st     = (boss_record[3] if boss_record[3] == "died" else ("was " + boss_record[3]))
+    #         record_date = [int(rec) for rec in boss_record[5:10]]
+    #         record_date = datetime(*record_date) + \
+    #                       vaivora_constants.values.time.offset.pacific2server
+    #         tense = " and "
+    #         tense_time = " minutes "
+    #         time_diff = datetime.now() + vaivora_constants.values.time.offset.pacific2server - record_date
+    #         if int(time_diff.days) >= 0:
+    #             tense += "should have respawned at "
+    #             tense_time += "ago"
+    #             tense_mins = int(time_diff.seconds / 60) + int(time_diff.days)*vaivora_constants.values.time.seconds.in_day
+    #         else:
+    #             tense += "will respawn " + ("around " if boss_record[3] != "anchored" else "as early as ")
+    #             tense_time += "from now"
+    #             tense_mins = int((vaivora_constants.values.time.seconds.in_day - time_diff.seconds) / 60)
+
+    #         if tense_mins > 99:
+    #             tense_mins = str(int(tense_mins / 60)) + " hours, " + str(tense_mins % 60)
+    #             if int(time_diff.days) >= 1:
+    #                 tense_mins = str(time_diff.days) + " day(s), " + tense_mins
+    #         elif tense_mins < 0:
+    #             tense_mins = str(int(24 + tense_mins / 60)) + " hours, " + str(tense_mins % 60)
+    #         else:
+    #             tense_mins = str(tense_mins)
+    #         valid_boss_records.append("\"" + boss_record[0] + "\" " + boss_st + \
+    #                                   " in ch." + str(int(boss_record[1])) + tense + \
+    #                                   record_date.strftime("%Y/%m/%d \"%H:%M\"") + \
+    #                                   " (" + str(tense_mins) + tense_time + ")" + \
+    #                                   ".\nLast known map: #   " + boss_record[2])
+    #     await client.send_message(message.channel, message.author.mention + " Records: ```python\n" + \
+    #                               '\n\n'.join(valid_boss_records) + "\n```")
+    #     return True
+    # if len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_field and len(command) > 3:
+    #     boss_channel    = 1
+    #     xmsg            = lookup_boss[0] if lookup_boss[0] == "Blasphemous Deathweaver" else ""
+    #     try:
+    #         maps_idx = await check_maps(command[arg_map_idx], lookup_boss[0])
+    #         if maps_idx >= len(vaivora_constants.command.boss.boss_locs[lookup_boss[0]]):
+    #             raise
+    #     except:
+    #         return await error(message.author, message.channel, \
+    #                            vaivora_constants.command.syntax.cmd_error_bad_boss_map, \
+    #                            vaivora_constants.command.syntax.cmd_boss, xmsg=xmsg)
+    # elif len(lookup_boss) == 1 and lookup_boss[0] in vaivora_constants.command.boss.bosses_world:
+    #     boss_channel    = 1 if len(command) == arg_map_idx else vaivora_modules.boss.validate_channel(command[arg_map_idx])
+    #     maps_idx        = 0
+    # else:
+    #     boss_channel    = 1
+    #     maps_idx        = -1
+    # # boss erase
+    # if vaivora_constants.regex.boss.command.arg_erase.match(command[1]):
+    #     vdbs[command_server].rm_entry_db_boss(lookup_boss, boss_channel)
+    #     await client.send_message(message.channel, message.author.mention + " Record successfully erased.\n")
+    #     return True
+    # # (implicit) boss status
+    # if len(lookup_boss) > 1:
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_boss_name, \
+    #                        vaivora_constants.command.syntax.cmd_boss, command[0])
+    # message_args['name']    = lookup_boss[0]
+    # message_args['channel'] = boss_channel
+    # if maps_idx >= 0:
+    #     message_args['map'] = vaivora_constants.command.boss.boss_locs[message_args['name']][maps_idx]
+    # else:
+    #     message_args['map'] = 'N/A'
+    # # process time
+    # #     antemeridian
+    # if   vaivora_constants.regex.format.time.am.search(command[arg_map_idx - 1]):
+    #     boss_time   = vaivora_constants.regex.format.time.delim.split(vaivora_constants.regex.format.time.am.sub('', command[arg_map_idx - 1]))
+    #     boss_hour   = int(boss_time[0]) % 12
+    # #     postmeridian
+    # elif vaivora_constants.regex.format.time.pm.search(command[arg_map_idx - 1]):
+    #     boss_time   = vaivora_constants.regex.format.time.delim.split(vaivora_constants.regex.format.time.pm.sub('', command[arg_map_idx - 1]))
+    #     boss_hour   = (int(boss_time[0]) % 12) + 12
+    # #     24h time
+    # else:
+    #     boss_time   = command[arg_map_idx - 1].split(':')
+    #     boss_hour   = int(boss_time[0])
+    # if boss_hour > 24:
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_boss_time, \
+    #                        vaivora_constants.command.syntax.cmd_boss, msg=command[arg_map_idx - 1])
+    # boss_minutes = int(boss_time[1])
+    # original_boss_hour  = boss_hour
+    # approx_server_time  = datetime.now() + vaivora_constants.values.time.offset.pacific2server
+    # boss_day    = approx_server_time.day if boss_hour <= int(approx_server_time.hour) \
+    #                                      else (approx_server_time.day-1)
+    # boss_month  = approx_server_time.month
+    # boss_year   = approx_server_time.year
+    # # late recorded time; correct with -1 day
+    # mdate = datetime(boss_year, boss_month, boss_day, hour=boss_hour, minute=boss_minutes)
+    # time_diff = approx_server_time-mdate
+    # if time_diff.seconds < 0:  #or time_diff.seconds > 64800:
+    #     with open(vaivora_constants.values.filenames.debug_file,'a') as f:
+    #         f.write("server", message.server, "; time_diff", time_diff, "; mdate", mdate)
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_boss_time, \
+    #                        vaivora_constants.command.syntax.cmd_boss, msg=command[arg_map_idx - 1])
+    # wait_time = vaivora_constants.values.time.offset.boss_spawn_04h + \
+    #             vaivora_constants.values.time.offset.server2pacific
+    # boss_hour = boss_hour + (int(wait_time.seconds) / 3600) # boss_hour in Pacific/local
+    # if message_args['name'] in vaivora_constants.command.boss.bosses_events and \
+    #   vaivora_constants.regex.boss.status.anchored.match(command[1]):
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_boss_status, \
+    #                        vaivora_constants.command.syntax.cmd_boss, msg=command[1])
+    # elif message_args['name'] in vaivora_constants.command.boss.boss_spawn_02h or \
+    #   vaivora_constants.regex.boss.status.warning.match(command[1]):
+    #     if boss_hour < 2:
+    #         boss_hour += 22
+    #         boss_day -= 1
+    #     else:
+    #         boss_hour -= 2
+    # elif message_args['name'] in vaivora_constants.command.boss.boss_spawn_16h:
+    #     boss_hour += 12 # 12 + 4 = 16
+    # elif vaivora_constants.regex.boss.status.anchored.match(command[1]):
+    #     boss_hour -= 1
+    # if int(boss_hour / 24):
+    #     boss_hour = boss_hour % 24
+    #     tomorrow = (datetime(boss_year, boss_month, boss_day)+timedelta(days=1))
+    #     boss_day = tomorrow.day
+    #     boss_month = tomorrow.month
+    #     boss_year = tomorrow.year
+    # # add them to dict
+    # message_args['hour']      = boss_hour
+    # message_args['mins']      = boss_minutes
+    # message_args['day']       = boss_day
+    # message_args['month']     = boss_month
+    # message_args['year']      = boss_year
+    # message_args['status']    = command[1] # anchored or died
+    # message_args['srvchn']    = message.channel.id
+    # status = vdbs[command_server].update_db_boss(message_args)
+    # if not status: # update_db_boss failed
+    #     return await error(message.author, message.channel, \
+    #                        vaivora_constants.command.syntax.cmd_error_bad_boss_time_wrap, \
+    #                        vaivora_constants.command.syntax.cmd_boss, \
+    #                        msg=(datetime(boss_year, boss_month, boss_day, original_boss_hour, boss_minutes).strftime("%Y/%m/%d %H:%M")))
+    # await client.send_message(message.channel, message.author.mention + " " + \
+    #                           vaivora_constants.command.boss.acknowledge + \
+    #                           "```python\n"
+    #                           "\"" + message_args['name'] + "\" " + \
+    #                           message_args['status'] + " at " + \
+    #                           ("0" if original_boss_hour < 10 else "") + \
+    #                           str(original_boss_hour) + ":" + \
+    #                           ("0" if message_args['mins'] < 10 else "") + \
+    #                           str(message_args['mins']) + \
+    #                           ", in ch." + str(message_args['channel']) + ": " + \
+    #                           (("\"" + message_args['map'] + "\"") if message_args['map'] != "N/A" else "") + "```\n")
+    # #await client.process_commands(message)
+    # return True # command processed
 ####
 #
     
+# @func:    sanitize_cmd(str, str) : void
+# @arg:
+#       message : discord.Message
+#           The message to sanitize
+#       command_type : str
+#           command_boss        = "boss"
+#           command_settings    = "settings"
+@client.event
+async def sanitize_cmd(message, command_type):
+    cmd_message =   to_sanitize.sub('', message.content)
+    cmd_message =   cmd_message.lower()
+    try:
+        command =   shlex.split(message)
+    except ValueError:
+        return "Your command for `$" + command_type + "` had misused quotes somewhere.\n"
+
+    if rgx_help.match(command[0]) or not message.server:
+        server_id   =   message.author.id
+        msg_channel =   message.author
+        msg_prefix  =   ""
+    else:
+        server_id   =   message.server.id
+        msg.channel =   message.channel
+        msg_prefix  =   message.author.mention + " "
+    
+    if command_type == command_boss:
+        return_msg  = vaivora_modules.boss.process_command(server_id, msg_channel, command)
+    elif command_type == command_settings:
+        return_msg  = vaivora_modules.settings.process_commands(commmand)
+    else:
+        return # command was incorrect
+
+    await client.send_message(reply_channel, msg_prefix + return_msg[0])
+    if len(return_msg) > 1:
+        for msg_frag in return_msg[1:]:
+            await client.send_message(msg_channel, msg_frag)
+
 
 
 # begin periodic database check
