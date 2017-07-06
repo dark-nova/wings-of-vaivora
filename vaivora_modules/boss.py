@@ -751,7 +751,7 @@ def process_command(server_id, msg_channel, arg_list):
        not rgx_entry.match(arg_list[1]) and \
        not rgx_query.match(arg_list[1]) and \
        not rgx_type.match(arg_list[1]):
-        return arg_list[1] + " is invalid for `$boss`, argument position 2.\n" + msg_help
+        return ["\"" + arg_list[1] + "\" is invalid for `$boss`, argument position 2.\n" + msg_help]
 
     # error: invalid [target] argument for argument 2
     # using 'all' with [status]
@@ -777,8 +777,10 @@ def process_command(server_id, msg_channel, arg_list):
     elif rgx_query.match(arg_list[1]):
         return [process_cmd_query(cmd_boss[0], arg_list[1])]
     # $boss all [type]
-    else:
+    elif rgx_type.match(arg_list[1]):
         return [process_cmd_type(arg_list[1])]
+    else:
+        return arg_list[1] + " is invalid for `$boss`, argument position 2.\n" + msg_help
 
 
 # @func:    process_cmd_status(str, str, str, str, str, list) : str
