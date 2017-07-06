@@ -186,6 +186,7 @@ class Database:
                            int(contents[0][6]) <= boss_dict['month'] or \
                            int(contents[0][7]) <= boss_dict['day'] or \
                            int(contents[0][8]) <= boss_dict['hour'] - 3):
+
             if boss_dict['boss'] == "Blasphemous Deathweaver":
                 self.rm_entry_db_boss(boss_list=[boss_dict['boss'],], boss_map=boss_dict['map'])
             elif boss_dict['boss'] in vaivora_modules.boss.bosses_world:

@@ -915,7 +915,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
                ", in ch." + str(target['channel']) + ": " + \
                (("\"" + target['map'] + "\"") if target['map'] != "N/A" else "") + "```\n"
     else:
-        return "Your command, `" + ' '.join(arg_list) + "`, could not be processed.\n" + msg_help
+        return "Your command could not be processed. It appears this record overlaps too closely with another.\n" + msg_help
 
 
 # @func:    process_cmd_status(str, str, str, str, str, list) : str
