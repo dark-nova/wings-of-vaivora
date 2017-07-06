@@ -248,6 +248,7 @@ rgx_tg_all  = re.compile(r'all', re.IGNORECASE)
 rgx_status  = re.compile(r'(di|kill|anchor|warn)(ed)?', re.IGNORECASE)
 rgx_st_died = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
 rgx_st_warn = re.compile(r'warn(ed)?', re.IGNORECASE)
+rgx_st_anch = re.compile(r'anchor(ed)?', re.IGNORECASE)
 rgx_entry   = re.compile(r'(li?st?|erase|del(ete)?|cl(ea)?r)', re.IGNORECASE)
 #rgx_list    = re.compile(r'li?st?', re.IGNORECASE)
 rgx_erase   = re.compile(r'(erase|del(ete)?|cl(ea)?r)', re.IGNORECASE)
@@ -1013,7 +1014,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
             # absolute date and time for spawn
             # e.g.              2017/07/06 "14:47"
-            ret_message     +=  record_date.strftime("%Y/%m/%d \"%H:%M\"")
+            ret_message     +=  record_date.strftime("%Y/%m/%d %H:%M")
 
             # open parenthesis for minutes
             ret_message +=  " ("
@@ -1111,5 +1112,89 @@ def process_cmd_opt(opt_list):
                 target['map']   =   "N/A"
     return target
 
-def process_time(hours, minutes, offset):
-    pass
+
+# @func:    process_records(str, str, datetime, str, float) : str
+# @arg:
+#       boss : str
+#           the boss in question
+#       status : str
+#           the status of the boss
+#       time : datetime
+#           the datetime of the target set to its next spawn
+#       boss_map : str
+#           the map containing the last recorded spawn
+#       channel : float
+#           the channel of the world boss if applicable, else 1
+# @return:
+#       returns a message formed by the record
+def process_record(boss, status, time, boss_map, channel):
+    # map does not rotate
+    if rgx_st_warn.match(status) or boss in bosses_world:
+        ret_message =   ", in the following map:\n" +"#   "
+        ret_message +=  boss_map
+
+    # unrecorded map
+    elif boss_map == 'N/A':
+        boss_map    = ['[Map Unknown]',]
+
+    # Ashaq Deathweaver
+    elif boss == "Blasphemous Deathweaver" and rgx_loc_dwa.search(boss_map):
+        ret_message =   ", in one of the following maps:\n" + "#   "
+        ret_message +=  "\n#   ".join([m for m in boss_locs[boss][2:-1] if m != boss_map])
+
+    # Crystal Mine Deathweaver
+    elif boss == "Blasphemous Deathweaver":
+        ret_message =   ", in the following map:\n" + "#   "
+        ret_message +=  "\n#   ".join([m for m in boss_locs[boss][0:2] if m != boss_map])
+
+    # bosses with only two rotating fields
+    else len(boss_locs[boss]) == 2:
+        ret_message =   ", in the following map:\n" + "#   "
+        ret_message +=  "\n#   ".join([m for m in boss_locs[boss] if m != boss_map])
+
+    # all others, i.e. bosses with more than two rotating fields
+    else:
+        ret_message =   ", in one of the following maps:\n" + "#   "
+        ret_message +=  "\n#   ".join([m for m in boss_locs[boss] if m != boss_map])
+
+    if boss == "Kubas Event":
+        ret_message += "#   [Machine of Riddles], ch."  + str(math.floor(channel%2+1))
+
+    rem_minutes     = math.floor((time-(datetime.now()+timedelta(hours=pacific2server))).seconds/60)
+
+    time_str        = time.strftime("%Y/%m/%d %H:%M") + " (in " + rem_minutes + "minutes)"
+    when_spawn      = "at " + time_str + ret_message
+
+    # set time difference based on status and type of boss
+    # takes the negative (additive complement) to get the original time
+    # anchored
+    if rgx_st_anch.search(status):
+        time_diff   = timedelta(hours=(-1*time_anchored))
+        when_spawn  = "between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + \
+                      "and " + time_str + ret_message
+    # warned; takes precedence over when the boss will spawn
+    elif rgx_st_warn.search(status):
+        time_diff   = timedelta(hours=(-1*time_warned))
+    # two hour spawns; takes precedence over type of boss
+    elif boss in boss_spawn_02h:
+        time_diff   = timedelta(hours=(-1*(time_rel_2h+time_died)))
+    # sixteen hour spawns; takes precedence over type of boss
+    elif boss in boss_spawn_16h:
+        time_diff   = timedelta(hours=(-1*(time_rel_16h+time_died)))
+    # all else; these are generally 4h
+    else:
+        time_diff   = timedelta(hours=(-1*time_died))
+
+    # and add it back to get the reported time
+    report_time     = time+time_diff
+    
+    # e.g. "Blasphemous Deathweaver" died in ch.1 Crystal Mine 3F at 2017/07/06 18:30,
+    #      and should spawn at 2017/07/06 22:30, in the following map:
+    #      #   Crystal Mine 2F
+    ret_message     = "\"" + boss + "\" " + status + " " + \
+                      "in ch." + str(math.floor(float(channel))) + " " + boss_map + " " + \
+                      "at " + report_time.strftime("%Y/%m/%d %H:%M") + ",\n" + \
+                      "and should spawn " + when_spawn
+
+    return ret_message
+    

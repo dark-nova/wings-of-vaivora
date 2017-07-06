@@ -1294,15 +1294,15 @@ async def check_databases():
                     # invalid entry
                     ####TODO: remove entry
                     continue
-                entry_time_east   = entry_time + vaivora_constants.values.time.offset.pacific2server
+                entry_time_east   = entry_time
                 time_diff         = entry_time - datetime.now()
                 if time_diff.days < 0:
                     continue
-                ####TODO: replace "900" with custom setting interval
+                ####TODO: redo this.
                 if time_diff.seconds < 900 and time_diff.days == 0:
                     result        = [ str(r) for r in result ]
                     boss_entry    = []
-                    boss_entry.append(vaivora_modules.utils.format_message_boss(result[0], result[3], entry_time_east, result[2], result[1]))
+                    boss_entry.append(vaivora_modules.boss.process_record(result[0], result[3], entry_time_east, result[2], result[1]))
                     boss_entry.append(result[4],)
                     boss_rec      = result[4] + ":" + result[0] + ":" + result[3] + ":" + \
                                     entry_time_east.strftime("%Y/%m/%d %H:%M") + ":" + result[1] + "\n"
