@@ -1071,7 +1071,7 @@ def process_cmd_query(tg_boss, query):
 #           the btype command, i.e. world or field
 # @return:
 #       an appropriate message for success or fail of command
-def process_cmd_type(server_id, msg_channel, btype):
+def process_cmd_type(btype):
     # $boss all field
     if rgx_type_f.match(btype):
         return get_bosses_field()
