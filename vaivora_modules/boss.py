@@ -1,6 +1,7 @@
 # import additional constants
 from datetime import datetime, timedelta
 import re
+import math
 from importlib import import_module as im
 import vaivora_constants
 for mod in vaivora_constants.modules:
@@ -982,7 +983,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
         for boss_record in boss_records:
             boss_name   =   boss_record[0]
-            boss_chan   =   str(boss_record[1])
+            boss_chan   =   str(math.floor(boss_record[1]))
             boss_premap =   boss_record[2]
             boss_status =   boss_record[3]
             record_date =   [int(rec) for rec in boss_record[5:10]]
@@ -996,17 +997,17 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             # old records
             if int(time_diff.days) >= 0:
                 ret_message +=  "should have respawned at "
-                mins_left   =   int(time_diff.seconds)/60 + int(time_diff.days)*86400
+                mins_left   =   math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
             # anchored
             elif boss_status == status_anchored:
                 ret_message +=  "will spawn as early as "
-                mins_left   =   int((86400-int(time_diff.seconds))/60)
+                mins_left   =   math.floor((86400-int(time_diff.seconds))/60)
 
             # warned & died
             else:
                 ret_message +=  "will respawn around "
-                mins_left   =   int((86400-int(time_diff.seconds))/60)
+                mins_left   =   math.floor((86400-int(time_diff.seconds))/60)
 
             # absolute date and time for spawn
             # e.g.              2017/07/06 "14:47"
@@ -1024,22 +1025,22 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
             # print hour or hours conditionally
             if abs_mins > 119:
-                ret_message     +=  str(abs_mins/60) + " hours, "
+                ret_message     +=  str(math.floor((abs_mins%86400)/60)) + " hours, "
             elif abs_mins > 59:
                 ret_message     +=  "1 hour, "
 
             # print minutes unconditionally
             # e.g.              0 minutes from now
             # e.g.              59 minutes ago
-            ret_message     +=  str(abs_mins%60) + " minutes " + \
+            ret_message     +=  str(math.floor(abs_mins%60)) + " minutes " + \
                                 ("from now" if mins_left < 0 else "ago") + \
-                                ") "
+                                ")"
 
             # print extra anchored message conditionally
             if boss_status == status_anchored:
-                ret_message     +=  "and as late as one hour later"
+                ret_message     +=  " and as late as one hour later"
 
-            ret_message     += ".\nLast known map: #   " + boss_premap
+            ret_message     += ".\nLast known map: #   " + boss_premap + "\n"
 
             valid_boss_records.append(ret_message)
 
