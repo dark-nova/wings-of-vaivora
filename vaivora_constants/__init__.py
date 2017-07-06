@@ -9,7 +9,7 @@ __all__ =   [
                   # "values.boss", \
                   "command.syntax", \
                   # command.boss requires command.syntax
-                  "command.boss", \
+                  #"command.boss", \
                   "command.settings", \
                   # values.words.message requires command.boss
                   "values.words.message", \
@@ -18,9 +18,9 @@ __all__ =   [
                   # "command.talt_tracker", \
                   # "command.reminders", \
                   "regex.db", \
-                  "regex.boss.status", \
-                  "regex.boss.command", \
-                  "regex.boss.location", \
+                  #"regex.boss.status", \
+                  #"regex.boss.command", \
+                  #"regex.boss.location", \
                   "regex.format.matching", \
                   "regex.format.time", \
                   "regex.dm.command", \
