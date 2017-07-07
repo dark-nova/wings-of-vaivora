@@ -5,7 +5,7 @@ import sqlite3
 import asyncio
 import random
 import shlex
-import asyncio
+import queue
 import json
 import re
 import os
@@ -51,82 +51,45 @@ async def on_ready():
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
     await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."), status=discord.Status.idle)
-    valid_dbs = []
+    await asyncio.sleep(1)
+    nservs  =   str(len(client.servers))
+    nserv   =   0
     for server in client.servers:
+        nserv   +=  1
+        await client.change_presence(game=discord.Game(name=("with files. Processing " + str(nserv) + "/" + nservs + " servers...")), status=discord.Status.dnd)
         if server.unavailable:
             continue
         vdbs[server.id]     = vaivora_modules.db.Database(server.id)
         o_id                = server.owner.id
         vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
-    await send_news()
+        if not vdst[server.id].was_welcomed():
+            await greet(server.id, server.owner)
+    #await send_news()
     await asyncio.sleep(3)
-    await client.change_presence(game=discord.Game(name="# [$help] or [Vaivora, help] for info"), status=discord.Status.online)
+    await client.change_presence(game=discord.Game(name=("in " + nservs + " guilds # [$help] or [Vaivora, help] for info")), status=discord.Status.online)
     return
 
+
 @client.event
-async def send_news():
-    modified    = False
-    temporary   = []
-    vaivora_version   = vaivora_modules.version.get_current_version()
-    if os.stat(vaivora_constants.values.filenames.welcomed).st_size == 0:
-        await write_anew(client.servers)
-        return True
+async def greet(server_id, server_owner):
     do_not_msg  = await get_unsubscribed()
+    if server_owner.id in do_not_msg:
+        return
+    # intermediary code to transition to settings
     with open(vaivora_constants.values.filenames.welcomed, 'r') as original:
         for line in original:
             if not line or line.isspace():
                 continue
-            try:
-                srv_tup = line.split(':')
-                srv_ver = srv_tup[1].rstrip('\n')
-                srv_sid = srv_tup[0]
-                srv_chk = vaivora_modules.version.check_revisions(srv_ver)
-                if srv_chk:
-                    owner = client.get_server(srv_sid).owner
-                    if owner.id in do_not_msg:
-                        temporary.append(line)
-                    else:
-                        modified = True
-                        for vaivora_log in vaivora_modules.version.get_changelogs(srv_chk):
-                            await client.send_message(owner, vaivora_log)
-                        temporary.append(srv_sid + ":" + vaivora_version + "\n") # updated
-                else:
-                    temporary.append(line)
-            except:
-                continue
-    # write back over
-    with open(vaivora_constants.values.filenames.welcomed, 'w') as original:
-        for line in temporary:
-            original.write(line)
+            
+            if server_id in line:
+                srv_ver     =   line.split(':')[1].rstrip('\n')
+                break
 
-    sub_list    = []
-    try:
-        with open(vaivora_constants.values.filenames.subbed, 'r') as subbed_users:
-            for s_user in subbed_users:
-                if not line or line.isspace():
-                    continue
-                usr_tup = line.split(':')
-                usr_ver = srv_tup[1].rstrip('\n')
-                usr_sid = srv_tup[0]
-                usr_chk = vaivora_modules.version.check_revisions(usr_ver)
-                if usr_chk:
-                    usr = await client.get_user_info(usr_sid)
-                    for vaivora_log in vaivora_modules.version.get_changelogs(usr_chk):
-                        #await client.send_message(usr, vaivora_log)
-                        pass
-                    sub_list.append(usr_sid + ":" + vaivora_version) # updated
-                else:
-                    sub_list.append(line)
-        with open(vaivora_constants.values.filenames.subbed, 'w+') as subbed_users:
-            if len(sub_list) == 0:
-                pass
-            elif len(sub_list) > 1:
-                unsubbed.write('\n'.join(sub_list))
-            if len(sub_list) >= 1:
-                unsubbed.write(sub_list[-1] + "\n")
-    except FileNotFoundError:
-        pass
-    return True
+    nrevs   =   vdst[server_id].greet(vaivora_modules.version.get_current_version(), stored_version=srv_ver)
+    if nrevs:
+        for vaivora_log in vaivora_modules.version.get_changelogs(nrevs):
+            await asyncio.sleep(1)
+            await client.send_message(server_owner, vaivora_log)
 
 
 # @func:    write_anew([discord.Server**]) : void
@@ -984,7 +947,6 @@ async def check_databases():
         for vdb_id, valid_db in vdbs.items():
             print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- in DB ", vdb_id)
             results[vdb_id] = []
-            ####TODO: replace 900 with custom setting for warning
             loop_time = datetime.today()
             if today.day != loop_time.day:
                 today = loop_time
@@ -1047,6 +1009,7 @@ async def check_databases():
                     # group mention
                     if discord.utils.get(srv.roles, mention=uid):
                         role_str    += uid + " "
+                    # user mention
                     else:
                         boss_user   = await client.get_user_info(uid)
                         role_str    += boss_user.mention + " "
