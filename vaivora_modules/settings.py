@@ -417,12 +417,14 @@ class Settings:
             self.save_file()
             return False
 
-    def greet(self, current_version, stored_version=None):
+    def greet(self, current_version):
         self.settings['welcomed']   =   True
         try:
-            base_version    =   self.settings['vaivora-version'] if not stored_version else stored_version
+            base_version    =   self.settings['vaivora-version']
         except:
-            base_version    =   "1.0"
+            base_version    =   "[m]1.0"
+        if not base_version:
+            base_version    =   "[m]1.0"
         revs    =   vaivora_modules.version.check_revisions(base_version)
         if revs:
             self.settings['vaivora-version']    =   vaivora_modules.version.get_current_version()

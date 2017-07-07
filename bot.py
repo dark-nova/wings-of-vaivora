@@ -35,6 +35,8 @@ rgx_boss            = re.compile(r'\$boss .+', re.IGNORECASE)
 
 to_sanitize         = re.compile(r'[^a-z0-9 .:$",-]', re.IGNORECASE)
 
+first_run           = False
+
 # snippet from discord.py docs
 # logger = logging.getLogger(vaivora_constants.values.filenames.logger)
 # logger.setLevel(logging.WARNING)
@@ -51,22 +53,19 @@ async def on_ready():
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
     await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."), status=discord.Status.idle)
-    await asyncio.sleep(1)
     nservs  =   str(len(client.servers))
     nserv   =   0
     for server in client.servers:
-        nserv   +=  1
-        await client.change_presence(game=discord.Game(name=("with files. Processing " + str(nserv) + "/" + nservs + " servers...")), status=discord.Status.dnd)
+        await asyncio.sleep(1)
+        await client.change_presence(game=discord.Game(name=("with files. Processing " + str(nserv) + "/" + nservs + " guilds...")), status=discord.Status.dnd)
         if server.unavailable:
             continue
         vdbs[server.id]     = vaivora_modules.db.Database(server.id)
         o_id                = server.owner.id
         vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
-        if not vdst[server.id].was_welcomed():
-            await greet(server.id, server.owner)
-    #await send_news()
-    await asyncio.sleep(3)
+        await greet(server.id, server.owner)
     await client.change_presence(game=discord.Game(name=("in " + nservs + " guilds # [$help] or [Vaivora, help] for info")), status=discord.Status.online)
+    first_run   =   True
     return
 
 
@@ -75,42 +74,35 @@ async def greet(server_id, server_owner):
     do_not_msg  = await get_unsubscribed()
     if server_owner.id in do_not_msg:
         return
-    # intermediary code to transition to settings
-    with open(vaivora_constants.values.filenames.welcomed, 'r') as original:
-        for line in original:
-            if not line or line.isspace():
-                continue
-            
-            if server_id in line:
-                srv_ver     =   line.split(':')[1].rstrip('\n')
-                break
 
-    nrevs   =   vdst[server_id].greet(vaivora_modules.version.get_current_version(), stored_version=srv_ver)
-    if nrevs:
+    iters   =   0         
+    nrevs   =   vdst[server_id].greet(vaivora_modules.version.get_current_version())
+    if nrevs != 0:
         for vaivora_log in vaivora_modules.version.get_changelogs(nrevs):
-            await asyncio.sleep(1)
+            iters += 1
+            print(server_id, server_owner, ": receiving", iters, "logs out of", nrevs*-1)
             await client.send_message(server_owner, vaivora_log)
 
 
-# @func:    write_anew([discord.Server**]) : void
-# @arg:
-#       servers:
-#           a list of servers connected/served by this bot
-@client.event
-async def write_anew(servers):
-    vaivora_version   = vaivora_modules.version.get_current_version()
-    with open(vaivora_constants.values.filenames.welcomed, 'a') as original:
-        for server in servers:
-            original.write(server.id + ':' + vaivora_version)
-            await client.send_message(server.owner, vaivora_constants.values.words.message.welcome)
-            n_revs = vaivora_modules.version.get_revisions()
-            i = 1
-            for vaivora_log in vaivora_modules.version.get_changelogs():
-                i += 1
-                await client.send_message(server.owner, "Changelog " + i + " of " + n_revs + "\n" + \
-                                          vaivora_log)
-            await client.send_message(server.owner, \
-                                      vaivora_modules.version.get_subscription_msg())
+# # @func:    write_anew([discord.Server**]) : void
+# # @arg:
+# #       servers:
+# #           a list of servers connected/served by this bot
+# @client.event
+# async def write_anew(servers):
+#     vaivora_version   = vaivora_modules.version.get_current_version()
+#     with open(vaivora_constants.values.filenames.welcomed, 'a') as original:
+#         for server in servers:
+#             original.write(server.id + ':' + vaivora_version)
+#             await client.send_message(server.owner, vaivora_constants.values.words.message.welcome)
+#             n_revs = vaivora_modules.version.get_revisions()
+#             i = 1
+#             for vaivora_log in vaivora_modules.version.get_changelogs():
+#                 i += 1
+#                 await client.send_message(server.owner, "Changelog " + i + " of " + n_revs + "\n" + \
+#                                           vaivora_log)
+#             await client.send_message(server.owner, \
+#                                       vaivora_modules.version.get_subscription_msg())
 
 
 # @func:    on_server_available(discord.Server) : bool
@@ -149,7 +141,8 @@ async def on_server_join(server):
 #     True if succeeded, False otherwise
 @client.event
 async def on_message(message):
-    await client.wait_until_ready()
+    if not first_run:
+        return False
     # direct message processing
     if message.author == client.user:
         return True # do not respond to self
@@ -931,7 +924,8 @@ async def sanitize_cmd(message, command_type):
 # @func:    check_databases() : void
 #       Checks databases routinely, by minute.
 async def check_databases():
-    await client.wait_until_ready()
+    while not first_run:
+        await asyncio.sleep(5)
     results       = dict()
     today         = datetime.today() # check on first launch
     inactive_time = timedelta(0)
@@ -950,15 +944,7 @@ async def check_databases():
             loop_time = datetime.today()
             if today.day != loop_time.day:
                 today = loop_time
-            if inactive_time.seconds > 900 and not inactive:
-                no_repeat = []
-                with open(vaivora_constants.values.filenames.no_repeat_t + today.strftime("_%Y%m%d") + ".txt", "a") as archive:
-                    with open(vaivora_constants.values.filenames.no_repeat, "r") as original:
-                        for line in original:
-                            archive.write(line)
-                # erase contents after transferring$setting
-                open(vaivora_constants.values.filenames.no_repeat, "w").close()
-                inactive = True
+            
             # check all timers
             message_to_send   = list()
             cur_channel       = str()
