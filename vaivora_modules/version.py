@@ -826,7 +826,8 @@ current     = get_header() + \
 """```diff
 + Fixes:
   + Corrected an issue with "anchor" keyword for "$boss".
-+ Upcoming changes:
+
+- Upcoming changes:
   + Code rewrite before publishing as open source. Estimated time: 1-2 weeks
 ```"""
 
@@ -878,6 +879,30 @@ current     = get_header() + \
 """```diff
 + Added features:
   + Boss module has been fully re-written.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('2pre-3')
+status_n.append(milestone)
+date_n.append("2017/07/07")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + Boss module has been fully re-written.
+  + DB module has been re-written, partially. Probably won't need to re-write this in full.
+
++ Fixes:
+  + Corrected issues with boss module after rewrite.
+
+- Upcoming changes:
+  + Settings module re-write.
+  + Open source Vaivora later
 ```"""
 
 changelog.append(current)
