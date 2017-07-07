@@ -939,14 +939,15 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
 # @return:
 #       an appropriate message for success or fail of command
 def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
+    # all bosses, no options
     if rgx_erase.match(entry) and not opt_list and tg_bosses == bosses:
-        vaivora_modules.db.Database(server_id).rm_entry_db_boss()
-        return "Your queried records have successfully been erased.\n"
-
+        if vaivora_modules.db.Database(server_id).rm_entry_db_boss():
+            return "All records have successfully been erased.\n"
+        else:
+            return "*(But **nothing** happend...)*\n"
     # specific bosses to erase, but no options
     elif rgx_erase.match(entry) and not opt_list:
-        vaivora_modules.db.Database(server_id).rm_entry_db_boss(tg_bosses)
-        return "Your queried records have successfully been erased.\n"
+        recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(tg_bosses)
 
     # implicit non-null opt_list, erase
     elif rgx_erase.match(entry) and len(tg_bosses) == 1:
@@ -960,9 +961,8 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
         # map is not null but channel is
         elif opts['map'] != "N/A" and not opts['channel']:
-            vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_map=opts['map'])
-            return "Your queried records have successfully been erased.\n"
-
+            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_map=opts['map'])
+            
         # error: channel other than 1, and boss is field boss
         elif opts['channel'] != 1 and not tg_bosses[0] in bosses_world:
             return "Your query:`channel`, `" + opts['channel'] + "`, could not be interpreted.\n" + \
@@ -970,20 +970,24 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
         # channel is not null but map is
         elif opts['channel'] and opts['map'] == "N/A":
-            vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts['channel'])
-            return "Your queried records have successfully been erased.\n"
-
+            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts['channel'])
+            
         # implicit catch-all: match with all conditions
         else:
-            vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts['channel'], boss_map=opts['map'])
-            return "Your queried records have successfully been erased.\n"
-
+            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts['channel'], boss_map=opts['map'])
+            
     elif rgx_erase.match(entry):
-        vaivora_modules.db.Database(server_id).rm_entry_db_boss()
-        return "All records have successfully been erased.\n"
+        if vaivora_modules.db.Database(server_id).rm_entry_db_boss():
+            return "All records have successfully been erased.\n"
+        else:
+            return "*(But **nothing** happend...)*\n"
 
-    # implicit list
-    else:
+    if rgx_erase.match(entry) and recs:
+        return "Your queried records " + str(recs) + " have successfully been erased.\n"
+    elif rgx_erase.match(entry) and not recs:
+        return "*(But nothing happened...)*\n"
+
+    if not rgx_erase.match(entry):
         valid_boss_records = list()
         valid_boss_records.append("Records:")
         valid_boss_records.append("```python\n")
