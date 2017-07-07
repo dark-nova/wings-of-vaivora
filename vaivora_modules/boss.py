@@ -640,12 +640,13 @@ def check_boss(entry):
 #       map index in list, or -1 if not found or too many maps matched
 def check_maps(boss, maps):
     map_idx     = -1
+    map_match   = None
 
     if boss in bosses_with_floors:
         map_match   = rgx_floors.match(maps)
-    if map_match:
+    if boss in bosses_with_floors and map_match:
         map_floor   = map_match.group('floornumber')
-    else:
+    elif boss in bosses_with_floors:
         map_match   = rgx_fl_ok.match(maps)
         map_floor   = map_match.group('floornumber')
 

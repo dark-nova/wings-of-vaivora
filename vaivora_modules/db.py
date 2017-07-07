@@ -185,7 +185,7 @@ class Database:
         elif contents and (int(contents[0][5]) <= boss_dict['year'] or \
                            int(contents[0][6]) <= boss_dict['month'] or \
                            int(contents[0][7]) <= boss_dict['day'] or \
-                           int(contents[0][8]) <= boss_dict['hour'] - 3):
+                           int(contents[0][8]) <= boss_dict['hour']):
 
             if boss_dict['boss'] == "Blasphemous Deathweaver":
                 self.rm_entry_db_boss(boss_list=[boss_dict['boss'],], boss_map=boss_dict['map'])
@@ -224,7 +224,7 @@ class Database:
         for boss in boss_list:
             if boss_ch:
                 self.cursor.execute("delete from boss where name=? and channel=?", (boss, boss_ch,))
-            elif not boss_map and boss in vaivora_modules.boss.bosses_field:
+            elif boss_map and boss in vaivora_modules.boss.bosses_field:
                 self.cursor.execute("delete from boss where name=? and map=?", (boss, "N/A"))
             elif boss_map and boss_map != "N/A" and boss == "Blasphemous Deathweaver":
                 ####TODO: make more generalized case. Currently applies only to Deathweaver
