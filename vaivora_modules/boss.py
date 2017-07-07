@@ -1174,7 +1174,7 @@ def process_record(boss, status, time, boss_map, channel):
 
     rem_minutes     = math.floor((time-(datetime.now()+timedelta(hours=pacific2server))).seconds/60)
 
-    time_str        = time.strftime("%Y/%m/%d %H:%M") + " (in " + rem_minutes + "minutes)"
+    time_str        = time.strftime("%Y/%m/%d %H:%M") + " (in " + str(rem_minutes) + "minutes)"
     when_spawn      = "at " + time_str + ret_message
 
     # set time difference based on status and type of boss
