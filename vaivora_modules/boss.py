@@ -267,7 +267,7 @@ rgx_letters = re.compile(r'[a-z -]+', re.IGNORECASE)
 
 
 rgx_fl_ok   = re.compile(r'(?P<basement>[bd])?(?P<floornumber>[1-5])(?P<floor>f)?$', re.IGNORECASE)
-rgx_floors  = re.compile(r'[^1-5bdf]*((?P<basement>b)|(?P<floor>f))? ?(?P<floornumber>[1-5]) ?((?P=basement)|(?P=floor))?$', re.IGNORECASE)
+rgx_floors  = re.compile(r'[^1-5bdf]*(?P<basement>b)?(?P<floor>f)?(?P<district>d)? ?(?P<floornumber>[1-5]) ?(?P=basement)?(?P=floor)?(?P=district)?$', re.IGNORECASE)
 #floors_fmt  = re.compile(r'[^1-5bdf]*(?P<basement>b)? ?(?P<floornumber>[1-5]) ?(?P<floor>f)?$', re.IGNORECASE)
 rgx_loc_az  = re.compile(r'[^1-5bdf]', re.IGNORECASE)
 
@@ -640,17 +640,13 @@ def check_boss(entry):
 #       map index in list, or -1 if not found or too many maps matched
 def check_maps(boss, maps):
     map_idx     = -1
+    map_floor   = 0
     map_match   = None
 
     if boss in bosses_with_floors:
         map_match   = rgx_floors.match(maps)
-    if boss in bosses_with_floors and map_match:
         map_floor   = map_match.group('floornumber')
-    elif boss in bosses_with_floors:
-        map_match   = rgx_fl_ok.match(maps)
-        map_floor   = map_match.group('floornumber')
-
-
+    
     # Deathweaver map did not match
     if boss == "Blasphemous Deathweaver" and not rgx_loc_dw.search(maps):
         return map_idx
@@ -664,7 +660,8 @@ def check_maps(boss, maps):
             tg_map  =   "B" + map_floor
         else:
             tg_map  =   map_floor + "F"
-        # tg_map  =   map_match.group('basement') + map_floor + map_match.group('floor') # one of these must be true, and the other null
+    elif map_floor:
+        tg_map  =   map_floor
     else:
         tg_map  =   maps # default
 
@@ -1111,9 +1108,9 @@ def process_cmd_opt(opt_list, opt_boss):
                    "Field bosses that spawn in channels other than 1 are always jackpot bosses, world boss forms of " + \
                    "the equivalent field boss.\n" + msg_help
         # target - channel
-        elif channel and opt_boss and opt_boss in bosses_with_floors:
+        elif channel and opt_boss and opt_boss in bosses_with_floors: # all field bosses
             target['channel']   =   1
-            target['map']       =   boss_locs[opt_boss][check_maps(opt_boss, channel.group(2))]
+            target['map']       =   boss_locs[opt_boss][check_maps(opt_boss, cmd_arg)]
         elif channel and opt_boss and opt_boss in bosses_world:
             target['channel']   =   int(channel.group(2)) # use channel provided by command
             target['map']       =   boss_locs[opt_boss][0]
