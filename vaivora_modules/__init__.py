@@ -1,6 +1,5 @@
 __all__ =   [     "db", \
                   "version", \
-                  "utils", \
                   "boss", \
                   "settings", \
                   "secrets"

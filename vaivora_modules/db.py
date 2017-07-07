@@ -11,40 +11,49 @@ for mod in vaivora_modules.modules:
 
 class Database:
     # constants
-    TIME                    = "Time"
-    modules                 = [ 'boss', 'reminders', 'talt', 'permissions' ]
+    TIME                    =   "Time"
+    modules                 =   [ 'boss', 'reminders', 'talt', 'permissions' ]
     # BOSS        = "Module: Boss"
     # REMINDERS   = "Module: Reminders"
     # TALT        = "Module: Talt Tracker"
     # PERMISSIONS = "Module: Permissions"
 
     # database formats
-    columns                 = dict()
-    columns[TIME]           = ('year', 'month', 'day', 'hour', 'minute')
-    columns[modules[0]]     = ('name', 'channel', 'map', 'status', 'text_channel') + columns[TIME]
-    columns[modules[1]]     = ('user', 'comment') + columns[TIME]
-    columns[modules[2]]     = ('user', 'previous', 'current', 'valid') + columns[TIME]
-    columns[modules[3]]     = ('user', 'role')
+    columns                 =   dict()
+    columns[TIME]           =   ('year', 'month', 'day', 'hour', 'minute')
+    columns[modules[0]]     =   ('name', 'channel', 'map', 'status', 'text_channel') + columns[TIME]
+    columns[modules[1]]     =   ('user', 'comment') + columns[TIME]
+    columns[modules[2]]     =   ('user', 'previous', 'current', 'valid') + columns[TIME]
+    columns[modules[3]]     =   ('user', 'role')
 
     # and the database formats' types
-    types                   = dict()
-    types[TIME]             = ('real',)*5
-    types[modules[0]]       = ('text',) + ('real',) + ('text',)*3 + types[TIME]
-    types[modules[1]]       = ('text',)*2 + types[TIME]
-    types[modules[2]]       = ('text',) + ('real',)*3 + types[TIME]
-    types[modules[3]]       = ('text',)*2
+    types                   =   dict()
+    types[TIME]             =   ('real',)*5
+    types[modules[0]]       =   ('text',) + ('real',) + ('text',)*3 + types[TIME]
+    types[modules[1]]       =   ('text',)*2 + types[TIME]
+    types[modules[2]]       =   ('text',) + ('real',)*3 + types[TIME]
+    types[modules[3]]       =   ('text',)*2
 
     # zip, create, concatenate into tuple
-    dbs                     = dict()
-    dbs[modules[0]]         = tuple('{} {}'.format(*t) for t in 
-                                    zip(columns[modules[0]], types[modules[0]]))
-    dbs[modules[1]]         = tuple('{} {}'.format(*t) for t in 
-                                    zip(columns[modules[1]], types[modules[1]]))
-    dbs[modules[2]]         = tuple('{} {}'.format(*t) for t in 
-                                    zip(columns[modules[2]], types[modules[2]]))
-    dbs[modules[3]]         = tuple('{} {}'.format(*t) for t in
-                                    zip(columns[modules[3]], types[modules[3]]))
+    dbs                     =   dict()
+    dbs[modules[0]]         =   tuple('{} {}'.format(*t) for t in 
+                                      zip(columns[modules[0]], types[modules[0]]))
+    dbs[modules[1]]         =   tuple('{} {}'.format(*t) for t in 
+                                      zip(columns[modules[1]], types[modules[1]]))
+    dbs[modules[2]]         =   tuple('{} {}'.format(*t) for t in 
+                                      zip(columns[modules[2]], types[modules[2]]))
+    dbs[modules[3]]         =   tuple('{} {}'.format(*t) for t in
+                                      zip(columns[modules[3]], types[modules[3]]))
 
+    sql_select              =   "select * "
+    sql_count               =   "select count(*) "
+    sql_deathweaver_map     =   "from boss where name=? and map like ?"
+    sql_boss_field          =   "from boss where name=? and map=?"
+    sql_boss_world          =   "from boss where name=? and channel=?"
+    sql_boss_rotate         =   "from boss where name=? or name=?"
+    sql_boss_default        =   "from boss where name=?"
+    boss_kalejimas          =   ('Mirtis', 'Helgasercle')
+    boss_southforest        =   ('Rexipher', 'Demon Lord Marnox')
 
     def __init__(self, db_id):
         self.db_id          = str(db_id)
@@ -53,6 +62,7 @@ class Database:
         self.invalid        = self.check_if_invalid()
         if self.invalid:
             self.create_db(self.invalid)
+
 
     def open_db(self):
         self.connect        = sqlite3.connect(self.db_name)
@@ -128,9 +138,9 @@ class Database:
         db_record = list()
         for boss in bosses:
             if channel:
-                self.cursor.execute("select * from boss where name=? and channel=?", (boss, channel,))
+                self.cursor.execute((self.sql_select+self.sql_boss_world), (boss, channel,))
             else:
-                self.cursor.execute("select * from boss where name=?", (boss,))
+                self.cursor.execute((self.sql_select+self.sql_boss_default), (boss,))
             records = self.cursor.fetchall()
             for record in records:
                 db_record.append(tuple(record))
@@ -148,34 +158,32 @@ class Database:
     def update_db_boss(self, boss_dict):
         contents = []
         #self.open_db()
-        # the following two bosses rotate per spawn
+
+        # handle rotating bosses
         if boss_dict['boss'] == 'Mirtis' or boss_dict['boss'] == 'Helgasercle':
-            self.cursor.execute("select * from boss where name=?", ('Mirtis',))
-            contents.extend(self.cursor.fetchall())
-            self.cursor.execute("select * from boss where name=?", ('Helgasercle',))
-            contents.extend(self.cursor.fetchall())
+            sel_statement   =   self.sql_select+self.sql_boss_rotate
+            sql_condition   =   self.boss_kalejimas
         elif boss_dict['boss'] == 'Demon Lord Marnox' or boss_dict['boss'] == 'Rexipher':
-            self.cursor.execute("select * from boss where name=?", ('Demon Lord Marnox',))
-            contents.extend(self.cursor.fetchall())
-            self.cursor.execute("select * from boss where name=?", ('Rexipher',))
-            contents.extend(self.cursor.fetchall())
-        elif boss_dict['boss'] == 'Blasphemous Deathweaver':
-            for dw_map in vaivora_modules.boss.boss_locs['Blasphemous Deathweaver']:
-                self.cursor.execute("select * from boss where name=? and map=?", \
-                                    (boss_dict['boss'], dw_map,))
-                contents.extend(self.cursor.fetchall())
+            sel_statement   =   self.sql_select+self.sql_boss_rotate
+            sql_condition   =   self.boss_southforest
+
+        # handle Deathweaver with map
+        elif boss_dict['boss'] == 'Blasphemous Deathweaver' and boss_dict['map']:
+            sel_statement   =   self.sql_select+self.sql_deathweaver_map
+            sql_condition   =   (boss_dict['boss'], boss_dict['map'])
+
+        # handle world bosses
+        elif boss_dict['channel']:
+            sel_statement   =   self.sql_select+self.sql_boss_world
+            sql_condition   =   (boss_dict['boss'], boss_dict['channel'])
+        
+        # handle everything else
         else:
-            self.cursor.execute("select * from boss where name=? and channel=?", (boss_dict['boss'], boss_dict['channel'],))
-            contents.extend(self.cursor.fetchall())
+            sel_statement   =   self.sql_select+self.sql_boss_default
+            sql_condition   =   (boss_dict['boss'],)
 
-        # invalid case: more than one entry for this combination
-        ####TODO: Re-examine code. probably not necessary anymore.
-        # if   boss_dict['boss'] != "Blasphemous Deathweaver" and len(contents) > 1:
-        #     self.rm_entry_db_boss(boss_list=[boss_dict['boss'],])
-        # elif boss_dict['boss'] == "Blasphemous Deathweaver" and len(contents) > 2:
-        #     self.rm_entry_db_boss(boss_list=[boss_dict['boss'],], boss_map=boss_dict['map'])
-
-        # handle similar times
+        self.cursor.execute(sel_statement, sql_condition)
+        contents.extend(self.cursor.fetchall())
 
         if contents and (int(contents[0][5]) == boss_dict['year'] and \
                          int(contents[0][6]) == boss_dict['month'] and \
@@ -197,73 +205,82 @@ class Database:
 
         #try: # boss database structure
         self.cursor.execute("insert into boss values (?,?,?,?,?,?,?,?,?,?)", \
-                        (str(boss_dict['boss'       ]), \
-                         int(boss_dict['channel'    ]), \
-                         str(boss_dict['map'        ]), \
-                         str(boss_dict['status'     ]), \
-                         str(boss_dict['msg_chan'   ]), \
-                         int(boss_dict['year'       ]), \
-                         int(boss_dict['month'      ]), \
-                         int(boss_dict['day'        ]), \
-                         int(boss_dict['hour'       ]), \
-                         int(boss_dict['mins'       ])))
+                            (str(boss_dict['boss'       ]), \
+                             int(boss_dict['channel'    ]), \
+                             str(boss_dict['map'        ]), \
+                             str(boss_dict['status'     ]), \
+                             str(boss_dict['msg_chan'   ]), \
+                             int(boss_dict['year'       ]), \
+                             int(boss_dict['month'      ]), \
+                             int(boss_dict['day'        ]), \
+                             int(boss_dict['hour'       ]), \
+                             int(boss_dict['mins'       ])))
         self.save_db()
         return True
 
-    # @func:    rm_entry_db_boss(, dict, int)
+    # @func:    rm_entry_db_boss(self, list, int=0, str='') : bool
     # @arg:
-    #   c:              the sqlite3 connection cursor
-    #   boss_dict:      message_args from on_message(*)
-    #   ch:             Default: None; the channel to remove
+    #       boss_list : list
+    #           list containing boss names to delete
+    #       boss_ch : int
+    #           (optional; default: 0)
+    #           a condition for channel
+    #       boss_map : str
+    #           (optional; default: '')
+    #           a condition for map
     # @return:
-    #   True if successful, False if no records were found matching the conditions
+    #       implicit True (more than 0) if successful, implicit False (0) if no records were found matching the conditions
     def rm_entry_db_boss(self, boss_list=vaivora_modules.boss.bosses, boss_ch=0, boss_map=''):
         #self.open_db()
+        rec_count   = 0
         if not boss_list:
             boss_list = vaivora_modules.boss.bosses
         for boss in boss_list:
+            # world bosses
             if boss_ch:
-                sql_statement   = "from boss where name=? and channel=?"
-                sel_statement   = "select count(*) " + sql_statement
-                del_statement   = "delete " + sql_statement
-                sql_condition   = (boss, boss_ch)
-            elif boss_map and boss in vaivora_modules.boss.bosses_field:
-                sql_statement   = "from boss where name=? and map=?"
-                sql_condition   = (boss, "N/A")
-            elif boss_map and boss_map != "N/A" and boss == "Blasphemous Deathweaver":
-                dw_idx  = vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
-                # if dw_idx == 0 or dw_idx == 1: # crystal mine
-                #     dw_idx = [(dw_idx + 1) % 2,]
-                # else:
-                #     dw_idx = [dw_idx % 3 + 2, (dw_idx-1) % 3 + 2,]
-                dw_map  = "Crystal Mine %" if if dw_idx == 0 or dw_idx == 1 else "Ashaq Underground Prison %"
-                
-                # check records
-                self.cursor.execute("select count(*) from boss where name=? and map like ?", \
-                                    (boss, dw_map))
-                result = self.cursor.fetchone()
-                if result[0] == 0:
-                    return False
+                sql_statement   =   self.sql_boss_world
+                sql_condition   =   (boss, boss_ch)
 
-                self.cursor.execute("delete from boss where name=? and map like ?", \
-                                    (boss, vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'][idx]))
+            # strictly field bosses with missing maps
+            elif boss_map and boss_map == "N/A" and boss in vaivora_modules.boss.bosses_field:
+                sql_statement   =   self.sql_boss_field
+                sql_condition   =   (boss, "N/A")
+
+            # Deathweaver and any bosses with two sets of maps, possibly future
+            elif boss_map and boss_map != "N/A" and boss == "Blasphemous Deathweaver":
+                dw_idx  =   vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
+                dw_map  =   "Crystal Mine %" if dw_idx == 0 or dw_idx == 1 else "Ashaq Underground Prison %"
+                sql_statement   =   self.sql_deathweaver_map
+                sql_condition   =   (boss, dw_map)
+
             # handle rotating bosses
             elif boss == 'Mirtis' or boss == 'Helgasercle':
-                self.cursor.execute("delete from boss where name=?", ('Mirtis',))
-                self.cursor.execute("delete from boss where name=?", ('Helgasercle',))
+                sql_statement   =   self.sql_boss_rotate
+                sql_condition   =   self.boss_kalejimas
             elif boss == 'Rexipher' or boss == 'Demon Lord Marnox':
-                self.cursor.execute("delete from boss where name=?", ('Rexipher',))
-                self.cursor.execute("delete from boss where name=?", ('Demon Lord Marnox',))
+                sql_statement   =   self.sql_boss_rotate
+                sql_condition   =   self.boss_southforest
+
             # handle all others, generally field bosses
             else:
-                self.cursor.execute
-                self.cursor.execute("delete from boss where name=?", (boss,))
+                sql_statement   =   self.sql_boss_default
+                sql_condition   =   (boss,)
 
-            sel_statement   = "select count(*) " + sql_statement
+            # process counting
+            ct_statement    = "select count(*) " + sql_statement
             del_statement   = "delete " + sql_statement                
-            self.cursor.execute(sel_statement, sql_condition)
+            self.cursor.execute(ct_statement, sql_condition)
             result  = self.cursor.fetchone()
+            # no records to delete
             if result[0] == 0:
-                return False
+                continue
+            # records to delete
+            else:
+                try:
+                    self.cursor.execute(del_statement, sql_condition)
+                    self.save_db()
+                    rec_count   +=  int(result[0])
+                except: # in case of sqlite3 exceptions
+                    continue
         self.save_db()
-        return True
+        return rec_count # return an implicit bool for how many were deleted
