@@ -49,6 +49,7 @@ first_run           = False
 #   None
 @client.event
 async def on_ready():
+    global first_run
     print("Logging in...")
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
