@@ -216,30 +216,54 @@ class Database:
     #   boss_dict:      message_args from on_message(*)
     #   ch:             Default: None; the channel to remove
     # @return:
-    #   True if successful, False otherwise
+    #   True if successful, False if no records were found matching the conditions
     def rm_entry_db_boss(self, boss_list=vaivora_modules.boss.bosses, boss_ch=0, boss_map=''):
         #self.open_db()
         if not boss_list:
             boss_list = vaivora_modules.boss.bosses
         for boss in boss_list:
             if boss_ch:
-                self.cursor.execute("delete from boss where name=? and channel=?", (boss, boss_ch,))
+                sql_statement   = "from boss where name=? and channel=?"
+                sel_statement   = "select count(*) " + sql_statement
+                del_statement   = "delete " + sql_statement
+                sql_condition   = (boss, boss_ch)
             elif boss_map and boss in vaivora_modules.boss.bosses_field:
-                self.cursor.execute("delete from boss where name=? and map=?", (boss, "N/A"))
+                sql_statement   = "from boss where name=? and map=?"
+                sql_condition   = (boss, "N/A")
             elif boss_map and boss_map != "N/A" and boss == "Blasphemous Deathweaver":
-                ####TODO: make more generalized case. Currently applies only to Deathweaver
                 dw_idx  = vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
-                if dw_idx == 0 or dw_idx == 1: # crystal mine
-                    dw_idx = [(dw_idx + 1) % 2,]
-                else:
-                    dw_idx = [dw_idx % 3 + 2, (dw_idx-1) % 3 + 2,]
-                for idx in dw_idx:
-                    try:
-                        self.cursor.execute("delete from boss where name=? and map=?", \
-                                            (boss, vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'][idx]))
-                    except:
-                        continue
+                # if dw_idx == 0 or dw_idx == 1: # crystal mine
+                #     dw_idx = [(dw_idx + 1) % 2,]
+                # else:
+                #     dw_idx = [dw_idx % 3 + 2, (dw_idx-1) % 3 + 2,]
+                dw_map  = "Crystal Mine %" if if dw_idx == 0 or dw_idx == 1 else "Ashaq Underground Prison %"
+                
+                # check records
+                self.cursor.execute("select count(*) from boss where name=? and map like ?", \
+                                    (boss, dw_map))
+                result = self.cursor.fetchone()
+                if result[0] == 0:
+                    return False
+
+                self.cursor.execute("delete from boss where name=? and map like ?", \
+                                    (boss, vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'][idx]))
+            # handle rotating bosses
+            elif boss == 'Mirtis' or boss == 'Helgasercle':
+                self.cursor.execute("delete from boss where name=?", ('Mirtis',))
+                self.cursor.execute("delete from boss where name=?", ('Helgasercle',))
+            elif boss == 'Rexipher' or boss == 'Demon Lord Marnox':
+                self.cursor.execute("delete from boss where name=?", ('Rexipher',))
+                self.cursor.execute("delete from boss where name=?", ('Demon Lord Marnox',))
+            # handle all others, generally field bosses
             else:
+                self.cursor.execute
                 self.cursor.execute("delete from boss where name=?", (boss,))
+
+            sel_statement   = "select count(*) " + sql_statement
+            del_statement   = "delete " + sql_statement                
+            self.cursor.execute(sel_statement, sql_condition)
+            result  = self.cursor.fetchone()
+            if result[0] == 0:
+                return False
         self.save_db()
         return True
