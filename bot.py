@@ -50,7 +50,7 @@ async def on_ready():
     print("Logging in...")
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
-    await client.change_presence(game=discord.Game(name="with startup. Wait 5 seconds..."), status=discord.Status.idle)
+    await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."), status=discord.Status.idle)
     valid_dbs = []
     for server in client.servers:
         if server.unavailable:
