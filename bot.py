@@ -51,7 +51,7 @@ async def on_ready():
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
     await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."), status=discord.Status.idle)
-    await asyncio.sleep(1)
+    await asyncio.sleep(3)
     nservs  =   str(len(client.servers))
     nserv   =   0
     for server in client.servers:
@@ -149,7 +149,7 @@ async def on_server_join(server):
 #     True if succeeded, False otherwise
 @client.event
 async def on_message(message):
-    await client.wait_until_ready()
+    await client.on_ready()
     # direct message processing
     if message.author == client.user:
         return True # do not respond to self
@@ -931,7 +931,7 @@ async def sanitize_cmd(message, command_type):
 # @func:    check_databases() : void
 #       Checks databases routinely, by minute.
 async def check_databases():
-    await client.wait_until_ready()
+    await client.on_ready()
     results       = dict()
     today         = datetime.today() # check on first launch
     inactive_time = timedelta(0)
