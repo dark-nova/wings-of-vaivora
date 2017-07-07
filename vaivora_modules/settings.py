@@ -14,6 +14,9 @@ class Settings:
     server_dir                          = "server_settings"
 
     settings                            = dict()
+    settings['welcomed']                = False
+    #settings['subscribed']              = True
+    settings['vaivora-version']         = ''
     settings['talt']                    = dict()
     settings['talt']['guild']           = 0
     settings['talt']['remainder']       = 0
@@ -257,15 +260,15 @@ class Settings:
             if not target:
                 self.update_guild_talt(talt_pt)
                 try:
-                    self.settings['talt'][user]     += talt_pt
+                    self.settings['talt'][user]     +=  talt_pt
                 except:
-                    self.settings['talt'][user]     = talt_pt
+                    self.settings['talt'][user]     =   talt_pt
             else:
                 self.update_guild_talt(talt_pt)
                 try:
-                    self.settings['talt'][target]   += talt_pt
+                    self.settings['talt'][target]   +=  talt_pt
                 except:
-                    self.settings['talt'][target]   = talt_pt
+                    self.settings['talt'][target]   =   talt_pt
         else: #elif user in settings['users']['member']:
             self.talt_temporary[user]           = talt_pt
         self.save_file()
@@ -405,6 +408,35 @@ class Settings:
             return True
         except:
             return False
+
+    def was_welcomed(self):
+        try:
+            return self.settings['welcomed']
+        except:
+            self.settings['welcomed']   = False
+            self.save_file()
+            return False
+
+    def greet(self, current_version, stored_version=None):
+        self.settings['welcomed']   =   True
+        try:
+            base_version    =   self.settings['vaivora-version'] if not stored_version else stored_version
+        except:
+            base_version    =   "1.0"
+        revs    =   vaivora_modules.version.check_revisions(base_version)
+        if revs:
+            self.settings['vaivora-version']    =   vaivora_modules.version.get_current_version()
+        self.save_file()
+        return revs
+
+    # def subscribed(self):
+    #     return self.settings['subscribed']
+
+    # def set_subscription(self, flag):
+    #     self.settings['subscribed'] =   flag
+    #     self.save_file()
+    #     return True
+
 
 #### Examples
 # $settings 
