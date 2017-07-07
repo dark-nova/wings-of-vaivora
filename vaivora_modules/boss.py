@@ -731,8 +731,8 @@ def process_command(server_id, msg_channel, arg_list):
 
     # error: not enough arguments
     if arg_len < arg_min or arg_len > arg_max:
-        return "You supplied " + arg_len + " arguments; commands must have at least " + \
-               arg_min + " or at most " + arg_max + " arguments.\n" + msg_help
+        return "You supplied " + str(arg_len) + " arguments; commands must have at least " + \
+               str(arg_min) + " or at most " + str(arg_max) + " arguments.\n" + msg_help
 
     # $boss all ...
     if rgx_tg_all.match(arg_list[0]):
