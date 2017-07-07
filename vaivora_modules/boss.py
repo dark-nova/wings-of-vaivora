@@ -639,12 +639,14 @@ def check_boss(entry):
 # @return:
 #       map index in list, or -1 if not found or too many maps matched
 def check_maps(boss, maps):
-    map_number  = ''
     map_idx     = -1
-    
+
     if boss in bosses_with_floors:
         map_match   = rgx_floors.match(maps)
+    if map_match:
         map_floor   = map_match.group('floornumber')
+    else:
+        map_floor   = maps
 
     # Deathweaver map did not match
     if boss == "Blasphemous Deathweaver" and not rgx_loc_dw.search(maps):
@@ -659,15 +661,12 @@ def check_maps(boss, maps):
     else:
         tg_map  =   maps # default
 
-    if boss in bosses_with_floors and not map_number:
-        return map_idx
-    
     for boss_map in boss_locs[boss]:
-        if re.match(tg_map, boss_map, re.IGNORECASE):
+        if re.search(tg_map, boss_map, re.IGNORECASE):
             if map_idx != -1:
                 return -1 # too many matches
             map_idx = boss_locs[boss].index(boss_map)
-
+            
     return map_idx
 
 
@@ -811,8 +810,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
 
     if len(opt_list) > 0:
         opts                =   process_cmd_opt(opt_list, tg_boss)
-        target['map']       =   opts['map']
-        target['channel']   =   opts['channel']
+        target['map'], target['channel']    = opts
     # 3 or fewer arguments
     elif not target['boss'] in bosses_world:
         target['map']       =   "N/A"
@@ -1097,11 +1095,14 @@ def process_cmd_opt(opt_list, opt_boss):
     target  =   dict()
     for cmd_arg in opt_list:
         channel     =   rgx_channel.match(cmd_arg)
-        if channel and channel.group(2) != '1' and not opt_boss in bosses_world:
+        if channel and channel.group(2) != '1' and not opt_boss in bosses_world and not opt_boss in bosses_with_floors:
             return cmd_arg + " is invalid for `$boss`:`channel` because " + opt_boss + " is a field boss.\n" + \
                    "Field bosses that spawn in channels other than 1 are always jackpot bosses, world boss forms of " + \
                    "the equivalent field boss.\n" + msg_help
         # target - channel
+        elif channel and opt_boss and opt_boss in bosses_with_floors:
+            target['channel']   =   1
+            target['map']       =   boss_locs[opt_boss][check_maps(opt_boss, channel.group(2))]
         elif channel and opt_boss and opt_boss in bosses_world:
             target['channel']   =   int(channel.group(2)) # use channel provided by command
             target['map']       =   boss_locs[opt_boss][0]
@@ -1114,7 +1115,7 @@ def process_cmd_opt(opt_list, opt_boss):
                 target['map']   =   boss_locs[opt_boss][map_idx]
             else:
                 target['map']   =   "N/A"
-    return target
+    return (target['map'], target['channel'])
 
 
 # @func:    process_records(str, str, datetime, str, float) : str
