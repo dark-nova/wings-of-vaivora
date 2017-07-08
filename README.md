@@ -118,49 +118,9 @@
 ---
 ---
 
-+   ### Reminders
-
-    #### *Recommended user level:* **all**
-
-    ##### Purpose: for individual members to have reminders by a certain time
++   ### Talt Tracking
     
-    ___
-
-    ### Syntax:
-
-        $remind "comment" time [date]
-        Vaivora, record "comment" time [date] 
-
-    ### Arguments:
-
-    1.  comment **(required)**
-
-        The reminder in comment form, enclosed in double-quotes.
-
-    2.  time **(required)**
-
-        e.g. `13:00`, `1:11PM`, `6:00a`
-
-    3.  date *(optional)*
-
-        The date you want to be reminded. Defaults to today's date.
-
-        Format like so: \[YY\]YY/MM/DD -
-
-        + two or four digit year accepted;
-        + delimiter optional, but restricted to:
-            + slash, `/`
-            + hyphen, `-`
-            + dot, `.`
-        + month and day may be single digit but *must* be delimited if so.
-
-    #### *Vaivora* command:
-        Vaivora, record
-
----
----
-
-+   ### Talt Tracking.
+    ##### Part of the `Settings` module.
 
     #### *Recommended user level:* **varies**
 
@@ -168,66 +128,48 @@
     
     ___
 
+    ### Syntax
+    `[prefix]settings [modify] talt [value] [unit] [@mention ...]`
 
-    +   ### Donation Tracking (user)
+    `[prefix]settings [validation]`
 
-        #### *Recommended user level:* **member**
+    ### Examples
+    `$settings add talt 12`; adds 12 Talt to yourself
 
-        ##### Purpose: for users to submit their Talt donations.
-        
-        ___
+    `$settings set talt 12`; sets your contribution to 12 Talt. Not the same as above.
 
-        ### Syntax:
+    `$settings add talt 240 points`; equivalent to the first command
 
-            $talt N [units] [@user]
-            Vaivora, credit N [units] [@user]
+    `$settings add talt 12 @mention`; adds 12 Talt to mentioned target(s)
 
-        ### Arguments:
+    ### Arguments
+    0.  Prefix: `$`, `Vaivora, `
+        Module: "settings"
+        e.g. `$settings`, `Vaivora, settings`
+          
+    1.  
+        - **[modify]:** `add`, `set`, `unset`, `rm`
+            + `add`:
+                * Adds directly to previous record.
+            + `set`:
+                * Modifies the previous record entirely.
+            + `unset, rm`:
+                * Removes set values.
+        - **[validation]:** `validate`, `verify`, `invalidate`, `unverify`
+            + `validate` & `verify`:
+                * Validates temporary records.
+            + `invalidate` & `unverify`:
+                * Invalidates temporary records.
+            + **You must be at least `Authorized` to do so!**
 
-        1.  `N` **(required)**
+    2. `talt`
+        - Changes the associated target's or targets' `Talt` contribution.
+        - *Valid for **[target]:[boss]** only.*
+        - *Do not use with **[status]**, **[entry]**, or **[type]** commands.*    
+    3. **[value]:**
+        - How much you are using. Keep in mind that default measurement is `Talt`, and not `Points`.
 
-            The value to use.
-
-        2. units *(optional)*
-
-            The units to use, among `talt` and `points`. Default is `talt`.
-
-        3. `@user` *(optional)*
-
-
-        #### *Vaivora* command:
-            Vaivora, credit
-
-    ___
-
-    +   ### Donation Validation
-
-        #### *Recommended user level:* **moderator**
-
-        ##### Purpose: for moderators (or similar role) to approve and verify user records.
-        
-        ___
-
-        ### Syntax:
-
-            $talt validated @user [@user ...]
-            Vaivora, validated @user [@user ...]
-      
-        ### Arguments:
-
-        1.  `validated` **(required)**
-
-            Do not use any other word here.
-
-        2.  `@user` **(one *or more* required)**
-
-            Mention the user.
-
-        #### *Vaivora* command:
-            Vaivora, validated
-
----
----
+    4.  
 
 +   ### Permission Management.
 
