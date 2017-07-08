@@ -1049,7 +1049,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             # e.g.              0 minutes from now
             # e.g.              59 minutes ago
             ret_message     +=  str(math.floor(abs_mins%60)) + " minutes " + \
-                                ("from now" if mins_left < 0 else "ago") + \
+                                ("from now" if mins_left >= 0 else "ago") + \
                                 ")"
 
             # print extra anchored message conditionally
