@@ -1,5 +1,5 @@
 # Wings of Vaivora
-#### _A_ [`Tree of Savior`][tos] [`Discord`][discord] _bot project._
+#### _A_ [`TOS`][tos] [`Discord`][discord] _bot project._
 ---
 
 # Features
@@ -168,81 +168,28 @@
         - *Do not use with **[status]**, **[entry]**, or **[type]** commands.*    
     3. **[value]:**
         - How much you are using. Keep in mind that default measurement is `Talt`, and not `Points`.
+        - See **[unit]** for more information.
 
-    4.  
+    4. **[unit]:** `talt`, `points`
+        + `talt`:
+            * Default. Unit weight of 1, or 20 points.
+        + `points`:
+            * *Optional*
+            * Unit weight of **0.05** or, 20 points = 1 Talt. Invalid if not divisible by 20.
 
-+   ### Permission Management.
-
-    #### *Recommended user level:* **administrator**
-
-    ##### Purpose: for administrators to add roles to users for `Wings of Vaivora` specifically. Does not affect Discord Server permissions.
-
-    ___
-
-    +   ### Abstract Permissions Structure
-
-        +   #### role *(synonym)*
-
-        1.  `administrator` *(admin)*
-            + Top of the server
-            + Grants roles
-            + All permissions
-
-        2.  `moderator` *(mod)*
-            + Below `administrator`
-            + Cannot make role changes
-            + Elevated permissions for settings
-
-        3.  `guild member` *(member)*
-            + Guild member as personally defined by `moderator`s or `administrator`s
-            + Below `administrator` 
-            + Can use most functions
-            + Cannot make role changes
-            + Cannot change settings
-
-        4.  `all` *(all)*
-            + Everyone else
-            + Cannot use most functions
-            + Cannot make role changes
-            + Cannot change settings
-            + Least permissions *(or almost none)*
-
-    ___
-
-    ### Syntax:
-
-        $vaivora grant|revoke role @user [@user ...]
-        Vaivora, grant|revoke role @user [@user ...]
-
-    ### Arguments: 
-
-    1.  `grant` or `revoke` **(required)**
-
-        This command can go in both ways: privilege granting and removing.
-
-        For `revoke`, you only need to specify the users. Upon `revoke`ing, the associated users become `all`.
-
-    2.  `role` **(required *for*** `grant`**)**
-
-        Use only one role at a time. Users may only have one role, which is *separate* from the Discord server's roles. (Strictly for `Wings of Vaivora`.)
-
-    2.  `@user` **(one *or more* required)**
-
-        You may approve as many as possible.
-
-    #### *Vaivora* command::
-
-        Vaivora, approve
-        Vaivora, revoke
+    5.  **[@mention]:**
+        + *Optional*
+        + Mention people to tag them with the contribution you listed, instead of yourself.
+        + **You must be at least `Authorized` to do so, and your mentions must be at least `Member`s!**
 
 ---
 ---
     
 ### In development.
-#### Last modified: 2017-01-03 15:47 (UTC-8)
+#### Last modified: 2017-07-08 23:23 (UTC-7)
 
 ---
 
 
-[tos]: https://treeofsavior.com/    "'TOS'"
+[tos]: https://treeofsavior.com/    "'Tree of Savior'"
 [discord]: https://discordapp.com/  "Chatting app and platform"
