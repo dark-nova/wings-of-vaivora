@@ -1148,6 +1148,7 @@ def process_record(boss, status, time, boss_map, channel):
 
     # unrecorded map
     elif boss_map == 'N/A':
+        ret_message =   ".\n"
         boss_map    = ['[Map Unknown]',]
 
     # Ashaq Deathweaver
