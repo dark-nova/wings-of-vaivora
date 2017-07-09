@@ -22,7 +22,7 @@
     ### Syntax
     `[prefix]boss [target]:[boss] [status] [time] [channel] [map]`
 
-    `[prefix]boss [target]:([boss], all) [entry] [map]`
+    `[prefix]boss [target] [entry] [map]`
 
     `[prefix]boss [target]:[boss] [query]`
 
@@ -60,7 +60,7 @@
             + `list`:
                 * Lists the entries for the boss you have chosen. If `all`, all records will be printed.
             + `erase`:
-                * Erases the entries matching the boss or `all`. Optional parameter **[map]** restricts which records to erase.
+                * Erases the entries matching the boss or `all`. *Optional* parameter **[map]** restricts which records to erase.
             + *Do not use with **[status]**, **[query]**, or **[type]** commands.*
         - **[query]:** `synonyms`, `maps`
             + `synonyms`:
@@ -171,10 +171,10 @@
         - See **[unit]** for more information.
 
     4. **[unit]:** `talt`, `points`
+        + *Optional* 
         + `talt`:
             * Default. Unit weight of 1, or 20 points.
         + `points`:
-            * *Optional*
             * Unit weight of **0.05** or, 20 points = 1 Talt. Invalid if not divisible by 20.
 
     5.  **[@mention]:**
