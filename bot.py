@@ -921,8 +921,8 @@ async def check_databases():
         if len(minutes) > 0:
             for rec_hash, rec_mins in minutes.items():
                 mins_now    =   datetime.now().minute
-                # e.g. 48 > 03 (if record was 1:03 and time now is 12:48), passes cond 1 but fails cond 2
-                if rec_mins < mins_now and (mins_now-rec_mins) > 0:
+                # e.g. 48 > 03 (if record was 1:03 and time now is 12:48), passes conds 1 & 2 but fails cond 3
+                if rec_mins < mins_now and (mins_now-rec_mins) > 0 and (mins_now-rec_mins+15+1) < 60:
                     no_repeat.remove(rec_hash)
                     purged.append(rec_hash)
 
@@ -962,6 +962,7 @@ async def check_databases():
                 hashedblake     =   blake2b(digest_size=24)
                 hashedblake.update(record2byte)
                 hashed_record   =   hashedblake.hexdigest()
+                print(hashed_record)
                 
                 if hashed_record in no_repeat:
                     continue

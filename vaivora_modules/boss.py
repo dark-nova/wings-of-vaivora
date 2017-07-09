@@ -1172,7 +1172,7 @@ def process_record(boss, status, time, boss_map, channel):
         ret_message +=  "\n#   ".join([m for m in boss_locs[boss] if m != boss_map])
 
     if boss == "Kubas Event":
-        ret_message += "#   [Machine of Riddles], ch."  + str(math.floor(channel%2+1))
+        ret_message += "\n#   [Machine of Riddles], ch." + str(math.floor(float(channel)%2+1))
 
     rem_minutes     = math.floor((time-(datetime.now()+timedelta(hours=pacific2server))).seconds/60)
 
