@@ -52,6 +52,7 @@ async def on_ready():
     nservs  =   str(first_run)
     nserv   =   0
     for server in client.servers:
+        nserv   +=  1
         await asyncio.sleep(1)
         await client.change_presence(game=discord.Game(name=("with files. Processing " + str(nserv) + "/" + nservs + " guilds...")), status=discord.Status.dnd)
         if server.unavailable:
@@ -115,13 +116,15 @@ async def on_server_join(server):
 #     True if succeeded, False otherwise
 @client.event
 async def on_message(message):
+    if message.author == client.user:
+        return True # do not respond to self
+
     if first_run:
         await client.send_message(message.channel, message.author.mention + " " + \
                                   "Still processing " + str(first_run) + " servers.\n")
         return False
+
     # direct message processing
-    if message.author == client.user:
-        return True # do not respond to self
     if not message.channel or not message.channel.name:
         # boss help
         if rgx_boss.match(message.content):
