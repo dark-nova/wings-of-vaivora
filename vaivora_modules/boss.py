@@ -871,8 +871,8 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         temp_hour       =   hours + offset
 
     # error: invalid hours
-    if temp_hour > 23 or hours < 0:
-        return time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + \
+    if temp_hour > 24 or hours < 0:
+        return time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + \
                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
 
     # $boss [boss] died [time] ...
