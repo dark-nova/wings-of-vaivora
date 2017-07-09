@@ -956,3 +956,28 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('e')
+status_n.append(milestone)
+date_n.append("2017/07/08")
+
+current     = get_header() + \
+"""```diff
++ Added features:
+  + Alerts will no longer use a redundant measure of text files in raw info to prevent repeat of duplicate mentions. And... (see Fixes)
+  
++ Fixes:
+  + Alerts are now fixed. Sorry. This was long overdue and I've had issues and was occupied today. This was a couple issues:
+    1. not converting local time (Pacific Daylight Time) to server time (Eastern Daylight Time) - solved using timedelta(hours=-3)
+    2. not sending to the right channel, instead a str which discord.py made no sense of - solved using channel.id
+    3. not sending messages after input - solved using message.server instead of server_id
+    4. not sending messages on account of syntax/type error - solved by typing to str
+
+- Caveat to new alert/periodic check system: if bot goes offline and you had a record still valid, you will receive at least one duplicate mention. -
+```"""
+
+changelog.append(current)
