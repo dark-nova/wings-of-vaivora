@@ -27,7 +27,7 @@ def check_revisions(srv_ver):
 
     if not srv_ver:
         return 0
-    count             =   0
+    count             =   -1
     
     aversion, asubver =   srv_ver.split('.')
     
@@ -43,28 +43,29 @@ def check_revisions(srv_ver):
     status            =   version_check.group(0)
     version           =   rgx_brackets.sub('', aversion)
 
-    while version_n[-1+count]  >  version      or \
-      subver_n[-1+count]   >  subver           or \
-      hotfix_n[-1+count]   >  hotfix           or \
-      (version_n[-1+count] == version          and \
-       subver_n[-1+count]  == subver           and \
-       hotfix_n[-1+count]  == hotfix           and \
-       compare_status(status_n[count], status)):
+    while version_n[count]  >  version  or \
+          subver_n[count]   >  subver   or \
+          hotfix_n[count]   >  hotfix   or \
+          (version_n[count] == version  and \
+           subver_n[count]  == subver   and \
+           hotfix_n[count]  == hotfix   and \
+           compare_status(status_n[count], status)):
+
         count -= 1
 
     return count+1
 
 def compare_status(status_a, status_b):
-    if status_b == milestone:
-        return True # always stable
+    if status_b == milestone and status_a != milestone:
+        return True # stable > (incremental|nightly)
     if status_a == milestone:
-        return False # always false
-    if status_b == unstable:
-        return True # ruled out status_a and status_b as being "m"ilestone
+        return False # status_b is not stable so always false
+    if status_b == unstable and status_a == bugfix:
+        return True
     if status_a == unstable:
         return False # ruled out status_a as "m"ilestone and status_b as "m"ilestone and "n"ightly
     else:
-        return True # incrementals remaining; i >= i always
+        return False # incrementals remaining; i == i but not i > i
 
 def get_revisions():
     return len(version_n)
