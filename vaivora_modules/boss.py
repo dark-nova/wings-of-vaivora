@@ -643,11 +643,8 @@ def check_maps(boss, maps):
     map_floor   = 0
     map_match   = None
 
-    print(maps)
-
     if boss in bosses_with_floors:
         map_match   = rgx_floors.search(maps)
-        print(map_match)
         map_floor   = map_match.group('floornumber')
     
     # Deathweaver map did not match
@@ -811,9 +808,9 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     target      =   dict()
 
     # target - boss
-    target['boss']      =   tg_boss # cmd_boss[0] # reassign to 'target boss'
-    target['msg_chan']  =   msg_channel
-    target['channel']   =   -1
+    target['boss']          =   tg_boss # cmd_boss[0] # reassign to 'target boss'
+    target['text_channel']  =   msg_channel
+    target['channel']       =   -1
 
     if len(opt_list) > 0:
         opts                =   process_cmd_opt(opt_list, tg_boss)
@@ -1178,7 +1175,7 @@ def process_record(boss, status, time, boss_map, channel):
 
     rem_minutes     = math.floor((time-(datetime.now()+timedelta(hours=pacific2server))).seconds/60)
 
-    time_str        = time.strftime("%Y/%m/%d %H:%M") + " (in " + str(rem_minutes) + "minutes)"
+    time_str        = time.strftime("%Y/%m/%d %H:%M") + " (in " + str(rem_minutes) + " minutes)"
     when_spawn      = "at " + time_str + ret_message
 
     # set time difference based on status and type of boss
@@ -1208,7 +1205,7 @@ def process_record(boss, status, time, boss_map, channel):
     #      and should spawn at 2017/07/06 22:30, in the following map:
     #      #   Crystal Mine 2F
     ret_message     = "\"" + boss + "\" " + status + " " + \
-                      "in ch." + str(math.floor(float(channel))) + " " + boss_map + " " + \
+                      "in ch." + str(math.floor(float(channel))) + " \"" + boss_map + "\" " + \
                       "at " + report_time.strftime("%Y/%m/%d %H:%M") + ",\n" + \
                       "and should spawn " + when_spawn
 
