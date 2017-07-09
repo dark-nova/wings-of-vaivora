@@ -38,17 +38,9 @@ to_sanitize         = re.compile(r'[^a-z0-9 .:$",-]', re.IGNORECASE)
 
 first_run           = False
 
-
-# snippet from discord.py docs
-# logger = logging.getLogger(vaivora_constants.values.filenames.logger)
-# logger.setLevel(logging.WARNING)
-# handler = logging.FileHandler(vaivora_constants.values.filenames.log_file, encoding="utf-8")
-# handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-# logger.addHandler(handler)
-
 # @func:    on_ready()
 # @return:
-#   None
+#       None
 @client.event
 async def on_ready():
     global first_run
@@ -72,6 +64,12 @@ async def on_ready():
     return
 
 
+# @func:    greet(str, discord.Member) : void
+# @arg:
+#       server_id : str
+#           the server's id
+#       server_owner : discord.Member
+#           the server's owner    
 @client.event
 async def greet(server_id, server_owner):
     do_not_msg  = await get_unsubscribed()
@@ -87,28 +85,10 @@ async def greet(server_id, server_owner):
             await client.send_message(server_owner, vaivora_log)
 
 
-# # @func:    write_anew([discord.Server**]) : void
-# # @arg:
-# #       servers:
-# #           a list of servers connected/served by this bot
-# @client.event
-# async def write_anew(servers):
-#     vaivora_version   = vaivora_modules.version.get_current_version()
-#     with open(vaivora_constants.values.filenames.welcomed, 'a') as original:
-#         for server in servers:
-#             original.write(server.id + ':' + vaivora_version)
-#             await client.send_message(server.owner, vaivora_constants.values.words.message.welcome)
-#             n_revs = vaivora_modules.version.get_revisions()
-#             i = 1
-#             for vaivora_log in vaivora_modules.version.get_changelogs():
-#                 i += 1
-#                 await client.send_message(server.owner, "Changelog " + i + " of " + n_revs + "\n" + \
-#                                           vaivora_log)
-#             await client.send_message(server.owner, \
-#                                       vaivora_modules.version.get_subscription_msg())
-
-
 # @func:    on_server_available(discord.Server) : bool
+# @arg:
+#       server : discord.Server
+#           the Discord server joining
 # @return:
 #       True if ready, False otherwise
 @client.event
@@ -117,22 +97,10 @@ async def on_server_join(server):
     vaivora_version   = vaivora_modules.version.get_current_version()
     if server.unavailable:
         return False
-    server_id         = str(server.id)
-    if not re.match(r'[0-9]{18,}', server_id):
-        return False # somehow invalid.
-    with open(vaivora_constants.values.filenames.valid_db, 'r') as valid_file:
-        f = valid_file.read()
-    for line in f:
-        if server_id in line:
-            already   = True
-            return True
-    if not already:
-        vdbs[server_id]     = vaivora_modules.db.Database(server_id)
-        o_id                = client.get_server(server_id).owner.id
-        vdst[server_id]     = vaivora_modules.settings.Settings(server_id, o_id)
-        with open(vaivora_constants.values.filenames.valid_db, 'a') as f:
-            f.write(server_id)
-            await write_anew([server,])
+    vdbs[server.id]     = vaivora_modules.db.Database(server.id)
+    o_id                = server.owner.id
+    vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
+    await greet(server.id, server.owner)
     return True
 
 
