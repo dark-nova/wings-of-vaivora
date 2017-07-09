@@ -1000,3 +1000,35 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('g')
+status_n.append(bugfix)
+date_n.append("2017/07/08")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Fixed logic errors with getting changelogs. Sorry, I know you guys must have gotten too many changelogs lately through PM, mostly repetitive.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('g')
+status_n.append(bugfix)
+date_n.append("2017/07/08")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Fixed logic errors with empty maps again -resolved with changing list with "Map Unknown" to empty string
+```"""
+
+changelog.append(current)
