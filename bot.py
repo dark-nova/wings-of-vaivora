@@ -5,7 +5,8 @@ import sqlite3
 import asyncio
 import random
 import shlex
-import queue
+#from queue import Queue as q
+from hashlib import blake2b
 import json
 import re
 import os
@@ -36,6 +37,7 @@ rgx_boss            = re.compile(r'\$boss .+', re.IGNORECASE)
 to_sanitize         = re.compile(r'[^a-z0-9 .:$",-]', re.IGNORECASE)
 
 first_run           = False
+
 
 # snippet from discord.py docs
 # logger = logging.getLogger(vaivora_constants.values.filenames.logger)
@@ -883,6 +885,7 @@ def msg_talt(message, highest_role, taltn, unit):
 #           command_settings    = "settings"
 @client.event
 async def sanitize_cmd(message, command_type):
+
     cmd_message =   to_sanitize.sub('', message.content)
     cmd_message =   cmd_message.lower()
     try:
@@ -901,7 +904,7 @@ async def sanitize_cmd(message, command_type):
         msg_prefix  =   ""
     else:
         server_id   =   message.server.id
-        msg_channel =   message.channel
+        msg_channel =   message.channel.id
         msg_prefix  =   message.author.mention + " "
     
     if command_type == command_boss:
@@ -911,11 +914,11 @@ async def sanitize_cmd(message, command_type):
     else:
         return # command was incorrect
 
-    await client.send_message(msg_channel, msg_prefix + return_msg[0])
+    await client.send_message(message.channel, msg_prefix + return_msg[0])
     if len(return_msg) > 1:
         for msg_frag in return_msg[1:]:
             await asyncio.sleep(1)
-            await client.send_message(msg_channel, msg_frag)
+            await client.send_message(message.channel, msg_frag)
 
 
 
@@ -927,22 +930,33 @@ async def sanitize_cmd(message, command_type):
 async def check_databases():
     while not first_run:
         await asyncio.sleep(5)
-    results       = dict()
-    today         = datetime.today() # check on first launch
-    inactive_time = timedelta(0)
-    inactive      = False
+    print('Startup completed; starting check_database')
+    results         =   dict()
+    minutes         =   dict()
+    no_repeat       =   list()
+    today           =   datetime.today() # check on first launch
+
     while not client.is_closed:
-        no_repeat = []
-        #await asyncio.sleep(6)
         await asyncio.sleep(59)
-        with open(vaivora_constants.values.filenames.no_repeat, 'r') as f:
-            for line in f:
-                no_repeat.append(line.strip())
-        print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- Valid DBs: ", len(vdbs))
+        print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- Valid DBs:", len(vdbs))
+
+        # prune no-repeats
+        purged      =   list()
+        if len(minutes) > 0:
+            for rec_hash, rec_mins in minutes.items():
+                mins_now    =   datetime.now().minute
+                # e.g. 48 > 03 (if record was 1:03 and time now is 12:48), passes cond 1 but fails cond 2
+                if rec_mins < mins_now and (mins_now-rec_mins) > 0:
+                    no_repeat.remove(rec_hash)
+                    purged.append(rec_hash)
+
+        for purge in purged:
+            del minutes[rec_hash]
+
         for vdb_id, valid_db in vdbs.items():
-            print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- in DB ", vdb_id)
-            results[vdb_id] = []
             loop_time = datetime.today()
+            print(loop_time.strftime("%Y/%m/%d %H:%M"), "- in DB:", vdb_id)
+            results[vdb_id] = []
             if today.day != loop_time.day:
                 today = loop_time
             
@@ -950,75 +964,85 @@ async def check_databases():
             message_to_send   = list()
             cur_channel       = str()
             results[vdb_id]   = valid_db.check_db_boss()
+
             # empty; dismiss
             if not results[vdb_id]:
                 continue
+
             # sort by time - yyyy, mm, dd, hh, mm
             results[vdb_id].sort(key=itemgetter(5,6,7,8,9))
+
+            # iterate 
             for result in results[vdb_id]:
-                cur_channel       = str()
-                list_time = [ int(t) for t in result[5:10] ]
-                try:
-                    entry_time    = datetime(*list_time)
-                except:
-                    # invalid entry
-                    ####TODO: remove entry
+                cur_channel     =   result[4]
+                list_time       =   [ int(t) for t in result[5:10] ]
+                record_info     =   [ str(r) for r in result[0:5] ]
+
+                entry_time      =   datetime(*list_time)
+                record          =   vaivora_modules.boss.process_record(record_info[0], record_info[3], entry_time, record_info[2], record_info[1])
+                #                   channel           :    boss              :                       2017/01/01 12:00      :    channel
+                record2byte     =   record_info[4] + ":" + record_info[3] + ":" + entry_time.strftime("%Y/%m/%d %H:%M") + ":" + record_info[1]
+                record2byte     =   bytearray(record2byte, 'utf-8')
+                hashedblake     =   blake2b(digest_size=24)
+                hashedblake.update(record2byte)
+                hashed_record   =   hashedblake.hexdigest()
+                
+                if hashed_record in no_repeat:
                     continue
-                entry_time_east   = entry_time
-                time_diff         = entry_time - datetime.now()
+
+                time_diff       =   entry_time - datetime.now() + timedelta(hours=-3)
+
+                # process time difference
                 if time_diff.days < 0:
                     continue
-                ####TODO: redo this.
+
+                # append record to message queue
                 if time_diff.seconds < 900 and time_diff.days == 0:
-                    result        = [ str(r) for r in result ]
-                    boss_entry    = []
-                    boss_entry.append(vaivora_modules.boss.process_record(result[0], result[3], entry_time_east, result[2], result[1]))
-                    boss_entry.append(result[4],)
-                    boss_rec      = result[4] + ":" + result[0] + ":" + result[3] + ":" + \
-                                    entry_time_east.strftime("%Y/%m/%d %H:%M") + ":" + result[1] + "\n"
-                    if boss_rec.rstrip() in no_repeat or boss_rec in no_repeat:
-                        continue # already warned
-                    else:
-                        with open(vaivora_constants.values.filenames.no_repeat, 'a') as f:
-                            f.write(boss_rec)
-                        message_to_send.append(boss_entry)
-                        no_repeat.append(boss_rec)
+                    no_repeat.append(hashed_record)
+                    message_to_send.append([record, record_info[4],])
+                    minutes[str(hashed_record)]     =   entry_time.minute
+
+            # empty record for this server
             if len(message_to_send) == 0:
-                # inactive_time += (datetime.today()-loop_time)
-                continue # empty record for this server
-            # else:
-            #     inactive_time = timedelta(0)
-            #     inactive      = False
+                continue 
+
             role_str = str()
+
+            # compare roles against server
             srv = client.get_server(vdb_id)
             for uid in vdst[vdb_id].get_role("boss"):
                 try:    
                     # group mention
                     if discord.utils.get(srv.roles, mention=uid):
                         role_str    += uid + " "
+
                     # user mention
                     else:
                         boss_user   = await client.get_user_info(uid)
                         role_str    += boss_user.mention + " "
+
                 except:
                     # user mention
                     boss_user   = await client.get_user_info(uid)
                     role_str    += boss_user.mention + " "
+
+            # no roles detected; use empty string
             role_str = role_str if role_str else ""
+
+            # replace time_str with server setting warning, eventually
             time_str = "15"
-            # for role in srv.roles:
-            #     if role.mentionable and role.name == "Boss Hunter":
-            #         role_str = role.mention
-            #         break
-            cur_channel = ''
+
+            cur_channel         =   ''
+            discord_message     =   ''
             for message in message_to_send:
-                if cur_channel != message[-1] and not vaivora_constants.regex.format.matching.letters.match(message[-1]):
+                if cur_channel != message[-1]:
                     if cur_channel:
                         discord_message += "```"
                         await client.send_message(srv.get_channel(cur_channel), discord_message)
                         discord_message = ''
                     cur_channel = message[-1]
-                    #TODO: Replace 15 with custom server time threshold
+
+                    # replace time_str with server setting warning, eventually
                     discord_message = role_str + " The following bosses will spawn within " + time_str + " minutes: ```python\n"
                 discord_message += message[0]
             # flush
