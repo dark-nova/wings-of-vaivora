@@ -1149,7 +1149,7 @@ def process_record(boss, status, time, boss_map, channel):
     # unrecorded map
     elif boss_map == 'N/A':
         ret_message =   ".\n"
-        boss_map    = ['[Map Unknown]',]
+        boss_map    =   ""
 
     # Ashaq Deathweaver
     elif boss == "Blasphemous Deathweaver" and rgx_loc_dwa.search(boss_map):
@@ -1206,7 +1206,8 @@ def process_record(boss, status, time, boss_map, channel):
     #      and should spawn at 2017/07/06 22:30, in the following map:
     #      #   Crystal Mine 2F
     ret_message     = "\"" + boss + "\" " + status + " " + \
-                      "in ch." + str(math.floor(float(channel))) + " \"" + boss_map + "\" " + \
+                      "in ch." + str(math.floor(float(channel))) + \
+                      ((" \"" + boss_map + "\" ") if boss_map else "") + \
                       "at " + report_time.strftime("%Y/%m/%d %H:%M") + ",\n" + \
                       "and should spawn " + when_spawn
 
