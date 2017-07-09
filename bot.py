@@ -36,7 +36,7 @@ rgx_boss            = re.compile(r'\$boss .+', re.IGNORECASE)
 
 to_sanitize         = re.compile(r'[^a-z0-9 .:$",-]', re.IGNORECASE)
 
-first_run           = False
+first_run           = 0
 
 # @func:    on_ready()
 # @return:
@@ -48,19 +48,22 @@ async def on_ready():
     print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
     await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."), status=discord.Status.idle)
-    nservs  =   str(len(client.servers))
+    first_run   +=  len(client.servers)
+    nservs  =   str(first_run)
     nserv   =   0
     for server in client.servers:
         await asyncio.sleep(1)
         await client.change_presence(game=discord.Game(name=("with files. Processing " + str(nserv) + "/" + nservs + " guilds...")), status=discord.Status.dnd)
         if server.unavailable:
+            first_run   -=  1
             continue
         vdbs[server.id]     = vaivora_modules.db.Database(server.id)
         o_id                = server.owner.id
         vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
         await greet(server.id, server.owner)
+        first_run   -=  1
     await client.change_presence(game=discord.Game(name=("in " + nservs + " guilds # [$help] or [Vaivora, help] for info")), status=discord.Status.online)
-    first_run   =   True
+    first_run   =   0
     return
 
 
@@ -112,7 +115,9 @@ async def on_server_join(server):
 #     True if succeeded, False otherwise
 @client.event
 async def on_message(message):
-    if not first_run:
+    if first_run:
+        await client.send_message(message.channel, message.author.mention + " " + \
+                                  "Still processing " + str(first_run) + " servers.\n")
         return False
     # direct message processing
     if message.author == client.user:
@@ -896,7 +901,7 @@ async def sanitize_cmd(message, command_type):
 # @func:    check_databases() : void
 #       Checks databases routinely, by minute.
 async def check_databases():
-    while not first_run:
+    while first_run:
         await asyncio.sleep(5)
     print('Startup completed; starting check_database')
     results         =   dict()
