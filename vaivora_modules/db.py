@@ -205,16 +205,16 @@ class Database:
 
         #try: # boss database structure
         self.cursor.execute("insert into boss values (?,?,?,?,?,?,?,?,?,?)", \
-                            (str(boss_dict['boss'       ]), \
-                             int(boss_dict['channel'    ]), \
-                             str(boss_dict['map'        ]), \
-                             str(boss_dict['status'     ]), \
-                             str(boss_dict['msg_chan'   ]), \
-                             int(boss_dict['year'       ]), \
-                             int(boss_dict['month'      ]), \
-                             int(boss_dict['day'        ]), \
-                             int(boss_dict['hour'       ]), \
-                             int(boss_dict['mins'       ])))
+                            (str(boss_dict['boss'           ]), \
+                             int(boss_dict['channel'        ]), \
+                             str(boss_dict['map'            ]), \
+                             str(boss_dict['status'         ]), \
+                             str(boss_dict['text_channel'   ]), \
+                             int(boss_dict['year'           ]), \
+                             int(boss_dict['month'          ]), \
+                             int(boss_dict['day'            ]), \
+                             int(boss_dict['hour'           ]), \
+                             int(boss_dict['mins'           ])))
         self.save_db()
         return True
 
