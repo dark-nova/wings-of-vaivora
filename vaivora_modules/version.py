@@ -981,3 +981,21 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('f')
+status_n.append(bugfix)
+date_n.append("2017/07/08")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Alerts are now fixed for a couple more issues.
+    1. handling 12pm - solved using hour > 24 instead of hour > 23
+    2. handling empty maps - solved by assigning an unbound variable on the condition
+```"""
+
+changelog.append(current)
