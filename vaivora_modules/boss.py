@@ -240,11 +240,14 @@ status_died     =   "died"
 status_warned   =   "was warned to spawn"
 status_anchored =   "was anchored"
 
+kw_firstspawn   =   "first spawn"
+
 # BGN REGEX
 
 prefix      = re.compile(r'(va?i(v|b)ora, |\$)boss', re.IGNORECASE)
 rgx_help    = re.compile(r'help', re.IGNORECASE)
 rgx_tg_all  = re.compile(r'all', re.IGNORECASE)
+rgx_tg_1st  = re.compile(r'first ?(spawn)?', re.IGNORECASE)
 rgx_status  = re.compile(r'(di|kill|anchor|warn)(ed)?', re.IGNORECASE)
 rgx_st_died = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
 rgx_st_warn = re.compile(r'warn(ed)?', re.IGNORECASE)
@@ -735,20 +738,26 @@ def process_command(server_id, msg_channel, arg_list):
 
     # error: not enough arguments
     if arg_len < arg_min or arg_len > arg_max:
-        return "You supplied " + str(arg_len) + " arguments; commands must have at least " + \
-               str(arg_min) + " or at most " + str(arg_max) + " arguments.\n" + msg_help
+        return ["You supplied " + str(arg_len) + " arguments; commands must have at least " + \
+                str(arg_min) + " or at most " + str(arg_max) + " arguments.\n" + msg_help]
 
     # $boss all ...
     if rgx_tg_all.match(arg_list[0]):
-        cmd_boss  = bosses
+        cmd_boss    =   bosses
+
+    # special keyword
+    elif rgx_tg_1st.match(arg_list[0]):
+        cmd_boss    =   boss_spawn_16h
+        return [process_cmd_special(server_id, msg_channel, cmd_boss, kw_firstspawn, arg_list[1:])]
 
     # $boss [boss] ...
     else:
         boss_idx  = check_boss(arg_list[0])
         if boss_idx == -1:
-            return arg_list[0] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#   " + \
-                   '\n#   '.join(bosses) + "```\n" + msg_help
-        cmd_boss  = [bosses[boss_idx], ]
+            return arg_list[0]
+            # return arg_list[0] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#   " + \
+            #        '\n#   '.join(bosses) + "```\n" + msg_help
+        cmd_boss    =   [bosses[boss_idx], ]
 
     # error: invalid argument 2
     if not rgx_status.match(arg_list[1]) and \
@@ -1007,15 +1016,18 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             ret_message =   "\"" + boss_name + "\" " + boss_status + " in ch." + boss_chan + " and "
             time_diff   = datetime.now() + timedelta(hours=pacific2server) - record_date
 
-            # old records
-            if int(time_diff.days) >= 0:
+            if int(time_diff.days) >= 0 or boss_status != status_anchored:
                 ret_message +=  "should have respawned at "
                 mins_left   =   math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
             # anchored
-            elif boss_status == status_anchored:
+            elif boss_status == status_anchored and int(time_diff.days) < 0:
                 ret_message +=  "will spawn as early as "
                 mins_left   =   math.floor((86400-int(time_diff.seconds))/60)
+
+            elif boss_status == status_anchored and int(time_diff.days) >= 0:
+                ret_message +=  "could have spawned at "
+                mins_left   =   math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
             # warned & died
             else:
@@ -1091,6 +1103,98 @@ def process_cmd_type(btype):
     # $boss all world
     else:
         return get_bosses_world()
+
+
+# @func:    process_cmd_status(str, str, str, list, str, list) : str
+# @arg:
+#       server_id : str
+#           id of the server of the originating message
+#       msg_channel : str
+#           id of the channel of the originating message
+#       tg_bosses : list
+#           the bosses in question
+#       keyword : str
+#           the special command keyword
+#       opt_args : list
+#           the arguments for the special command
+# @return:
+#       an appropriate message for success or fail of command
+def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
+    if keyword != kw_firstspawn:
+        return
+
+    if keyword == kw_firstspawn and len(opt_args) > 1:
+        return
+
+    # kw_firstspawn
+    time    =   opt_args
+
+    # error: invalid time
+    if not rgx_time.match(time):
+        return time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + \
+               "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+
+    offset  =   0
+    target['text_channel']  =   msg_channel
+    target['channel']       =   1
+    target['map']           =   "N/A"
+    
+    if rgx_time_ap.search(time):
+        if rgx_time_pm.search(time):
+            offset  = 12
+        arg_time    = rgx_time_ap.sub('', time)
+    else:
+        arg_time    = time
+
+    delim   = rgx_time_dl.search(arg_time)
+    record  = dict()
+    if delim:
+        hours, minutes  =   [int(t) for t in arg_time.split(delim.group(0))]
+        temp_hour       =   hours + offset
+    else:
+        minutes         =   int(arg_time[::-1][0:2][::-1])
+        hours           =   int(re.sub(str(minutes), '', arg_time))
+        temp_hour       =   hours + offset
+
+    # error: invalid hours
+    if temp_hour > 24 or hours < 0:
+        return time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + \
+               "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+    
+    server_date =   datetime.now() + timedelta(hours=pacific2server)
+
+    if temp_hour > int(server_date.hour):
+        server_date +=  timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
+
+    # staging server time for first spawn
+    server_date     +=  timedelta(hours=12)
+
+    # reassign to target data
+    target['year']  =   int(server_date.year)
+    target['month'] =   int(server_date.month)
+    target['day']   =   int(server_date.day)
+    target['hour']  =   int(server_date.hour)
+    target['mins']  =   int(server_date.minute)
+
+    success         =   list()
+
+    for tg_boss in tg_bosses:
+        target['boss']  =   tg_boss
+        status = vaivora_modules.db.Database(server_id).update_db_boss(target)
+
+        if status:
+            success.append(acknowledge + "```python\n" + \
+                           "\"" + target['boss'] + "\" " + \
+                           target['status'] + " at " + \
+                           ("0" if temp_hour < 10 else "") + \
+                           str(temp_hour) + ":" + \
+                           ("0" if minutes < 10 else "") + \
+                           str(minutes) + \
+                           ", in ch." + str(target['channel']) + ": " + \
+                           (("\"" + target['map'] + "\"") if target['map'] != "N/A" else "") + "```\n")
+        else:
+            success.append("Your command could not be processed. It appears this record overlaps too closely with another.\n" + msg_help)
+    return success
 
 
 # @func:    process_cmd_opt(list) : dict
