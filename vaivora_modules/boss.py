@@ -748,7 +748,7 @@ def process_command(server_id, msg_channel, arg_list):
     # special keyword
     elif rgx_tg_1st.match(arg_list[0]):
         cmd_boss    =   boss_spawn_16h
-        return [process_cmd_special(server_id, msg_channel, cmd_boss, kw_firstspawn, arg_list[1:])]
+        return [process_cmd_special(server_id, msg_channel, cmd_boss, kw_firstspawn, arg_list[1])]
 
     # $boss [boss] ...
     else:
@@ -1123,11 +1123,9 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
     if keyword != kw_firstspawn:
         return
 
-    if keyword == kw_firstspawn and len(opt_args) > 1:
-        return
-
     # kw_firstspawn
     time    =   opt_args
+    print(time)
 
     # error: invalid time
     if not rgx_time.match(time):
