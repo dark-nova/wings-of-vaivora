@@ -1165,7 +1165,7 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
         return time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + \
                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
     
-    server_date =   datetime.datetime() + timedelta(hours=pacific2server)
+    server_date =   datetime.now() + timedelta(hours=pacific2server)
 
     if temp_hour > int(server_date.hour):
         server_date +=  timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
