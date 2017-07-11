@@ -1008,6 +1008,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             boss_chan   =   str(math.floor(boss_record[1]))
             boss_premap =   boss_record[2]
             boss_status =   boss_record[3]
+            # year, month, day, hour, minutes
             record_date =   [int(rec) for rec in boss_record[5:10]]
             record_date =   datetime(*record_date)
             # e.g.          "Blasphemous Deathweaver"  died          in ch.      1           and
@@ -1164,13 +1165,15 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
         return time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + \
                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
     
-    server_date =   datetime.now() + timedelta(hours=pacific2server)
+    server_date =   datetime.datetime() + timedelta(hours=pacific2server)
 
     if temp_hour > int(server_date.hour):
         server_date +=  timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
 
+    server_date =   datetime.datetime(server_date.year, server_date.month, server_date.day, temp_hour, minutes)
+
     # staging server time for first spawn
-    server_date     +=  timedelta(hours=12)
+    server_date +=  timedelta(hours=12)
     target['status']    =   status_warned
 
     # reassign to target data
