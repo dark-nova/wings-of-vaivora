@@ -1021,7 +1021,7 @@ changelog.append(current)
 
 version_n.append('1')
 subver_n.append('7')
-hotfix_n.append('g')
+hotfix_n.append('h')
 status_n.append(bugfix)
 date_n.append("2017/07/08")
 
@@ -1029,6 +1029,22 @@ current     = get_header() + \
 """```diff
 + Fixes:
   + Fixed logic errors with empty maps again -resolved with changing list with "Map Unknown" to empty string
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('i')
+status_n.append(bugfix)
+date_n.append("2017/07/08")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Adjusted anchor message using boss list
 ```"""
 
 changelog.append(current)
