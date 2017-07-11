@@ -1170,7 +1170,7 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
     if temp_hour > int(server_date.hour):
         server_date +=  timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
 
-    server_date =   datetime.datetime(server_date.year, server_date.month, server_date.day, temp_hour, minutes)
+    server_date =   datetime(server_date.year, server_date.month, server_date.day, temp_hour, minutes)
 
     # staging server time for first spawn
     server_date +=  timedelta(hours=12)
