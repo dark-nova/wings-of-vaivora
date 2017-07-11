@@ -748,13 +748,13 @@ def process_command(server_id, msg_channel, arg_list):
     # special keyword
     elif rgx_tg_1st.match(arg_list[0]):
         cmd_boss    =   boss_spawn_16h
-        return [process_cmd_special(server_id, msg_channel, cmd_boss, kw_firstspawn, arg_list[1])]
+        return process_cmd_special(server_id, msg_channel, cmd_boss, kw_firstspawn, arg_list[1])
 
     # $boss [boss] ...
     else:
         boss_idx  = check_boss(arg_list[0])
         if boss_idx == -1:
-            return arg_list[0]
+            return arg_list[0].split(' ')[0]
             # return arg_list[0] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#   " + \
             #        '\n#   '.join(bosses) + "```\n" + msg_help
         cmd_boss    =   [bosses[boss_idx], ]
@@ -989,7 +989,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             return "*(But **nothing** happend...)*\n"
 
     if rgx_erase.match(entry) and recs:
-        return "Your queried records " + str(recs) + " have successfully been erased.\n"
+        return "Your queried records (" + str(recs) + ") have successfully been erased.\n"
     elif rgx_erase.match(entry) and not recs:
         return "*(But nothing happened...)*\n"
 
@@ -1016,7 +1016,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             ret_message =   "\"" + boss_name + "\" " + boss_status + " in ch." + boss_chan + " and "
             time_diff   = datetime.now() + timedelta(hours=pacific2server) - record_date
 
-            if int(time_diff.days) >= 0 or boss_status != status_anchored:
+            if int(time_diff.days) >= 0 and boss_status != status_anchored:
                 ret_message +=  "should have respawned at "
                 mins_left   =   math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
@@ -1029,10 +1029,15 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
                 ret_message +=  "could have spawned at "
                 mins_left   =   math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
-            # warned & died
-            else:
+            # died
+            elif boss_status == status_died:
                 ret_message +=  "will respawn around "
                 mins_left   =   math.floor((86400-int(time_diff.seconds))/60)
+
+            # warned
+            else:
+                ret_message +=  "will spawn at "
+                mins_left   =   math.floor(time_diff.seconds/60)
 
             # absolute date and time for spawn
             # e.g.              2017/07/06 "14:47"
@@ -1125,8 +1130,8 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
 
     # kw_firstspawn
     time    =   opt_args
-    print(time)
-
+    target  =   dict()
+    
     # error: invalid time
     if not rgx_time.match(time):
         return time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + \
@@ -1166,6 +1171,7 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
 
     # staging server time for first spawn
     server_date     +=  timedelta(hours=12)
+    target['status']    =   status_warned
 
     # reassign to target data
     target['year']  =   int(server_date.year)
@@ -1184,10 +1190,10 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
             success.append(acknowledge + "```python\n" + \
                            "\"" + target['boss'] + "\" " + \
                            target['status'] + " at " + \
-                           ("0" if temp_hour < 10 else "") + \
-                           str(temp_hour) + ":" + \
-                           ("0" if minutes < 10 else "") + \
-                           str(minutes) + \
+                           ("0" if target['hour'] < 10 else "") + \
+                           str(target['hour']) + ":" + \
+                           ("0" if target['mins'] < 10 else "") + \
+                           str(target['mins']) + \
                            ", in ch." + str(target['channel']) + ": " + \
                            (("\"" + target['map'] + "\"") if target['map'] != "N/A" else "") + "```\n")
         else:
