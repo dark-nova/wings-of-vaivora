@@ -1038,7 +1038,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             # warned
             else:
                 ret_message +=  "will spawn at "
-                mins_left   =   math.floor(time_diff.seconds/60)
+                mins_left   =   math.floor((86400-int(time_diff.seconds))/60)
 
             # absolute date and time for spawn
             # e.g.              2017/07/06 "14:47"
@@ -1046,7 +1046,10 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
             # open parenthesis for minutes
             ret_message +=  " ("
-            abs_mins    =   abs(mins_left)
+            if mins_left >= 0:
+                abs_mins    =   abs(mins_left)
+            else:
+                abs_mins    =   abs(int(time_diff.days))*86400 + mins_left
 
             # print day or days conditionally
             if int(time_diff.days) > 1:
