@@ -8,7 +8,79 @@ from importlib import import_module as im
 import vaivora_constants
 for mod in vaivora_constants.modules:
     im(mod)
-import vaivora_modules.secrets
+import vaivora_modules
+for mod in vaivora_modules.modules:
+    im(mod)
+
+# BGN CONST
+
+module_name     =   "settings"
+
+command         =   []
+
+arg_prefix      =   "[prefix]"
+arg_prefix_alt  =   "\"$\", \"Vaivora, \""
+arg_module      =   "[module]"
+arg_cmd         =   module_name
+arg_defcmd      =   "$" + module_name
+
+# options for argument 1
+arg_n_1         =   "[settings]"
+arg_n_1_alt     =   "[setting], [talt validation], [role change]"
+arg_n_1_A       =   arg_n_1 + ":(" + arg_n_1_alt + ")"
+arg_n_1_B       =   arg_n_1 + ":[setting]" 
+arg_n_1_C       =   arg_n_1 + ":[validation]"
+arg_n_1_D       =   arg_n_1 + ":[role change]"
+
+# options for argument 1, detailed
+arg_n_1_B_A     =   arg_n_1_B + ":(set, unset, get, add)"
+arg_n_1_B_B     =   arg_n_1_B + ":set"
+arg_n_1_B_C     =   arg_n_1_B + ":unset"
+arg_n_1_B_D     =   arg_n_1_B + ":get"
+arg_n_1_B_E     =   arg_n_1_B + ":add"
+arg_n_1_C_A     =   arg_n_1_C + ":(verify|validate, unverify|invalidate)"
+arg_n_1_C_B     =   arg_n_1_C + ":(verify|validate)"
+arg_n_1_C_C     =   arg_n_1_C + ":(unverify|invalidate)"
+arg_n_1_D_A     =   arg_n_1_D + ":(promote, demote)"
+
+# options for argument 2
+arg_n_2_B_A_A   =   arg_n_1_B + ":([talt], [role], [channel])"
+arg_n_2_B_A_B   =   arg_n_1_B_B + ":[talt]"
+arg_n_2_B_A_C   =   arg_n_1_B_B + ":[role]"
+arg_n_2_B_A_D   =   arg_n_1_B_B + ":[channel]"
+
+
+# arg             =   dict()
+# arg[N]          =   dict()
+# arg[N][0]       =   "[prefix]"
+# arg[N][1]       =   "[settings]"
+# arg[N][2]       =   dict()
+# arg[N][2][A]    =   "[(un)set|get|rm]"
+# arg[N][2][B]    =   "[(un)verify|(in)validate]"
+# arg[N][2][C]    =   "[promote|demote]"
+# arg[N][3]       =   dict()
+# arg[N][3][A]    =   "[talt]"
+# arg[N][3][B]    =   "[channel]"
+# arg[N][3][C]    =   "[role]"
+# arg[N][3][D]    =   "[prefix]"
+# arg[N][4]       =   dict()
+# arg[N][4][A]    =   "[n]"
+# arg[N][4][B]    =   "[user|group]"
+# arg[N][4][C]    =   "[['custom prefix']]"
+# arg[N][4][D]    =   "[boss|management]"
+# arg[N][4][E]    =   "[authorized|member]"
+# arg[O]          =   dict()
+# arg[O][1]       =   "(user ...)"
+# arg[O][2]       =   "(talt|points)"
+# arg[O][3]       =   "(channel ...)"
+# arg[H]          =   "[help]"
+
+# auxiliary arguments
+arg_help        =   "help"
+arg_arg         =   "Argument"
+#                   $boss
+arg_pre_cmd     =   arg_prefix + arg_cmd
+
 
 class Settings:
     server_dir                          = "server_settings"
