@@ -61,6 +61,8 @@ async def on_ready():
         vdbs[server.id]     = vaivora_modules.db.Database(server.id)
         o_id                = server.owner.id
         vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
+        with open('servers.txt', 'a') as f:
+            f.write(server.id, server.name, owner.name)
         await greet(server.id, server.owner)
         first_run   -=  1
     await client.change_presence(game=discord.Game(name=("in " + nservs + " guilds # [$help] or [Vaivora, help] for info")), status=discord.Status.online)
@@ -961,12 +963,11 @@ async def check_databases():
                 entry_time      =   datetime(*list_time)
                 record          =   vaivora_modules.boss.process_record(record_info[0], record_info[3], entry_time, record_info[2], record_info[1])
                 #                   channel           :    boss              :                       2017/01/01 12:00      :    channel
-                record2byte     =   record_info[4] + ":" + record_info[3] + ":" + entry_time.strftime("%Y/%m/%d %H:%M") + ":" + record_info[1]
+                record2byte     =   record_info[4] + ":" + record_info[0] + ":" + entry_time.strftime("%Y/%m/%d %H:%M") + ":" + record_info[1]
                 record2byte     =   bytearray(record2byte, 'utf-8')
-                hashedblake     =   blake2b(digest_size=24)
+                hashedblake     =   blake2b(digest_size=48)
                 hashedblake.update(record2byte)
                 hashed_record   =   hashedblake.hexdigest()
-                print(hashed_record)
                 
                 if hashed_record in no_repeat:
                     continue
@@ -986,8 +987,6 @@ async def check_databases():
             # empty record for this server
             if len(message_to_send) == 0:
                 continue 
-
-            print(len(message_to_send))
 
             role_str = str()
 
