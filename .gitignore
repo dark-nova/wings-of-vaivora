@@ -3,6 +3,7 @@
 discordtoken
 *secrets*
 wings*
+server.txt
 # files by extension
 *~
 *.db
@@ -11,10 +12,7 @@ wings*
 *.bak
 *.json
 *_test.py
-<<<<<<< HEAD
 *.log
-=======
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
 # unrelated files
 index.py
 srvcheck.py
@@ -22,18 +20,11 @@ srvcheck.py
 # directories
 # private directories
 venv_ttos
-<<<<<<< HEAD
 server_settings*
 db.backup
 db.bak
 # specific directories
-=======
-server_*
-db.backup
-db.bak
-# specific directories
 *__pycache__/*
->>>>>>> 6159b954f3d0a741d952601620208eeaefc0ea6c
 test
 snapshot
 old
