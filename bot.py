@@ -54,7 +54,7 @@ async def on_ready():
     for server in client.servers:
         nserv   +=  1
         with open('servers.txt', 'a') as f:
-            f.write(server.id, server.name, owner.name)
+            f.write(server.id, server.name, server.owner.id, server.owner.name)
         await asyncio.sleep(1)
         await client.change_presence(game=discord.Game(name=("with files. Processing " + str(nserv) + "/" + nservs + " guilds...")), status=discord.Status.dnd)
         if server.unavailable:
