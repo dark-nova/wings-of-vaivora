@@ -250,7 +250,7 @@ rgx_tg_all  = re.compile(r'all', re.IGNORECASE)
 rgx_tg_1st  = re.compile(r'first ?(spawn)?', re.IGNORECASE)
 rgx_status  = re.compile(r'(di|kill|anchor|warn)(ed)?', re.IGNORECASE)
 rgx_st_died = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
-rgx_st_warn = re.compile(r'warn(ed)?', re.IGNORECASE)
+rgx_st_warn = re.compile(r'(was )?warn(ed)?', re.IGNORECASE)
 rgx_st_anch = re.compile(r'anchor(ed)?', re.IGNORECASE)
 rgx_entry   = re.compile(r'(li?st?|erase|del(ete)?|cl(ea)?r)', re.IGNORECASE)
 #rgx_list    = re.compile(r'li?st?', re.IGNORECASE)
@@ -1256,13 +1256,16 @@ def process_cmd_opt(opt_list, opt_boss):
 #       returns a message formed by the record
 def process_record(boss, status, time, boss_map, channel):
     # map does not rotate
-    if rgx_st_warn.match(status) or boss in bosses_world:
+    if boss in bosses_world or (rgx_st_warn.match(status) and boss_map != "N/A"):
         ret_message =   ", in the following map:\n" +"#   "
         ret_message +=  boss_map
+    elif rgx_st_warn.match(status):
+        ret_message =   ", in any of the following maps:\n" + "#   "
+        boss_map    =   "\n#   ".join(boss_locs[boss])
 
     # unrecorded map
     elif boss_map == 'N/A':
-        ret_message =   ".\n"
+        ret_message =   "."
         boss_map    =   ""
 
     # Ashaq Deathweaver
@@ -1288,6 +1291,7 @@ def process_record(boss, status, time, boss_map, channel):
     if boss == "Kubas Event":
         ret_message += "\n#   [Machine of Riddles], ch." + str(math.floor(float(channel)%2+1))
 
+    ret_message     +=  "\n\n"
     rem_minutes     = math.floor((time-(datetime.now()+timedelta(hours=pacific2server))).seconds/60)
 
     time_str        = time.strftime("%Y/%m/%d %H:%M") + " (in " + str(rem_minutes) + " minutes)"
@@ -1321,7 +1325,7 @@ def process_record(boss, status, time, boss_map, channel):
     #      #   Crystal Mine 2F
     ret_message     = "\"" + boss + "\" " + status + " " + \
                       "in ch." + str(math.floor(float(channel))) + \
-                      ((" \"" + boss_map + "\" ") if boss_map else "") + \
+                      ((" \"" + boss_map + "\" ") if boss_map else " ") + \
                       "at " + report_time.strftime("%Y/%m/%d %H:%M") + ",\n" + \
                       "and should spawn " + when_spawn
 
