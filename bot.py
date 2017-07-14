@@ -987,6 +987,8 @@ async def check_databases():
             if len(message_to_send) == 0:
                 continue 
 
+            print(len(message_to_send))
+
             role_str = str()
 
             # compare roles against server
