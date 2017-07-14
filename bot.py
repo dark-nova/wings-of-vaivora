@@ -53,6 +53,8 @@ async def on_ready():
     nserv   =   0
     for server in client.servers:
         nserv   +=  1
+        with open('servers.txt', 'a') as f:
+            f.write(server.id, server.name, owner.name)
         await asyncio.sleep(1)
         await client.change_presence(game=discord.Game(name=("with files. Processing " + str(nserv) + "/" + nservs + " guilds...")), status=discord.Status.dnd)
         if server.unavailable:
@@ -61,8 +63,6 @@ async def on_ready():
         vdbs[server.id]     = vaivora_modules.db.Database(server.id)
         o_id                = server.owner.id
         vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
-        with open('servers.txt', 'a') as f:
-            f.write(server.id, server.name, owner.name)
         await greet(server.id, server.owner)
         first_run   -=  1
     await client.change_presence(game=discord.Game(name=("in " + nservs + " guilds # [$help] or [Vaivora, help] for info")), status=discord.Status.online)
