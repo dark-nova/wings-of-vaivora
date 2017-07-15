@@ -226,7 +226,7 @@ arg_min         =   2
 arg_max         =   5
 
 acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
-msg_help        =   "Please run `" + arg_defcmd + "` for syntax.\n"
+msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
 
 pacific2server  =   3
 server2pacific  =   -3
@@ -961,26 +961,26 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
         # process opts
         # too many bosses but only one map
-        if opts['map'] != "N/A" and len(tg_bosses) > 1:
+        if opts[0] != "N/A" and len(tg_bosses) > 1:
             return "Your query:`map`, `" + entry + "`, could not be interpreted.\n" + \
                    "You listed a map but selected more than one boss.\n" + msg_help
 
         # map is not null but channel is
-        elif opts['map'] != "N/A" and not opts['channel']:
-            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_map=opts['map'])
+        elif opts[0] != "N/A" and not opts[1]:
+            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_map=opts[0])
             
         # error: channel other than 1, and boss is field boss
-        elif opts['channel'] != 1 and not tg_bosses[0] in bosses_world:
-            return "Your query:`channel`, `" + opts['channel'] + "`, could not be interpreted.\n" + \
+        elif opts[0] != 1 and not tg_bosses[0] in bosses_world:
+            return "Your query:`channel`, `" + opts[1] + "`, could not be interpreted.\n" + \
                    "Field bosses, like `" + tg_bosses[0] + "`, with regular spawn do not spawn in channels other than 1.\n" + msg_help
 
         # channel is not null but map is
-        elif opts['channel'] and opts['map'] == "N/A":
-            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts['channel'])
+        elif opts[0] and opts[1] == "N/A":
+            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts[1])
             
         # implicit catch-all: match with all conditions
         else:
-            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts['channel'], boss_map=opts['map'])
+            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts[1], boss_map=opts[0])
             
     elif rgx_erase.match(entry):
         if vaivora_modules.db.Database(server_id).rm_entry_db_boss():
@@ -1218,9 +1218,7 @@ def process_cmd_opt(opt_list, opt_boss):
     for cmd_arg in opt_list:
         channel     =   rgx_channel.match(cmd_arg)
         if channel and channel.group(2) != '1' and not opt_boss in bosses_world and not opt_boss in bosses_with_floors:
-            return cmd_arg + " is invalid for `$boss`:`channel` because " + opt_boss + " is a field boss.\n" + \
-                   "Field bosses that spawn in channels other than 1 are always jackpot bosses, world boss forms of " + \
-                   "the equivalent field boss.\n" + msg_help
+            return ("N/A", "ch." + channel.group(2))
         # target - channel
         elif channel and opt_boss and opt_boss in bosses_with_floors: # all field bosses
             target['channel']   =   1
