@@ -119,6 +119,15 @@ async def on_message(message):
     if message.author == client.user:
         return True # do not respond to self
 
+    if first_run and not message.channel:
+        await client.send_message(message.author, \
+                                  "Still processing " + str(first_run) + " servers.\n")
+        return False
+    elif first_run:
+        await client.send_message(message.channel, message.author.mention + \
+                                  "Still processing " + str(first_run) + " servers.\n")
+        return False
+
     # direct message processing
     if not message.channel or not message.channel.name:
         # boss help
@@ -874,11 +883,6 @@ async def sanitize_cmd(message, command_type):
         server_id   =   message.server.id
         msg_channel =   message.channel.id
         msg_prefix  =   message.author.mention + " "
-
-    if first_run:
-        await client.send_message(message.channel, msg_prefix + \
-                                  "Still processing " + str(first_run) + " servers.\n")
-        return False
 
     cmd_message =   to_sanitize.sub('', message.content)
     cmd_message =   cmd_message.lower()
