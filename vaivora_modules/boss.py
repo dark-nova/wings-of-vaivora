@@ -262,6 +262,7 @@ rgx_type    = re.compile(r'(wor|fie)ld', re.IGNORECASE)
 #rgx_type_w  = re.compile(r'world', re.IGNORECASE)
 rgx_type_f  = re.compile(r'field', re.IGNORECASE)
 rgx_time    = re.compile(r'[0-2]?[0-9][:.]?[0-5][0-9] ?([ap]m?)*', re.IGNORECASE)
+rgx_time_12 = re.compile(r'^12.*', re.IGNORECASE)
 rgx_time_ap = re.compile(r'[ap]m?', re.IGNORECASE)
 rgx_time_pm = re.compile(r'pm?', re.IGNORECASE)
 rgx_time_dl = re.compile(r'[:.]')
@@ -863,6 +864,8 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         # $boss [boss] died [time:pm]
         if rgx_time_pm.search(time):
             offset  = 12
+        elif rgx_time_12.match(time):
+            offset  = -12
         arg_time    = rgx_time_ap.sub('', time)
     else:
         arg_time    = time
@@ -1149,6 +1152,8 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
     if rgx_time_ap.search(time):
         if rgx_time_pm.search(time):
             offset  = 12
+        elif rgx_time_12.match(time):
+            offset  = -12
         arg_time    = rgx_time_ap.sub('', time)
     else:
         arg_time    = time
@@ -1193,7 +1198,7 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
         status = vaivora_modules.db.Database(server_id).update_db_boss(target)
 
         if status:
-            success.append(acknowledge + "```python\n" + \
+            success.append("```python\n" + \
                            "\"" + target['boss'] + "\" " + \
                            target['status'] + " at " + \
                            ("0" if target['hour'] < 10 else "") + \
@@ -1204,6 +1209,7 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
                            (("\"" + target['map'] + "\"") if target['map'] != "N/A" else "") + "```\n")
         else:
             success.append("Your command could not be processed. It appears this record overlaps too closely with another.\n" + msg_help)
+    success.insert(0, acknowledge)
     return success
 
 

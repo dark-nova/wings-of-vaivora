@@ -25,30 +25,59 @@ arg_cmd         =   module_name
 arg_defcmd      =   "$" + module_name
 
 # options for argument 1
-arg_n_1         =   "[settings]"
-arg_n_1_alt     =   "[setting], [talt validation], [role change]"
-arg_n_1_A       =   arg_n_1 + ":(" + arg_n_1_alt + ")"
-arg_n_1_B       =   arg_n_1 + ":[setting]" 
-arg_n_1_C       =   arg_n_1 + ":[validation]"
-arg_n_1_D       =   arg_n_1 + ":[role change]"
+arg_n           =   "[settings]"
+arg_n_set       =   "[setting]" 
+arg_n_val       =   "[validation]"
+arg_n_role      =   "[role change]"
+arg_n_all       =   ', '.join((arg_n_set, arg_n_val, arg_n_role, ))
+arg_n_opts      =   arg_n + ":(" + arg_n_all + ")"
 
-# options for argument 1, detailed
-arg_n_1_B_A     =   arg_n_1_B + ":(set, unset, get, add)"
-arg_n_1_B_B     =   arg_n_1_B + ":set"
-arg_n_1_B_C     =   arg_n_1_B + ":unset"
-arg_n_1_B_D     =   arg_n_1_B + ":get"
-arg_n_1_B_E     =   arg_n_1_B + ":add"
-arg_n_1_C_A     =   arg_n_1_C + ":(verify|validate, unverify|invalidate)"
-arg_n_1_C_B     =   arg_n_1_C + ":(verify|validate)"
-arg_n_1_C_C     =   arg_n_1_C + ":(unverify|invalidate)"
-arg_n_1_D_A     =   arg_n_1_D + ":(promote, demote)"
+# individual categories to describe for argument 1
+#                   [settings]:[setting]
+arg_n_opts_set  =   arg_n + ":" + arg_n_set
+#                   [settings]:[validation]
+arg_n_opts_val  =   arg_n + ":" + arg_n_val
+#                   [settings]:[role change]
+arg_n_opts_role =   arg_n + ":" + arg_n_role
 
-# options for argument 2
-arg_n_2_B_A_A   =   arg_n_1_B + ":([talt], [role], [channel])"
-arg_n_2_B_A_B   =   arg_n_1_B_B + ":[talt]"
-arg_n_2_B_A_C   =   arg_n_1_B_B + ":[role]"
-arg_n_2_B_A_D   =   arg_n_1_B_B + ":[channel]"
+# options for argument 1, aggregate
+#                   [setting]:(set, unset, get, add)
+arg_n_set_opts  =   arg_n_set + ":(set, unset, get, add)"
+#                   [validation]:(verify|validate, unverify|invalidate)
+arg_n_val_opts  =   arg_n_val + ":(verify|validate, unverify|invalidate)"
+#                   [role change]:(promote, demote)
+arg_n_role_opts =   arg_n_role + ":(promote, demote)"
 
+# individual options to describe for argument 1
+#                   [setting]:set
+arg_n_set_A     =   arg_n_set + ":set"
+#                   [setting]:unset
+arg_n_set_B     =   arg_n_set + ":unset"
+#                   [setting]:get
+arg_n_set_C     =   arg_n_set + ":get"
+#                   [setting]:add
+arg_n_set_D     =   arg_n_set + ":add"
+#                   [validation]:(verify|validate)
+arg_n_val_A     =   arg_n_val + ":(verify|validate)"
+#                   [validation]:(unverify|invalidate)
+arg_n_val_B     =   arg_n_val + ":(unverify|invalidate)"
+
+# options for setting, argument 2
+#                   [setting]:([talt], [role], [channel])
+#                   [setting]:[talt]
+arg_n_set2_talt =   "[talt]"
+#                   [setting]:[role]
+arg_n_set2_role =   "[role]"
+#                   [setting]:[channel]
+arg_n_set2_chan =   "[channel]"
+arg_n_set2_opts =   arg_n_set + ":(" + \
+                    ', '.join((arg_n_set2_talt, arg_n_set2_role, arg_n_set2_chan, )) + ")"
+
+
+
+
+# options for argument 3
+arg_n_3_B_A_A   =   "[talt]"
 
 # arg             =   dict()
 # arg[N]          =   dict()
