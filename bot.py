@@ -50,11 +50,9 @@ async def on_ready():
     await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."), status=discord.Status.idle)
     first_run   +=  len(client.servers)
     nservs  =   str(first_run)
-    nserv   =   0
+    await client.change_presence(game=discord.Game(name=("with files. Processing " + nservs + " guilds...")), status=discord.Status.dnd)
     for server in client.servers:
-        nserv   +=  1
         await asyncio.sleep(1)
-        await client.change_presence(game=discord.Game(name=("with files. Processing " + str(nserv) + "/" + nservs + " guilds...")), status=discord.Status.dnd)
         if server.unavailable:
             first_run   -=  1
             continue
@@ -63,8 +61,9 @@ async def on_ready():
         vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
         await greet(server.id, server.owner)
         first_run   -=  1
-    await client.change_presence(game=discord.Game(name=("in " + nservs + " guilds # [$help] or [Vaivora, help] for info")), status=discord.Status.online)
+    await asyncio.sleep(2)
     first_run   =   0
+    await client.change_presence(game=discord.Game(name=("in " + nservs + " guilds # [$help] or [Vaivora, help] for info")), status=discord.Status.online)
     return
 
 
@@ -124,7 +123,7 @@ async def on_message(message):
                                   "Still processing " + str(first_run) + " servers.\n")
         return False
     elif first_run:
-        await client.send_message(message.channel, message.author.mention + \
+        await client.send_message(message.channel, message.author.mention + " " + \
                                   "Still processing " + str(first_run) + " servers.\n")
         return False
 
