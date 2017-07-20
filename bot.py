@@ -53,8 +53,6 @@ async def on_ready():
     nserv   =   0
     for server in client.servers:
         nserv   +=  1
-        with open('servers.txt', 'a') as f:
-            f.write(server.id + ":" + server.name + ":" + server.owner.id + ":" + server.owner.name)
         await asyncio.sleep(1)
         await client.change_presence(game=discord.Game(name=("with files. Processing " + str(nserv) + "/" + nservs + " guilds...")), status=discord.Status.dnd)
         if server.unavailable:
@@ -179,13 +177,15 @@ async def on_message(message):
         random.seed()
         if int(random.random() * 100) % 17 != 0:
             return True
-    elif vaivora_constants.fun.stab.search(message.content):
-        await client.add_reaction(message, "🗡")
-        await client.add_reaction(message, "⚔")
-        for emoji in message.server.emojis:
-            if emoji.name == "Manamana":
-                await client.add_reaction(message, emoji)
-                return True
+        try:
+            await client.add_reaction(message, "🗡")
+            await client.add_reaction(message, "⚔")
+            for emoji in message.server.emojis:
+                if emoji.name == "Manamana":
+                    await client.add_reaction(message, emoji)
+                    return True
+        except:
+            return True
         return True
     # boss commands handling
     if rgx_boss.match(message.content):
@@ -405,7 +405,10 @@ async def settings_cmd(message):
                     for member, talt in talt_list:
                         if talt == 0 or member == "remainder" or member == "guild":
                             continue
-                        talt_user = await client.get_user_info(member)
+                        try:
+                            talt_user = await client.get_user_info(member)
+                        except:
+                            continue
                         fmtt_list.append("#   " + talt_user.name + ": " + str(int(talt)) + " T: " + str(int(talt)*20) + "P")
                     await client.send_message(message.channel, message.author.mention + " " + \
                                               talt_msg + "```python\n" + \
@@ -431,7 +434,12 @@ async def settings_cmd(message):
                         try:
                             uname = discord.utils.get(message.server.roles, mention=uid).name
                         except:
-                            uname = await client.get_user_info(uid)
+                            try:
+                                uname = await client.get_user_info(uid)
+                            except:
+                                await client.send_message(message.channel, message.author.mention + " " + \
+                                                      "(But nothing happened...)\n")
+                                return False
                         if uname == None:
                             await client.send_message(message.channel, message.author.mention + " " + \
                                                       "(But nothing happened...)\n")
@@ -1004,9 +1012,12 @@ async def check_databases():
                         role_str    += boss_user.mention + " "
 
                 except:
-                    # user mention
-                    boss_user   = await client.get_user_info(uid)
-                    role_str    += boss_user.mention + " "
+                    try:
+                        # user mention
+                        boss_user   = await client.get_user_info(uid)
+                        role_str    += boss_user.mention + " "
+                    except:
+                        continue
 
             # no roles detected; use empty string
             role_str = role_str if role_str else ""
