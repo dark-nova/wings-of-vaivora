@@ -1048,3 +1048,21 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('j')
+status_n.append(bugfix)
+date_n.append("2017/07/20")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Set exception handling for emojis to prevent total bot failure
+  + Adjusted 12:00am as a time
+    * Thanks to Wolfy for the bug report.
+```"""
+
+changelog.append(current)
