@@ -118,13 +118,13 @@ async def on_message(message):
     if message.author == client.user:
         return True # do not respond to self
 
-    if first_run and not message.channel:
-        await client.send_message(message.author, \
-                                  "Still processing " + str(first_run) + " servers.\n")
-        return False
-    elif first_run:
-        await client.send_message(message.channel, message.author.mention + " " + \
-                                  "Still processing " + str(first_run) + " servers.\n")
+    # if first_run and not message.channel:
+    #     await client.send_message(message.author, \
+    #                               "Still processing " + str(first_run) + " servers.\n")
+    #     return False
+    if first_run:
+        # await client.send_message(message.channel, message.author.mention + " " + \
+        #                           "Still processing " + str(first_run) + " servers.\n")
         return False
 
     # direct message processing
