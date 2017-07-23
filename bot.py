@@ -131,7 +131,7 @@ async def on_message(message):
     if not message.channel or not message.channel.name:
         # boss help
         if rgx_boss.match(message.content):
-            if vaivora_constants.regex.boss.command.arg_help.search(message.content):
+            if rgx_help.search(message.content):
                 return await sanitize_cmd(message, command_boss)
         # general
         elif vaivora_constants.regex.dm.command.prefix.match(message.content):
