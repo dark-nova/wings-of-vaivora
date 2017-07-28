@@ -74,6 +74,9 @@ usage           +=  "```"
 
 cmd_fragment    =  usage
 command.append(cmd_fragment)
+
+acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
+msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
 # Do not adjust /
 
 # examples
@@ -229,9 +232,6 @@ command.append(cmd_fragment)
 
 arg_min         =   2
 arg_max         =   5
-
-acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
-msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
 
 pacific2server  =   3
 server2pacific  =   -3
