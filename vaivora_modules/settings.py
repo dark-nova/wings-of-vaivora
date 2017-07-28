@@ -24,6 +24,9 @@ example         =   "e.g."
 mode_valid      =   "validate"
 mode_invalid    =   "invalidate"
 
+mode_promote    =   "promote"
+mode_demote     =   "demote"
+
 # BGN REGEX
 
 rgx_help        =   re.compile(r'help', re.IGNORECASE)
@@ -155,6 +158,9 @@ usage           +=  "```"
 
 cmd_fragment    =  usage
 command.append(cmd_fragment)
+
+acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
+msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
 # Do not adjust /
 
 # examples
@@ -278,7 +284,7 @@ arg_info.append("Argument=\"" + arg_set_role + "\n" + \
                 "    \"Boss\" level member: special role. Works with the [boss] module/command to mention all members of this role for boss alerts.\n" + \
                 "You must be of \"Authorized\" level.\n" + \
                 "Note: to change a user to \"None\" (lowest) role, you must use \"unset\".\n" + \
-                "All server admins are \"Super-authorized\" by default. This cannot be changed. All permissions stem from server admins.\n" + \
+                "All server admins are \"Super Authorized\" by default. This cannot be changed. All permissions stem from server admins.\n" + \
                 "Mentions are required.\n")
 arg_info.append("\n---\n\n")
 
@@ -434,6 +440,10 @@ class Settings:
         self.save_file()
         return True
 
+    def promote_demote(self, mode, users, groups):
+        for user in users:
+            self.get_highest_role_id(user)
+
     def get_role(self, role="member"):
         if role == "boss":
             utype = "role"
@@ -445,14 +455,17 @@ class Settings:
         return role_call
 
     def get_role_user(self, user):
+        return self.role_level[self.get_role_user_id(user)]
+
+    def get_role_user_id(self, user):
         if user in self.settings['users']['s-authorized']:
-            return "super authorized"
+            return 3
         elif user in self.settings['users']['authorized']:
-            return "authorized"
+            return 2
         elif user in self.settings['users']['member']:
-            return "member"
+            return 1
         else:
-            return None
+            return 0
 
     def get_role_group(self, roles):
         highest = "none"
@@ -463,6 +476,14 @@ class Settings:
             elif role in self.settings['group']['member']:
                 highest = "member"
         return highest
+
+    def get_highest_role(self, user, roles):
+        return self.role_level[self.get_highest_role_id(user, roles)]
+
+    def get_highest_role_id(self, user, roles):
+        usr_role    =   self.role_level.index(self.get_role_user(user))
+        grp_role    =   self.role_level.index(self.get_role_group(roles))
+        return usr_role if usr_role > grp_role else grp_role
 
     # def set_guild_talt(self, guild_level, points):
     #     if guild_level > len(talt_level) or guild_level < 1 or \
@@ -737,36 +758,63 @@ class Settings:
 #           the command used, somewhat equivalent to arg_list[0] in $boss
 #       cmd_user : str
 #           the one who called the command
+#       usr_roles : list(str)
+#           the roles associated with the cmd_user
 #       users : list(str)
 #           list of users to be processed; can be None
 #       groups : list(str)
 #           list of roles to be processed; can be None 
 # @return:
 #       an appropriate message for success or fail of command
-def process_command(server_id, msg_channel, settings_cmd, cmd_user, users, groups):
+def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups):
     fail    =   []
     cmd_srv =   Settings(server_id)
+    mode    =   ""
+    usr_rol =   cmd_srv.get_highest_role(cmd_user, usr_roles)
+
     # $boss help
     if rgx_help.match(settings_cmd):
         return command
 
     # setting (general)
     if rgx_setting.match(settings_cmd):
-        return process_setting(server_id, msg_channel, arg_list)
+        return process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups)
 
     # role change
+    elif rgx_rolechange and usr_rol != "authorized" or usr_role != "super authorized":
+        return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
+    elif rgx_rolechange.match(settings_cmd) and rgx_promote.search(settings_cmd):
+        return process_roles(server_id, msg_channel, mode=mode_promote, users, groups)
     elif rgx_rolechange.match(settings_cmd):
-        return process_roles(server_id, msg_channel, arg_list)
+        return process_roles(server_id, msg_channel, mode=mode_demote, users, groups)
 
-    # invalidation
+    # validation - handle after all commands are checked
     elif rgx_validation.match(settings_cmd) and rgx_invalid.search(settings_cmd):
+        mode    =   mode_invalid
+    elif rgx_validation.match(settings_cmd):
+        mode    =   mode_valid 
+
+    # did not match any settings or role change or validation
+    else:
+        return ["Your `$settings` command was not recognized. Please re-enter.\n" + msg_help]
+
+    # check validation
+    if rgx_validation.match(settings_cmd):
         if users or groups:
+            # process one at a time
             for mention in chain(users, groups):
-                if not Settings(server_id).validate_talt(cmd_user, mode_invalid, mention):
+                if not cmd_srv.validate_talt(cmd_user, mode, user=mention):
                     fail.append(mention)
         else:
-            if not Settings(server_id).validate_talt(cmd_user, mode_invalid):
-                "Your command failed because your user level is too low. User level: "
+            if not cmd_srv.validate_talt(cmd_user, mode):
+                return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
+            else:
+                return [acknowledge + "\n" + "Records have been " + mode + "d.\n"]
+    if fail:
+        return ["Your command partially or completely failed. " + \
+                "Some of your mentions could not be processed:", "```diff\n- " + '\n- '.join(fail) + "```\n"]
+    else:
+        return [acknowledge + "\n" + "Records for the specified users and/or groups have been " + mode + "d.\n"]
 
 
 # @func:    process_setting(str, list) : list
@@ -779,7 +827,8 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, users, group
 #           list of arguments supplied for the command
 # @return:
 #       an appropriate message for success or fail of command
-def process_setting(server_id, msg_channel, arg_list)
+def process_setting(server_id, msg_channel, arg_list):
+    pass
 
 
 
