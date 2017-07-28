@@ -441,8 +441,26 @@ class Settings:
         return True
 
     def promote_demote(self, mode, users, groups):
-        for user in users:
-            self.get_highest_role_id(user)
+        failed  =   []
+        users   =   [('users', u) for u in users]
+        groups  =   [('group', g) for g in groups]
+        for utype, user in chain(users, groups):
+            tg_role     =   self.get_role_user_id(user)
+            # cannot promote (super) authorized or demote none
+            if tg_role <= 2 and mode == mode_promote or \
+               tg_role == 0 and mode == mode_demote:
+                failed.append(user, "of role " + self.role_level[tg_role] + ", cannot " + mode)
+            # member to authorized
+            elif tg_role == 2 and mode == mode_demote:
+                self.settings[utype]['authorized'].remove(user)
+            elif tg_role == 1 and mode == mode_promote:
+                self.settings[utype]['authorized'].append(user)
+            elif tg_role == 1 and mode == mode_demote:
+                self.settings[utype]['member'].remove(user)
+            elif tg_role == 0 and mode == mode_promote:
+                self.settings[utype]['member'].append(user)
+        self.save_file()
+        return failed
 
     def get_role(self, role="member"):
         if role == "boss":
@@ -468,21 +486,24 @@ class Settings:
             return 0
 
     def get_role_group(self, roles):
-        highest = "none"
+        return self.role_level[self.get_role_group_id(roles)]
+
+    def get_role_group_id(self, roles):
+        highest = 0
         for role in roles:
             # groups cannot be super authorized
             if role in self.settings['group']['authorized']:
-                return "authorized"
+                return 2
             elif role in self.settings['group']['member']:
-                highest = "member"
+                highest = 1
         return highest
 
     def get_highest_role(self, user, roles):
         return self.role_level[self.get_highest_role_id(user, roles)]
 
     def get_highest_role_id(self, user, roles):
-        usr_role    =   self.role_level.index(self.get_role_user(user))
-        grp_role    =   self.role_level.index(self.get_role_group(roles))
+        usr_role    =   self.get_role_user_id(user)
+        grp_role    =   self.get_role_group_id(roles)
         return usr_role if usr_role > grp_role else grp_role
 
     # def set_guild_talt(self, guild_level, points):
@@ -784,9 +805,9 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
     elif rgx_rolechange and usr_rol != "authorized" or usr_role != "super authorized":
         return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
     elif rgx_rolechange.match(settings_cmd) and rgx_promote.search(settings_cmd):
-        return process_roles(server_id, msg_channel, mode=mode_promote, users, groups)
+        fail    =   cmd_srv.promote_demote(mode_promote, users, groups)
     elif rgx_rolechange.match(settings_cmd):
-        return process_roles(server_id, msg_channel, mode=mode_demote, users, groups)
+        fail    =   cmd_srv.promote_demote(mode_demote, users, groups)
 
     # validation - handle after all commands are checked
     elif rgx_validation.match(settings_cmd) and rgx_invalid.search(settings_cmd):
@@ -804,18 +825,23 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
             # process one at a time
             for mention in chain(users, groups):
                 if not cmd_srv.validate_talt(cmd_user, mode, user=mention):
-                    fail.append(mention)
+                    fail.append(mention, "could not " + mode + " this target")
         else:
             if not cmd_srv.validate_talt(cmd_user, mode):
                 return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
             else:
                 return [acknowledge + "\n" + "Records have been " + mode + "d.\n"]
+
+    # fail covers rolechange and validation
     if fail:
         return ["Your command partially or completely failed. " + \
-                "Some of your mentions could not be processed:", "```diff\n- " + '\n- '.join(fail) + "```\n"]
-    else:
+                "Your user may be too low. User level: `" + usr_rol + "`\n" + \
+                "Some of your mentions could not be processed:", fail]
+    elif rgx_validation.match(settings_cmd):
         return [acknowledge + "\n" + "Records for the specified users and/or groups have been " + mode + "d.\n"]
-
+    # has to be rolechange
+    else:
+        return [acknowledge + "\n" + "Your role changes (`" + mode + "`) have been noted.\n"]
 
 # @func:    process_setting(str, list) : list
 # @arg:
@@ -823,11 +849,19 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
 #           id of the server of the originating message
 #       msg_channel : str
 #           id of the channel of the originating message
-#       arg_list : list
-#           list of arguments supplied for the command
+#       settings_cmd : str
+#           the command used, somewhat equivalent to arg_list[0] in $boss
+#       cmd_user : str
+#           the one who called the command
+#       usr_roles : list(str)
+#           the roles associated with the cmd_user
+#       users : list(str)
+#           list of users to be processed; can be None
+#       groups : list(str)
+#           list of roles to be processed; can be None 
 # @return:
 #       an appropriate message for success or fail of command
-def process_setting(server_id, msg_channel, arg_list):
+def process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups):
     pass
 
 
