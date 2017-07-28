@@ -34,6 +34,9 @@ rgx_setting     =   re.compile(r'(add|(un)?set|get)', re.IGNORECASE)
 rgx_set_add     =   re.compile(r'add', re.IGNORECASE)
 rgx_set_unset   =   re.compile(r'unset', re.IGNORECASE)
 rgx_set_get     =   re.compile(r'get', re.IGNORECASE)
+rgx_set_talt    =   re.compile(r'[1-9][0-9]*')
+rgx_set_unit    =   re.compile(r'(talt|point)s?', re.IGNORECASE)
+rgx_set_unit_t  =   re.compile(r'talts?', re.IGNORECASE)
 # rgx_set_set is unnecessary: process of elimination
 rgx_rolechange  =   re.compile(r'(pro|de)mote', re.IGNORECASE)
 rgx_promote     =   re.compile(r'pro', re.IGNORECASE) # only need to compare pro vs de
@@ -786,8 +789,8 @@ class Settings:
 #       groups : list(str)
 #           list of roles to be processed; can be None 
 # @return:
-#       an appropriate message for success or fail of command
-def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups):
+#       an appropriate message for success or fail of command in list form; "fail" is always the optional second element in list
+def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
     fail    =   []
     cmd_srv =   Settings(server_id)
     mode    =   ""
@@ -799,7 +802,7 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
 
     # setting (general)
     if rgx_setting.match(settings_cmd):
-        return process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups)
+        return process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups, xargs)
 
     # role change
     elif rgx_rolechange and usr_rol != "authorized" or usr_role != "super authorized":
@@ -861,8 +864,13 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
 #           list of roles to be processed; can be None 
 # @return:
 #       an appropriate message for success or fail of command
-def process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups):
-    pass
+def process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups, xargs):
+    # set get add unset
+    #               0  1
+    # $settings add 10 talt mention
+    if rgx_set_add.match(settings_cmd) and not xargs or not rgx_set_talt.match(xargs[0]) or \
+       xargs[1] and not rgx_set_unit.match(xargs[1]):
+        return ""
 
 
 
