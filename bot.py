@@ -944,11 +944,14 @@ async def check_databases():
                     purged.append(rec_hash)
 
         for purge in purged:
-            del minutes[rec_hash]
+            try:
+                del minutes[rec_hash]
+            except:
+                continue
 
         for vdb_id, valid_db in vdbs.items():
             loop_time = datetime.today()
-            print(loop_time.strftime("%Y/%m/%d %H:%M"), "- in DB:", vdb_id)
+            print(loop_time.strftime("%H:%M"), "- in DB:", vdb_id)
             results[vdb_id] = []
             if today.day != loop_time.day:
                 today = loop_time

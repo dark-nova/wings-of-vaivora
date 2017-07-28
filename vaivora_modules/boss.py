@@ -52,12 +52,13 @@ arg_arg         =   "Argument"
 #                   $boss
 arg_pre_cmd     =   arg_prefix + arg_cmd
 
-
+# Do not adjust \
 cmd_fragment    =   "```diff\n" + "- " + "[" + arg_defcmd + "] commands" + " -" + "\n" + \
                     "+ Usage" + "```"
 command.append(cmd_fragment)
 
 usage           =  "```ini\n"
+# Do not adjust /
 #                   $boss               [target: boss]      [status command]    [time]              [channel]           [map]
 usage           +=  arg_pre_cmd + " " + arg_n_1_B + " " +   arg_n_2_A + " " +   arg_n_3 + " " +     arg_opt_1 + " " +   arg_opt_2 + "\n"
 #                   $boss               [target: any]       [entry command]     [map]
@@ -66,19 +67,21 @@ usage           +=  arg_pre_cmd + " " + arg_n_1_A + " " +   arg_n_2_B + " " +   
 usage           +=  arg_pre_cmd + " " + arg_n_1_B + " " +   arg_n_2_C + "\n"
 #                   $boss               [target: all]       [type command]
 usage           +=  arg_pre_cmd + " " + arg_n_1_C + " " +   arg_n_2_D + "\n"
-#                   $boss               help
+# Do not adjust \
+#                   $module             help
 usage           +=  arg_pre_cmd + " " + arg_help + "\n"
 usage           +=  "```"
 
 cmd_fragment    =  usage
 command.append(cmd_fragment)
+# Do not adjust /
 
 # examples
 cmd_fragment    =   "```diff\n" + "+ Examples\n" + "```"
 command.append(cmd_fragment)
 
-examples        =   "[$boss cerb died 12:00pm 4f]        ; channel should be omitted for field bosses\n" + \
-                    "[Vaivora, boss crab died 14:00 ch2] ; map should be omitted for world bosses\n"
+examples        =   "[$boss cerb died 12:00pm 4f]\n; channel should be omitted for field bosses\n" + \
+                    "[Vaivora, boss crab died 14:00 ch2]\n; map should be omitted for world bosses\n"
 
 cmd_fragment    =  "```ini\n" + examples
 cmd_fragment    += "```"
@@ -96,7 +99,7 @@ arg_info.append("Prefix=\"" +   arg_prefix +    "\": " + arg_prefix_alt + "\n" +
                 "This server may have others. Run [$settings get prefix] to check.\n")
 arg_info.append("\n---\n\n")
 arg_info.append("Module=\"" +   arg_module +    "\": '" + arg_cmd + "'\n" + \
-                "; required\n"
+                "; required\n" + \
                 "(always) [" + arg_cmd + "]; goes after prefix. e.g. [$" + arg_cmd + "], [Vaivora, " + arg_cmd + "]\n")
 arg_info.append("\n---\n\n")
 
@@ -122,11 +125,13 @@ arg_info.append("Argument=\"" + arg_n_2_A +     "\": " + arg_n_2_A_alt + "\n" + 
 arg_info.append("\n---\n\n")
 arg_info.append("```")
 
+
 cmd_fragment    =   ''.join(arg_info)
 command.append(cmd_fragment)
 
 arg_info        =   list()
 arg_info.append("```ini\n")
+
 
 # entry commands
 arg_info.append("Argument=\"" + arg_n_2_B +     "\": " + arg_n_2_B_alt + "\n" + \
@@ -721,7 +726,7 @@ def validate_channel(ch):
     else:
         return 1
 
-# @func:    process_command(str, list) : list
+# @func:    process_command(str, str, list) : list
 # @arg:
 #       server_id : str
 #           id of the server of the originating message
