@@ -131,7 +131,7 @@ async def on_message(message):
     if not message.channel or not message.channel.name:
         # boss help
         if rgx_boss.match(message.content):
-            if vaivora_constants.regex.boss.command.arg_help.search(message.content):
+            if rgx_help.search(message.content):
                 return await sanitize_cmd(message, command_boss)
         # general
         elif vaivora_constants.regex.dm.command.prefix.match(message.content):
@@ -874,7 +874,7 @@ def msg_talt(message, highest_role, taltn, unit):
 #           command_settings    = "settings"
 @client.event
 async def sanitize_cmd(message, command_type):
-    if not message.server:
+    if not message.server or rgx_help.match(command[0]):
         server_id   =   message.author.id
         msg_channel =   message.author
         msg_prefix  =   ""
@@ -894,11 +894,6 @@ async def sanitize_cmd(message, command_type):
         return
 
     command     =   command[1:]
-
-    if rgx_help.match(command[0]):
-        server_id   =   message.author.id
-        msg_channel =   message.author
-        msg_prefix  =   ""
     
     if command_type == command_boss:
         return_msg  = vaivora_modules.boss.process_command(server_id, msg_channel, command)
@@ -907,11 +902,11 @@ async def sanitize_cmd(message, command_type):
     else:
         return # command was incorrect
 
-    await client.send_message(message.channel, msg_prefix + return_msg[0])
+    await client.send_message(msg_channel, msg_prefix + return_msg[0])
     if len(return_msg) > 1:
         for msg_frag in return_msg[1:]:
             await asyncio.sleep(1)
-            await client.send_message(message.channel, msg_frag)
+            await client.send_message(msg_channel, msg_frag)
 
 
 
