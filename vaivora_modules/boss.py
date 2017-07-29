@@ -237,6 +237,7 @@ pacific2server  =   3
 server2pacific  =   -3
 time_died       =   4
 time_anchored   =   3
+time_anch_abom  =   1
 time_warned     =   2
 time_rel_2h     =   -2
 time_rel_16h    =   12
@@ -855,6 +856,9 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         time_offset         =   timedelta(hours=time_warned)
         target['status']    =   status_warned
     # $boss [boss] anchored ...
+    elif rgx_st_anch.match(status) and tg_boss == "Abomination":
+        time_offset         =   timedelta(hours=time_anch_abom)
+        target['status']    =   status_anchored
     else:
         if not target['boss'] in bosses_world:
             return target['boss'] + " is invalid for `$boss`:`time`:`" + status + "`. " + \
@@ -1313,7 +1317,11 @@ def process_record(boss, status, time, boss_map, channel):
     # set time difference based on status and type of boss
     # takes the negative (additive complement) to get the original time
     # anchored
-    if rgx_st_anch.search(status):
+    if rgx_st_anch.search(status) and boss == "Abomination":
+        time_diff   = timedelta(hours=(-1*time_anch_abom))
+        when_spawn  = "between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + \
+                      "and " + time_str + ret_message
+    elif rgx_st_anch.search(status):
         time_diff   = timedelta(hours=(-1*time_anchored))
         when_spawn  = "between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + \
                       "and " + time_str + ret_message
