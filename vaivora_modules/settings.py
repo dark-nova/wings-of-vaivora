@@ -801,7 +801,9 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
         return command
 
     # setting (general)
-    if rgx_setting.match(settings_cmd):
+    if rgx_setting.match(settings_cmd) and usr_role == "none":
+        return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
+    elif rgx_setting.match(settings_cmd):
         return process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups, xargs)
 
     # role change
@@ -856,8 +858,8 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
 #           the command used, somewhat equivalent to arg_list[0] in $boss
 #       cmd_user : str
 #           the one who called the command
-#       usr_roles : list(str)
-#           the roles associated with the cmd_user
+#       usr_rol : str
+#           the highest level role granted to cmd_user
 #       users : list(str)
 #           list of users to be processed; can be None
 #       groups : list(str)
