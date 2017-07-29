@@ -941,7 +941,7 @@ async def check_databases():
 
         for purge in purged:
             try:
-                del minutes[rec_hash]
+                del minutes[purge]
             except:
                 continue
 
