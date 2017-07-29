@@ -892,11 +892,12 @@ async def sanitize_cmd(message, command_type):
         msg_prefix  =   ""
     else:
         server_id   =   message.server.id
-        msg_channel =   message.channel.id
+        msg_ch_id   =   message.channel.id
+        msg_channel =   message.channel
         msg_prefix  =   message.author.mention + " "
     
     if command_type == command_boss:
-        return_msg  = vaivora_modules.boss.process_command(server_id, msg_channel, command)
+        return_msg  = vaivora_modules.boss.process_command(server_id, msg_ch_id, command)
     elif command_type == command_settings:
         return_msg  = vaivora_modules.settings.process_commands(commmand)
     else:
