@@ -1066,3 +1066,22 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('k')
+status_n.append(bugfix)
+date_n.append("2017/07/28")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Set exception handling for tracking repeat messages
++ Added featurse:
+  + Added Abomination anchor option. [$boss abom anchored 0:00] produces an alert 1 hour from the anchor time.
+    * Thanks to Wolfy for the request.
+```"""
+
+changelog.append(current)

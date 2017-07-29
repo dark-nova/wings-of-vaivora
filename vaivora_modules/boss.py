@@ -52,12 +52,13 @@ arg_arg         =   "Argument"
 #                   $boss
 arg_pre_cmd     =   arg_prefix + arg_cmd
 
-
+# Do not adjust \
 cmd_fragment    =   "```diff\n" + "- " + "[" + arg_defcmd + "] commands" + " -" + "\n" + \
                     "+ Usage" + "```"
 command.append(cmd_fragment)
 
 usage           =  "```ini\n"
+# Do not adjust /
 #                   $boss               [target: boss]      [status command]    [time]              [channel]           [map]
 usage           +=  arg_pre_cmd + " " + arg_n_1_B + " " +   arg_n_2_A + " " +   arg_n_3 + " " +     arg_opt_1 + " " +   arg_opt_2 + "\n"
 #                   $boss               [target: any]       [entry command]     [map]
@@ -66,19 +67,24 @@ usage           +=  arg_pre_cmd + " " + arg_n_1_A + " " +   arg_n_2_B + " " +   
 usage           +=  arg_pre_cmd + " " + arg_n_1_B + " " +   arg_n_2_C + "\n"
 #                   $boss               [target: all]       [type command]
 usage           +=  arg_pre_cmd + " " + arg_n_1_C + " " +   arg_n_2_D + "\n"
-#                   $boss               help
+# Do not adjust \
+#                   $module             help
 usage           +=  arg_pre_cmd + " " + arg_help + "\n"
 usage           +=  "```"
 
 cmd_fragment    =  usage
 command.append(cmd_fragment)
 
+acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
+msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
+# Do not adjust /
+
 # examples
 cmd_fragment    =   "```diff\n" + "+ Examples\n" + "```"
 command.append(cmd_fragment)
 
-examples        =   "[$boss cerb died 12:00pm 4f]        ; channel should be omitted for field bosses\n" + \
-                    "[Vaivora, boss crab died 14:00 ch2] ; map should be omitted for world bosses\n"
+examples        =   "[$boss cerb died 12:00pm 4f]\n; channel should be omitted for field bosses\n" + \
+                    "[Vaivora, boss crab died 14:00 ch2]\n; map should be omitted for world bosses\n"
 
 cmd_fragment    =  "```ini\n" + examples
 cmd_fragment    += "```"
@@ -96,7 +102,7 @@ arg_info.append("Prefix=\"" +   arg_prefix +    "\": " + arg_prefix_alt + "\n" +
                 "This server may have others. Run [$settings get prefix] to check.\n")
 arg_info.append("\n---\n\n")
 arg_info.append("Module=\"" +   arg_module +    "\": '" + arg_cmd + "'\n" + \
-                "; required\n"
+                "; required\n" + \
                 "(always) [" + arg_cmd + "]; goes after prefix. e.g. [$" + arg_cmd + "], [Vaivora, " + arg_cmd + "]\n")
 arg_info.append("\n---\n\n")
 
@@ -122,11 +128,13 @@ arg_info.append("Argument=\"" + arg_n_2_A +     "\": " + arg_n_2_A_alt + "\n" + 
 arg_info.append("\n---\n\n")
 arg_info.append("```")
 
+
 cmd_fragment    =   ''.join(arg_info)
 command.append(cmd_fragment)
 
 arg_info        =   list()
 arg_info.append("```ini\n")
+
 
 # entry commands
 arg_info.append("Argument=\"" + arg_n_2_B +     "\": " + arg_n_2_B_alt + "\n" + \
@@ -225,13 +233,11 @@ command.append(cmd_fragment)
 arg_min         =   2
 arg_max         =   5
 
-acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
-msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
-
 pacific2server  =   3
 server2pacific  =   -3
 time_died       =   4
 time_anchored   =   3
+time_anch_abom  =   1
 time_warned     =   2
 time_rel_2h     =   -2
 time_rel_16h    =   12
@@ -271,7 +277,7 @@ rgx_letters = re.compile(r'[a-z -]+', re.IGNORECASE)
 
 
 rgx_fl_ok   = re.compile(r'(?P<basement>[bd])?(?P<floornumber>[1-5])(?P<floor>f)?$', re.IGNORECASE)
-rgx_floors  = re.compile(r'[^1-5bdf]*(?P<basement>b)?(?P<floor>f)?(?P<district>d)? ?(?P<floornumber>[1-5]) ?(?P<basement2>b)?(?P<floor2>f)?(?P<district2>d)?$', re.IGNORECASE)
+rgx_floors  = re.compile(r'[^1-5bdf]*(?P<basement_pre>b)?(?P<floor_pre>f)?(?P<district_pre>d)? ?(?P<floornumber>[1-5]) ?(?P<basement_post>b)?(?P<floor_post>f)?(?P<district_post>d)?$', re.IGNORECASE)
 #floors_fmt  = re.compile(r'[^1-5bdf]*(?P<basement>b)? ?(?P<floornumber>[1-5]) ?(?P<floor>f)?$', re.IGNORECASE)
 rgx_loc_az  = re.compile(r'[^1-5bdf]', re.IGNORECASE)
 
@@ -649,8 +655,15 @@ def check_maps(boss, maps):
 
     if boss in bosses_with_floors:
         map_match   = rgx_floors.search(maps)
+        
+
+    if not map_match and boss in bosses_with_floors:
+        # incorrect usage of map, e.g. "ashaq" but no floor number = no match
+        return -1
+
+    else:
         map_floor   = map_match.group('floornumber')
-    
+
     # Deathweaver map did not match
     if boss == "Blasphemous Deathweaver" and not rgx_loc_dw.search(maps):
         return map_idx
@@ -660,7 +673,7 @@ def check_maps(boss, maps):
     elif boss == "Blasphemous Deathweaver":
         tg_map  =   "Ashaq Underground Prison " + map_floor
     elif boss == "Bleak Chapparition":
-        if map_match.group('basement') or map_match.group('basement2'):
+        if map_match.group('basement_pre') or map_match.group('basement_post'):
             tg_map  =   "B" + map_floor
         else:
             tg_map  =   map_floor + "F"
@@ -721,7 +734,7 @@ def validate_channel(ch):
     else:
         return 1
 
-# @func:    process_command(str, list) : list
+# @func:    process_command(str, str, list) : list
 # @arg:
 #       server_id : str
 #           id of the server of the originating message
@@ -846,6 +859,9 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         time_offset         =   timedelta(hours=time_warned)
         target['status']    =   status_warned
     # $boss [boss] anchored ...
+    elif rgx_st_anch.match(status) and tg_boss == "Abomination":
+        time_offset         =   timedelta(hours=time_anch_abom)
+        target['status']    =   status_anchored
     else:
         if not target['boss'] in bosses_world:
             return target['boss'] + " is invalid for `$boss`:`time`:`" + status + "`. " + \
@@ -1304,7 +1320,11 @@ def process_record(boss, status, time, boss_map, channel):
     # set time difference based on status and type of boss
     # takes the negative (additive complement) to get the original time
     # anchored
-    if rgx_st_anch.search(status):
+    if rgx_st_anch.search(status) and boss == "Abomination":
+        time_diff   = timedelta(hours=(-1*time_anch_abom))
+        when_spawn  = "between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + \
+                      "and " + time_str + ret_message
+    elif rgx_st_anch.search(status):
         time_diff   = timedelta(hours=(-1*time_anchored))
         when_spawn  = "between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + \
                       "and " + time_str + ret_message
