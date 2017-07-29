@@ -276,7 +276,7 @@ rgx_letters = re.compile(r'[a-z -]+', re.IGNORECASE)
 
 
 rgx_fl_ok   = re.compile(r'(?P<basement>[bd])?(?P<floornumber>[1-5])(?P<floor>f)?$', re.IGNORECASE)
-rgx_floors  = re.compile(r'[^1-5bdf]*(?P<basement>b)?(?P<floor>f)?(?P<district>d)? ?(?P<floornumber>[1-5]) ?(?P<basement2>b)?(?P<floor2>f)?(?P<district2>d)?$', re.IGNORECASE)
+rgx_floors  = re.compile(r'[^1-5bdf]*(?P<basement_pre>b)?(?P<floor_pre>f)?(?P<district_pre>d)? ?(?P<floornumber>[1-5]) ?(?P<basement_post>b)?(?P<floor_post>f)?(?P<district_post>d)?$', re.IGNORECASE)
 #floors_fmt  = re.compile(r'[^1-5bdf]*(?P<basement>b)? ?(?P<floornumber>[1-5]) ?(?P<floor>f)?$', re.IGNORECASE)
 rgx_loc_az  = re.compile(r'[^1-5bdf]', re.IGNORECASE)
 
@@ -655,7 +655,11 @@ def check_maps(boss, maps):
     if boss in bosses_with_floors:
         map_match   = rgx_floors.search(maps)
         map_floor   = map_match.group('floornumber')
-    
+
+    if not map_floor and boss in bosses_with_floors:
+        # incorrect usage of map, e.g. "ashaq" but no floor number = no match
+        return -1
+
     # Deathweaver map did not match
     if boss == "Blasphemous Deathweaver" and not rgx_loc_dw.search(maps):
         return map_idx
@@ -665,7 +669,7 @@ def check_maps(boss, maps):
     elif boss == "Blasphemous Deathweaver":
         tg_map  =   "Ashaq Underground Prison " + map_floor
     elif boss == "Bleak Chapparition":
-        if map_match.group('basement') or map_match.group('basement2'):
+        if map_match.group('basement_pre') or map_match.group('basement_post'):
             tg_map  =   "B" + map_floor
         else:
             tg_map  =   map_floor + "F"
