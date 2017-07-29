@@ -661,7 +661,7 @@ def check_maps(boss, maps):
         # incorrect usage of map, e.g. "ashaq" but no floor number = no match
         return -1
 
-    else:
+    elif boss in bosses_with_floors:
         map_floor   = map_match.group('floornumber')
 
     # Deathweaver map did not match
