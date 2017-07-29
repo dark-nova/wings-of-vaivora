@@ -874,15 +874,6 @@ def msg_talt(message, highest_role, taltn, unit):
 #           command_settings    = "settings"
 @client.event
 async def sanitize_cmd(message, command_type):
-    if not message.server or rgx_help.match(command[0]):
-        server_id   =   message.author.id
-        msg_channel =   message.author
-        msg_prefix  =   ""
-    else:
-        server_id   =   message.server.id
-        msg_channel =   message.channel.id
-        msg_prefix  =   message.author.mention + " "
-
     cmd_message =   to_sanitize.sub('', message.content)
     cmd_message =   cmd_message.lower()
     try:
@@ -894,6 +885,15 @@ async def sanitize_cmd(message, command_type):
         return
 
     command     =   command[1:]
+
+    if not message.server or rgx_help.match(command[0]):
+        server_id   =   message.author.id
+        msg_channel =   message.author
+        msg_prefix  =   ""
+    else:
+        server_id   =   message.server.id
+        msg_channel =   message.channel.id
+        msg_prefix  =   message.author.mention + " "
     
     if command_type == command_boss:
         return_msg  = vaivora_modules.boss.process_command(server_id, msg_channel, command)
