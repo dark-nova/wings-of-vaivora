@@ -1,7 +1,9 @@
 #vaivora_modules.settings
 import json
+import re
 import os
 import os.path
+from itertools import chain
 
 # import additional constants
 from importlib import import_module as im
@@ -17,92 +19,117 @@ for mod in vaivora_modules.modules:
 module_name     =   "settings"
 
 command         =   []
+example         =   "e.g."
+
+mode_valid      =   "validate"
+mode_invalid    =   "invalidate"
+
+mode_promote    =   "promote"
+mode_demote     =   "demote"
+
+# BGN REGEX
+
+rgx_help        =   re.compile(r'help', re.IGNORECASE)
+rgx_setting     =   re.compile(r'(add|(un)?set|get)', re.IGNORECASE)
+rgx_set_add     =   re.compile(r'add', re.IGNORECASE)
+rgx_set_unset   =   re.compile(r'unset', re.IGNORECASE)
+rgx_set_get     =   re.compile(r'get', re.IGNORECASE)
+rgx_set_talt    =   re.compile(r'[1-9][0-9]*')
+rgx_set_unit    =   re.compile(r'(talt|point)s?', re.IGNORECASE)
+rgx_set_unit_t  =   re.compile(r'talts?', re.IGNORECASE)
+# rgx_set_set is unnecessary: process of elimination
+rgx_rolechange  =   re.compile(r'(pro|de)mote', re.IGNORECASE)
+rgx_promote     =   re.compile(r'pro', re.IGNORECASE) # only need to compare pro vs de
+# rgx_demote is unnecessary: process of elimination
+rgx_validation  =   re.compile(r'((in)?validate|(un)?verify)', re.IGNORECASE)
+rgx_invalid     =   re.compile(r'[ui]n', re.IGNORECASE) # only need to check if un/in exists
+# rgx_valid is unnecessary: process of elimination
+rgx_roles       =   re.compile(r'(auth(orized)?|meme?ber|boss)', re.IGNORECASE)
+rgx_ro_auth     =   re.compile(r'auth(orized)?', re.IGNORECASE)
+rgx_ro_boss     =   re.compile(r'boss', re.IGNORECASE)
+# rgx_ro_member is unnecessary: proccess of elimination
+rgx_channel     =   re.compile(r'(m(ana)?ge?m(en)?t|boss)', re.IGNORECASE)
+rgx_ch_boss     =   rgx_ro_boss # preserve uniformity
+# rgx_ch_management is unnecessary: process of elimination
+
+# END REGEX
+
 
 arg_prefix      =   "[prefix]"
 arg_prefix_alt  =   "\"$\", \"Vaivora, \""
 arg_module      =   "[module]"
 arg_cmd         =   module_name
 arg_defcmd      =   "$" + module_name
+arg_mention     =   "[@mention]"
+arg_chan        =   "[#channel]"
+
+arg_settings    =   "[settings]"
 
 # options for argument 1
-arg_n           =   "[settings]"
-arg_n_set       =   "[setting]" 
-arg_n_val       =   "[validation]"
-arg_n_role      =   "[role change]"
-arg_n_all       =   ', '.join((arg_n_set, arg_n_val, arg_n_role, ))
-arg_n_opts      =   arg_n + ":(" + arg_n_all + ")"
+arg_opt_set     =   "[setting]" 
+arg_opt_val     =   "[validation]"
+arg_opt_rol     =   "[role change]"
+arg_opt_all     =   ', '.join((arg_opt_set, arg_opt_val, arg_opt_rol, ))
+arg_opt_opts    =   arg_settings + ":(" + arg_opt_all + ")"
 
 # individual categories to describe for argument 1
 #                   [settings]:[setting]
-arg_n_opts_set  =   arg_n + ":" + arg_n_set
+arg_cat_set     =   arg_settings + ":" + arg_opt_set
 #                   [settings]:[validation]
-arg_n_opts_val  =   arg_n + ":" + arg_n_val
+arg_cat_val     =   arg_settings + ":" + arg_opt_val
 #                   [settings]:[role change]
-arg_n_opts_role =   arg_n + ":" + arg_n_role
+arg_cat_rol     =   arg_settings + ":" + arg_opt_rol
 
-# options for argument 1, aggregate
+# options for each category, aggregate
 #                   [setting]:(set, unset, get, add)
-arg_n_set_opts  =   arg_n_set + ":(set, unset, get, add)"
+arg_set_cat     =   arg_opt_set + ":(set, unset, get, add)"
 #                   [validation]:(verify|validate, unverify|invalidate)
-arg_n_val_opts  =   arg_n_val + ":(verify|validate, unverify|invalidate)"
+arg_val_cat     =   arg_opt_val + ":(verify|validate, unverify|invalidate)"
 #                   [role change]:(promote, demote)
-arg_n_role_opts =   arg_n_role + ":(promote, demote)"
+arg_rol_cat     =   arg_opt_rol + ":(promote, demote)"
 
-# individual options to describe for argument 1
+# options for each category, separate
 #                   [setting]:set
-arg_n_set_A     =   arg_n_set + ":set"
+arg_set_optA    =   arg_opt_set + ":set"
 #                   [setting]:unset
-arg_n_set_B     =   arg_n_set + ":unset"
+arg_set_optB    =   arg_opt_set + ":unset"
 #                   [setting]:get
-arg_n_set_C     =   arg_n_set + ":get"
+arg_set_optC    =   arg_opt_set + ":get"
 #                   [setting]:add
-arg_n_set_D     =   arg_n_set + ":add"
+arg_set_optD    =   arg_opt_set + ":add"
 #                   [validation]:(verify|validate)
-arg_n_val_A     =   arg_n_val + ":(verify|validate)"
+arg_val_optA    =   arg_opt_val + ":(verify|validate)"
 #                   [validation]:(unverify|invalidate)
-arg_n_val_B     =   arg_n_val + ":(unverify|invalidate)"
+arg_val_optB    =   arg_opt_val + ":(unverify|invalidate)"
+#                   [role change]:promote
+arg_rol_optA    =   arg_opt_rol + ":promote"
+#                   [role change]:promote
+arg_rol_optB    =   arg_opt_rol + ":demote"
 
-# options for setting, argument 2
+
+# options for [setting], argument 2
+arg_set_talt    =   "[talt]"
+arg_set_role    =   "[role]"
+arg_set_chan    =   "[channel]"
 #                   [setting]:([talt], [role], [channel])
-#                   [setting]:[talt]
-arg_n_set2_talt =   "[talt]"
-#                   [setting]:[role]
-arg_n_set2_role =   "[role]"
-#                   [setting]:[channel]
-arg_n_set2_chan =   "[channel]"
-arg_n_set2_opts =   arg_n_set + ":(" + \
-                    ', '.join((arg_n_set2_talt, arg_n_set2_role, arg_n_set2_chan, )) + ")"
+arg_set_all     =   arg_opt_set + ":(" + \
+                    ', '.join((arg_set_talt, arg_set_role, arg_set_chan, )) + ")"
 
+# options for [setting]:[talt]
+arg_set_taltA   =   arg_set_talt + ":value"
+arg_set_taltB   =   arg_set_talt + ":[unit]"
 
+# options for [setting]:[role]
+arg_set_role    =   arg_set_role + ":(authorized, member)"
+arg_set_roleA   =   arg_set_role + ":authorized"
+arg_set_roleB   =   arg_set_role + ":member"
+arg_set_roleC   =   arg_set_role + ":boss"
 
+# options for [setting]:[channel]
+arg_set_chan    =   arg_set_chan + ":(management, boss)"
+arg_set_chanA   =   arg_set_chan + ":management"
+arg_set_chanB   =   arg_set_chan + ":boss"
 
-# options for argument 3
-arg_n_3_B_A_A   =   "[talt]"
-
-# arg             =   dict()
-# arg[N]          =   dict()
-# arg[N][0]       =   "[prefix]"
-# arg[N][1]       =   "[settings]"
-# arg[N][2]       =   dict()
-# arg[N][2][A]    =   "[(un)set|get|rm]"
-# arg[N][2][B]    =   "[(un)verify|(in)validate]"
-# arg[N][2][C]    =   "[promote|demote]"
-# arg[N][3]       =   dict()
-# arg[N][3][A]    =   "[talt]"
-# arg[N][3][B]    =   "[channel]"
-# arg[N][3][C]    =   "[role]"
-# arg[N][3][D]    =   "[prefix]"
-# arg[N][4]       =   dict()
-# arg[N][4][A]    =   "[n]"
-# arg[N][4][B]    =   "[user|group]"
-# arg[N][4][C]    =   "[['custom prefix']]"
-# arg[N][4][D]    =   "[boss|management]"
-# arg[N][4][E]    =   "[authorized|member]"
-# arg[O]          =   dict()
-# arg[O][1]       =   "(user ...)"
-# arg[O][2]       =   "(talt|points)"
-# arg[O][3]       =   "(channel ...)"
-# arg[H]          =   "[help]"
 
 # auxiliary arguments
 arg_help        =   "help"
@@ -110,6 +137,169 @@ arg_arg         =   "Argument"
 #                   $boss
 arg_pre_cmd     =   arg_prefix + arg_cmd
 
+# Do not adjust \
+cmd_fragment    =   "```diff\n" + "- " + "[" + arg_defcmd + "] commands" + " -" + "\n" + \
+                    "+ Usage" + "```"
+command.append(cmd_fragment)
+
+usage           =  "```ini\n"
+# Do not adjust /
+#                   $settings           [setting]           [talt: value]           [talt: unit]            [@mention]
+usage           +=  arg_pre_cmd + " " + arg_opt_set + " " + arg_set_taltA   + " " + arg_set_taltB   + " " + arg_mention + "\n"
+#                   $settings           [setting]           [role]                  [@mention]
+usage           +=  arg_pre_cmd + " " + arg_opt_set + " " + arg_set_role    + " " + arg_mention + "\n"
+#                   $settings           [setting]           [channel]               [#channel]
+usage           +=  arg_pre_cmd + " " + arg_opt_set + " " + arg_set_chan    + " " + arg_chan    + "\n"
+#                   $settings           [validation]
+usage           +=  arg_pre_cmd + " " + arg_opt_val + "\n"
+#                   $settings           [target: all]       [@mention]
+usage           +=  arg_pre_cmd + " " + arg_opt_rol + " " + arg_mention + "\n"
+# Do not adjust \
+#                   $module             help
+usage           +=  arg_pre_cmd + " " + arg_help + "\n"
+usage           +=  "```"
+
+cmd_fragment    =  usage
+command.append(cmd_fragment)
+
+acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
+msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
+# Do not adjust /
+
+# examples
+cmd_fragment    =   "```diff\n" + "+ Examples\n" + "```"
+command.append(cmd_fragment)
+
+examples        =   "[$settings add talt 12]\n; adds 12 Talt to yourself\n" + \
+                    "[$settings set talt 12]\n; sets your contribution to 12 Talt. Not the same as above.\n" + \
+                    "[$settings add talt 240 points]\n; equivalent to first command\n" + \
+                    "[$settings add talt 12 @mention]\n; adds 12 Talt to mentioned target(s)\n" + \
+                    "[$settings set channel management #channel]\n; sets the channel(s) as management\n" + \
+                    "[$settings set role authorized @mention]\n; changes the mentioned target(s) to \"authorized\"\n" + \
+                    "[$settings promote @mention]\n; increases the mentioned target(s)'s role by one level, i.e. none -> member -> authorized\n" + \
+                    "[$settings validate @mention]\n; validates the mentioned target(s)'s Talt contribution(s); omit mention to apply to all\n"
+
+cmd_fragment    =  "```ini\n" + examples
+cmd_fragment    += "```"
+command.append(cmd_fragment)
+
+
+# immutable
+arg_info        =   list()
+arg_info.append("```ini\n")
+arg_info.append("Prefix=\"" +   arg_prefix +    "\": " + arg_prefix_alt + "\n" + \
+                "; default: [$] or [Vaivora, ]\n" + \
+                "This server may have others. Run [$settings get prefix] to check.\n")
+arg_info.append("\n---\n\n")
+arg_info.append("Module=\"" +   arg_module +    "\": '" + arg_cmd + "'\n" + \
+                "; required\n" + \
+                "(always) [" + arg_cmd + "]; goes after prefix. e.g. [$" + arg_cmd + "], [Vaivora, " + arg_cmd + "]\n")
+arg_info.append("\n---\n\n")
+
+# setting
+arg_info.append("Argument=\"" + arg_set_cat + "\n" + \
+                "Opt=\"" + arg_set_optA + "\":\n" + \
+                "    Sets the attribute.\n" + \
+                "Opt=\"" + arg_set_optB + "\":\n" + \
+                "    Removes the attribute.\n" + \
+                "Opt=\"" + arg_set_optC + "\":\n" + \
+                "    Retrieves the attribute.\n" + \
+                "Opt=\"" + arg_set_optD + "\":\n" + \
+                "    [Talt-only] Adds the value of Talt.\n" + \
+                "Some commands only take specific options, so check first.\n")
+arg_info.append("\n---\n\n")
+
+# role change
+arg_info.append("Argument=\"" + arg_rol_cat + "\n" + \
+                "Opt=\"" + arg_rol_optA + "\":\n" + \
+                "    Raises the roles by one level. i.e. none to member, and member to authorized\n" + \
+                "Opt=\"" + arg_rol_optB + "\":\n" + \
+                "    Lowers the roles by one level. i.e. member to none, and authorized to member\n" + \
+                "You must be of \"Authorized\" level.\n" + \
+                "Mentions are required.\n")
+arg_info.append("\n---\n\n")
+arg_info.append("```")
+
+# validation
+arg_info.append("Argument=\"" + arg_val_cat + "\n" + \
+                "Opt=\"" + arg_val_optA + "\":\n" + \
+                "    Approves temporary records to be saved.\n" + \
+                "Opt=\"" + arg_val_optB + "\":\n" + \
+                "    Nulls temporary records.\n" + \
+                "You must be of \"Authorized\" level.\n" + \
+                "Mentions are optional. If absent, [validation] will apply to all.\n")
+arg_info.append("\n---\n\n")
+arg_info.append("```")
+
+
+cmd_fragment    =   ''.join(arg_info)
+command.append(cmd_fragment)
+
+arg_info        =   list()
+arg_info.append("```ini\n")
+
+
+# setting: talt
+arg_info.append("Argument=\"" + arg_set_talt + "\n" + \
+                "Opt=\"" + arg_set_taltA + "\":\n" + \
+                "    The amount to use.\n" + \
+                "Opt=\"" + arg_set_taltB + "\":\n" + \
+                "    The unit to use. Either \"talt\" or \"points\".\n" + \
+                "; optional\n" + \
+                "You must be of \"Member\" or higher level. If you are not \"Authorized\", your entries will be temporarily recorded.\n" + \
+                "You will need to request an \"Authorized\" member for [validation].\n" + \
+                "Mentions are optional. If absent, [talt] will apply to yourself.\n")
+arg_info.append("\n---\n\n")
+
+
+cmd_fragment    =   ''.join(arg_info)
+command.append(cmd_fragment)
+
+arg_info        =   list()
+arg_info.append("```ini\n")
+
+
+# setting: channel
+arg_info.append("Argument=\"" + arg_set_chan + "\n" + \
+                "Opt=\"" + arg_set_chanA + "\":\n" + \
+                "    \"Management\" channel: once set, [settings] commands will cease to work in channels not marked \"Management\".\n" + \
+                "Opt=\"" + arg_set_chanB + "\":\n" + \
+                "    \"Boss\" channel: once set, [boss] commands will cease to work in channels not marked \"Boss\".\n" + \
+                "You must be of \"Authorized\" level.\n" + \
+                "Channel mentions are required.\n")
+arg_info.append("\n---\n\n")
+
+
+cmd_fragment    =   ''.join(arg_info)
+command.append(cmd_fragment)
+
+arg_info        =   list()
+arg_info.append("```ini\n")
+
+
+# setting: role
+arg_info.append("Argument=\"" + arg_set_role + "\n" + \
+                "Opt=\"" + arg_set_roleA + "\":\n" + \
+                "    \"Member\" level member: can use Talt functions.\n" + \
+                "Opt=\"" + arg_set_roleB + "\":\n" + \
+                "    \"Authorized\" level member: can use all of [settings].\n" + \
+                "Opt=\"" + arg_set_roleC + "\":\n" + \
+                "    \"Boss\" level member: special role. Works with the [boss] module/command to mention all members of this role for boss alerts.\n" + \
+                "You must be of \"Authorized\" level.\n" + \
+                "Note: to change a user to \"None\" (lowest) role, you must use \"unset\".\n" + \
+                "All server admins are \"Super Authorized\" by default. This cannot be changed. All permissions stem from server admins.\n" + \
+                "Mentions are required.\n")
+arg_info.append("\n---\n\n")
+
+# help
+arg_info.append("Argument=\"" + arg_help + "\"\n" + \
+                "Prints this series of messages.\n")
+arg_info.append("```")
+
+cmd_fragment    =   ''.join(arg_info)
+command.append(cmd_fragment)
+
+# END CONST
 
 class Settings:
     server_dir                          = "server_settings"
@@ -174,13 +364,19 @@ class Settings:
     role_level.append("authorized")
     role_level.append("super authorized")
 
-    def __init__(self, srv_id, srv_admin):
-        self.server_id      = srv_id
-        self.server_file    = self.server_dir + "/" + self.server_id + ".json"
-        self.check_file()
-        self.settings = self.read_file()
-        self.change_role(srv_admin, "users", role="super authorized")
-        self.change_role(vaivora_modules.secrets.discord_user_id, "users", role="super authorized")
+    def __init__(self, srv_id, srv_admin=None):
+        if srv_admin:
+            self.server_id      = srv_id
+            self.server_file    = self.server_dir + "/" + self.server_id + ".json"
+            self.check_file()
+            self.settings = self.read_file()
+            self.change_role(srv_admin, "users", role="super authorized")
+            self.change_role(vaivora_modules.secrets.discord_user_id, "users", role="super authorized")
+        else:
+            self.server_id      = srv_id
+            self.server_file    = self.server_dir + "/" + self.server_id + ".json"
+            self.check_file()
+            self.settings = self.read_file()
 
     def check_file(self):
         if not os.path.isdir(self.server_dir):
@@ -247,6 +443,28 @@ class Settings:
         self.save_file()
         return True
 
+    def promote_demote(self, mode, users, groups):
+        failed  =   []
+        users   =   [('users', u) for u in users]
+        groups  =   [('group', g) for g in groups]
+        for utype, user in chain(users, groups):
+            tg_role     =   self.get_role_user_id(user)
+            # cannot promote (super) authorized or demote none
+            if tg_role <= 2 and mode == mode_promote or \
+               tg_role == 0 and mode == mode_demote:
+                failed.append(user, "of role " + self.role_level[tg_role] + ", cannot " + mode)
+            # member to authorized
+            elif tg_role == 2 and mode == mode_demote:
+                self.settings[utype]['authorized'].remove(user)
+            elif tg_role == 1 and mode == mode_promote:
+                self.settings[utype]['authorized'].append(user)
+            elif tg_role == 1 and mode == mode_demote:
+                self.settings[utype]['member'].remove(user)
+            elif tg_role == 0 and mode == mode_promote:
+                self.settings[utype]['member'].append(user)
+        self.save_file()
+        return failed
+
     def get_role(self, role="member"):
         if role == "boss":
             utype = "role"
@@ -258,24 +476,38 @@ class Settings:
         return role_call
 
     def get_role_user(self, user):
+        return self.role_level[self.get_role_user_id(user)]
+
+    def get_role_user_id(self, user):
         if user in self.settings['users']['s-authorized']:
-            return "super authorized"
+            return 3
         elif user in self.settings['users']['authorized']:
-            return "authorized"
+            return 2
         elif user in self.settings['users']['member']:
-            return "member"
+            return 1
         else:
-            return None
+            return 0
 
     def get_role_group(self, roles):
-        highest = "none"
+        return self.role_level[self.get_role_group_id(roles)]
+
+    def get_role_group_id(self, roles):
+        highest = 0
         for role in roles:
             # groups cannot be super authorized
             if role in self.settings['group']['authorized']:
-                return "authorized"
+                return 2
             elif role in self.settings['group']['member']:
-                highest = "member"
+                highest = 1
         return highest
+
+    def get_highest_role(self, user, roles):
+        return self.role_level[self.get_highest_role_id(user, roles)]
+
+    def get_highest_role_id(self, user, roles):
+        usr_role    =   self.get_role_user_id(user)
+        grp_role    =   self.get_role_group_id(roles)
+        return usr_role if usr_role > grp_role else grp_role
 
     # def set_guild_talt(self, guild_level, points):
     #     if guild_level > len(talt_level) or guild_level < 1 or \
@@ -380,7 +612,7 @@ class Settings:
            not auth_user in self.settings['users']['s-authorized']:
             return False
         elif not user:
-            if mode == "validate":
+            if mode == mode_valid:
                 for user, talt_pt in self.talt_temporary.items():
                     self.settings['talt'][user] += talt_pt
                     self.talt_temporary[user]   = 0
@@ -388,7 +620,7 @@ class Settings:
             else:
                 self.talt_temporary = dict()
         else:
-            if mode == "validate":
+            if mode == mode_valid:
                 self.settings['talt'][user] += self.talt_temporary[user]
                 self.update_guild_talt(self.talt_temporary[user])
             talt_temporary[user] = 0
@@ -539,6 +771,109 @@ class Settings:
     #     self.settings['subscribed'] =   flag
     #     self.save_file()
     #     return True
+
+# @func:    process_command(str, list) : list
+# @arg:
+#       server_id : str
+#           id of the server of the originating message
+#       msg_channel : str
+#           id of the channel of the originating message
+#       settings_cmd : str
+#           the command used, somewhat equivalent to arg_list[0] in $boss
+#       cmd_user : str
+#           the one who called the command
+#       usr_roles : list(str)
+#           the roles associated with the cmd_user
+#       users : list(str)
+#           list of users to be processed; can be None
+#       groups : list(str)
+#           list of roles to be processed; can be None 
+# @return:
+#       an appropriate message for success or fail of command in list form; "fail" is always the optional second element in list
+def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
+    fail    =   []
+    cmd_srv =   Settings(server_id)
+    mode    =   ""
+    usr_rol =   cmd_srv.get_highest_role(cmd_user, usr_roles)
+
+    # $boss help
+    if rgx_help.match(settings_cmd):
+        return command
+
+    # setting (general)
+    if rgx_setting.match(settings_cmd) and usr_role == "none":
+        return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
+    elif rgx_setting.match(settings_cmd):
+        return process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups, xargs)
+
+    # role change
+    elif rgx_rolechange and usr_rol != "authorized" or usr_role != "super authorized":
+        return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
+    elif rgx_rolechange.match(settings_cmd) and rgx_promote.search(settings_cmd):
+        fail    =   cmd_srv.promote_demote(mode_promote, users, groups)
+    elif rgx_rolechange.match(settings_cmd):
+        fail    =   cmd_srv.promote_demote(mode_demote, users, groups)
+
+    # validation - handle after all commands are checked
+    elif rgx_validation.match(settings_cmd) and rgx_invalid.search(settings_cmd):
+        mode    =   mode_invalid
+    elif rgx_validation.match(settings_cmd):
+        mode    =   mode_valid 
+
+    # did not match any settings or role change or validation
+    else:
+        return ["Your `$settings` command was not recognized. Please re-enter.\n" + msg_help]
+
+    # check validation
+    if rgx_validation.match(settings_cmd):
+        if users or groups:
+            # process one at a time
+            for mention in chain(users, groups):
+                if not cmd_srv.validate_talt(cmd_user, mode, user=mention):
+                    fail.append(mention, "could not " + mode + " this target")
+        else:
+            if not cmd_srv.validate_talt(cmd_user, mode):
+                return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
+            else:
+                return [acknowledge + "\n" + "Records have been " + mode + "d.\n"]
+
+    # fail covers rolechange and validation
+    if fail:
+        return ["Your command partially or completely failed. " + \
+                "Your user may be too low. User level: `" + usr_rol + "`\n" + \
+                "Some of your mentions could not be processed:", fail]
+    elif rgx_validation.match(settings_cmd):
+        return [acknowledge + "\n" + "Records for the specified users and/or groups have been " + mode + "d.\n"]
+    # has to be rolechange
+    else:
+        return [acknowledge + "\n" + "Your role changes (`" + mode + "`) have been noted.\n"]
+
+# @func:    process_setting(str, list) : list
+# @arg:
+#       server_id : str
+#           id of the server of the originating message
+#       msg_channel : str
+#           id of the channel of the originating message
+#       settings_cmd : str
+#           the command used, somewhat equivalent to arg_list[0] in $boss
+#       cmd_user : str
+#           the one who called the command
+#       usr_rol : str
+#           the highest level role granted to cmd_user
+#       users : list(str)
+#           list of users to be processed; can be None
+#       groups : list(str)
+#           list of roles to be processed; can be None 
+# @return:
+#       an appropriate message for success or fail of command
+def process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups, xargs):
+    # set get add unset
+    #               0  1
+    # $settings add 10 talt mention
+    if rgx_set_add.match(settings_cmd) and not xargs or not rgx_set_talt.match(xargs[0]) or \
+       xargs[1] and not rgx_set_unit.match(xargs[1]):
+        return ""
+
 
 
 #### Examples

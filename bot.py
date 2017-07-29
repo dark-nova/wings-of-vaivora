@@ -874,15 +874,6 @@ def msg_talt(message, highest_role, taltn, unit):
 #           command_settings    = "settings"
 @client.event
 async def sanitize_cmd(message, command_type):
-    if not message.server:
-        server_id   =   message.author.id
-        msg_channel =   message.author
-        msg_prefix  =   ""
-    else:
-        server_id   =   message.server.id
-        msg_channel =   message.channel.id
-        msg_prefix  =   message.author.mention + " "
-
     cmd_message =   to_sanitize.sub('', message.content)
     cmd_message =   cmd_message.lower()
     try:
@@ -895,23 +886,28 @@ async def sanitize_cmd(message, command_type):
 
     command     =   command[1:]
 
-    if rgx_help.match(command[0]):
+    if not message.server or rgx_help.match(command[0]):
         server_id   =   message.author.id
         msg_channel =   message.author
         msg_prefix  =   ""
+    else:
+        server_id   =   message.server.id
+        msg_ch_id   =   message.channel.id
+        msg_channel =   message.channel
+        msg_prefix  =   message.author.mention + " "
     
     if command_type == command_boss:
-        return_msg  = vaivora_modules.boss.process_command(server_id, msg_channel, command)
+        return_msg  = vaivora_modules.boss.process_command(server_id, msg_ch_id, command)
     elif command_type == command_settings:
         return_msg  = vaivora_modules.settings.process_commands(commmand)
     else:
         return # command was incorrect
 
-    await client.send_message(message.channel, msg_prefix + return_msg[0])
+    await client.send_message(msg_channel, msg_prefix + return_msg[0])
     if len(return_msg) > 1:
         for msg_frag in return_msg[1:]:
             await asyncio.sleep(1)
-            await client.send_message(message.channel, msg_frag)
+            await client.send_message(msg_channel, msg_frag)
 
 
 
@@ -944,11 +940,14 @@ async def check_databases():
                     purged.append(rec_hash)
 
         for purge in purged:
-            del minutes[rec_hash]
+            try:
+                del minutes[purge]
+            except:
+                continue
 
         for vdb_id, valid_db in vdbs.items():
             loop_time = datetime.today()
-            print(loop_time.strftime("%Y/%m/%d %H:%M"), "- in DB:", vdb_id)
+            print(loop_time.strftime("%H:%M"), "- in DB:", vdb_id)
             results[vdb_id] = []
             if today.day != loop_time.day:
                 today = loop_time
