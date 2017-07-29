@@ -655,11 +655,14 @@ def check_maps(boss, maps):
 
     if boss in bosses_with_floors:
         map_match   = rgx_floors.search(maps)
-        map_floor   = map_match.group('floornumber')
+        
 
-    if not map_floor and boss in bosses_with_floors:
+    if not map_match and boss in bosses_with_floors:
         # incorrect usage of map, e.g. "ashaq" but no floor number = no match
         return -1
+
+    else:
+        map_floor   = map_match.group('floornumber')
 
     # Deathweaver map did not match
     if boss == "Blasphemous Deathweaver" and not rgx_loc_dw.search(maps):
