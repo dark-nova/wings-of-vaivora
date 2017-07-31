@@ -27,6 +27,18 @@ mode_invalid    =   "invalidate"
 mode_promote    =   "promote"
 mode_demote     =   "demote"
 
+mode_talt       =   "Talt"
+mode_channel    =   "Channel"
+mode_role       =   "Role"
+
+unit_talt       =   "Talt"
+unit_point      =   "Points"
+
+valid_ch        =   "`management`, `boss`"
+
+channel_boss    =   "boss"
+channel_mgmt    =   "management"
+
 # BGN REGEX
 
 rgx_help        =   re.compile(r'help', re.IGNORECASE)
@@ -37,6 +49,8 @@ rgx_set_get     =   re.compile(r'get', re.IGNORECASE)
 rgx_set_talt    =   re.compile(r'[1-9][0-9]*')
 rgx_set_unit    =   re.compile(r'(talt|point)s?', re.IGNORECASE)
 rgx_set_unit_t  =   re.compile(r'talts?', re.IGNORECASE)
+rgx_set_chan    =   re.compile(r'ch(an(nel)*)?', re.IGNORECASE)
+rgx_set_role    =   re.compile(r'role', re.IGNORECASE)
 # rgx_set_set is unnecessary: process of elimination
 rgx_rolechange  =   re.compile(r'(pro|de)mote', re.IGNORECASE)
 rgx_promote     =   re.compile(r'pro', re.IGNORECASE) # only need to compare pro vs de
@@ -445,8 +459,6 @@ class Settings:
 
     def promote_demote(self, mode, users, groups):
         failed  =   []
-        users   =   [('users', u) for u in users]
-        groups  =   [('group', g) for g in groups]
         for utype, user in chain(users, groups):
             tg_role     =   self.get_role_user_id(user)
             # cannot promote (super) authorized or demote none
@@ -645,7 +657,7 @@ class Settings:
         #   not user in self.settings['users']['authorized'] and \
         #   not user in self.settings['users']['member']:
         #     return False
-        if unit != "Talt":
+        if unit != unit_talt:
             divisor = 20
             if not self.validate_points(amount):
                 return False
@@ -678,16 +690,18 @@ class Settings:
             return str(0)
         return str(int(self.talt_level[self.settings['guild_level']+1] - self.settings['talt']['guild']))
 
-    def verify_channel(self, ch_type):
-        return ch_type == "boss" or ch_type == "management"
+    ### obsolete function
+    # def verify_channel(self, ch_type):
+    #     return ch_type == "boss" or ch_type == "management"
         
+    ### verify_channel is obsolete
     def set_channel(self, ch_type, channel, region=''):
-        if self.verify_channel(ch_type):
-            self.settings['channel'][ch_type].append(channel)
-            self.save_file()
-            return True
-        else:
-            return False
+        # if self.verify_channel(ch_type):
+        self.settings['channel'][ch_type].append(channel)
+        self.save_file()
+        return True
+        # else:
+        #     return False
 
     def get_guild_level(self):
         return str(self.settings['guild_level'])
@@ -698,13 +712,14 @@ class Settings:
         else:
             return []
 
-    def rm_channel(self, ch_type, channel):
-        if self.verify_channel(ch_type):
-            self.settings['channel'][ch_type].remove(channel)
-            self.save_file()
-            return True
-        else:
-            return False
+    ### verify_channel is obsolete
+    def unset_channel(self, ch_type, channel):
+        # if self.verify_channel(ch_type):
+        self.settings['channel'][ch_type].remove(channel)
+        self.save_file()
+        return True
+        # else:
+        #     return False
 
     def get_prefix(self):
         return self.settings['prefix']
@@ -791,24 +806,27 @@ class Settings:
 # @return:
 #       an appropriate message for success or fail of command in list form; "fail" is always the optional second element in list
 def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
-    fail    =   []
-    cmd_srv =   Settings(server_id)
-    mode    =   ""
-    usr_rol =   cmd_srv.get_highest_role(cmd_user, usr_roles)
+    fail            =   []
+    cmd_srv         =   Settings(server_id)
+    mode            =   ""
+    user_role_id    =   cmd_srv.get_highest_role_id(cmd_user, usr_roles)
+    user_role       =   cmd_srv.role_level[user_role_id]
+    users           =   [('users', u) for u in users]
+    groups          =   [('group', g) for g in groups]
 
     # $boss help
     if rgx_help.match(settings_cmd):
         return command
 
     # setting (general)
-    if rgx_setting.match(settings_cmd) and usr_role == "none":
-        return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
+    if rgx_setting.match(settings_cmd) and user_role_id == 0:
+        return ["Your command failed because your user level is too low. User level: `" + user_role + "`\n"]
     elif rgx_setting.match(settings_cmd):
-        return process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups, xargs)
+        return [process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id, users, groups, xargs)]
 
     # role change
-    elif rgx_rolechange and usr_rol != "authorized" or usr_role != "super authorized":
-        return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
+    elif rgx_rolechange and user_role_id < 2:
+        return ["Your command failed because your user level is too low. User level: `" + user_role + "`\n"]
     elif rgx_rolechange.match(settings_cmd) and rgx_promote.search(settings_cmd):
         fail    =   cmd_srv.promote_demote(mode_promote, users, groups)
     elif rgx_rolechange.match(settings_cmd):
@@ -828,19 +846,19 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
     if rgx_validation.match(settings_cmd):
         if users or groups:
             # process one at a time
-            for mention in chain(users, groups):
+            for mention in users:
                 if not cmd_srv.validate_talt(cmd_user, mode, user=mention):
                     fail.append(mention, "could not " + mode + " this target")
         else:
             if not cmd_srv.validate_talt(cmd_user, mode):
-                return ["Your command failed because your user level is too low. User level: `" + usr_rol + "`\n"]
+                return ["Your command failed because your user level is too low. User level: `" + user_role + "`\n"]
             else:
                 return [acknowledge + "\n" + "Records have been " + mode + "d.\n"]
 
     # fail covers rolechange and validation
     if fail:
         return ["Your command partially or completely failed. " + \
-                "Your user may be too low. User level: `" + usr_rol + "`\n" + \
+                "Your user may be too low. User level: `" + user_role + "`\n" + \
                 "Some of your mentions could not be processed:", fail]
     elif rgx_validation.match(settings_cmd):
         return [acknowledge + "\n" + "Records for the specified users and/or groups have been " + mode + "d.\n"]
@@ -858,21 +876,99 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
 #           the command used, somewhat equivalent to arg_list[0] in $boss
 #       cmd_user : str
 #           the one who called the command
-#       usr_rol : str
-#           the highest level role granted to cmd_user
+#       user_role_id : str
+#           the highest level role id granted to cmd_user
 #       users : list(str)
 #           list of users to be processed; can be None
 #       groups : list(str)
 #           list of roles to be processed; can be None 
 # @return:
 #       an appropriate message for success or fail of command
-def process_setting(server_id, msg_channel, settings_cmd, cmd_user, usr_rol, users, groups, xargs):
+def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id, users, groups, xargs):
+    if not xargs:
+        return "You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help
+
+    fail        =   []
+    cmd_srv     =   Settings(server_id)
+    target      =   None
+    warning     =   ""
+    user_role   =   cmd_srv.role_level[user_role_id]
     # set get add unset
     #               0  1
     # $settings add 10 talt mention
-    if rgx_set_add.match(settings_cmd) and not xargs or not rgx_set_talt.match(xargs[0]) or \
-       xargs[1] and not rgx_set_unit.match(xargs[1]):
-        return ""
+    if rgx_set_add.match(settings_cmd) and not rgx_set_talt.match(xargs[0]):
+        return "You tried using `setting`:`add` but it only works for `settings`:`talt` module. Please re-check syntax.\n" + msg_help
+
+    # $setting [setting] [number] [unit]
+    if rgx_set_talt.match(xargs[0]):
+        if rgx_set_unset.match(xargs[1]):
+            return "You tried using `setting`:`unset` but it does not work for `settings`:`talt` module. Please re-check syntax.\n" + msg_help
+        if groups:
+            warning +=  "Warning: you can't use use `settings`:`talt` module with groups/roles. Ignoring.\n"
+        target  =   mode_talt
+        unit    =   unit_talt
+        if len(xargs) == 2 and rgx_set_unit.match(xargs[1]) and rgx_set_unit_t.match(xargs[1]):
+            unit    =   unit_point
+        # ignore invalid input for unit
+        elif len(xargs) == 2 and not rgx_set_unit.match(xargs[1]):
+            warning +=  "Warning: invalid unit used. Using default unit `talt`.\n"
+
+    # $settings [setting] [channel] [#channel]
+    elif rgx_set_chan.match(xargs[0]) and len(xargs) > 2:
+        # invalid channel type
+        if not rgx_channel.match(xargs[1]):
+            return "You used an incorrect option for `setting`:`channel`. Valid options are: " + valid_ch + ".\n" + msg_help
+
+        # valid channel types
+        elif rgx_ch_boss.match(xargs[1]):
+            ch_mode =   channel_boss
+        else:
+            ch_mode =   channel_mgmt
+
+        target  =   mode_channel
+        ch_list =   xargs[2:]
+    
+    # $settings [setting] [role] [@mention]
+    elif rgx_set_role.match(xargs[0]):
+        target  =   mode_role
+        # extra arguments; warn and ignore
+        if len(xargs) > 1:
+            warning +=  "Warning: additional arguments supplied to `settings`:`role` module. Ignoring.\n"
+
+    else:
+        return "You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help
+
+    if target == mode_talt:
+        if rgx_set_add.match(settings_cmd):
+            f   =   cmd_srv.add_talt
+        elif rgx_set_get.match(settings_cmd):
+            f   =   cmd_srv.get_talt
+        else: #elif rgx_set_set.match(settings_cmd):
+            f   =   cmd_srv.set_talt
+
+        # $settings [f] [number] [@mention...]
+        if user_role_id > 1 and users:
+            # process one at a time
+            for mention in users:
+                if f == cmd_srv.get_talt:
+
+                if not f(cmd_user, int(xargs[0]), unit, mention):
+                    fail.append(mention)
+        elif users:
+            return warning + "Your command failed because your user level is too low. User level: `" + user_role + "`\n"
+        else:
+            if not f(cmd_user, int(xargs[0]), unit):
+                fail.append(mention)
+    elif target == mode_channel:
+        if rgx_set_set.match(settings_cmd):
+            f   =   cmd_srv.set_channel
+        elif rgx_set_get.match(settings_cmd):
+            f   =   cmd_srv.get_channel
+        else:
+            f   =   cmd_srv.unset_channel
+
+        for ch in ch_list:
+
 
 
 
