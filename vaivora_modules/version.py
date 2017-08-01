@@ -1091,13 +1091,30 @@ changelog.append(current)
 version_n.append('1')
 subver_n.append('7')
 hotfix_n.append('l')
-status_n.append(bugfix)
+status_n.append(milestone)
 date_n.append("2017/07/31")
 
 current     = get_header() + \
 """```diff
 + Added featurse:
   + Adjusted field bosses and added two new records corresponding to "Alluring Succubus" and "Frantic Molich". Times are still hypothetical until the update arrives.
+```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('m')
+status_n.append(bugfix)
+date_n.append("2017/08/01")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Adjusted time to spawn for lesser field bosses.
+    * Thanks to Wolfy for the contribution.
 ```"""
 
 changelog.append(current)
