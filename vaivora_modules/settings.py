@@ -709,10 +709,10 @@ class Settings:
         return str(self.settings['guild_level'])
 
     def get_channel(self, ch_type):
-        if self.verify_channel(ch_type):
-            return self.settings['channel'][ch_type]
-        else:
-            return []
+        # if self.verify_channel(ch_type):
+        return self.settings['channel'][ch_type]
+        # else:
+        #     return []
 
     ### verify_channel is obsolete
     def unset_channel(self, ch_type, channel):
@@ -996,7 +996,7 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
         else:
             for ch in ch_list:
                 if not f(ch_type, ch):
-                    fail.append(ch, "could not be assigned as `" + ch_type "`.\n")
+                    fail.append(ch, "could not be assigned as `" + ch_type + "`.\n")
 
     # `role`
     else:
