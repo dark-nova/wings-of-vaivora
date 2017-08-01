@@ -237,6 +237,7 @@ pacific2server  =   3
 server2pacific  =   -3
 # minutes!
 time_died       =   130
+time_died_330   =   450
 time_anchored   =   3
 time_anch_abom  =   1
 # minutes!
@@ -346,8 +347,12 @@ boss_spawn_02h  =                                   [
                                                         'Abomination', \
                                                         'Dullahan Event'
                                                     ]
-# ...sixteen hours
-boss_spawn_16h  =                                   [
+# ...seven hours, 30 minutes
+boss_spawn_330  =                                   [
+                                                        'Mirtis', \
+                                                        'Rexipher', \
+                                                        'Helgasercle', \
+                                                        'Demon Lord Marnox', \
                                                         'Demon Lord Nuaele', \
                                                         'Demon Lord Zaura', \
                                                         'Demon Lord Blut'
@@ -762,7 +767,7 @@ def process_command(server_id, msg_channel, arg_list):
 
     # special keyword
     elif rgx_tg_1st.match(arg_list[0]):
-        cmd_boss    =   boss_spawn_16h
+        cmd_boss    =   boss_spawn_330
         return process_cmd_special(server_id, msg_channel, cmd_boss, kw_firstspawn, arg_list[1])
 
     # $boss [boss] ...
@@ -923,8 +928,8 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
 
     if target['boss'] in boss_spawn_02h:
         record_date +=  timedelta(hours=time_rel_2h) # 2 hour spawn
-    elif target['boss'] in boss_spawn_16h:
-        record_date +=  timedelta(hours=time_rel_16h) # 16 hour spawn
+    elif target['boss'] in boss_spawn_330:
+        record_date +=  timedelta(minutes=time_died_330) # 7h30m spawn
 
     # reassign to target data
     target['year']  =   int(record_date.year)
@@ -1321,8 +1326,8 @@ def process_record(boss, status, time, boss_map, channel):
     elif boss in boss_spawn_02h:
         time_diff   = timedelta(minutes=(-1*(time_died)))
     # sixteen hour spawns; takes precedence over type of boss
-    elif boss in boss_spawn_16h: # may be obsolete
-        time_diff   = timedelta(hours=(-1*(time_rel_16h+2))) + timedelta(minutes=(-1*time_died))
+    elif boss in boss_spawn_330: # may be obsolete
+        time_diff   = timedelta(hours=(-1*(time_died_330)))
     # all else; these are generally 4h
     else:
         time_diff   = timedelta(minutes=(-1*time_died))
