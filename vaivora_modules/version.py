@@ -1085,3 +1085,19 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('l')
+status_n.append(bugfix)
+date_n.append("2017/07/31")
+
+current     = get_header() + \
+"""```diff
++ Added featurse:
+  + Adjusted field bosses and added two new records corresponding to "Alluring Succubus" and "Frantic Molich". Times are still hypothetical until the update arrives.
+```"""
+
+changelog.append(current)
