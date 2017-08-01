@@ -180,6 +180,8 @@ acknowledge     =   "Thank you! Your command has been acknowledged and recorded.
 msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
 # Do not adjust /
 
+records_ret     =   "Here are the records you have requested:\n"
+
 # examples
 cmd_fragment    =   "```diff\n" + "+ Examples\n" + "```"
 command.append(cmd_fragment)
@@ -384,8 +386,8 @@ class Settings:
             self.server_file    = self.server_dir + "/" + self.server_id + ".json"
             self.check_file()
             self.settings = self.read_file()
-            self.change_role(srv_admin, "users", role="super authorized")
-            self.change_role(vaivora_modules.secrets.discord_user_id, "users", role="super authorized")
+            self.set_role(srv_admin, "users", role="super authorized")
+            self.set_role(vaivora_modules.secrets.discord_user_id, "users", role="super authorized")
         else:
             self.server_id      = srv_id
             self.server_file    = self.server_dir + "/" + self.server_id + ".json"
@@ -415,7 +417,7 @@ class Settings:
         with open(self.server_file, 'w') as sf:
             json.dump(self.settings, sf)
 
-    def change_role(self, user, utype, role=None):
+    def set_role(self, user, utype, role=None):
         if not role:
             if user in self.settings[utype]['authorized']:
                 self.settings[utype]['authorized'].remove(user)
@@ -787,7 +789,7 @@ class Settings:
     #     self.save_file()
     #     return True
 
-# @func:    process_command(str, list) : list
+# @func:    process_command(str, list) : list(str, list)
 # @arg:
 #       server_id : str
 #           id of the server of the originating message
@@ -804,7 +806,7 @@ class Settings:
 #       groups : list(str)
 #           list of roles to be processed; can be None 
 # @return:
-#       an appropriate message for success or fail of command in list form; "fail" is always the optional second element in list
+#       an appropriate message for success or fail of command in list form; "fail" (list) is always the optional second element in list
 def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
     fail            =   []
     cmd_srv         =   Settings(server_id)
@@ -844,11 +846,11 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
 
     # check validation
     if rgx_validation.match(settings_cmd):
-        if users or groups:
+        if users:
             # process one at a time
-            for mention in users:
+            for kind, mention in users:
                 if not cmd_srv.validate_talt(cmd_user, mode, user=mention):
-                    fail.append(mention, "could not " + mode + " this target")
+                    fail.append(mention, "could not be" + mode + "d\n")
         else:
             if not cmd_srv.validate_talt(cmd_user, mode):
                 return ["Your command failed because your user level is too low. User level: `" + user_role + "`\n"]
@@ -866,7 +868,7 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
     else:
         return [acknowledge + "\n" + "Your role changes (`" + mode + "`) have been noted.\n"]
 
-# @func:    process_setting(str, list) : list
+# @func:    process_setting(str, list) : list(str, list)
 # @arg:
 #       server_id : str
 #           id of the server of the originating message
@@ -889,10 +891,12 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
         return "You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help
 
     fail        =   []
+    ret_msg     =   ""
     cmd_srv     =   Settings(server_id)
     target      =   None
     warning     =   ""
     user_role   =   cmd_srv.role_level[user_role_id]
+
     # set get add unset
     #               0  1
     # $settings add 10 talt mention
@@ -901,7 +905,7 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
 
     # $setting [setting] [number] [unit]
     if rgx_set_talt.match(xargs[0]):
-        if rgx_set_unset.match(xargs[1]):
+        if rgx_set_unset.match(settings_cmd):
             return "You tried using `setting`:`unset` but it does not work for `settings`:`talt` module. Please re-check syntax.\n" + msg_help
         if groups:
             warning +=  "Warning: you can't use use `settings`:`talt` module with groups/roles. Ignoring.\n"
@@ -914,7 +918,7 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
             warning +=  "Warning: invalid unit used. Using default unit `talt`.\n"
 
     # $settings [setting] [channel] [#channel]
-    elif rgx_set_chan.match(xargs[0]) and len(xargs) > 2:
+    elif rgx_set_chan.match(xargs[0]) and len(xargs) > 1:
         # invalid channel type
         if not rgx_channel.match(xargs[1]):
             return "You used an incorrect option for `setting`:`channel`. Valid options are: " + valid_ch + ".\n" + msg_help
@@ -925,19 +929,26 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
         else:
             ch_mode =   channel_mgmt
 
+        # extra arguments; warn and ignore
+        if rgx_set_get.match(settings_cmd) and len(xargs) > 2:
+            warning +=  "Warning: extraneous arguments supplied to `settings`:`channel` module. Ignoring.\n"
+
         target  =   mode_channel
         ch_list =   xargs[2:]
     
     # $settings [setting] [role] [@mention]
     elif rgx_set_role.match(xargs[0]):
         target  =   mode_role
+
         # extra arguments; warn and ignore
         if len(xargs) > 1:
-            warning +=  "Warning: additional arguments supplied to `settings`:`role` module. Ignoring.\n"
+            warning +=  "Warning: extraneous arguments supplied to `settings`:`role` module. Ignoring.\n"
 
+    # any incorrect combination of arguments
     else:
         return "You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help
 
+    # `talt`
     if target == mode_talt:
         if rgx_set_add.match(settings_cmd):
             f   =   cmd_srv.add_talt
@@ -949,16 +960,26 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
         # $settings [f] [number] [@mention...]
         if user_role_id > 1 and users:
             # process one at a time
-            for mention in users:
+            for kind, mention in users:
                 if f == cmd_srv.get_talt:
-
-                if not f(cmd_user, int(xargs[0]), unit, mention):
+                    # not actually fail but works with the return
+                    fail.append(mention, "contributed " + f(mention) + " Talt.\n")
+                elif not f(cmd_user, int(xargs[0]), unit, mention):
                     fail.append(mention)
+            if fail and f == cmd_srv.get_talt:
+                ret_msg +=  acknowledge + "Here are the records you have requested:\n"
+            elif fail:
+                ret_msg +=  "Your Talt contributions could not be recorded. Your user level may be too low. User level: `" + user_role + "`\n"
+            else:
+                return acknowledge + "Your Talt contributions were successfully recorded.\n"
+        # $settings [f] [number] [@mention...] # but too low on user level
         elif users:
             return warning + "Your command failed because your user level is too low. User level: `" + user_role + "`\n"
-        else:
-            if not f(cmd_user, int(xargs[0]), unit):
-                fail.append(mention)
+        # $settings [f] [number] # self; only needs member+
+        elif not f(cmd_user, int(xargs[0]), unit):
+            return warning + "Your command failed because your user level is too low. User level: `" + user_role + "`\n"
+
+    # `channel`
     elif target == mode_channel:
         if rgx_set_set.match(settings_cmd):
             f   =   cmd_srv.set_channel
@@ -967,8 +988,25 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
         else:
             f   =   cmd_srv.unset_channel
 
-        for ch in ch_list:
+        if f == cmd_srv.get_channel:
+            # not actually fail but works with the return
+            fail.append(f(ch_type), "is marked as a `" + ch_type + "` channel.\n")
+            ret_msg +=  acknowledge + records_ret
 
+        else:
+            for ch in ch_list:
+                if not f(ch_type, ch):
+                    fail.append(ch, "could not be assigned as `" + ch_type "`.\n")
+
+    # `role`
+    else:
+        if rgx_set_set.match(settings_cmd):
+            f   =   cmd_srv.set_role
+        elif rgx_set_get.match(settings_cmd):
+            f   =   cmd_srv.get_role
+        else:
+            #f   =   cmd_srv.set_role
+            pass
 
 
 
