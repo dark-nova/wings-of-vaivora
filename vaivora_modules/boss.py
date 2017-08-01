@@ -235,10 +235,12 @@ arg_max         =   5
 
 pacific2server  =   3
 server2pacific  =   -3
-time_died       =   4
+# minutes!
+time_died       =   130
 time_anchored   =   3
 time_anch_abom  =   1
-time_warned     =   2
+# minutes!
+time_warned     =   10
 time_rel_2h     =   -2
 time_rel_16h    =   12
 
@@ -848,7 +850,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
 
     # $boss [boss] died ...
     if rgx_st_died.match(status):
-        time_offset         =   timedelta(hours=time_died)
+        time_offset         =   timedelta(minutes=time_died)
         target['status']    =   status_died
     # $boss [boss] warned ...
     elif rgx_st_warn.match(status):
@@ -1317,13 +1319,13 @@ def process_record(boss, status, time, boss_map, channel):
         time_diff   = timedelta(hours=(-1*time_warned))
     # two hour spawns; takes precedence over type of boss
     elif boss in boss_spawn_02h:
-        time_diff   = timedelta(hours=(-1*(time_rel_2h+time_died)))
+        time_diff   = timedelta(minutes=(-1*(time_died)))
     # sixteen hour spawns; takes precedence over type of boss
-    elif boss in boss_spawn_16h:
-        time_diff   = timedelta(hours=(-1*(time_rel_16h+time_died)))
+    elif boss in boss_spawn_16h: # may be obsolete
+        time_diff   = timedelta(hours=(-1*(time_rel_16h+2))) + timedelta(minutes=(-1*time_died))
     # all else; these are generally 4h
     else:
-        time_diff   = timedelta(hours=(-1*time_died))
+        time_diff   = timedelta(minutes=(-1*time_died))
 
     # and add it back to get the reported time
     report_time     = time+time_diff
