@@ -233,15 +233,18 @@ command.append(cmd_fragment)
 arg_min         =   2
 arg_max         =   5
 
+# hours!
 pacific2server  =   3
 server2pacific  =   -3
 # minutes!
 time_died       =   130
-time_died_330   =   440
+time_died_330   =   430
+# hours!
 time_anchored   =   3
 time_anch_abom  =   1
 # minutes!
 time_warned     =   10
+# hours!
 time_rel_2h     =   -2
 time_rel_16h    =   12
 
@@ -295,6 +298,9 @@ rgx_loc_haz = re.compile(r'(d ?(ist(rict)?)?)?', re.IGNORECASE)
 
 # BGN BOSS
 
+demon_lords_A   =   '[Mirtis, Rexipher, Helgasercle, Demon Lord Marnox]'
+demon_lords_B   =   '[Demon Lord Nuaele, Demon Lord Zaura, Demon Lord Blut]'
+
 # 'bosses'
 #   list of boss names in full
 bosses_field    =                                   [ 
@@ -311,13 +317,8 @@ bosses_field    =                                   [
                                                         'Wrathful Harpeia', \
                                                         'Prison Manager Prison Cutter', \
                                                         'Frantic Molich', \
-                                                        'Mirtis', \
-                                                        'Rexipher', \
-                                                        'Helgasercle', \
-                                                        'Demon Lord Marnox', \
-                                                        'Demon Lord Nuaele', \
-                                                        'Demon Lord Zaura', \
-                                                        'Demon Lord Blut' 
+                                                        demon_lords_A, \
+                                                        demon_lords_B 
                                                     ]
 bosses_world    =                                   [
                                                         'Abomination', \
@@ -349,13 +350,8 @@ boss_spawn_02h  =                                   [
                                                     ]
 # ...seven hours, 30 minutes
 boss_spawn_330  =                                   [
-                                                        'Mirtis', \
-                                                        'Rexipher', \
-                                                        'Helgasercle', \
-                                                        'Demon Lord Marnox', \
-                                                        'Demon Lord Nuaele', \
-                                                        'Demon Lord Zaura', \
-                                                        'Demon Lord Blut'
+                                                        demon_lords_A, \
+                                                        demon_lords_B
                                                     ]
 
 # event based timers
@@ -443,22 +439,20 @@ boss_synonyms = { 'Blasphemous Deathweaver':        [
                                                         'ellaganos' 
                                                     ], 
                   'Prison Manager Prison Cutter':   [   'pcutter'   ], 
-                  'Mirtis':                         [   'mirtis'    ], 
-                  'Rexipher':                       [ 
+                  demon_lords_A:                    [   
                                                         'rex', \
                                                         'rexifer', \
                                                         'racksifur', \
                                                         'sexipher', \
-                                                        'goth'
-                                                    ], 
-                  'Helgasercle':                    [   'helga'     ], 
-                  'Demon Lord Marnox':              [   
+                                                        'goth',
+                                                        'helga',
+                                                        'footballhead'
                                                         'marnox',\
                                                         'marn' 
                                                     ], 
-                  'Demon Lord Nuaele':              [   'nuaele'    ], 
-                  'Demon Lord Zaura':               [   'zaura'     ], 
-                  'Demon Lord Blut':                [ 
+                  demon_lords_B:                    [   
+                                                        'nuaele', \
+                                                        'zaura', \
                                                         'blut', \
                                                         'butt'
                                                     ], 
@@ -467,7 +461,7 @@ boss_synonyms = { 'Blasphemous Deathweaver':        [
                                                         'crystal' 
                                                     ],
                   'Alluring Succubus':              [   'succ'      ],
-                  'Frantic Molich':                 [   'molich'    ]
+                  'Frantic Molich':                 [   'mo\'lick'    ]
                 }
 
 # only boss synonyms
@@ -564,7 +558,7 @@ boss_locs = { 'Blasphemous Deathweaver':            [
                                                         'Workshop', \
                                                         'Investigation Room'
                                                     ],
-              'Mirtis':                             [ 
+              demon_lords_A:                        [ 
                                                         'City Wall District 8', \
                                                         'Inner Wall District 8', \
                                                         'Inner Wall District 9', \
@@ -572,7 +566,7 @@ boss_locs = { 'Blasphemous Deathweaver':            [
                                                         'Jonael Memorial', \
                                                         'Outer Wall District 9'
                                                     ],
-              'Demon Lord Nuaele':                  [ 
+              demon_lords_B:                        [ 
                                                         'Emmet Forest', \
                                                         'Pystis Forest', \
                                                         'Syla Forest', \
@@ -593,12 +587,6 @@ boss_locs = { 'Blasphemous Deathweaver':            [
                                                     ]
 
             }
-
-boss_locs['Helgasercle']                            =   boss_locs['Mirtis']
-boss_locs['Rexipher']                               =   boss_locs['Mirtis']
-boss_locs['Demon Lord Marnox']                      =   boss_locs['Mirtis']
-boss_locs['Demon Lord Zaura']                       =   boss_locs['Demon Lord Nuaele']
-boss_locs['Demon Lord Blut']                        =   boss_locs['Demon Lord Nuaele']
 
 
 # synonyms for boss locations
@@ -929,9 +917,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     if target['boss'] in boss_spawn_02h:
         record_date +=  timedelta(hours=time_rel_2h) # 2 hour spawn
     elif target['boss'] in boss_spawn_330:
-        record_date +=  timedelta(minutes=time_died_330) + timedelta(minutes=(-1*time_died)) # 7h20m spawn
-
-    print(record_date)
+        record_date +=  timedelta(minutes=time_died_330) # 7h20m spawn
 
     # reassign to target data
     target['year']  =   int(record_date.year)
