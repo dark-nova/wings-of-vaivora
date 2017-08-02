@@ -862,7 +862,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         if not target['boss'] in bosses_field:
             return target['boss'] + " is invalid for `$boss`:`time`:`" + status + "`. " + \
                    "Only field bosses have warnings.\n" + msg_help
-        time_offset         =   timedelta(hours=time_warned)
+        time_offset         =   timedelta(minutes=time_warned)
         target['status']    =   status_warned
     # $boss [boss] anchored ...
     elif rgx_st_anch.match(status) and tg_boss == "Abomination":
@@ -929,7 +929,9 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     if target['boss'] in boss_spawn_02h:
         record_date +=  timedelta(hours=time_rel_2h) # 2 hour spawn
     elif target['boss'] in boss_spawn_330:
-        record_date +=  timedelta(minutes=time_died_330) # 7h30m spawn
+        record_date +=  timedelta(minutes=time_died_330) + timedelta(minutes=(-1*time_died)) # 7h20m spawn
+
+    print(record_date)
 
     # reassign to target data
     target['year']  =   int(record_date.year)
@@ -1321,7 +1323,7 @@ def process_record(boss, status, time, boss_map, channel):
                       "and " + time_str + ret_message
     # warned; takes precedence over when the boss will spawn
     elif rgx_st_warn.search(status):
-        time_diff   = timedelta(hours=(-1*time_warned))
+        time_diff   = timedelta(minutes=(-1*time_warned))
     # two hour spawns; takes precedence over type of boss
     elif boss in boss_spawn_02h:
         time_diff   = timedelta(minutes=(-1*(time_died)))
