@@ -233,15 +233,18 @@ command.append(cmd_fragment)
 arg_min         =   2
 arg_max         =   5
 
+# hours!
 pacific2server  =   3
 server2pacific  =   -3
 # minutes!
 time_died       =   130
-time_died_330   =   440
+time_died_330   =   430
+# hours!
 time_anchored   =   3
 time_anch_abom  =   1
 # minutes!
 time_warned     =   10
+# hours!
 time_rel_2h     =   -2
 time_rel_16h    =   12
 
@@ -311,13 +314,8 @@ bosses_field    =                                   [
                                                         'Wrathful Harpeia', \
                                                         'Prison Manager Prison Cutter', \
                                                         'Frantic Molich', \
-                                                        'Mirtis', \
-                                                        'Rexipher', \
-                                                        'Helgasercle', \
-                                                        'Demon Lord Marnox', \
-                                                        'Demon Lord Nuaele', \
-                                                        'Demon Lord Zaura', \
-                                                        'Demon Lord Blut' 
+                                                        '[Mirtis, Rexipher, Helgasercle, Demon Lord Marnox]', \
+                                                        '[Demon Lord Nuaele, Demon Lord Zaura, Demon Lord Blut]' 
                                                     ]
 bosses_world    =                                   [
                                                         'Abomination', \
@@ -349,13 +347,8 @@ boss_spawn_02h  =                                   [
                                                     ]
 # ...seven hours, 30 minutes
 boss_spawn_330  =                                   [
-                                                        'Mirtis', \
-                                                        'Rexipher', \
-                                                        'Helgasercle', \
-                                                        'Demon Lord Marnox', \
-                                                        'Demon Lord Nuaele', \
-                                                        'Demon Lord Zaura', \
-                                                        'Demon Lord Blut'
+                                                        '[Mirtis, Rexipher, Helgasercle, Demon Lord Marnox]', \
+                                                        '[Demon Lord Nuaele, Demon Lord Zaura, Demon Lord Blut]'
                                                     ]
 
 # event based timers
@@ -929,7 +922,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     if target['boss'] in boss_spawn_02h:
         record_date +=  timedelta(hours=time_rel_2h) # 2 hour spawn
     elif target['boss'] in boss_spawn_330:
-        record_date +=  timedelta(minutes=time_died_330) + timedelta(minutes=(-1*time_died)) # 7h20m spawn
+        record_date +=  timedelta(minutes=time_died_330) # 7h20m spawn
 
     print(record_date)
 
