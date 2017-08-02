@@ -1325,9 +1325,9 @@ def process_record(boss, status, time, boss_map, channel):
     # two hour spawns; takes precedence over type of boss
     elif boss in boss_spawn_02h:
         time_diff   = timedelta(minutes=(-1*(time_died)))
-    # sixteen hour spawns; takes precedence over type of boss
-    elif boss in boss_spawn_330: # may be obsolete
-        time_diff   = timedelta(hours=(-1*(time_died_330)))
+    # demon lords
+    elif boss in boss_spawn_330:
+        time_diff   = timedelta(minutes=(-1*(time_died_330)))
     # all else; these are generally 4h
     else:
         time_diff   = timedelta(minutes=(-1*time_died))
