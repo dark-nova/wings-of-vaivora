@@ -888,6 +888,7 @@ async def sanitize_cmd(message, command_type):
 
     if not message.server or rgx_help.match(command[0]):
         server_id   =   message.author.id
+        msg_ch_id   =   message.author
         msg_channel =   message.author
         msg_prefix  =   ""
     else:
