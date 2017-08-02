@@ -1167,3 +1167,19 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('q')
+status_n.append(bugfix)
+date_n.append("2017/08/02")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Changed Demon Lord spawns for real -- I should really just re-evaluate myself
+```"""
+
+changelog.append(current)
