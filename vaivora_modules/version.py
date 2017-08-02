@@ -1134,3 +1134,20 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('o')
+status_n.append(bugfix)
+date_n.append("2017/08/01")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Adjusted time to spawn for Demon Lords (for real now; issue was unnoticed arithmetic with regular time
+  + $boss help works now
+```"""
+
+changelog.append(current)
