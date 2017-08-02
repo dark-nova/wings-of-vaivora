@@ -237,7 +237,7 @@ pacific2server  =   3
 server2pacific  =   -3
 # minutes!
 time_died       =   130
-time_died_330   =   450
+time_died_330   =   440
 time_anchored   =   3
 time_anch_abom  =   1
 # minutes!
