@@ -1183,3 +1183,19 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('r')
+status_n.append(bugfix)
+date_n.append("2017/08/02")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + What is time? Seven hours, thirty minutes? Seven hours, twenty minutes? Seven hours, ten minutes? Seven hours?
+```"""
+
+changelog.append(current)
