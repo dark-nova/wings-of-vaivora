@@ -898,6 +898,9 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         hours           =   int(re.sub(str(minutes), '', arg_time))
         temp_hour       =   hours + offset
 
+    if hours == 12:
+        temp_hour   =   hours
+
     # error: invalid hours
     if temp_hour > 24 or hours < 0:
         return time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + \
