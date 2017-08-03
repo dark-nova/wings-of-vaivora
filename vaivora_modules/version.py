@@ -1199,3 +1199,19 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('s')
+status_n.append(bugfix)
+date_n.append("2017/08/03")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Fixed 12pm errors.
+```"""
+
+changelog.append(current)
