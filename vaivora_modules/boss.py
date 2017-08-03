@@ -898,7 +898,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         hours           =   int(re.sub(str(minutes), '', arg_time))
         temp_hour       =   hours + offset
 
-    if hours == 12:
+    if hours == 12 and offset == 12:
         temp_hour   =   hours
 
     # error: invalid hours
