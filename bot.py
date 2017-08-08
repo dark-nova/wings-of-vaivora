@@ -34,7 +34,13 @@ command_settings    = "settings"
 rgx_help            = re.compile(r'help', re.IGNORECASE)
 rgx_boss            = re.compile(r'\$boss .+', re.IGNORECASE)
 
-to_sanitize         = re.compile(r'[^a-z0-9 .:$",-]', re.IGNORECASE)
+to_sanitize         = re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
+
+def splitDblQuotesSpaces(command):
+    lex = shlex.shlex(command)
+    lex.quotes = '"'
+    lex.whitespace_split = True
+    return list(lex)
 
 first_run           = 0
 
@@ -316,7 +322,7 @@ async def settings_cmd(message):
     if highest_role == "none":
         return False # silently deny no role
     try:
-        command = shlex.split(command_message)
+        command = splitDblQuotesSpaces(command_message)
     except ValueError:
         return await error(message.author, message.channel, \
                            vaivora_constants.command.syntax.cmd_error_bad_syntax_quote, \
@@ -877,9 +883,11 @@ async def sanitize_cmd(message, command_type):
     cmd_message =   to_sanitize.sub('', message.content)
     cmd_message =   cmd_message.lower()
     try:
-        command =   shlex.split(cmd_message)
+        command =   splitDblQuotesSpaces(cmd_message)
     except ValueError:
-        return "Your command for `$" + command_type + "` had misused quotes somewhere.\n"
+        await client.send_message(message.author if not message.server else message.channel, \
+                                  "Your command for `$" + command_type + "` had misused quotes somewhere.\n")
+        return False
 
     if len(command) == 1:
         return
