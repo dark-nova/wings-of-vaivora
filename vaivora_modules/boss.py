@@ -279,7 +279,7 @@ rgx_time_ap = re.compile(r'[ap]m?', re.IGNORECASE)
 rgx_time_pm = re.compile(r'pm?', re.IGNORECASE)
 rgx_time_dl = re.compile(r'[:.]')
 rgx_channel = re.compile(r'(ch?)*.?([1-4])$', re.IGNORECASE)
-rgx_letters = re.compile(r'[a-z -]+', re.IGNORECASE)
+rgx_letters = re.compile(r"[a-z -']+", re.IGNORECASE)
 
 
 rgx_fl_ok   = re.compile(r'(?P<basement>[bd])?(?P<floornumber>[1-5])(?P<floor>f)?$', re.IGNORECASE)
