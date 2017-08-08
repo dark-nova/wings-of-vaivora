@@ -36,6 +36,23 @@ unit_point      =   "Points"
 
 valid_ch        =   "`management`, `boss`"
 
+role_boss       =   "boss"
+role_none       =   "none"
+role_member     =   "member"
+role_auth       =   "authorized"
+role_sauth      =   "super authorized"
+
+msg_records     =   "Here are the records you have requested:\n"
+msg_perms       =   "Your command failed because your user level is too low. User level: `"
+msg_fails       =   "Your command could not be completely parsed.\n"
+
+role_idx        =    dict()
+role_idx[role_none]     =   0
+role_idx[role_member]   =   1
+role_idx[role_boss]     =   1
+role_idx[role_auth]     =   2
+role_idx[role_sauth]    =   3
+
 channel_boss    =   "boss"
 channel_mgmt    =   "management"
 
@@ -179,8 +196,6 @@ command.append(cmd_fragment)
 acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
 msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
 # Do not adjust /
-
-records_ret     =   "Here are the records you have requested:\n"
 
 # examples
 cmd_fragment    =   "```diff\n" + "+ Examples\n" + "```"
@@ -331,25 +346,25 @@ class Settings:
     settings['periodic_quota']          = 0
     settings['guild_level']             = 0
     settings['users']                   = dict()
-    settings['users']['authorized']     = []
-    settings['users']['member']         = []
+    settings['users'][role_auth]        = []
+    settings['users'][role_member]      = []
     settings['users']['s-authorized']   = []
     settings['group']                   = dict()
-    settings['group']['authorized']     = []
-    settings['group']['member']         = []
+    settings['group'][role_auth]        = []
+    settings['group'][role_member]      = []
     settings['group']['s-authorized']   = [] # compatability. do not use
     settings['gname']                   = dict()
-    settings['gname']['authorized']     = []
-    settings['gname']['member']         = []
+    settings['gname'][role_auth]        = []
+    settings['gname'][role_member]      = []
     settings['gname']['s-authorized']   = [] # compatability. do not use
     settings['prefix']                  = []
     settings['channel']                 = dict()
-    settings['channel']['boss']         = []
-    settings['channel']['management']   = []
+    settings['channel'][channel_boss]   = []
+    settings['channel'][channel_mgmt]   = []
     settings['region']                  = dict()
     settings['region']['default']       = ''
     settings['role']                    = dict()
-    settings['role']['boss']            = []
+    settings['role'][role_boss]            = []
     talt_temporary                      = dict()
     talt_temporary_actual               = dict()
     talt_level                          = []
@@ -375,10 +390,10 @@ class Settings:
     talt_level.append(1597216)      # 19
     talt_level.append(3434015)      # 20
     role_level                          = []
-    role_level.append("none")
-    role_level.append("member")
-    role_level.append("authorized")
-    role_level.append("super authorized")
+    role_level.append(role_none)
+    role_level.append(role_member)
+    role_level.append(role_auth)
+    role_level.append(role_sauth)
 
     def __init__(self, srv_id, srv_admin=None):
         if srv_admin:
@@ -386,8 +401,8 @@ class Settings:
             self.server_file    = self.server_dir + "/" + self.server_id + ".json"
             self.check_file()
             self.settings = self.read_file()
-            self.set_role(srv_admin, "users", role="super authorized")
-            self.set_role(vaivora_modules.secrets.discord_user_id, "users", role="super authorized")
+            self.set_role(srv_admin, "users", role=role_sauth)
+            self.set_role(vaivora_modules.secrets.discord_user_id, "users", role=role_sauth)
         else:
             self.server_id      = srv_id
             self.server_file    = self.server_dir + "/" + self.server_id + ".json"
@@ -418,39 +433,50 @@ class Settings:
             json.dump(self.settings, sf)
 
     def set_role(self, user, utype, role=None):
-        if not role:
-            if user in self.settings[utype]['authorized']:
-                self.settings[utype]['authorized'].remove(user)
-            if user in self.settings[utype]['member']:
-                self.settings[utype]['member'].remove(user)
+        # unset
+        if not role or role == role_none:
+            if user in self.settings[utype]['s-authorized']:
+                return False
+            if user in self.settings[utype][role_auth]:
+                self.settings[utype][role_auth].remove(user)
+            if user in self.settings[utype][role_member]:
+                self.settings[utype][role_member].remove(user)
             return True
+
         # special case: boss
-        if role == "boss":
+        if role == role_boss:
             return self.set_boss(user)
 
-        if utype == "users" and role == "super authorized":
-            if not user in self.settings[utype]['authorized']:
-                self.settings[utype]['authorized'].append(user)
-            if not user in self.settings[utype]['member']:
-                self.settings[utype]['member'].append(user)
+        # this should NEVER be called by users!
+        if utype == "users" and role == role_sauth:
+            if not user in self.settings[utype][role_auth]:
+                self.settings[utype][role_auth].append(user)
+            if not user in self.settings[utype][role_member]:
+                self.settings[utype][role_member].append(user)
             if not user in self.settings[utype]['s-authorized']:
                 self.settings[utype]['s-authorized'].append(user)
-        elif role == "authorized":
+
+        # only super authorized should be able to change this from the start, to relegate permissions
+        elif role == role_auth:
             # users should not be allowed to modify super authorized
             if utype == "users" and user in self.settings[utype]['s-authorized']:
                 return False
-            if not user in self.settings[utype]['authorized']:
-                self.settings[utype]['authorized'].append(user)
-            if not user in self.settings[utype]['member']:
-                self.settings[utype]['member'].append(user)
+            if not user in self.settings[utype][role_auth]:
+                self.settings[utype][role_auth].append(user)
+            if not user in self.settings[utype][role_member]:
+                self.settings[utype][role_member].append(user)
+
+        # role member
         else:
             # users should not be allowed to modify super authorized
             if user == "users" and user in self.settings[utype]['s-authorized']:
                 return False
-            if not user in self.settings[utype]['member']:
-                self.settings[utype]['member'].append(user)
-            if user in self.settings[utype]['authorized']:
-                self.settings[utype]['authorized'].remove(user)
+            if not user in self.settings[utype][role_member]:
+                self.settings[utype][role_member].append(user)
+            if user in self.settings[utype][role_auth]:
+                self.settings[utype][role_auth].remove(user)
+
+        # optionally add a talt count to them as well if it doesn't exist already
         if utype == "users":
             try:
                 self.settings['talt'][user]
@@ -458,6 +484,9 @@ class Settings:
                 self.settings['talt'][user] = 0
         self.save_file()
         return True
+
+    def is_role_boss(self, user):
+        return user in self.settings['role'][role_boss]
 
     def promote_demote(self, mode, users, groups):
         failed  =   []
@@ -469,24 +498,24 @@ class Settings:
                 failed.append(user, "of role " + self.role_level[tg_role] + ", cannot " + mode)
             # member to authorized
             elif tg_role == 2 and mode == mode_demote:
-                self.settings[utype]['authorized'].remove(user)
+                self.settings[utype][role_auth].remove(user)
             elif tg_role == 1 and mode == mode_promote:
-                self.settings[utype]['authorized'].append(user)
+                self.settings[utype][role_auth].append(user)
             elif tg_role == 1 and mode == mode_demote:
-                self.settings[utype]['member'].remove(user)
+                self.settings[utype][role_member].remove(user)
             elif tg_role == 0 and mode == mode_promote:
-                self.settings[utype]['member'].append(user)
+                self.settings[utype][role_member].append(user)
         self.save_file()
         return failed
 
-    def get_role(self, role="member"):
+    def get_role(self, role=role_member):
+        role_call = []
         if role == "boss":
             utype = "role"
         else:
             utype = "users"
-        role_call = []
+            role_call.extend(self.settings["group"][role])
         role_call.extend(self.settings[utype][role])
-        #role_call.extend(self.settings["group"][role])
         return role_call
 
     def get_role_user(self, user):
@@ -495,9 +524,9 @@ class Settings:
     def get_role_user_id(self, user):
         if user in self.settings['users']['s-authorized']:
             return 3
-        elif user in self.settings['users']['authorized']:
+        elif user in self.settings['users'][role_auth]:
             return 2
-        elif user in self.settings['users']['member']:
+        elif user in self.settings['users'][role_member]:
             return 1
         else:
             return 0
@@ -509,9 +538,9 @@ class Settings:
         highest = 0
         for role in roles:
             # groups cannot be super authorized
-            if role in self.settings['group']['authorized']:
+            if role in self.settings['group'][role_auth]:
                 return 2
-            elif role in self.settings['group']['member']:
+            elif role in self.settings['group'][role_member]:
                 highest = 1
         return highest
 
@@ -552,7 +581,7 @@ class Settings:
         return True
 
     def set_quota_talt(self, user, amount):
-        if not auth_user in self.settings['users']['authorized'] or amount <= 0:
+        if not auth_user in self.settings['users'][role_auth] or amount <= 0:
             return False
         self.settings['periodic_quota'] = amount
         self.save_file()
@@ -562,7 +591,7 @@ class Settings:
         return self.settings['periodic_quota']
 
     def get_quota_talt_user(self, user, targets=None):
-        if not auth_user in self.settings['users']['authorized'] and targets:
+        if not auth_user in self.settings['users'][role_auth] and targets:
             return False
         if not targets:
             return [self.settings['quota'][user]]
@@ -593,8 +622,8 @@ class Settings:
     def add_talt(self, user, amount, unit, target=None):
         amount  = int(amount)
         # if not user in self.settings['users']['s-authorized'] and \
-        #   not user in self.settings['users']['authorized'] and \
-        #   not user in self.settings['users']['member']:
+        #   not user in self.settings['users'][role_auth] and \
+        #   not user in self.settings['users'][role_member]:
         #     return False
         if unit != "Talt":
             divisor = 20
@@ -603,7 +632,7 @@ class Settings:
         else:
             divisor = 1
         talt_pt = amount/divisor
-        if user in self.settings['users']['authorized'] or user in self.settings['users']['s-authorized']:
+        if user in self.settings['users'][role_auth] or user in self.settings['users']['s-authorized']:
             if not target:
                 self.update_guild_talt(talt_pt)
                 try:
@@ -616,13 +645,13 @@ class Settings:
                     self.settings['talt'][target]   +=  talt_pt
                 except:
                     self.settings['talt'][target]   =   talt_pt
-        else: #elif user in settings['users']['member']:
+        else: #elif user in settings['users'][role_member]:
             self.talt_temporary[user]           = talt_pt
         self.save_file()
         return True
 
     def validate_talt(self, auth_user, mode, user=None):
-        if not auth_user in self.settings['users']['authorized'] and \
+        if not auth_user in self.settings['users'][role_auth] and \
            not auth_user in self.settings['users']['s-authorized']:
             return False
         elif not user:
@@ -656,8 +685,8 @@ class Settings:
     def set_talt(self, user, amount, unit, target=None):
         amount  = int(amount)
         # if not user in self.settings['users']['s-authorized'] and \
-        #   not user in self.settings['users']['authorized'] and \
-        #   not user in self.settings['users']['member']:
+        #   not user in self.settings['users'][role_auth] and \
+        #   not user in self.settings['users'][role_member]:
         #     return False
         if unit != unit_talt:
             divisor = 20
@@ -666,14 +695,14 @@ class Settings:
         else:
             divisor = 1
         talt_pt = amount/divisor
-        if user in self.settings['users']['authorized'] or user in self.settings['users']['s-authorized']:
+        if user in self.settings['users'][role_auth] or user in self.settings['users']['s-authorized']:
             if not target:
                 self.update_guild_talt(talt_pt)
                 self.settings['talt'][user]     = talt_pt
             else:
                 self.update_guild_talt(talt_pt)
                 self.settings['talt'][target]   = talt_pt
-        else: #elif user in settings['users']['member']:
+        else: #elif user in settings['users'][role_member]:
             self.talt_temporary_actual[user]    = talt_pt
         self.rebase_guild_talt()
         self.save_file()
@@ -743,9 +772,9 @@ class Settings:
 
     def set_boss(self, user):
         try:
-            if user in self.settings['role']['boss']:
+            if user in self.settings['role'][role_boss]:
                 return False
-            self.settings['role']['boss'].append(user)
+            self.settings['role'][role_boss].append(user)
             self.save_file()
             return True
         except:
@@ -753,7 +782,7 @@ class Settings:
 
     def rm_boss(self, user):
         try:
-            self.settings['role']['boss'].remove(user)
+            self.settings['role'][role_boss].remove(user)
             self.save_file()
             return True
         except:
@@ -822,13 +851,13 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
 
     # setting (general)
     if rgx_setting.match(settings_cmd) and user_role_id == 0:
-        return ["Your command failed because your user level is too low. User level: `" + user_role + "`\n"]
+        return [msg_perms + user_role + "`\n"]
     elif rgx_setting.match(settings_cmd):
         return [process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id, users, groups, xargs)]
 
     # role change
     elif rgx_rolechange and user_role_id < 2:
-        return ["Your command failed because your user level is too low. User level: `" + user_role + "`\n"]
+        return [msg_perms + user_role + "`\n"]
     elif rgx_rolechange.match(settings_cmd) and rgx_promote.search(settings_cmd):
         fail    =   cmd_srv.promote_demote(mode_promote, users, groups)
     elif rgx_rolechange.match(settings_cmd):
@@ -853,7 +882,7 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
                     fail.append(mention, "could not be" + mode + "d\n")
         else:
             if not cmd_srv.validate_talt(cmd_user, mode):
-                return ["Your command failed because your user level is too low. User level: `" + user_role + "`\n"]
+                return [msg_perms + user_role + "`\n"]
             else:
                 return [acknowledge + "\n" + "Records have been " + mode + "d.\n"]
 
@@ -868,24 +897,25 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
     else:
         return [acknowledge + "\n" + "Your role changes (`" + mode + "`) have been noted.\n"]
 
-# @func:    process_setting(str, list) : list(str, list)
-# @arg:
-#       server_id : str
-#           id of the server of the originating message
-#       msg_channel : str
-#           id of the channel of the originating message
-#       settings_cmd : str
-#           the command used, somewhat equivalent to arg_list[0] in $boss
-#       cmd_user : str
-#           the one who called the command
-#       user_role_id : str
-#           the highest level role id granted to cmd_user
-#       users : list(str)
-#           list of users to be processed; can be None
-#       groups : list(str)
-#           list of roles to be processed; can be None 
-# @return:
-#       an appropriate message for success or fail of command
+"""
+process_setting processes the "setting" component of the settings module.
+
+Args:
+    server_id: (str) id of the server of the originating message
+    msg_channel: (str) id of the channel of the originating message
+    settings_cmd: (str) the command used, somewhat equivalent to arg_list[0] in $boss
+    cmd_user: (str) the one who called the command
+    user_role_id: (str) the highest level role id granted to cmd_user
+    users: (list(str)) list of users to be processed; can be None
+    groups: (list(str)) list of roles to be processed; can be None 
+
+Returns:
+    an appropriate message for success or fail of command:
+    `set`, `add`, and `unset` typically return a str;
+    `get` typically returns a tuple of str, list;
+    the list of `get` depends:
+
+"""
 def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id, users, groups, xargs):
     if not xargs:
         return "You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help
@@ -932,17 +962,14 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
         # extra arguments; warn and ignore
         if rgx_set_get.match(settings_cmd) and len(xargs) > 2:
             warning +=  "Warning: extraneous arguments supplied to `settings`:`channel` module. Ignoring.\n"
+        else:
+            ch_list =   xargs[2:]
 
         target  =   mode_channel
-        ch_list =   xargs[2:]
-    
-    # $settings [setting] [role] [@mention]
+            
+    # $settings [setting] role [role] [@mention]
     elif rgx_set_role.match(xargs[0]):
         target  =   mode_role
-
-        # extra arguments; warn and ignore
-        if len(xargs) > 1:
-            warning +=  "Warning: extraneous arguments supplied to `settings`:`role` module. Ignoring.\n"
 
     # any incorrect combination of arguments
     else:
@@ -967,36 +994,38 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
                 elif not f(cmd_user, int(xargs[0]), unit, mention):
                     fail.append(mention)
             if fail and f == cmd_srv.get_talt:
-                ret_msg +=  acknowledge + "Here are the records you have requested:\n"
+                ret_msg +=  acknowledge + msg_records
             elif fail:
-                ret_msg +=  "Your Talt contributions could not be recorded. Your user level may be too low. User level: `" + user_role + "`\n"
+                ret_msg +=  "Your Talt contributions could not be recorded. " + msg_perms + user_role + "`\n"
             else:
                 return acknowledge + "Your Talt contributions were successfully recorded.\n"
         # $settings [f] [number] [@mention...] # but too low on user level
         elif users:
-            return warning + "Your command failed because your user level is too low. User level: `" + user_role + "`\n"
+            return warning + msg_perms + user_role + "`\n"
         # $settings [f] [number] # self; only needs member+
         elif not f(cmd_user, int(xargs[0]), unit):
-            return warning + "Your command failed because your user level is too low. User level: `" + user_role + "`\n"
+            return warning + msg_perms + user_role + "`\n"
 
     # `channel`
     elif target == mode_channel:
         if rgx_set_set.match(settings_cmd):
             f   =   cmd_srv.set_channel
+            kw  =   "set"
         elif rgx_set_get.match(settings_cmd):
             f   =   cmd_srv.get_channel
         else:
             f   =   cmd_srv.unset_channel
+            kw  =   "unset"
 
         if f == cmd_srv.get_channel:
             # not actually fail but works with the return
-            fail.append(f(ch_type), "is marked as a `" + ch_type + "` channel.\n")
-            ret_msg +=  acknowledge + records_ret
+            fail.append(f(ch_mode), "is marked as a `" + ch_mode + "` channel.\n")
+            ret_msg +=  acknowledge + msg_records
 
         else:
             for ch in ch_list:
-                if not f(ch_type, ch):
-                    fail.append(ch, "could not be assigned as `" + ch_type + "`.\n")
+                if not f(ch_mode, ch):
+                    fail.append(ch, "could not be " + kw + " as `" + ch_mode + "`.\n")
 
     # `role`
     else:
@@ -1004,9 +1033,95 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
             f   =   cmd_srv.set_role
         elif rgx_set_get.match(settings_cmd):
             f   =   cmd_srv.get_role
+            g   =   cmd_srv.get_role_user
+            h   =   cmd_srv.get_role_group
         else:
-            #f   =   cmd_srv.set_role
-            pass
+            # make sure to distinguish using arguments
+            # this is "unset"
+            f   =   cmd_srv.set_role
+
+        # $settings get role [@mention]
+        if f == cmd_srv.get_role and users or groups:
+            # extra arguments; warn and ignore
+            if len(xargs) > 1:
+                warning +=  "Warning: extraneous arguments supplied to `settings`:`role` module. Ignoring.\n"
+
+            for kind, mention in chain(users, groups):
+                # not actually fail but works with the return
+                if kind == 'users' and cmd_srv.is_role_boss(mention):
+                    fail.append(mention, "is the role level of `" + g(mention) + "`. Additionally, also of `boss` role.\n")
+                elif kind == 'users':
+                    fail.append(mention, "is the role level of `" + g(mention) + "`.\n")
+                elif cmd_srv.is_role_boss(mention):
+                    fail.append(mention, "is the role level of `" + h(mention) + "`. Additionally, also of `boss` role.\n")
+                else:
+                    fail.append(mention, "is the role level of `" + h(mention) + "`.\n")
+
+            ret_msg +=  acknowledge + msg_records
+
+        # $settings get role [roles ...]
+        elif f == cmd_srv.get_role:
+            # the role to_check
+            to_check    =   ""
+            # roles that have been checked
+            checked     =   []
+
+            # ignore xargs[0] because that's the role used for comparison
+            for xarg in xargs[1:]:
+                if not rgx_roles.match(xarg):
+                    continue
+                elif rgx_ro_boss.match(xarg):
+                    to_check    =   role_boss
+                elif rgx_ro_auth.match(xarg):
+                    to_check    =   role_auth
+                else:
+                    to_check    =   role_member
+                if to_check in checked:
+                    to_check    =   ""
+                    continue
+                fail.append(f(to_check), "are of role level `" + to_check + "`.\n")
+                checked.append(to_check)
+                to_check    =   ""
+
+            ret_msg +=  acknowledge + msg_records
+
+        # $settings [setting] role [role] [@mention]
+        else: # elif f == cmd_srv.set_role
+            # set
+            if rgx_set_set.match(settings_cmd):
+                # extra arguments; warn and ignore
+                if len(xargs) > 2:
+                    warning +=  "Warning: extraneous arguments supplied to `settings`:`role` module. Ignoring.\n"
+
+                if not rgx_roles.match(xargs[1]):
+                    return warning + xargs[1] + " is not a valid role. Please re-check syntax.\n" + msg_help
+                elif rgx_ro_boss.match(xargs[1]):
+                    set_role    =   role_boss
+                elif rgx_ro_auth.match(xargs[1]):
+                    set_role    =   role_auth
+                else:
+                    set_role    =   role_member
+            # unset
+            else:
+                set_role    =   role_none
+
+            # you shall not pass
+            if user_role_id <= role_idx[set_role]:
+                return warning + "You are not permitted to change roles of levels above you.\n"
+
+            for kind, mention in chain(users, groups):
+                if not f(mention, kind, set_role):
+                    fail.append(mention, "'s role could not be " + ("un" if set_role == role_none else "") + "set.\n")
+
+    # "get" setting does not really fail; this is a convenience (may want to rename the variable later)
+    if fail and rgx_set_get.match(settings_cmd):
+        ret_msg =   warning + ret_msg
+        return (ret_msg, fail)
+
+    # all other setting commands
+    elif fail:
+        return (msg_fails)
+    pass
 
 
 

@@ -1215,3 +1215,25 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('t')
+status_n.append(bugfix)
+date_n.append("2017/08/08")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Punctuation single quote
+
+I have been really busy with life. I don't think I can maintain this project as much as I could before, and I've also had issues motivating myself with this project.
+
+I will have the source readily available, at least one iteration of Wings of Vaivora, once I have completed rewriting Settings. Please bear with me. I know it's been a long while, and for those who may want to look into the code, I'm just one person maintaining everything.
+
+Thank you.
+```"""
+
+changelog.append(current)
