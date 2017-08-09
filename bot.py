@@ -92,7 +92,12 @@ async def greet(server_id, server_owner):
         for vaivora_log in vaivora_modules.version.get_changelogs(nrevs):
             iters += 1
             print(server_id, server_owner, ": receiving", iters, "logs out of", nrevs*-1)
-            await client.send_message(server_owner, vaivora_log)
+            try:
+                await client.send_message(server_owner, vaivora_log)
+            except: # cannot send messages, ignore
+                ### TODO: handle deletion
+                continue
+
 
 
 # @func:    on_server_available(discord.Server) : bool
