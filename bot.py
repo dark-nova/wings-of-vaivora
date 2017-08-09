@@ -34,11 +34,12 @@ command_settings    = "settings"
 rgx_help            = re.compile(r'help', re.IGNORECASE)
 rgx_boss            = re.compile(r'\$boss .+', re.IGNORECASE)
 
-to_sanitize         = re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
+to_sanitize         = re.compile(r"""[^a-z0-9 .:$"',-><#]""", re.IGNORECASE)
 
 def splitDblQuotesSpaces(command):
     lex = shlex.shlex(command)
     lex.quotes = '"'
+    lex.commenters = ""
     lex.whitespace_split = True
     return list(lex)
 
@@ -614,7 +615,7 @@ async def settings_cmd(message):
                 if type(command[3:]) == list:
                     list_ch = command[3:]
                 else:
-                    list_ch = [command[3]]
+                    list_ch = [(command[3],)]
                 for pos_ch in list_ch:
                     #pos_ch = vaivora_constants.regex.settings.command.abrackets.sub('', pos_ch)
                     if not vaivora_constants.regex.settings.command.cmd_ch.match(pos_ch):

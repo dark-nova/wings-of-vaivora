@@ -1237,3 +1237,20 @@ Thank you.
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('u')
+status_n.append(bugfix)
+date_n.append("2017/08/08")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Channel setting
+    * Thanks to Jiyuu for the bug report.
+```"""
+
+changelog.append(current)
