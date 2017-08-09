@@ -583,13 +583,13 @@ async def settings_cmd(message):
                     utype = "users"
                     id_change = mention.id
                     mentname = mention.nick if mention.nick else mention.name
-                    if not vdst[message.server.id].change_role(id_change, utype, command[2]):
+                    if not vdst[message.server.id].set_role(id_change, utype, command[2]):
                         errs.append(mentname)
                 for mention in message.role_mentions:
                     utype = "group"
                     id_change = mention.mention
                     mentname = mention.name
-                    if not vdst[message.server.id].change_role(id_change, utype, command[2]):
+                    if not vdst[message.server.id].set_role(id_change, utype, command[2]):
                         errs.append(mentname)
                 if errs:
                     return await error(message.author, message.channel, \
@@ -758,13 +758,13 @@ async def settings_cmd(message):
                 utype = "group"
             ment_role = vdst[message.server.id].get_role_user(mention.id)
             if mode == "promote" and ment_role == None:
-                vdst[message.server.id].change_role(mention.id, utype, "member")
+                vdst[message.server.id].set_role(mention.id, utype, "member")
             elif mode == "promote" and ment_role == "member":
-                vdst[message.server.id].change_role(mention.id, utype, "authorized")
+                vdst[message.server.id].set_role(mention.id, utype, "authorized")
             elif mode == "demote" and ment_role == "member":
-                vdst[message.server.id].change_role(mention.id, utype)
+                vdst[message.server.id].set_role(mention.id, utype)
             elif mode == "demote" and ment_role == "authorized":
-                vdst[message.server.id].change_role(mention.id, utype, "member")
+                vdst[message.server.id].set_role(mention.id, utype, "member")
             else:
                 errs.append(mentname)
         if errs:
