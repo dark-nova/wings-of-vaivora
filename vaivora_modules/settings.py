@@ -818,24 +818,49 @@ class Settings:
     #     self.save_file()
     #     return True
 
-# @func:    process_command(str, list) : list(str, list)
-# @arg:
-#       server_id : str
-#           id of the server of the originating message
-#       msg_channel : str
-#           id of the channel of the originating message
-#       settings_cmd : str
-#           the command used, somewhat equivalent to arg_list[0] in $boss
-#       cmd_user : str
-#           the one who called the command
-#       usr_roles : list(str)
-#           the roles associated with the cmd_user
-#       users : list(str)
-#           list of users to be processed; can be None
-#       groups : list(str)
-#           list of roles to be processed; can be None 
-# @return:
-#       an appropriate message for success or fail of command in list form; "fail" (list) is always the optional second element in list
+
+
+"""
+is_management checks if the channel is management, thus whether the command may execute.
+
+Args:
+    server_id (str): id of the server of the originating message
+    msg_channel (str): id of the channel of the originating message
+    
+Returns:
+    True if msg_channel is a management channel, or there are no management channels;
+    False otherwise
+
+"""
+def is_management(server_id, msg_channel):
+    cmd_srv         =   Settings(server_id)
+    ch_list         =   cmd_srv.get_channel(channel_mgmt)
+    if not ch_list or msg_channel in ch_list:
+        return True
+    else:
+        return False
+
+
+"""
+process_command processes the command sent to the settings module.
+It may call child functions for further processing.
+
+Args:
+    server_id (str): id of the server of the originating message
+    msg_channel (str): id of the channel of the originating message
+    settings_cmd (str): the command used, somewhat equivalent to arg_list[0] in $boss
+    cmd_user (str): the one who called the command
+    usr_roles (list(str)): the list of roles from the user
+    users: (list(str)) list of users to be processed; can be None
+    groups: (list(str)) list of roles to be processed; can be None 
+
+Returns:
+    an appropriate message for success or fail of command:
+    `set`, `add`, and `unset` typically return a str;
+    `get` typically returns a tuple of str, list;
+    the list of `get` depends:
+
+"""
 def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
     fail            =   []
     cmd_srv         =   Settings(server_id)
@@ -901,13 +926,13 @@ def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, u
 process_setting processes the "setting" component of the settings module.
 
 Args:
-    server_id: (str) id of the server of the originating message
-    msg_channel: (str) id of the channel of the originating message
-    settings_cmd: (str) the command used, somewhat equivalent to arg_list[0] in $boss
-    cmd_user: (str) the one who called the command
-    user_role_id: (str) the highest level role id granted to cmd_user
-    users: (list(str)) list of users to be processed; can be None
-    groups: (list(str)) list of roles to be processed; can be None 
+    server_id (str): id of the server of the originating message
+    msg_channel (str): id of the channel of the originating message
+    settings_cmd (str): the command used, somewhat equivalent to arg_list[0] in $boss
+    cmd_user (str): the one who called the command
+    user_role_id (str): the highest level role id granted to cmd_user
+    users (list(str)): list of users to be processed; can be None
+    groups (list(str)): list of roles to be processed; can be None 
 
 Returns:
     an appropriate message for success or fail of command:
@@ -1120,8 +1145,7 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
 
     # all other setting commands
     elif fail:
-        return (msg_fails)
-    pass
+        return (msg_fails, fail)
 
 
 
