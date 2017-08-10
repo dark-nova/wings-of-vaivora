@@ -9,6 +9,8 @@ for mod in vaivora_constants.modules:
 import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
+import vaivora_modules.settings.channel_boss as channel_boss
+
 
 # BGN CONST
 
@@ -824,6 +826,7 @@ def validate_channel(ch):
     else:
         return 1
 
+
 # @func:    process_command(str, str, list) : list
 # @arg:
 #       server_id : str
@@ -835,6 +838,9 @@ def validate_channel(ch):
 # @return:
 #       an appropriate message for success or fail of command
 def process_command(server_id, msg_channel, arg_list):
+    if not vaivora_modules.settings.is_ch_type(server_id, msg_channel, channel_boss):
+        return # silently deny
+
     # $boss help
     if rgx_help.match(arg_list[0]):
         return command
