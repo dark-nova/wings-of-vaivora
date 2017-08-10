@@ -1254,3 +1254,22 @@ current     = get_header() + \
 ```"""
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('7')
+hotfix_n.append('v')
+status_n.append(bugfix)
+date_n.append("2017/08/09")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + World boss timers are back
+    * Thanks to Donada for the request.
+  + Demon Lord set A spawns fixed (Inner Wall District 8, etc)
+    * Thanks to Jiyuu, Wolfy, and beeju for the bug reports.
+```"""
+
+changelog.append(current)
