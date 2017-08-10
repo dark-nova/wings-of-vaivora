@@ -818,10 +818,8 @@ class Settings:
     #     self.save_file()
     #     return True
 
-
-
 """
-is_management checks if the channel is management, thus whether the command may execute.
+is_ch_type checks if the channel is a certain type, thus whether the command may execute.
 
 Args:
     server_id (str): id of the server of the originating message
@@ -832,13 +830,14 @@ Returns:
     False otherwise
 
 """
-def is_management(server_id, msg_channel):
+def is_ch_type(server_id, msg_channel, ch_type):
     cmd_srv         =   Settings(server_id)
-    ch_list         =   cmd_srv.get_channel(channel_mgmt)
+    ch_list         =   cmd_srv.get_channel(ch_type)
     if not ch_list or msg_channel in ch_list:
         return True
     else:
         return False
+
 
 
 """
@@ -859,6 +858,12 @@ Returns:
     `set`, `add`, and `unset` typically return a str;
     `get` typically returns a tuple of str, list;
     the list of `get` depends:
+    `get talt` `fail` returns a list of tuples; a discord.py id and a messsage relevant to this; 
+    `get role mention` and `get channel` `fail` return a list like `get talt`; and
+    `get role role` `fail` returns a list of tuples; a list of discord.py id (index 0) and a message relevant to this (index 1);
+    the list of `set` generally can be:
+    on success, just a str in the list (length of 1); and
+    on fail, a tuple of str (index 0) and a list of discord.py id (index 1)
 
 """
 def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
@@ -939,6 +944,12 @@ Returns:
     `set`, `add`, and `unset` typically return a str;
     `get` typically returns a tuple of str, list;
     the list of `get` depends:
+    `get talt` `fail` returns a list of tuples; a discord.py id and a messsage relevant to this; 
+    `get role mention` and `get channel` `fail` return a list like `get talt`; and
+    `get role role` `fail` returns a list of tuples; a list of discord.py id (index 0) and a message relevant to this (index 1);
+    the list of `set` generally can be:
+    on success, just a str in the list (length of 1); and
+    on fail, a tuple of str (index 0) and a list of discord.py id (index 1)
 
 """
 def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id, users, groups, xargs):
@@ -960,6 +971,8 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
 
     # $setting [setting] [number] [unit]
     if rgx_set_talt.match(xargs[0]):
+        if not is_ch_type(server_id, msg_channel, channel_mgmt):
+            return # silently deny changes
         if rgx_set_unset.match(settings_cmd):
             return "You tried using `setting`:`unset` but it does not work for `settings`:`talt` module. Please re-check syntax.\n" + msg_help
         if groups:
@@ -994,10 +1007,14 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
             
     # $settings [setting] role [role] [@mention]
     elif rgx_set_role.match(xargs[0]):
+        if not is_ch_type(server_id, msg_channel, channel_mgmt):
+            return # silently deny changes
         target  =   mode_role
 
     # any incorrect combination of arguments
     else:
+        if not is_ch_type(server_id, msg_channel, channel_mgmt):
+            return # silently deny changes
         return "You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help
 
     # `talt`
@@ -1037,8 +1054,12 @@ def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id
             f   =   cmd_srv.set_channel
             kw  =   "set"
         elif rgx_set_get.match(settings_cmd):
+            if not is_ch_type(server_id, msg_channel, channel_mgmt):
+                return # silently deny changes
             f   =   cmd_srv.get_channel
         else:
+            if not is_ch_type(server_id, msg_channel, channel_mgmt):
+                return # silently deny changes
             f   =   cmd_srv.unset_channel
             kw  =   "unset"
 
