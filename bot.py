@@ -24,17 +24,17 @@ for mod in vaivora_modules.modules:
     im(mod)
 
 # basic declarations and initializations
-client              = discord.Client()
-vdbs                = dict()
-vdst                = dict()
+client              =   discord.Client()
+vdbs                =   dict()
+vdst                =   dict()
 
-command_boss        = "boss"
-command_settings    = "settings"
+command_boss        =   "boss"
+command_settings    =   "settings"
 
-rgx_help            = re.compile(r'help', re.IGNORECASE)
-rgx_boss            = re.compile(r'\$boss .+', re.IGNORECASE)
+rgx_help            =   re.compile(r'help', re.IGNORECASE)
+rgx_boss            =   re.compile(r'\$boss .+', re.IGNORECASE)
 
-to_sanitize         = re.compile(r"""[^a-z0-9 .:$"',-><#]""", re.IGNORECASE)
+to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-><#]""", re.IGNORECASE)
 
 def splitDblQuotesSpaces(command):
     lex = shlex.shlex(command)
@@ -43,7 +43,7 @@ def splitDblQuotesSpaces(command):
     lex.whitespace_split = True
     return list(lex)
 
-first_run           = 0
+first_run           =   0
 
 # @func:    on_ready()
 # @return:
