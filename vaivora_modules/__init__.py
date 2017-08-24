@@ -1,10 +1,13 @@
-__all__ =   [     "db", \
-                  "version", \
-                  "boss", \
-                  "settings", \
-                  "secrets"
+__all__ =   [
+                "version", \
+                "disclaimer", \
+                "secrets", \
+                "changelogs", \
+                "db", \
+                "boss", \
+                "settings"
             ]
 
-vaivora = [ "vaivora_modules" ] * len(__all__)
+vaivora =   [ "vaivora_modules" ] * len(__all__)
 
-modules = [ '.'.join(t) for t in zip(vaivora, __all__) ]
+modules =   [ '.'.join(t) for t in zip(vaivora, __all__) ]

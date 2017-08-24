@@ -1,4 +1,5 @@
 import re
+from vaivora_modules.disclaimer import disclaimer
 
 milestone   = "[m]"
 unstable    = "[n]" # nightly
@@ -50,7 +51,6 @@ def check_revisions(srv_ver):
            subver_n[count]  == subver   and \
            hotfix_n[count]  == hotfix   and \
            compare_status(status_n[count], status)):
-
         count -= 1
 
     return count+1
@@ -1271,5 +1271,33 @@ current     = get_header() + \
   + Demon Lord set A spawns fixed (Inner Wall District 8, etc)
     * Thanks to Jiyuu, Wolfy, and beeju for the bug reports.
 ```"""
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('8')
+hotfix_n.append('')
+status_n.append(milestone)
+date_n.append("2017/08/23")
+
+current     = get_header() + \
+"""```diff
+--- Major Revision ---
++ Added features:
+  + Settings has been fully rewritten, so that means I can push this as open source.
+- Github: https://github.com/dark-nova/wings-of-vaivora
+  + Some "fun" easter eggs had to be removed to follow the new Discord Bot API.
+  + Similarly, please pay attention to the notice at the bottom of this.
+    + I know this will bother some of you who have unsubscribed, but this will be done once.
+  + Boss timers should now be sorted by time descending.
+    * Thanks to Jiyuu for the feature request.
+
++ Fixes:
+  + Corrected an unmentioned bug with wrong argument position for `$boss`
+
+Thank you for putting up with this project. -- Nova#6732
+```""" + disclaimer
 
 changelog.append(current)

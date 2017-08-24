@@ -2,9 +2,6 @@ import sqlite3
 
 # import additional constants
 from importlib import import_module as im
-import vaivora_constants
-for mod in vaivora_constants.modules:
-    im(mod)
 import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
@@ -12,7 +9,7 @@ for mod in vaivora_modules.modules:
 class Database:
     # constants
     TIME                    =   "Time"
-    modules                 =   [ 'boss', 'reminders', 'talt', 'permissions' ]
+    modules                 =   [ 'boss' ]
     # BOSS        = "Module: Boss"
     # REMINDERS   = "Module: Reminders"
     # TALT        = "Module: Talt Tracker"
@@ -22,42 +19,40 @@ class Database:
     columns                 =   dict()
     columns[TIME]           =   ('year', 'month', 'day', 'hour', 'minute')
     columns[modules[0]]     =   ('name', 'channel', 'map', 'status', 'text_channel') + columns[TIME]
-    columns[modules[1]]     =   ('user', 'comment') + columns[TIME]
-    columns[modules[2]]     =   ('user', 'previous', 'current', 'valid') + columns[TIME]
-    columns[modules[3]]     =   ('user', 'role')
+    # columns[modules[1]]     =   ('user', 'comment') + columns[TIME]
+    # columns[modules[2]]     =   ('user', 'previous', 'current', 'valid') + columns[TIME]
+    # columns[modules[3]]     =   ('user', 'role')
 
     # and the database formats' types
     types                   =   dict()
     types[TIME]             =   ('real',)*5
     types[modules[0]]       =   ('text',) + ('real',) + ('text',)*3 + types[TIME]
-    types[modules[1]]       =   ('text',)*2 + types[TIME]
-    types[modules[2]]       =   ('text',) + ('real',)*3 + types[TIME]
-    types[modules[3]]       =   ('text',)*2
+    # types[modules[1]]       =   ('text',)*2 + types[TIME]
+    # types[modules[2]]       =   ('text',) + ('real',)*3 + types[TIME]
+    # types[modules[3]]       =   ('text',)*2
 
     # zip, create, concatenate into tuple
     dbs                     =   dict()
     dbs[modules[0]]         =   tuple('{} {}'.format(*t) for t in 
                                       zip(columns[modules[0]], types[modules[0]]))
-    dbs[modules[1]]         =   tuple('{} {}'.format(*t) for t in 
-                                      zip(columns[modules[1]], types[modules[1]]))
-    dbs[modules[2]]         =   tuple('{} {}'.format(*t) for t in 
-                                      zip(columns[modules[2]], types[modules[2]]))
-    dbs[modules[3]]         =   tuple('{} {}'.format(*t) for t in
-                                      zip(columns[modules[3]], types[modules[3]]))
+    # dbs[modules[1]]         =   tuple('{} {}'.format(*t) for t in 
+    #                                   zip(columns[modules[1]], types[modules[1]]))
+    # dbs[modules[2]]         =   tuple('{} {}'.format(*t) for t in 
+    #                                   zip(columns[modules[2]], types[modules[2]]))
+    # dbs[modules[3]]         =   tuple('{} {}'.format(*t) for t in
+    #                                   zip(columns[modules[3]], types[modules[3]]))
 
     sql_select              =   "select * "
     sql_count               =   "select count(*) "
     sql_deathweaver_map     =   "from boss where name=? and map like ?"
     sql_boss_field          =   "from boss where name=? and map=?"
     sql_boss_world          =   "from boss where name=? and channel=?"
-    sql_boss_rotate         =   "from boss where name=? or name=?"
     sql_boss_default        =   "from boss where name=?"
-    boss_kalejimas          =   ('Mirtis', 'Helgasercle')
-    boss_southforest        =   ('Rexipher', 'Demon Lord Marnox')
+    sql_order               =   " order by year desc, month desc, day desc, hour desc, minute desc"
 
     def __init__(self, db_id):
         self.db_id          = str(db_id)
-        self.db_name        = self.db_id + ".db"
+        self.db_name        = "db/" + self.db_id + ".db"
         self.open_db()
         self.invalid        = self.check_if_invalid()
         if self.invalid:
@@ -138,9 +133,9 @@ class Database:
         db_record = list()
         for boss in bosses:
             if channel:
-                self.cursor.execute((self.sql_select+self.sql_boss_world), (boss, channel,))
+                self.cursor.execute((self.sql_select+self.sql_boss_world+self.sql_order), (boss, channel,))
             else:
-                self.cursor.execute((self.sql_select+self.sql_boss_default), (boss,))
+                self.cursor.execute((self.sql_select+self.sql_boss_default+self.sql_order), (boss,))
             records = self.cursor.fetchall()
             for record in records:
                 db_record.append(tuple(record))
@@ -159,21 +154,8 @@ class Database:
         contents = []
         #self.open_db()
 
-        # handle rotating bosses
-        if boss_dict['boss'] == 'Mirtis' or boss_dict['boss'] == 'Helgasercle':
-            sel_statement   =   self.sql_select+self.sql_boss_rotate
-            sql_condition   =   self.boss_kalejimas
-        elif boss_dict['boss'] == 'Demon Lord Marnox' or boss_dict['boss'] == 'Rexipher':
-            sel_statement   =   self.sql_select+self.sql_boss_rotate
-            sql_condition   =   self.boss_southforest
-
-        # handle Deathweaver with map
-        elif boss_dict['boss'] == 'Blasphemous Deathweaver' and boss_dict['map']:
-            sel_statement   =   self.sql_select+self.sql_deathweaver_map
-            sql_condition   =   (boss_dict['boss'], boss_dict['map'])
-
         # handle world bosses
-        elif boss_dict['channel']:
+        if boss_dict['channel']:
             sel_statement   =   self.sql_select+self.sql_boss_world
             sql_condition   =   (boss_dict['boss'], boss_dict['channel'])
         
@@ -195,9 +177,7 @@ class Database:
                            int(contents[0][7]) <= boss_dict['day'] or \
                            int(contents[0][8]) <= boss_dict['hour']):
 
-            if boss_dict['boss'] == "Blasphemous Deathweaver":
-                self.rm_entry_db_boss(boss_list=[boss_dict['boss'],], boss_map=boss_dict['map'])
-            elif boss_dict['boss'] in vaivora_modules.boss.bosses_world:
+            if boss_dict['boss'] in vaivora_modules.boss.bosses_world:
                 self.rm_entry_db_boss(boss_list=[boss_dict['boss'],], boss_ch=boss_dict['channel'])
             else:
                 self.rm_entry_db_boss(boss_list=[boss_dict['boss'],])
@@ -245,21 +225,6 @@ class Database:
             elif boss_map and boss_map == "N/A" and boss in vaivora_modules.boss.bosses_field:
                 sql_statement   =   self.sql_boss_field
                 sql_condition   =   (boss, "N/A")
-
-            # Deathweaver and any bosses with two sets of maps, possibly future
-            elif boss_map and boss_map != "N/A" and boss == "Blasphemous Deathweaver":
-                dw_idx  =   vaivora_modules.boss.boss_locs['Blasphemous Deathweaver'].index(boss_map)
-                dw_map  =   "Crystal Mine %" if dw_idx == 0 or dw_idx == 1 else "Ashaq Underground Prison %"
-                sql_statement   =   self.sql_deathweaver_map
-                sql_condition   =   (boss, dw_map)
-
-            # handle rotating bosses
-            elif boss == 'Mirtis' or boss == 'Helgasercle':
-                sql_statement   =   self.sql_boss_rotate
-                sql_condition   =   self.boss_kalejimas
-            elif boss == 'Rexipher' or boss == 'Demon Lord Marnox':
-                sql_statement   =   self.sql_boss_rotate
-                sql_condition   =   self.boss_southforest
 
             # handle all others, generally field bosses
             else:
