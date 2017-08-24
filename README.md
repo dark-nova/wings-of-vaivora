@@ -14,8 +14,8 @@
 
     Prefix your command with `$boss` or `Vaivora, boss`, like:
 
-        $boss "Earth Canceril" died ch1 12:59am "Royal Mausoleum Workers' Chapel"
-        Vaivora, boss "Earth Archon" anchored ch2 13:01 "Royal Mausoleum Storage" 
+        $boss "Earth Canceril" died 12:59am "Royal Mausoleum Workers' Chapel" ch1
+        Vaivora, boss "Earth Archon" anchored 13:01 "Royal Mausoleum Storage" ch2
 
     ---
 
