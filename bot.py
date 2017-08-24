@@ -215,7 +215,6 @@ async def on_message(message):
         return False # do not respond to self
 
     if first_run or not rgx_prefix.match(message.content):
-        print(message.content)
         return False
 
     if rgx_meme.match(message.content):

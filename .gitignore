@@ -6,7 +6,7 @@ wings*
 server.txt
 # files by extension
 *~
-*.db
+*.db*
 *.pyc
 *.old
 *.bak
