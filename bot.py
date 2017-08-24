@@ -61,6 +61,7 @@ rgx_boss            =   re.compile(r'^(va?i[bv]ora ,?|\$)boss .+', re.IGNORECASE
 rgx_settings        =   re.compile(r'settings .+', re.IGNORECASE)
 rgx_meme            =   re.compile(r'pl(ea)?[sz]e?', re.IGNORECASE)
 rgx_ch_hash         =   re.compile(r'#')
+rgx_ch_member       =   re.compile(r'@')
 
 to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-><#]""", re.IGNORECASE)
 
@@ -129,14 +130,13 @@ first_run           =   0
 async def on_ready():
     global first_run
     print("Logging in...")
-    print('Successsfully logged in as:' + client.user.name + '#' + \
+    print('Successsfully logged in as: ' + client.user.name + '#' + \
           client.user.id + '. Ready!')
     await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."), status=discord.Status.idle)
     first_run   +=  len(client.servers)
     nservs      =   str(first_run)
     await client.change_presence(game=discord.Game(name=("with files. Processing " + nservs + " guilds...")), status=discord.Status.dnd)
     for server in client.servers:
-        await asyncio.sleep(1)
         if server.unavailable:
             first_run   -=  1
             continue
@@ -145,7 +145,7 @@ async def on_ready():
         vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
         await greet(server.id, server.owner)
         first_run   -=  1
-    await asyncio.sleep(2)
+    await asyncio.sleep(1)
     first_run   =   0
     await client.change_presence(game=discord.Game(name=("in " + nservs + " guilds # [$help] or [Vaivora, help] for info")), status=discord.Status.online)
     return
@@ -364,7 +364,7 @@ async def sanitize_cmd(message, command_type):
 
     ch_type     =   "management" if command_type == command_settings else command_boss
     channels    =   vdst[message.server.id].get_channel(ch_type)
-    if channels and not message.channel.mention in channels:
+    if channels and not message.channel.id in channels:
         return False # silently deny command if not in proper channel
 
     # remove extraneous punctuation, and lower case
@@ -399,10 +399,11 @@ async def sanitize_cmd(message, command_type):
 
     if command_type == command_boss:
         return_msg  = vaivora_modules.boss.process_command(server_id, msg_ch_id, command)
+        if not return_msg:
+            await client.send_message(msg_channel, msg_prefix + "No records were retrieved.")
         await client.send_message(msg_channel, msg_prefix + return_msg[0])
         if len(return_msg) > 1:
             for msg_frag in return_msg[1:]:
-                await asyncio.sleep(1)
                 await client.send_message(msg_channel, msg_frag)
         return True
 
@@ -416,7 +417,7 @@ async def sanitize_cmd(message, command_type):
                                                       [mention.id for mention in message.role_mentions], \
                                                       [mention.id for mention in message.channel_mentions], \
                                                       xargs=command[1:])
-        print(return_msg)
+        
         # case 1: a list of str, len 1
         if len(return_msg) == 1:
             if return_msg[0]:
@@ -442,13 +443,39 @@ async def sanitize_cmd(message, command_type):
                 await client.send_message(msg_channel, message_to_send + "*crickets chirping*\n" + "```\n")
                 return True
             for r_id in r_ids:
-                # channel
-                if rgx_ch_hash.search(r_id):
-                    nom =   message.server.get_member_channel(r_id).name
-                # user
+                if type(r_id[0]) is list:
+                    ident   =   r_id[-1]
+                    things  =   r_id[0]
                 else:
-                    tgt =   message.server.get_member(r_id)
-                    nom =   tgt.name + "#" + tgt.discriminator
+                    ident   =   ret[-1]
+                    things  =   [r_id]
+
+                # channel
+                if rgx_ch_hash.search(ident):
+                    for thing in things:
+                        try:
+                            nom =   message.server.get_channel(thing).name
+                        except:
+                            vdst[server_id].unset_channel(thing)
+                            continue
+                # user
+                elif rgx_ch_member.search(ident):
+                    for thing in things:
+                        try:
+                            tgt =   message.server.get_member(thing)
+                            nom =   tgt.name + "#" + tgt.discriminator
+                        except:
+                            vdst[server_id].set_role(thing, "users")
+                            continue
+                # role
+                else:
+                    for thing in things:
+                        try:
+                            tgt =   [ro.id for ro in message.server.roles].index(thing)
+                            nom =   "&" + message.server.roles[tgt].name
+                        except:
+                            vdst[server_id].rm_boss(thing)
+                            continue
                 message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
             await client.send_message(msg_channel, message_to_send + "```\n")
         # except:
@@ -465,7 +492,7 @@ async def sanitize_cmd(message, command_type):
 #       Checks databases routinely, by minute.
 async def check_databases():
     while first_run:
-        await asyncio.sleep(5)
+        await asyncio.sleep(1)
     print('Startup completed; starting check_database')
     results         =   dict()
     minutes         =   dict()
