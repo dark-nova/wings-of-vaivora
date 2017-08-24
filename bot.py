@@ -56,7 +56,8 @@ command_settings    =   "settings"
 
 rgx_help            =   re.compile(r'help', re.IGNORECASE)
 rgx_prefix          =   re.compile(r'^(va?i[bv]ora ,?|\$)', re.IGNORECASE)
-rgx_boss            =   re.compile(r'boss .+', re.IGNORECASE)
+# this screws up with boss role if I remove the prefix
+rgx_boss            =   re.compile(r'^(va?i[bv]ora ,?|\$)boss .+', re.IGNORECASE)
 rgx_settings        =   re.compile(r'settings .+', re.IGNORECASE)
 rgx_meme            =   re.compile(r'pl(ea)?[sz]e?', re.IGNORECASE)
 rgx_ch_hash         =   re.compile(r'#')
@@ -411,9 +412,11 @@ async def sanitize_cmd(message, command_type):
         #def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
         return_msg  = vdst[server_id].process_command(msg_ch_id, command[0], \
                                                       message.author.id, message.author.roles, \
-                                                      message.mentions, message.role_mentions, \
-                                                      message.channel_mentions, \
+                                                      [mention.id for mention in message.mentions], \
+                                                      [mention.id for mention in message.role_mentions], \
+                                                      [mention.id for mention in message.channel_mentions], \
                                                       xargs=command[1:])
+        print(return_msg)
         # case 1: a list of str, len 1
         if len(return_msg) == 1:
             if return_msg[0]:

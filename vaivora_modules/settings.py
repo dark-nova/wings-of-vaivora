@@ -1083,7 +1083,6 @@ class Settings:
                             str: message related to query and ID
 
                         str: message (success)
-
         """
 
         if not xargs:
@@ -1244,7 +1243,7 @@ class Settings:
             # $settings get role [@mention]
             if f == self.get_role and users or groups:
                 # extra arguments; warn and ignore
-                if len(xargs) > 1:
+                if len(xargs) > 2:
                     warning +=  "Warning: extraneous arguments supplied to `settings`:`role` module. Ignoring.\n"
 
                 for kind, mention in chain(users, groups):
@@ -1317,6 +1316,8 @@ class Settings:
                 for kind, mention in chain(users, groups):
                     if not f(mention, kind, set_role):
                         fail.append((mention, "'s role could not be " + ("un" if set_role == role_none else "") + "set.\n",))
+                    else:
+                        ret_msg += warning + acknowledge + "Your role changes have been noted.\n"
 
         # "get" setting does not really fail; this is a convenience (may want to rename the variable later)
         if fail and rgx_set_get.match(settings_cmd):
@@ -1327,7 +1328,9 @@ class Settings:
         elif fail:
             return (fail, msg_fails)
 
-
+        # "set", etc succeeded
+        else:
+            return (ret_msg,)
 
 #### Examples
 # $settings
