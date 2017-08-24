@@ -9,4 +9,5 @@ disclaimer = """
 - However, please be aware that features later may involve personally identifiable data collection.
 -   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.
 ```
+
 """
