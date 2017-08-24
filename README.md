@@ -31,9 +31,9 @@
     `[prefix]boss help`
 
     ### Examples
-    `$boss cerb died 12:00pm 4f`; channel should be omitted for field bosses
+    `$boss fl died 12:00pm 4f`; channel should be omitted for field bosses (`fl` being `Burning Fire Lord`)
 
-    `Vaivora, boss crab died 14:00 ch2`; map should be omitted for world bosses
+    `Vaivora, boss crab died 14:00 ch2`; map should be omitted for world bosses (`crab` being `Earth Canceril`; consult `$boss BOSS alias` for shorthand)
 
     ### Arguments
     0.  Prefix: `$`, `Vaivora, `
@@ -73,14 +73,9 @@
         - **[type]**: `world`, `field`
             + `world`:
                 * Bosses that spawn on specific mechanics and do not wander maps. They can spawn in all channels.
-                * Debuffs have no effect on them, and they do not give the 'Field Boss Cube Unobtainable' debuff.
                 * Cubes drop loosely on the ground and must be claimed.
             + `field`:
                 * Bosses that spawn in a series of maps, only on Channel 1 in regular periods.
-                * If you do not have the 'Field Boss Cube Unobtainable' debuff, upon killing, you obtain it.
-                * The debuff lasts 8 hours roughly and you do not need to be online for it to tick down.
-                * The debuff prevents you from contributing to other field bosses (no damage contribution),
-                * so you cannot provide for your party even if your partymates do not have the debuff.
                 * Cubes automatically go into inventory of parties of highest damage contributors.
     3.  **[time]**
         - e.g. 9:00p
@@ -98,7 +93,7 @@
 
     5.  **[map]**
         - e.g. `vid`
-            + Corresponds to `Videntis Shrine`, a map where `Starving Ellaganos` spawns.
+            + Corresponds to `Videntis Shrine`, a map where `Violent Cerberus` spawns.
         - *Optional*
         - Suitable only for *field* bosses.`*` If unlisted, this will be unassumed.
 
@@ -108,12 +103,10 @@
 
     +   `*` 
         Notes about world and field bosses:
-        
-        Field bosses in channels other than 1 are considered 'world boss' variants, and should not be recorded because they spawn unpredictably, because they're jackpot bosses.
-        
-        Field bosses with jackpot buffs may also spawn in channel 1 but should not be recorded, either.
-        
+                
         You should record the channel for world bosses because they can spawn in any of the channels in their respective maps.
+
+        Likewise, you should record the map for field bosses because they pick a different map on each subsequent spawn. Spawns do not repeat maps.
 
 ---
 ---
@@ -185,7 +178,7 @@
 ---
     
 ### In development.
-#### Last modified: 2017-08-23 18:24 (UTC-7)
+#### Last modified: 2017-08-24 13:37 (UTC-7)
 
 ---
 
