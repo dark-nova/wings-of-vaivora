@@ -628,8 +628,7 @@ async def check_databases():
 
 
 # begin everything
-with open('discordtoken', 'r') as f:
-    secret = f.read()
+secret = vaivora_modules.secrets.discord_token
 
 client.loop.create_task(check_databases())
 client.run(secret)

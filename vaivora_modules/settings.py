@@ -1248,7 +1248,7 @@ class Settings:
                 f   =   self.set_role
 
             # $settings get role [@mention]
-            if f == self.get_role and users or groups:
+            if f == self.get_role and (users or groups):
                 # extra arguments; warn and ignore
                 if len(xargs) > 2:
                     warning +=  "Warning: extraneous arguments supplied to `settings`:`role` module. Ignoring.\n"
