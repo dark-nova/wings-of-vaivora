@@ -163,9 +163,8 @@
             + **You must be at least `Authorized` to do so!**
 
     2. `talt`
-        - Changes the associated target's or targets' `Talt` contribution.
-        - *Valid for **[target]:[boss]** only.*
-        - *Do not use with **[status]**, **[entry]**, or **[type]** commands.*    
+        - Changes the associated target's or targets' `Talt` contribution. This is a necessary keyword.
+        
     3. **[value]:**
         - How much you are using. Keep in mind that default measurement is `Talt`, and not `Points`.
         - See **[unit]** for more information.
@@ -186,7 +185,7 @@
 ---
     
 ### In development.
-#### Last modified: 2017-07-08 23:23 (UTC-7)
+#### Last modified: 2017-08-23 18:24 (UTC-7)
 
 ---
 
