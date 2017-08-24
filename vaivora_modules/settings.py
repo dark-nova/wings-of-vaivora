@@ -1242,6 +1242,9 @@ class Settings:
                 f   =   self.get_role
                 g   =   self.get_role_user
                 h   =   self.get_role_group
+            # special case
+            elif rgx_set_unset.match(settings_cmd) and rgx_ro_boss.match(xargs[1]):
+                f   =   self.rm_boss
             else:
                 # make sure to distinguish using arguments
                 # this is "unset"
@@ -1321,10 +1324,13 @@ class Settings:
                     return (warning + "You are not permitted to change roles of levels above you.\n",)
 
                 for kind, mention in chain(users, groups):
-                    if not f(mention, kind, set_role):
+                    if f == self.rm_boss:
+                        if not f(mention):
+                            fail.append((mention, "'s `boss` role could not be unset.\n", "@" if kind == 'users' else "&"))
+                    elif not f(mention, kind, set_role):
                         fail.append((mention, "'s role could not be " + ("un" if set_role == role_none else "") + "set.\n", "@" if kind == 'users' else "&"))
                     else:
-                        ret_msg += warning + acknowledge + "Your role changes have been noted.\n"
+                        ret_msg = warning + acknowledge + "Your role changes have been noted.\n"
 
         # "get" setting does not really fail; this is a convenience (may want to rename the variable later)
         if fail and rgx_set_get.match(settings_cmd):
