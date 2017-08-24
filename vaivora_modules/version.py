@@ -1301,3 +1301,37 @@ Thank you for putting up with this project. -- Nova#6732
 ```""" + disclaimer
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('8')
+hotfix_n.append('a')
+status_n.append(bugfix)
+date_n.append("2017/08/23")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Fixed issue with boss role in settings
+    * Thanks to Jiyuu for the bug report.
+  + Closed an open condition that led to exceptions
+```""" + disclaimer
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('8')
+hotfix_n.append('a')
+status_n.append(bugfix)
+date_n.append("2017/08/23")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Identified an issue with discord.py ids no longer having identifying punctuation, and fixed with a workaround
+```""" + disclaimer
+
+changelog.append(current)

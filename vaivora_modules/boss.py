@@ -836,7 +836,7 @@ def validate_channel(ch):
 #       an appropriate message for success or fail of command
 def process_command(server_id, msg_channel, arg_list):
     if not vaivora_modules.settings.Settings(server_id).is_ch_type(msg_channel, channel_boss):
-        return # silently deny
+        return [""] # silently deny
 
     # $boss help
     if rgx_help.match(arg_list[0]):
