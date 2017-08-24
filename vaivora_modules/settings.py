@@ -7,9 +7,6 @@ from itertools import chain
 
 # import additional constants
 from importlib import import_module as im
-import vaivora_constants
-for mod in vaivora_constants.modules:
-    im(mod)
 import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
@@ -60,6 +57,7 @@ channel_mgmt    =   "management"
 
 rgx_help        =   re.compile(r'help', re.IGNORECASE)
 rgx_setting     =   re.compile(r'(add|(un)?set|get)', re.IGNORECASE)
+rgx_kw_all      =   re.compile(r'all', re.IGNORECASE)
 rgx_set_add     =   re.compile(r'add', re.IGNORECASE)
 rgx_set_unset   =   re.compile(r'unset', re.IGNORECASE)
 rgx_set_get     =   re.compile(r'get', re.IGNORECASE)
@@ -68,7 +66,7 @@ rgx_set_unit    =   re.compile(r'(talt|point)s?', re.IGNORECASE)
 rgx_set_unit_t  =   re.compile(r'talts?', re.IGNORECASE)
 rgx_set_chan    =   re.compile(r'ch(an(nel)*)?', re.IGNORECASE)
 rgx_set_role    =   re.compile(r'role', re.IGNORECASE)
-# rgx_set_set is unnecessary: process of elimination
+rgx_set_set     =   re.compile(r'set', re.IGNORECASE)
 rgx_rolechange  =   re.compile(r'(pro|de)mote', re.IGNORECASE)
 rgx_promote     =   re.compile(r'pro', re.IGNORECASE) # only need to compare pro vs de
 # rgx_demote is unnecessary: process of elimination
@@ -81,6 +79,9 @@ rgx_ro_boss     =   re.compile(r'boss', re.IGNORECASE)
 # rgx_ro_member is unnecessary: proccess of elimination
 rgx_channel     =   re.compile(r'(m(ana)?ge?m(en)?t|boss)', re.IGNORECASE)
 rgx_ch_boss     =   rgx_ro_boss # preserve uniformity
+rgx_set_guild   =   re.compile(r'guild', re.IGNORECASE)
+rgx_gd_levels   =   re.compile(r'[12]?[0-9]')
+rgx_gd_points   =   re.compile(r'[1-3]?[0-9]{1,6}')
 # rgx_ch_management is unnecessary: process of elimination
 
 # END REGEX
@@ -97,7 +98,7 @@ arg_chan        =   "[#channel]"
 arg_settings    =   "[settings]"
 
 # options for argument 1
-arg_opt_set     =   "[setting]" 
+arg_opt_set     =   "[setting]"
 arg_opt_val     =   "[validation]"
 arg_opt_rol     =   "[role change]"
 arg_opt_all     =   ', '.join((arg_opt_set, arg_opt_val, arg_opt_rol, ))
@@ -367,6 +368,7 @@ class Settings:
     settings['role'][role_boss]            = []
     talt_temporary                      = dict()
     talt_temporary_actual               = dict()
+    settings['lock']                    = False
     talt_level                          = []
     talt_level.append(0)
     talt_level.append(0)            # 1
@@ -400,14 +402,13 @@ class Settings:
             self.server_id      = srv_id
             self.server_file    = self.server_dir + "/" + self.server_id + ".json"
             self.check_file()
-            self.settings = self.read_file()
             self.set_role(srv_admin, "users", role=role_sauth)
             self.set_role(vaivora_modules.secrets.discord_user_id, "users", role=role_sauth)
+            self.toggle_lock(False)
         else:
             self.server_id      = srv_id
             self.server_file    = self.server_dir + "/" + self.server_id + ".json"
             self.check_file()
-            self.settings = self.read_file()
 
     def check_file(self):
         if not os.path.isdir(self.server_dir):
@@ -419,14 +420,14 @@ class Settings:
                 self.read_file()
             except json.JSONDecodeError:
                 self.init_file()
-
+        
     def init_file(self):
         open(self.server_file, 'w').close()
         self.save_file()
 
     def read_file(self):
         with open(self.server_file, 'r') as sf:
-            return json.load(sf)
+            self.settings = json.load(sf)
 
     def save_file(self):
         with open(self.server_file, 'w') as sf:
@@ -495,7 +496,7 @@ class Settings:
             # cannot promote (super) authorized or demote none
             if tg_role <= 2 and mode == mode_promote or \
                tg_role == 0 and mode == mode_demote:
-                failed.append(user, "of role " + self.role_level[tg_role] + ", cannot " + mode)
+                failed.append((user, "of role " + self.role_level[tg_role] + ", cannot " + mode,))
             # member to authorized
             elif tg_role == 2 and mode == mode_demote:
                 self.settings[utype][role_auth].remove(user)
@@ -564,11 +565,12 @@ class Settings:
     def validate_points(self, points):
         return points > 0 and points % 20 == 0
 
-    def set_remainder_talt(self, guild_level, points):
+    def set_remainder_talt(self, guild_level, points):        
         guild_level = int(guild_level)
         points = int(points)
         if guild_level >= len(self.talt_level) or guild_level < 1 or \
-          points/20 > self.talt_level[guild_level+1] or not self.validate_points(points):
+           points/20 > self.talt_level[guild_level+1] or not self.validate_points(points) or \
+           points/20 == self.settings['talt']['guild']:
             return False
         self.settings['guild_level'] = guild_level
         current_talt    = self.talt_level[guild_level] + points/20
@@ -610,12 +612,11 @@ class Settings:
         # reset
         self.settings['talt']['guild']  = 0
         self.settings['guild_level']    = 0
-        self.save_file()
         talt = 0
         for key, value in self.settings['talt'].items():
             if key == "guild":
                 continue
-            talt += value
+            talt += int(value)
         self.update_guild_talt(talt)
         return True
 
@@ -724,7 +725,7 @@ class Settings:
     ### obsolete function
     # def verify_channel(self, ch_type):
     #     return ch_type == "boss" or ch_type == "management"
-        
+
     ### verify_channel is obsolete
     def set_channel(self, ch_type, channel, region=''):
         # if self.verify_channel(ch_type):
@@ -797,6 +798,17 @@ class Settings:
             return False
 
     def greet(self, current_version):
+        """
+        :func:`greet` checks how many revisions the server owner has not received, of changelogs.
+
+        Args:
+            self
+            current_version (str): latest Wings of Vaivora version
+
+        Returns:
+            int: number of revisions since last received changelog
+        """
+
         self.settings['welcomed']   =   True
         try:
             base_version    =   self.settings['vaivora-version']
@@ -807,371 +819,518 @@ class Settings:
         revs    =   vaivora_modules.version.check_revisions(base_version)
         if revs:
             self.settings['vaivora-version']    =   vaivora_modules.version.get_current_version()
-        self.save_file()
+            self.save_file()
         return revs
 
-    # def subscribed(self):
-    #     return self.settings['subscribed']
-
-    # def set_subscription(self, flag):
-    #     self.settings['subscribed'] =   flag
-    #     self.save_file()
-    #     return True
-
-"""
-is_ch_type checks if the channel is a certain type, thus whether the command may execute.
-
-Args:
-    server_id (str): id of the server of the originating message
-    msg_channel (str): id of the channel of the originating message
-    
-Returns:
-    True if msg_channel is a management channel, or there are no management channels;
-    False otherwise
-
-"""
-def is_ch_type(server_id, msg_channel, ch_type):
-    cmd_srv         =   Settings(server_id)
-    ch_list         =   cmd_srv.get_channel(ch_type)
-    if not ch_list or msg_channel in ch_list:
+    def toggle_lock(self, mode=None):
+        if not mode and not mode is False:
+            self.settings['lock']   =   not self.settings['lock']
+        else:
+            self.settings['lock']   =   mode
+        self.save_file()
         return True
-    else:
-        return False
+
+    def locked(self):
+        return self.settings['lock']
 
 
+    def is_ch_type(self, msg_channel, ch_type):
+        """
+        :func:`is_ch_type` checks if the channel is a certain type, thus whether the command may execute.
 
-"""
-process_command processes the command sent to the settings module.
-It may call child functions for further processing.
+        Args:
+            msg_channel (str): id of the channel of the originating message
 
-Args:
-    server_id (str): id of the server of the originating message
-    msg_channel (str): id of the channel of the originating message
-    settings_cmd (str): the command used, somewhat equivalent to arg_list[0] in $boss
-    cmd_user (str): the one who called the command
-    usr_roles (list(str)): the list of roles from the user
-    users: (list(str)) list of users to be processed; can be None
-    groups: (list(str)) list of roles to be processed; can be None 
+        Returns:
+            bool: True if msg_channel is a management channel, or there are no management channels;
+                False otherwise
 
-Returns:
-    an appropriate message for success or fail of command:
-    `set`, `add`, and `unset` typically return a str;
-    `get` typically returns a tuple of str, list;
-    the list of `get` depends:
-    `get talt` `fail` returns a list of tuples; a discord.py id and a messsage relevant to this; 
-    `get role mention` and `get channel` `fail` return a list like `get talt`; and
-    `get role role` `fail` returns a list of tuples; a list of discord.py id (index 0) and a message relevant to this (index 1);
-    the list of `set` generally can be:
-    on success, just a str in the list (length of 1); and
-    on fail, a tuple of str (index 0) and a list of discord.py id (index 1)
-
-"""
-def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
-    fail            =   []
-    cmd_srv         =   Settings(server_id)
-    mode            =   ""
-    user_role_id    =   cmd_srv.get_highest_role_id(cmd_user, usr_roles)
-    user_role       =   cmd_srv.role_level[user_role_id]
-    users           =   [('users', u) for u in users]
-    groups          =   [('group', g) for g in groups]
-
-    # $boss help
-    if rgx_help.match(settings_cmd):
-        return command
-
-    # setting (general)
-    if rgx_setting.match(settings_cmd) and user_role_id == 0:
-        return [msg_perms + user_role + "`\n"]
-    elif rgx_setting.match(settings_cmd):
-        return [process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id, users, groups, xargs)]
-
-    # role change
-    elif rgx_rolechange and user_role_id < 2:
-        return [msg_perms + user_role + "`\n"]
-    elif rgx_rolechange.match(settings_cmd) and rgx_promote.search(settings_cmd):
-        fail    =   cmd_srv.promote_demote(mode_promote, users, groups)
-    elif rgx_rolechange.match(settings_cmd):
-        fail    =   cmd_srv.promote_demote(mode_demote, users, groups)
-
-    # validation - handle after all commands are checked
-    elif rgx_validation.match(settings_cmd) and rgx_invalid.search(settings_cmd):
-        mode    =   mode_invalid
-    elif rgx_validation.match(settings_cmd):
-        mode    =   mode_valid 
-
-    # did not match any settings or role change or validation
-    else:
-        return ["Your `$settings` command was not recognized. Please re-enter.\n" + msg_help]
-
-    # check validation
-    if rgx_validation.match(settings_cmd):
-        if users:
-            # process one at a time
-            for kind, mention in users:
-                if not cmd_srv.validate_talt(cmd_user, mode, user=mention):
-                    fail.append(mention, "could not be" + mode + "d\n")
+        """
+        ch_list         =   self.get_channel(ch_type)
+        if not ch_list or msg_channel in ch_list:
+            return True
         else:
-            if not cmd_srv.validate_talt(cmd_user, mode):
-                return [msg_perms + user_role + "`\n"]
+            return False
+
+
+    def process_command(self, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, channels, xargs=None):
+        """
+        :func:`process_command` processes the command sent to the settings module.
+        It may call child functions like :func:`process_setting` for further processing.
+
+        Args:
+            msg_channel (str): id of the channel of the originating message
+            settings_cmd (str): the command used, somewhat equivalent to arg_list[0] in $boss
+            cmd_user (str): the one who called the command
+            usr_roles (list(str)): the list of roles from the user
+            users: (list(str)) list of users to be processed; can be None
+            groups: (list(str)) list of roles to be processed; can be None
+
+        Returns:
+            list: an appropriate message for success or fail of command; varies in content (see below)
+
+            ``set``, ``add``, ``unset`` return a list. This is from calling :func:`process_setting`.
+            The list of `set` generally can be:
+
+                Command succeeded and returns:
+
+                    list: ``len == 1``
+
+                        str: message detailing success
+
+                ``fail``: Command failed and returns:
+
+                    tuple ``len == 2``
+
+                        list: ``len >= 1``
+
+                            str: discord.py id
+
+                        str: message detailing failure
+
+            ``get`` typically returns a tuple of str, list (as ``fail``).
+            The list of `get` depends:
+
+                ``get talt``, ``get role [@mention]``, ``get channel [#channel]``: different from :func:`process_setting`
+
+                    list
+
+                        list ``len >= 1``
+
+                            tuple ``len==2``
+
+                                str: discord.py id
+
+                                str: message related to query and ID
+
+                        str: message (success)
+
+                ``get role [role]``, ``get channel [channel]``: different from :func:`process_setting`
+
+                    list
+
+                        tuple ``len == 2``
+
+                            list
+
+                                str: discord.py id
+
+                            str: message related to query and ID
+
+                        str: message (success)
+
+            ``promote``, ``demote``, ``validate``, ``invalidate``:
+
+                the same as ``set``, ``add``, ``unset``; except not retrieved through :func:`process_setting`.
+
+
+        """
+        fail            =   []
+        mode            =   ""
+        user_role_id    =   self.get_highest_role_id(cmd_user, usr_roles)
+        user_role       =   self.role_level[user_role_id]
+        users           =   [('users', u) for u in users]
+        groups          =   [('group', g) for g in groups]
+
+        # settings are locked
+        if self.locked():
+            return [""]
+
+        # settings help
+        if rgx_help.match(settings_cmd):
+            return command
+
+        # setting (general)
+        # failed due to role level: 0 or None
+        if rgx_setting.match(settings_cmd) and user_role_id == 0:
+            return [msg_perms + user_role + "`\n"]
+        
+        # special case: set guild level
+        elif len(xargs) == 3 and rgx_set_guild.match(xargs[0]) and rgx_set_set.match(settings_cmd) and \
+             rgx_gd_levels.match(xargs[1]) and rgx_gd_points.match(xargs[2]):
+            self.toggle_lock(True)
+            # succeeded
+            if self.set_remainder_talt(xargs[1], xargs[2]):
+                return [acknowledge + "\n" + "Guild is now set to level " + self.get_guild_level() + ", " + self.get_talt() + " Talt.\n"]
             else:
-                return [acknowledge + "\n" + "Records have been " + mode + "d.\n"]
+                return ["Your command partially or completely failed. Your user may be too low. User level: `" + user_role + "`\n"]
 
-    # fail covers rolechange and validation
-    if fail:
-        return ["Your command partially or completely failed. " + \
-                "Your user may be too low. User level: `" + user_role + "`\n" + \
-                "Some of your mentions could not be processed:", fail]
-    elif rgx_validation.match(settings_cmd):
-        return [acknowledge + "\n" + "Records for the specified users and/or groups have been " + mode + "d.\n"]
-    # has to be rolechange
-    else:
-        return [acknowledge + "\n" + "Your role changes (`" + mode + "`) have been noted.\n"]
+        # general setting
+        elif rgx_setting.match(settings_cmd):
+            self.toggle_lock(True)
+            return list(self.process_setting(msg_channel, settings_cmd, cmd_user, user_role_id, users, groups, channels, xargs=xargs))
 
-"""
-process_setting processes the "setting" component of the settings module.
+        # role change
+        # failed due to role level: below 2
+        elif rgx_rolechange and user_role_id < 2:
+            return [msg_perms + user_role + "`\n"]
+        # promote
+        elif rgx_rolechange.match(settings_cmd) and rgx_promote.search(settings_cmd):
+            self.toggle_lock(True)
+            fail    =   self.promote_demote(mode_promote, users, groups, channels)
+        # demote
+        elif rgx_rolechange.match(settings_cmd):
+            self.toggle_lock(True)
+            fail    =   self.promote_demote(mode_demote, users, groups, channels)
 
-Args:
-    server_id (str): id of the server of the originating message
-    msg_channel (str): id of the channel of the originating message
-    settings_cmd (str): the command used, somewhat equivalent to arg_list[0] in $boss
-    cmd_user (str): the one who called the command
-    user_role_id (str): the highest level role id granted to cmd_user
-    users (list(str)): list of users to be processed; can be None
-    groups (list(str)): list of roles to be processed; can be None 
+        # validation - handle after all commands are checked
+        # invalidate
+        elif rgx_validation.match(settings_cmd) and rgx_invalid.search(settings_cmd):
+            mode    =   mode_invalid
+        # validate
+        elif rgx_validation.match(settings_cmd):
+            mode    =   mode_valid
 
-Returns:
-    an appropriate message for success or fail of command:
-    `set`, `add`, and `unset` typically return a str;
-    `get` typically returns a tuple of str, list;
-    the list of `get` depends:
-    `get talt` `fail` returns a list of tuples; a discord.py id and a messsage relevant to this; 
-    `get role mention` and `get channel` `fail` return a list like `get talt`; and
-    `get role role` `fail` returns a list of tuples; a list of discord.py id (index 0) and a message relevant to this (index 1);
-    the list of `set` generally can be:
-    on success, just a str in the list (length of 1); and
-    on fail, a tuple of str (index 0) and a list of discord.py id (index 1)
-
-"""
-def process_setting(server_id, msg_channel, settings_cmd, cmd_user, user_role_id, users, groups, xargs):
-    if not xargs:
-        return "You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help
-
-    fail        =   []
-    ret_msg     =   ""
-    cmd_srv     =   Settings(server_id)
-    target      =   None
-    warning     =   ""
-    user_role   =   cmd_srv.role_level[user_role_id]
-
-    # set get add unset
-    #               0  1
-    # $settings add 10 talt mention
-    if rgx_set_add.match(settings_cmd) and not rgx_set_talt.match(xargs[0]):
-        return "You tried using `setting`:`add` but it only works for `settings`:`talt` module. Please re-check syntax.\n" + msg_help
-
-    # $setting [setting] [number] [unit]
-    if rgx_set_talt.match(xargs[0]):
-        if not is_ch_type(server_id, msg_channel, channel_mgmt):
-            return # silently deny changes
-        if rgx_set_unset.match(settings_cmd):
-            return "You tried using `setting`:`unset` but it does not work for `settings`:`talt` module. Please re-check syntax.\n" + msg_help
-        if groups:
-            warning +=  "Warning: you can't use use `settings`:`talt` module with groups/roles. Ignoring.\n"
-        target  =   mode_talt
-        unit    =   unit_talt
-        if len(xargs) == 2 and rgx_set_unit.match(xargs[1]) and rgx_set_unit_t.match(xargs[1]):
-            unit    =   unit_point
-        # ignore invalid input for unit
-        elif len(xargs) == 2 and not rgx_set_unit.match(xargs[1]):
-            warning +=  "Warning: invalid unit used. Using default unit `talt`.\n"
-
-    # $settings [setting] [channel] [#channel]
-    elif rgx_set_chan.match(xargs[0]) and len(xargs) > 1:
-        # invalid channel type
-        if not rgx_channel.match(xargs[1]):
-            return "You used an incorrect option for `setting`:`channel`. Valid options are: " + valid_ch + ".\n" + msg_help
-
-        # valid channel types
-        elif rgx_ch_boss.match(xargs[1]):
-            ch_mode =   channel_boss
+        # did not match any settings or role change or validation
         else:
-            ch_mode =   channel_mgmt
+            return ["Your `$settings` command was not recognized. Please re-enter.\n" + msg_help]
 
-        # extra arguments; warn and ignore
-        if rgx_set_get.match(settings_cmd) and len(xargs) > 2:
-            warning +=  "Warning: extraneous arguments supplied to `settings`:`channel` module. Ignoring.\n"
-        else:
-            ch_list =   xargs[2:]
-
-        target  =   mode_channel
-            
-    # $settings [setting] role [role] [@mention]
-    elif rgx_set_role.match(xargs[0]):
-        if not is_ch_type(server_id, msg_channel, channel_mgmt):
-            return # silently deny changes
-        target  =   mode_role
-
-    # any incorrect combination of arguments
-    else:
-        if not is_ch_type(server_id, msg_channel, channel_mgmt):
-            return # silently deny changes
-        return "You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help
-
-    # `talt`
-    if target == mode_talt:
-        if rgx_set_add.match(settings_cmd):
-            f   =   cmd_srv.add_talt
-        elif rgx_set_get.match(settings_cmd):
-            f   =   cmd_srv.get_talt
-        else: #elif rgx_set_set.match(settings_cmd):
-            f   =   cmd_srv.set_talt
-
-        # $settings [f] [number] [@mention...]
-        if user_role_id > 1 and users:
-            # process one at a time
-            for kind, mention in users:
-                if f == cmd_srv.get_talt:
-                    # not actually fail but works with the return
-                    fail.append(mention, "contributed " + f(mention) + " Talt.\n")
-                elif not f(cmd_user, int(xargs[0]), unit, mention):
-                    fail.append(mention)
-            if fail and f == cmd_srv.get_talt:
-                ret_msg +=  acknowledge + msg_records
-            elif fail:
-                ret_msg +=  "Your Talt contributions could not be recorded. " + msg_perms + user_role + "`\n"
+        # check validation
+        if rgx_validation.match(settings_cmd):
+            self.toggle_lock(True)
+            # selective validation
+            if users:
+                # process one at a time
+                for kind, mention in users:
+                    if not self.validate_talt(cmd_user, mode, user=mention):
+                        fail.append((mention, "could not be" + mode + "d\n",))
+            # total validation
             else:
-                return acknowledge + "Your Talt contributions were successfully recorded.\n"
-        # $settings [f] [number] [@mention...] # but too low on user level
-        elif users:
-            return warning + msg_perms + user_role + "`\n"
-        # $settings [f] [number] # self; only needs member+
-        elif not f(cmd_user, int(xargs[0]), unit):
-            return warning + msg_perms + user_role + "`\n"
+                # total validation succeeded
+                if not self.validate_talt(cmd_user, mode):
+                    return [msg_perms + user_role + "`\n"]
+                # total validation failed
+                else:
+                    return [acknowledge + "\n" + "Records have been " + mode + "d.\n"]
 
-    # `channel`
-    elif target == mode_channel:
-        if rgx_set_set.match(settings_cmd):
-            f   =   cmd_srv.set_channel
-            kw  =   "set"
-        elif rgx_set_get.match(settings_cmd):
-            if not is_ch_type(server_id, msg_channel, channel_mgmt):
+        # rolechange or validation failed
+        if fail:
+            return [fail, "Your command partially or completely failed. " + \
+                    "Your user may be too low. User level: `" + user_role + "`\n" + \
+                    "Some of your mentions could not be processed:"]
+
+        # validation succeeded
+        elif rgx_validation.match(settings_cmd):
+            return [acknowledge + "\n" + "Records for the specified users and/or groups have been " + mode + "d.\n"]
+
+        # rolechange succeeded
+        else: #elif rgx_rolechange.match(settings_cmd)
+            return [acknowledge + "\n" + "Your role changes (`" + mode + "`) have been noted.\n"]
+
+
+    def process_setting(self, msg_channel, settings_cmd, cmd_user, user_role_id, users, groups, channels, xargs):
+        """
+        :func:`process_command` processes the command sent to the settings module.
+        It may call child functions like :func:`process_setting` for further processing.
+
+        Args:
+            msg_channel (str): id of the channel of the originating message
+            settings_cmd (str): the command used, somewhat equivalent to arg_list[0] in $boss
+            cmd_user (str): the one who called the command
+            usr_roles (list(str)): the list of roles from the user
+            users: (list(str)) list of users to be processed; can be None
+            groups: (list(str)) list of roles to be processed; can be None
+
+        Returns:
+            list: an appropriate message for success or fail of command; varies in content (see below)
+
+            ``set``, ``add``, ``unset`` return a list. This is from calling :func:`process_setting`.
+            The list of `set` generally can be:
+
+                Command succeeded and returns:
+
+                    list: ``len == 1``
+
+                        str: message detailing success
+
+                ``fail``: Command failed and returns:
+
+                    tuple ``len == 2``
+
+                        list: ``len >= 1``
+
+                            str: discord.py id
+
+                        str: message detailing failure
+
+            ``get`` typically returns a tuple of str, list (as ``fail``).
+            The list of `get` depends:
+
+                ``get talt``, ``get role [@mention]``, ``get channel [#channel]``:
+
+                    tuple
+
+                        list ``len >= 1``
+
+                            tuple ``len==2``
+
+                                str: discord.py id
+
+                                str: message related to query and ID
+
+                        str: message (success)
+
+                ``get role [role]``, ``get channel [channel]``:
+
+                    tuple
+
+                        tuple ``len == 2``
+
+                            list
+
+                                str: discord.py id
+
+                            str: message related to query and ID
+
+                        str: message (success)
+
+        """
+
+        if not xargs:
+            return ("You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help,)
+
+        fail        =   []
+        ret_msg     =   ""
+        target      =   None
+        warning     =   ""
+        user_role   =   self.role_level[user_role_id]
+
+        # set get add unset
+        #               0  1
+        # $settings add 10 talt mention
+        if rgx_set_add.match(settings_cmd) and not rgx_set_talt.match(xargs[0]):
+            return ("You tried using `setting`:`add` but it only works for `settings`:`talt` module. Please re-check syntax.\n" + msg_help,)
+
+        # $setting [setting] [number] [unit]
+        if rgx_set_unit_t.match(xargs[0]):
+            if not self.is_ch_type(msg_channel, channel_mgmt):
                 return # silently deny changes
-            f   =   cmd_srv.get_channel
-        else:
-            if not is_ch_type(server_id, msg_channel, channel_mgmt):
-                return # silently deny changes
-            f   =   cmd_srv.unset_channel
-            kw  =   "unset"
+            if rgx_set_unset.match(settings_cmd):
+                return ("You tried using `setting`:`unset` but it does not work for `settings`:`talt` module. Please re-check syntax.\n" + msg_help,)
+            if groups:
+                warning +=  "Warning: you can't use use `settings`:`talt` module with groups/roles. Ignoring.\n"
+            target  =   mode_talt
+            unit    =   unit_talt
 
-        if f == cmd_srv.get_channel:
-            # not actually fail but works with the return
-            fail.append(f(ch_mode), "is marked as a `" + ch_mode + "` channel.\n")
-            ret_msg +=  acknowledge + msg_records
+            # special case: get all
+            if len(xargs) == 2 and rgx_kw_all.match(xargs[1]) and rgx_set_get.match(settings_cmd):
+                if users:
+                    warning +=  "Warning: you can't use `settings`:`talt` `all` with users. Ignoring.\n"
+                return (self.get_all_talt(), warning + "This guild thanks the following for contributing: ")
 
-        else:
-            for ch in ch_list:
-                if not f(ch_mode, ch):
-                    fail.append(ch, "could not be " + kw + " as `" + ch_mode + "`.\n")
+            # special case: get (guild)
+            if len(xargs) == 1 and rgx_set_get.match(settings_cmd):
+                if users:
+                    warning +=  "Warning: you can't use `settings`:`talt` `guild` with users. Ignoring.\n"
+                gtalt   =   self.get_talt()
+                gtaltlv =   self.get_talt_for_nextlevel()
+                gpt     =   str(int(gtalt)*20)
+                gptlv   =   str(int(gtaltlv)*20)
+                return (warning + "This guild is level " + self.get_guild_level() + \
+                        ", has a total of " + gtalt + " Talt (" + gpt + " points), and needs " + \
+                        gtaltlv + " Talt (" + gptlv + " points) for the next level.\n",)
 
-    # `role`
-    else:
-        if rgx_set_set.match(settings_cmd):
-            f   =   cmd_srv.set_role
-        elif rgx_set_get.match(settings_cmd):
-            f   =   cmd_srv.get_role
-            g   =   cmd_srv.get_role_user
-            h   =   cmd_srv.get_role_group
-        else:
-            # make sure to distinguish using arguments
-            # this is "unset"
-            f   =   cmd_srv.set_role
+            if len(xargs) >= 2 and not rgx_set_talt.match(xargs[1]):
+                return ("You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help,)
 
-        # $settings get role [@mention]
-        if f == cmd_srv.get_role and users or groups:
+            # general cases
+            if len(xargs) == 3 and rgx_set_unit.match(xargs[2]) and rgx_set_unit_t.match(xargs[2]):
+                unit    =   unit_point
+            # ignore invalid input for unit
+            elif len(xargs) == 3 and not rgx_set_unit.match(xargs[2]):
+                warning +=  "Warning: invalid unit used. Using default unit `talt`.\n"
+
+        # $settings [setting] [channel] [#channel]
+        elif rgx_set_chan.match(xargs[0]) and len(xargs) > 1:
+            # invalid channel type
+            if not rgx_channel.match(xargs[1]):
+                return ("You used an incorrect option for `setting`:`channel`. Valid options are: " + valid_ch + ".\n" + msg_help,)
+
+            # valid channel types
+            elif rgx_ch_boss.match(xargs[1]):
+                ch_mode =   channel_boss
+            else:
+                ch_mode =   channel_mgmt
+
             # extra arguments; warn and ignore
-            if len(xargs) > 1:
-                warning +=  "Warning: extraneous arguments supplied to `settings`:`role` module. Ignoring.\n"
+            if rgx_set_get.match(settings_cmd) and len(xargs) > 2:
+                warning +=  "Warning: extraneous arguments supplied to `settings`:`channel` module. Ignoring.\n"
+            else:
+                ch_list =   channels
 
-            for kind, mention in chain(users, groups):
-                # not actually fail but works with the return
-                if kind == 'users' and cmd_srv.is_role_boss(mention):
-                    fail.append(mention, "is the role level of `" + g(mention) + "`. Additionally, also of `boss` role.\n")
-                elif kind == 'users':
-                    fail.append(mention, "is the role level of `" + g(mention) + "`.\n")
-                elif cmd_srv.is_role_boss(mention):
-                    fail.append(mention, "is the role level of `" + h(mention) + "`. Additionally, also of `boss` role.\n")
-                else:
-                    fail.append(mention, "is the role level of `" + h(mention) + "`.\n")
-
-            ret_msg +=  acknowledge + msg_records
-
-        # $settings get role [roles ...]
-        elif f == cmd_srv.get_role:
-            # the role to_check
-            to_check    =   ""
-            # roles that have been checked
-            checked     =   []
-
-            # ignore xargs[0] because that's the role used for comparison
-            for xarg in xargs[1:]:
-                if not rgx_roles.match(xarg):
-                    continue
-                elif rgx_ro_boss.match(xarg):
-                    to_check    =   role_boss
-                elif rgx_ro_auth.match(xarg):
-                    to_check    =   role_auth
-                else:
-                    to_check    =   role_member
-                if to_check in checked:
-                    to_check    =   ""
-                    continue
-                fail.append(f(to_check), "are of role level `" + to_check + "`.\n")
-                checked.append(to_check)
-                to_check    =   ""
-
-            ret_msg +=  acknowledge + msg_records
+            target  =   mode_channel
 
         # $settings [setting] role [role] [@mention]
-        else: # elif f == cmd_srv.set_role
-            # set
+        elif rgx_set_role.match(xargs[0]):
+            if not self.is_ch_type(msg_channel, channel_mgmt):
+                return # silently deny changes
+            target  =   mode_role
+
+        # any incorrect combination of arguments
+        else:
+            if not self.is_ch_type(msg_channel, channel_mgmt):
+                return # silently deny changes
+            return ("You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help,)
+
+        # `talt`
+        if target == mode_talt:
+            if rgx_set_add.match(settings_cmd):
+                f   =   self.add_talt
+            elif rgx_set_get.match(settings_cmd):
+                f   =   self.get_talt
+            else: #elif rgx_set_set.match(settings_cmd):
+                f   =   self.set_talt
+
+            # $settings [f] [number] [@mention...]
+            if user_role_id > 1 and users:
+                # process one at a time
+                for kind, mention in users:
+                    if f == self.get_talt:
+                        # not actually fail but works with the return
+                        fail.append((mention, "contributed " + f(mention) + " Talt.\n",))
+                    elif not f(cmd_user, int(xargs[0]), unit, mention):
+                        fail.append(mention)
+                if fail and f == self.get_talt:
+                    ret_msg +=  acknowledge + msg_records
+                elif fail:
+                    ret_msg +=  "Your Talt contributions could not be recorded. " + msg_perms + user_role + "`\n"
+                else:
+                    return (acknowledge + "Your Talt contributions were successfully recorded.\n",)
+            # $settings [f] [number] [@mention...] # but too low on user level
+            elif users:
+                return (warning + msg_perms + user_role + "`\n",)
+            # $settings [f] [number] # self; only needs member+
+            elif not f(cmd_user, int(xargs[0]), unit):
+                return (warning + msg_perms + user_role + "`\n",)
+
+        # `channel`
+        elif target == mode_channel:
             if rgx_set_set.match(settings_cmd):
+                f   =   self.set_channel
+                kw  =   "set"
+            elif rgx_set_get.match(settings_cmd):
+                if not self.is_ch_type(msg_channel, channel_mgmt):
+                    return # silently deny changes
+                f   =   self.get_channel
+            else:
+                if not self.is_ch_type(msg_channel, channel_mgmt):
+                    return # silently deny changes
+                f   =   self.unset_channel
+                kw  =   "unset"
+
+            if f == self.get_channel:
+                # not actually fail but works with the return
+                fail.append((f(ch_mode), "is marked as a `" + ch_mode + "` channel.\n",))
+                ret_msg +=  acknowledge + msg_records
+
+            else:
+                for ch in ch_list:
+                    if not f(ch_mode, ch):
+                        fail.append((ch, "could not be " + kw + " as `" + ch_mode + "`.\n",))
+
+        # `role`
+        else:
+            if rgx_set_set.match(settings_cmd):
+                f   =   self.set_role
+            elif rgx_set_get.match(settings_cmd):
+                f   =   self.get_role
+                g   =   self.get_role_user
+                h   =   self.get_role_group
+            else:
+                # make sure to distinguish using arguments
+                # this is "unset"
+                f   =   self.set_role
+
+            # $settings get role [@mention]
+            if f == self.get_role and users or groups:
                 # extra arguments; warn and ignore
-                if len(xargs) > 2:
+                if len(xargs) > 1:
                     warning +=  "Warning: extraneous arguments supplied to `settings`:`role` module. Ignoring.\n"
 
-                if not rgx_roles.match(xargs[1]):
-                    return warning + xargs[1] + " is not a valid role. Please re-check syntax.\n" + msg_help
-                elif rgx_ro_boss.match(xargs[1]):
-                    set_role    =   role_boss
-                elif rgx_ro_auth.match(xargs[1]):
-                    set_role    =   role_auth
+                for kind, mention in chain(users, groups):
+                    # not actually fail but works with the return
+                    #   tuple
+                    #       str: discord.py id
+                    #       str: message
+                    if kind == 'users' and self.is_role_boss(mention):
+                        fail.append((mention, "is the role level of `" + g(mention) + "`. Additionally, also of `boss` role.\n",))
+                    elif kind == 'users':
+                        fail.append((mention, "is the role level of `" + g(mention) + "`.\n",))
+                    elif self.is_role_boss(mention):
+                        fail.append((mention, "is the role level of `" + h(mention) + "`. Additionally, also of `boss` role.\n",))
+                    else:
+                        fail.append((mention, "is the role level of `" + h(mention) + "`.\n",))
+
+                ret_msg +=  acknowledge + msg_records
+
+            # $settings get role [roles ...]
+            elif f == self.get_role:
+                # the role to_check
+                to_check    =   ""
+                # roles that have been checked
+                checked     =   []
+
+                # ignore xargs[0] because that's the role used for comparison
+                for xarg in xargs[1:]:
+                    if not rgx_roles.match(xarg):
+                        continue
+                    elif rgx_ro_boss.match(xarg):
+                        to_check    =   role_boss
+                    elif rgx_ro_auth.match(xarg):
+                        to_check    =   role_auth
+                    else:
+                        to_check    =   role_member
+                    if to_check in checked:
+                        to_check    =   ""
+                        continue
+                    #           list         str
+                    fail.append((f(to_check), "is of role level `" + to_check + "`.\n",))
+                    checked.append(to_check)
+                    to_check    =   ""
+
+                ret_msg +=  acknowledge + msg_records
+
+            # $settings [setting] role [role] [@mention]
+            else: # elif f == self.set_role
+                # set
+                if rgx_set_set.match(settings_cmd):
+                    # extra arguments; warn and ignore
+                    if len(xargs) > 2:
+                        warning +=  "Warning: extraneous arguments supplied to `settings`:`role` module. Ignoring.\n"
+
+                    if not rgx_roles.match(xargs[1]):
+                        return (warning + xargs[1] + " is not a valid role. Please re-check syntax.\n" + msg_help,)
+                    elif rgx_ro_boss.match(xargs[1]):
+                        set_role    =   role_boss
+                    elif rgx_ro_auth.match(xargs[1]):
+                        set_role    =   role_auth
+                    else:
+                        set_role    =   role_member
+                # unset
                 else:
-                    set_role    =   role_member
-            # unset
-            else:
-                set_role    =   role_none
+                    set_role    =   role_none
 
-            # you shall not pass
-            if user_role_id <= role_idx[set_role]:
-                return warning + "You are not permitted to change roles of levels above you.\n"
+                # you shall not pass
+                if user_role_id <= role_idx[set_role]:
+                    return (warning + "You are not permitted to change roles of levels above you.\n",)
 
-            for kind, mention in chain(users, groups):
-                if not f(mention, kind, set_role):
-                    fail.append(mention, "'s role could not be " + ("un" if set_role == role_none else "") + "set.\n")
+                for kind, mention in chain(users, groups):
+                    if not f(mention, kind, set_role):
+                        fail.append((mention, "'s role could not be " + ("un" if set_role == role_none else "") + "set.\n",))
 
-    # "get" setting does not really fail; this is a convenience (may want to rename the variable later)
-    if fail and rgx_set_get.match(settings_cmd):
-        ret_msg =   warning + ret_msg
-        return (ret_msg, fail)
+        # "get" setting does not really fail; this is a convenience (may want to rename the variable later)
+        if fail and rgx_set_get.match(settings_cmd):
+            ret_msg =   warning + ret_msg
+            return (fail, ret_msg)
 
-    # all other setting commands
-    elif fail:
-        return (msg_fails, fail)
+        # all other setting commands
+        elif fail:
+            return (fail, msg_fails)
 
 
 
 #### Examples
-# $settings 
+# $settings
 # $settings set role auth @mention...
 # $settings get talt @mention @mention...
 # $settings get talt

@@ -3,13 +3,10 @@ from datetime import datetime, timedelta
 import re
 import math
 from importlib import import_module as im
-import vaivora_constants
-for mod in vaivora_constants.modules:
-    im(mod)
 import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
-import vaivora_modules.settings.channel_boss as channel_boss
+from vaivora_modules.settings import channel_boss as channel_boss
 
 
 # BGN CONST
@@ -821,8 +818,8 @@ def get_bosses_field():
 # @return:
 #       the channel parsed, or 1 (default) if ch could not be parsed or incorrect
 def validate_channel(ch):
-    if vaivora_constants.regex.boss.location.channel.match(ch):
-        return int(vaivora_constants.regex.format.matching.letters.sub('', ch))
+    if rgx_channel.match(ch):
+        return int(rgx_letters.sub('', ch))
     else:
         return 1
 
@@ -838,7 +835,7 @@ def validate_channel(ch):
 # @return:
 #       an appropriate message for success or fail of command
 def process_command(server_id, msg_channel, arg_list):
-    if not vaivora_modules.settings.is_ch_type(server_id, msg_channel, channel_boss):
+    if not vaivora_modules.settings.Settings(server_id).is_ch_type(msg_channel, channel_boss):
         return # silently deny
 
     # $boss help
@@ -960,7 +957,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     # $boss [boss] warned ...
     elif rgx_st_warn.match(status):
         if not target['boss'] in bosses_field:
-            return target['boss'] + " is invalid for `$boss`:`time`:`" + status + "`. " + \
+            return target['boss'] + " is invalid for `$boss`: `time`: `" + status + "`. " + \
                    "Only field bosses have warnings.\n" + msg_help
         time_offset         =   timedelta(minutes=time_warned)
         target['status']    =   status_warned
@@ -970,14 +967,14 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         target['status']    =   status_anchored
     else:
         if not target['boss'] in bosses_world:
-            return target['boss'] + " is invalid for `$boss`:`time`:`" + status + "`. " + \
+            return target['boss'] + " is invalid for `$boss`: `time`: `" + status + "`. " + \
                    "Only world bosses can be anchored.\n" + msg_help
         time_offset         =   timedelta(hours=time_anchored)
         target['status']    =   status_anchored
 
     # error: invalid time
     if not rgx_time.match(time):
-        return time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + \
+        return time + " is not a valid time for `$boss`: `time`: `" + status + "`. " + \
                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
 
     # $boss [boss] died [time?]
@@ -1367,7 +1364,8 @@ def process_cmd_opt(opt_list, opt_boss):
                 target['map']   =   boss_locs[opt_boss][map_idx]
             else:
                 target['map']   =   "N/A"
-    return (target['map'], target['channel'])
+            return (target['map'], target['channel'])
+    return ("N/A", 1)
 
 
 # @func:    process_records(str, str, datetime, str, float) : str
