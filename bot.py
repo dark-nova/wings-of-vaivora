@@ -465,8 +465,12 @@ async def sanitize_cmd(message, command_type):
                             tgt =   message.server.get_member(thing)
                             nom =   tgt.name + "#" + tgt.discriminator
                         except:
-                            vdst[server_id].set_role(thing, "users")
-                            continue
+                            try: # it may be a role; esp in case of settings and role
+                                tgt =   [ro.id for ro in message.server.roles].index(thing)
+                                nom =   "&" + message.server.roles[tgt].name
+                            except:
+                                vdst[server_id].set_role(thing, "users")
+                                continue
                 # role
                 else:
                     for thing in things:
@@ -579,13 +583,8 @@ async def check_databases():
             for uid in vdst[vdb_id].get_role("boss"):
                 try:
                     # group mention
-                    if discord.utils.get(srv.roles, mention=uid):
-                        role_str    += uid + " "
-
-                    # user mention
-                    else:
-                        boss_user   = await srv.get_member(uid)
-                        role_str    += boss_user.mention + " "
+                    idx =   [ro.id for ro in srv.roles].index(uid)
+                    role_str    +=  srv.roles[idx].mention
 
                 except:
                     try:
@@ -593,6 +592,8 @@ async def check_databases():
                         boss_user   = await srv.get_member(uid)
                         role_str    += boss_user.mention + " "
                     except:
+                        # user or group no longer exists
+                        vdst[vdb_id].rm_boss(uid)
                         continue
 
             # no roles detected; use empty string
