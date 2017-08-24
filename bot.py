@@ -435,6 +435,8 @@ async def sanitize_cmd(message, command_type):
             else:
                 r_ids   =   [ret[0]]
 
+            if not r_ids:
+                await client.send_message(msg_channel, message_to_send + "*crickets chirping*\n" + "```\n")
             for r_id in r_ids:
                 # channel
                 if rgx_ch_hash.search(r_id):
