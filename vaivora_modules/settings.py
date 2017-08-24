@@ -496,7 +496,7 @@ class Settings:
             # cannot promote (super) authorized or demote none
             if tg_role <= 2 and mode == mode_promote or \
                tg_role == 0 and mode == mode_demote:
-                failed.append((user, "of role " + self.role_level[tg_role] + ", cannot " + mode,))
+                failed.append((user, "of role " + self.role_level[tg_role] + ", cannot " + mode, "@" if utype == "users" else "&"))
             # member to authorized
             elif tg_role == 2 and mode == mode_demote:
                 self.settings[utype][role_auth].remove(user)
@@ -515,8 +515,8 @@ class Settings:
             utype = "role"
         else:
             utype = "users"
-            role_call.extend(self.settings["group"][role])
-        role_call.extend(self.settings[utype][role])
+            role_call.append((self.settings["group"][role], "&",))
+        role_call.append((self.settings[utype][role], "@",))
         return role_call
 
     def get_role_user(self, user):
@@ -744,14 +744,19 @@ class Settings:
         # else:
         #     return []
 
-    ### verify_channel is obsolete
-    def unset_channel(self, ch_type, channel):
-        # if self.verify_channel(ch_type):
-        self.settings['channel'][ch_type].remove(channel)
-        self.save_file()
+    def unset_channel(self, channel):
+        try:
+            self.settings['channel'][channel_mgmt].remove(channel)
+            self.save_file()
+        except:
+            pass
+        try:
+            self.settings['channel'][channel_boss].remove(channel)
+            self.save_file()
+        except:
+            pass
         return True
-        # else:
-        #     return False
+
 
     def get_prefix(self):
         return self.settings['prefix']
@@ -993,7 +998,7 @@ class Settings:
                 # process one at a time
                 for kind, mention in users:
                     if not self.validate_talt(cmd_user, mode, user=mention):
-                        fail.append((mention, "could not be" + mode + "d\n",))
+                        fail.append((mention, "could not be" + mode + "d\n", "@"))
             # total validation
             else:
                 # total validation succeeded
@@ -1162,13 +1167,13 @@ class Settings:
         # $settings [setting] role [role] [@mention]
         elif rgx_set_role.match(xargs[0]):
             if not self.is_ch_type(msg_channel, channel_mgmt):
-                return # silently deny changes
+                return ("",) # silently deny changes
             target  =   mode_role
 
         # any incorrect combination of arguments
         else:
             if not self.is_ch_type(msg_channel, channel_mgmt):
-                return # silently deny changes
+                return ("",) # silently deny changes
             return ("You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help,)
 
         # `talt`
@@ -1186,9 +1191,9 @@ class Settings:
                 for kind, mention in users:
                     if f == self.get_talt:
                         # not actually fail but works with the return
-                        fail.append((mention, "contributed " + f(mention) + " Talt.\n",))
+                        fail.append((mention, "contributed " + f(mention) + " Talt.\n", "@"))
                     elif not f(cmd_user, int(xargs[0]), unit, mention):
-                        fail.append(mention)
+                        fail.append(mention, "@")
                 if fail and f == self.get_talt:
                     ret_msg +=  acknowledge + msg_records
                 elif fail:
@@ -1209,23 +1214,25 @@ class Settings:
                 kw  =   "set"
             elif rgx_set_get.match(settings_cmd):
                 if not self.is_ch_type(msg_channel, channel_mgmt):
-                    return # silently deny changes
+                    return ("",) # silently deny changes
                 f   =   self.get_channel
             else:
                 if not self.is_ch_type(msg_channel, channel_mgmt):
-                    return # silently deny changes
+                    return ("",) # silently deny changes
                 f   =   self.unset_channel
                 kw  =   "unset"
 
             if f == self.get_channel:
                 # not actually fail but works with the return
-                fail.append((f(ch_mode), "is marked as a `" + ch_mode + "` channel.\n",))
+                fail.append((f(ch_mode), "is marked as a `" + ch_mode + "` channel.\n", "#"))
                 ret_msg +=  acknowledge + msg_records
 
             else:
                 for ch in ch_list:
                     if not f(ch_mode, ch):
-                        fail.append((ch, "could not be " + kw + " as `" + ch_mode + "`.\n",))
+                        fail.append((ch, "could not be " + kw + " as `" + ch_mode + "`.\n", "#"))
+                    else:
+                        ret_msg +=  acknowledge + "Your channel changes have been recorded.\n"
 
         # `role`
         else:
@@ -1252,13 +1259,13 @@ class Settings:
                     #       str: discord.py id
                     #       str: message
                     if kind == 'users' and self.is_role_boss(mention):
-                        fail.append((mention, "is the role level of `" + g(mention) + "`. Additionally, also of `boss` role.\n",))
+                        fail.append((mention, "is the role level of `" + g(mention) + "`. Additionally, also of `boss` role.\n", "@"))
                     elif kind == 'users':
-                        fail.append((mention, "is the role level of `" + g(mention) + "`.\n",))
+                        fail.append((mention, "is the role level of `" + g(mention) + "`.\n", "@"))
                     elif self.is_role_boss(mention):
-                        fail.append((mention, "is the role level of `" + h(mention) + "`. Additionally, also of `boss` role.\n",))
+                        fail.append((mention, "is the role level of `" + h(mention) + "`. Additionally, also of `boss` role.\n", "&"))
                     else:
-                        fail.append((mention, "is the role level of `" + h(mention) + "`.\n",))
+                        fail.append((mention, "is the role level of `" + h(mention) + "`.\n", "&"))
 
                 ret_msg +=  acknowledge + msg_records
 
@@ -1283,7 +1290,7 @@ class Settings:
                         to_check    =   ""
                         continue
                     #           list         str
-                    fail.append((f(to_check), "is of role level `" + to_check + "`.\n",))
+                    fail.append((f(to_check), "is of role level `" + to_check + "`.\n"))
                     checked.append(to_check)
                     to_check    =   ""
 
@@ -1315,7 +1322,7 @@ class Settings:
 
                 for kind, mention in chain(users, groups):
                     if not f(mention, kind, set_role):
-                        fail.append((mention, "'s role could not be " + ("un" if set_role == role_none else "") + "set.\n",))
+                        fail.append((mention, "'s role could not be " + ("un" if set_role == role_none else "") + "set.\n", "@" if kind == 'users' else "&"))
                     else:
                         ret_msg += warning + acknowledge + "Your role changes have been noted.\n"
 
