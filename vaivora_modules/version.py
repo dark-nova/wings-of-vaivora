@@ -1324,7 +1324,7 @@ changelog.append(current)
 
 version_n.append('1')
 subver_n.append('8')
-hotfix_n.append('a')
+hotfix_n.append('b')
 status_n.append(bugfix)
 date_n.append("2017/08/23")
 
@@ -1332,6 +1332,22 @@ current     = get_header() + \
 """```diff
 + Fixes:
   + Identified an issue with discord.py ids no longer having identifying punctuation, and fixed with a workaround
+```""" + disclaimer
+
+changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('8')
+hotfix_n.append('c')
+status_n.append(bugfix)
+date_n.append("2017/08/24")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Corrected more things (boss module specifically) with unresolved id changes
 ```""" + disclaimer
 
 changelog.append(current)
