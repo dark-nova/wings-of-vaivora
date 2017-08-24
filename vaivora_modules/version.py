@@ -1348,6 +1348,7 @@ current     = get_header() + \
 """```diff
 + Fixes:
   + Corrected more things (boss module specifically) with unresolved id changes
+  + Began removing some files for uniform use (secrets go into secrets.py; example file on github in vaivora_modules)
 ```""" + disclaimer
 
 changelog.append(current)
