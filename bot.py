@@ -458,6 +458,7 @@ async def sanitize_cmd(message, command_type):
                         except:
                             vdst[server_id].unset_channel(thing)
                             continue
+                        message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
                 # user
                 elif rgx_ch_member.search(ident):
                     for thing in things:
@@ -471,6 +472,7 @@ async def sanitize_cmd(message, command_type):
                             except:
                                 vdst[server_id].set_role(thing, "users")
                                 continue
+                        message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
                 # role
                 else:
                     for thing in things:
@@ -480,7 +482,7 @@ async def sanitize_cmd(message, command_type):
                         except:
                             vdst[server_id].rm_boss(thing)
                             continue
-                message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+                    message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
             await client.send_message(msg_channel, message_to_send + "```\n")
         # except:
         #     pass
