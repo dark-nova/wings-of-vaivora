@@ -482,7 +482,7 @@ async def sanitize_cmd(message, command_type):
                         except:
                             vdst[server_id].rm_boss(thing)
                             continue
-                    message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+                        message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
             await client.send_message(msg_channel, message_to_send + "```\n")
         # except:
         #     pass
