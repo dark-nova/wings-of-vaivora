@@ -105,7 +105,9 @@ welcome     =   """
 Thank you for inviting me to your server!
 I am a representative bot for the Wings of Vaivora, here to help you record your journey.
 Please read the following before continuing.
-""" + vaivora_modules.disclaimer.disclaimer
+""" + vaivora_modules.disclaimer.disclaimer + """
+Anyone may add this bot using the short URL: https://dark-nova.me/wings-of-vaivora
+"""
 
 ### END CONST
 
