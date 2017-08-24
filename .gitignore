@@ -1,7 +1,7 @@
 # files
 # private files
 discordtoken
-*secrets*
+*secrets.py
 wings*
 server.txt
 # files by extension
