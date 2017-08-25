@@ -1,9 +1,10 @@
 # files
+
 # private files
-discordtoken
 *secrets.py
 wings*
 server.txt
+
 # files by extension
 *~
 *.db*
@@ -11,18 +12,14 @@ server.txt
 *.old
 *.bak
 *.json
-*_test.py
 *.log
-# unrelated files
-index.py
-srvcheck.py
+
 
 # directories
+
 # private directories
 venv_ttos
-server_settings*
-db.backup
-db.bak
+
 # specific directories
 *__pycache__/*
 test
