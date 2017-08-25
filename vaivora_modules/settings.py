@@ -1327,6 +1327,8 @@ class Settings:
                     if f == self.rm_boss:
                         if not f(mention):
                             fail.append((mention, "'s `boss` role could not be unset.\n", "@" if kind == 'users' else "&"))
+                        else:
+                            ret_msg = warning + acknowledge + "Your role changes have been noted.\n"
                     elif not f(mention, kind, set_role):
                         fail.append((mention, "'s role could not be " + ("un" if set_role == role_none else "") + "set.\n", "@" if kind == 'users' else "&"))
                     else:
