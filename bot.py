@@ -63,7 +63,7 @@ rgx_meme            =   re.compile(r'pl(ea)?[sz]e?', re.IGNORECASE)
 rgx_ch_hash         =   re.compile(r'#')
 rgx_ch_member       =   re.compile(r'@')
 
-to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-><#]""", re.IGNORECASE)
+to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
 
 msg_sub             =   "Your subscription preference for changelogs has been updated:"
 
@@ -408,15 +408,18 @@ async def sanitize_cmd(message, command_type):
         return True
 
     elif command_type == command_settings:
-        #try:
+        set_cmd     =   command[0]
+        mention_u   =   [mention.id for mention in message.mentions]
+        mention_g   =   [mention.id for mention in message.role_mentions]
+        mention_c   =   [mention.id for mention in message.channel_mentions]
+        mention_a   =   mention_u + mention_g + mention_c
+        xargs       =   [c for c in command[1:] if c not in mention_a]
+        
         
         #def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
-        return_msg  = vdst[server_id].process_command(msg_ch_id, command[0], \
+        return_msg  = vdst[server_id].process_command(msg_ch_id, set_cmd, \
                                                       message.author.id, message.author.roles, \
-                                                      [mention.id for mention in message.mentions], \
-                                                      [mention.id for mention in message.role_mentions], \
-                                                      [mention.id for mention in message.channel_mentions], \
-                                                      xargs=command[1:])
+                                                      mention_u, mention_g, mention_c, xargs=xargs)
         
         # case 1: a list of str, len 1
         if len(return_msg) == 1:
