@@ -365,7 +365,7 @@ class Settings:
     settings['region']                  = dict()
     settings['region']['default']       = ''
     settings['role']                    = dict()
-    settings['role'][role_boss]            = []
+    settings['role'][role_boss]         = []
     talt_temporary                      = dict()
     talt_temporary_actual               = dict()
     settings['lock']                    = False
@@ -512,11 +512,10 @@ class Settings:
     def get_role(self, role=role_member):
         role_call = []
         if role == "boss":
-            utype = "role"
-        else:
-            utype = "users"
-            role_call.append((self.settings["group"][role], "&",))
-        role_call.append((self.settings[utype][role], "@",))
+            return self.settings['role'][role]
+        
+        role_call.append((self.settings["group"][role], "&",))
+        role_call.append((self.settings["users"][role], "@",))
         return role_call
 
     def get_role_user(self, user):
