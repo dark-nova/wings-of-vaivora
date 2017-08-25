@@ -1352,3 +1352,29 @@ current     = get_header() + \
 ```""" + disclaimer
 
 changelog.append(current)
+
+
+
+version_n.append('1')
+subver_n.append('8')
+hotfix_n.append('d')
+status_n.append(bugfix)
+date_n.append("2017/08/24")
+
+current     = get_header() + \
+"""```diff
++ Fixes:
+  + Boss role mention
+    * Thanks to Jiyuu for the bug report.
+
++ Upcoming fixes:
+  + Duplicate guild changelogs if person is server owner of more than 1 server
+
+I'm actually getting quite burnt out on this project. I feel like with the exception of one person, nobody actually cares about the person behind the project.
+
+I'm wearing thin, and I'm wearing thin _fast_.
+
+As of now, one more bugfix is planned but after that, the project will be indefinitely on hold. If you want to contribute, feel free and I can pull merge requests.
+```""" + disclaimer
+
+changelog.append(current)

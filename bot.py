@@ -590,7 +590,6 @@ async def check_databases():
                     # group mention
                     idx =   [ro.id for ro in srv.roles].index(uid)
                     role_str    +=  srv.roles[idx].mention
-
                 except:
                     try:
                         # user mention
