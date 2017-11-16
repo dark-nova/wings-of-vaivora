@@ -240,6 +240,7 @@ time_died       =   130
 time_died_330   =   420
 # hours!
 time_died_wb    =   4
+time_died_wb_ab =   2
 time_anchored   =   3
 time_anch_abom  =   1
 # minutes!
@@ -945,6 +946,9 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
        not target['boss'] in boss_spawn_02h and not target['boss'] in bosses_world:
         time_offset         =   timedelta(minutes=time_died)
         target['status']    =   status_died
+    elif rgx_st_died.match(status) and target['boss'] == "Abomination":
+        time_offset         =   timedelta(hours=time_died_wb_ab)
+        target['status']    =   status_died
     elif rgx_st_died.match(status) and target['boss'] in bosses_world:
         time_offset         =   timedelta(hours=time_died_wb)
         target['status']    =   status_died
@@ -1428,6 +1432,8 @@ def process_record(boss, status, time, boss_map, channel):
     elif boss in boss_spawn_02h:
         time_diff   =   timedelta(minutes=(-1*(time_died)))
     # world bosses
+    elif boss == "Abomination":
+        time_diff   =   timedelta(hours=(-1*(time_died_wb_ab)))
     elif boss in bosses_world:
         time_diff   =   timedelta(hours=(-1*(time_died_wb)))
     # demon lords
