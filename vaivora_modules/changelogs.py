@@ -1,4 +1,5 @@
 #vaivora_modules.changelogs
+import json
 import re
 
 ### BGN CONST
@@ -15,3 +16,11 @@ empty_line  =   re.compile(r'^[ ]*\n*$', re.IGNORECASE)
 ### END REGEX
 
 ### END CONST
+
+def get_specific_version(n):
+    # Args:
+    #     n (int): the index of the changelog to retrieve
+    
+    # iterate through changelogs dict. assign index based on age
+
+    # 

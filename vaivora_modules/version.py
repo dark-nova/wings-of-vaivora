@@ -1,16 +1,21 @@
+import json
+import os
 import re
 from vaivora_modules.disclaimer import disclaimer
 
-milestone   = "[m]"
-unstable    = "[n]" # nightly
-bugfix      = "[i]" # incremental
+json_file   =   "version.json"
+changelogs  =   dict()
 
-version_n   = []
-subver_n    = []
-hotfix_n    = []
-status_n    = []
-date_n      = []
-changelog   = []
+milestone   =   "[m]"
+unstable    =   "[n]" # nightly
+bugfix      =   "[i]" # incremental
+
+version_n   =   []
+subver_n    =   []
+hotfix_n    =   []
+status_n    =   []
+date_n      =   []
+changelog   =   []
 
 version_n.append('1')
 subver_n.append('0')
@@ -37,20 +42,15 @@ def check_revisions(srv_ver):
         hotfix  =   ''
         subver  =   asubver
     else:
-        hotfix = letter_check.group(0)
-        subver = rgx_letter.sub('', asubver)
+        hotfix  = letter_check.group(0)
+        subver  = rgx_letter.sub('', asubver)
 
     version_check     =   rgx_brackets.match(aversion)
     status            =   version_check.group(0)
     version           =   rgx_brackets.sub('', aversion)
 
-    while version_n[count]  >  version  or \
-          subver_n[count]   >  subver   or \
-          hotfix_n[count]   >  hotfix   or \
-          (version_n[count] == version  and \
-           subver_n[count]  == subver   and \
-           hotfix_n[count]  == hotfix   and \
-           compare_status(status_n[count], status)):
+    while version_n[count]  > version or subver_n[count] > subver or hotfix_n[count] > hotfix or \
+         (version_n[count] == version and subver_n[count] == subver and hotfix_n[count] == hotfix and compare_status(status_n[count], status)):
         count -= 1
 
     return count+1
@@ -81,7 +81,7 @@ def get_current_version():
 def get_header():
     return """```ini
 [Version:] """ + get_current_version() + """
-[Date:]    """ + date_n[-1] + """```"""
+[Date:]    """ + date_n[-1] + """```\n"""
 
 
 def get_index(st, v, su, h):
@@ -94,6 +94,30 @@ def get_index(st, v, su, h):
 
 def get_changelogs(idx=0):
     return changelog[idx:]
+
+
+# helper function to migrate from source to json
+# def log2json():
+#     # create if it does not exist
+#     if not os.path.isfile(json_file):
+#         open(json_file, 'w').close()
+
+#     for i in range(len(version_n)):
+#         hotfix  =   '0' if not hotfix_n[i] else hotfix_n[i]
+#         # iterate
+#         if not version_n[i] in changelogs.keys():
+#             changelogs[version_n[i]]    =   dict()
+#         if not subver_n[i] in changelogs[version_n[i]].keys():
+#             changelogs[version_n[i]][subver_n[i]]   =   dict()
+#         if not hotfix in changelogs[version_n[i]][subver_n[i]]:
+#             changelogs[version_n[i]][subver_n[i]][hotfix]  =   dict()
+#         if not 'status' in changelogs[version_n[i]][subver_n[i]][hotfix].keys():
+#             changelogs[version_n[i]][subver_n[i]][hotfix]['status']     =   status_n[i]
+#         if not 'changelog' in changelogs[version_n[i]][subver_n[i]][hotfix].keys():
+#             changelogs[version_n[i]][subver_n[i]][hotfix]['changelog']  =   changelog[i]
+
+#     with open(json_file, 'w') as jf:
+#         json.dump(changelogs, jf)
 
 
 current     = get_header() + \
@@ -1378,3 +1402,6 @@ As of now, one more bugfix is planned but after that, the project will be indefi
 ```""" + disclaimer
 
 changelog.append(current)
+
+
+log2json()
