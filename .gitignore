@@ -18,7 +18,7 @@ server.txt
 # directories
 
 # private directories
-venv_ttos
+venv_ttos # may delete if not necessary for deployment
 
 # specific directories
 *__pycache__/*
