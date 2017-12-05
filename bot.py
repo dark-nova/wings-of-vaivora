@@ -170,7 +170,7 @@ async def greet(server_id, server_owner):
 
     for vaivora_log in vaivora_modules.version.get_changelogs(nrevs):
         iters += 1
-        print(server_id, server_owner, ": receiving", iters, "logs out of", nrevs*-1)
+        print(server_id, '.', server_owner.id, ": receiving", iters, "logs out of", nrevs*-1)
         try:
             await client.send_message(server_owner, vaivora_log)
         except: # cannot send messages, ignore
@@ -589,7 +589,7 @@ async def check_databases():
                 try:
                     # group mention
                     idx =   [ro.id for ro in srv.roles].index(uid)
-                    role_str    +=  srv.roles[idx].mention
+                    role_str    +=  srv.roles[idx].mention + " "
                 except:
                     try:
                         # user mention
@@ -617,7 +617,7 @@ async def check_databases():
                     cur_channel = message[-1]
 
                     # replace time_str with server setting warning, eventually
-                    discord_message = role_str + " The following bosses will spawn within " + time_str + " minutes: ```python\n"
+                    discord_message = role_str + "The following bosses will spawn within " + time_str + " minutes: ```python\n"
                 discord_message += message[0]
             # flush
             discord_message += "```"
