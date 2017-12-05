@@ -1,3 +1,4 @@
+from operator import itemgetter
 import sqlite3
 
 # import additional constants
@@ -133,15 +134,21 @@ class Database:
         db_record = list()
         for boss in bosses:
             if channel:
-                self.cursor.execute((self.sql_select+self.sql_boss_world+self.sql_order), (boss, channel,))
+                self.cursor.execute((self.sql_select+self.sql_boss_world), (boss, channel,))
             else:
-                self.cursor.execute((self.sql_select+self.sql_boss_default+self.sql_order), (boss,))
+                self.cursor.execute((self.sql_select+self.sql_boss_default), (boss,))
             records = self.cursor.fetchall()
             for record in records:
                 db_record.append(tuple(record))
         self.save_db()
+        db_record   =   self.sort_db(db_record)
         # return a list of records
         return db_record
+
+
+    def sort_db(self, rec_db):
+        return sorted(rec_db, key=itemgetter(5,6,7,8,9), reverse=True)
+
 
 
     # @func:    update_db_boss(sqlite3.connect.cursor, dict)
