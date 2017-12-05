@@ -101,6 +101,7 @@ $settings set role member @Members
 ```bash
 "General"
 $help                   # prints this page
+```
 """
 
 welcome     =   """
