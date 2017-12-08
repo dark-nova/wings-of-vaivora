@@ -1403,5 +1403,5 @@ As of now, one more bugfix is planned but after that, the project will be indefi
 
 changelog.append(current)
 
-
 #log2json()
+
