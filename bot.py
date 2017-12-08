@@ -51,12 +51,20 @@ debug_file  = wings + "debug"       + log
 
 ####
 
+first_run           =   0
+
 command_boss        =   "boss"
 command_settings    =   "settings"
 
+msg_sub             =   "Your subscription preference for changelogs has been updated:"
+
+omae_wa_mou         =   "You are already " # dead
+
+### BGN REGEX
+
 rgx_help            =   re.compile(r'help', re.IGNORECASE)
 rgx_prefix          =   re.compile(r'^(va?i[bv]ora ,?|\$)', re.IGNORECASE)
-# this screws up with boss role if I remove the prefix
+# this screws up with boss role if I remove the prefix #### to investigate
 rgx_boss            =   re.compile(r'^(va?i[bv]ora ,?|\$)boss .+', re.IGNORECASE)
 rgx_settings        =   re.compile(r'settings .+', re.IGNORECASE)
 rgx_meme            =   re.compile(r'pl(ea)?[sz]e?', re.IGNORECASE)
@@ -65,9 +73,7 @@ rgx_ch_member       =   re.compile(r'@')
 
 to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
 
-msg_sub             =   "Your subscription preference for changelogs has been updated:"
-
-omae_wa_mou         =   "You are already " # dead
+### END REGEX
 
 msg_help            =   """
 Here are commands. Valid prefixes are `$` (dollar sign) and `Vaivora,<space>`,
@@ -122,7 +128,6 @@ def splitDblQuotesSpaces(command):
     lex.whitespace_split = True
     return list(lex)
 
-first_run           =   0
 
 # @func:    on_ready()
 # @return:
@@ -131,20 +136,17 @@ first_run           =   0
 async def on_ready():
     global first_run
     print("Logging in...")
-    print('Successsfully logged in as: ' + client.user.name + '#' + \
-          client.user.id + '. Ready!')
+    print('Successsfully logged in as: ' + client.user.name + '#' + client.user.id + '. Ready!')
     await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."), status=discord.Status.idle)
     first_run   +=  len(client.servers)
     nservs      =   str(first_run)
     await client.change_presence(game=discord.Game(name=("with files. Processing " + nservs + " guilds...")), status=discord.Status.dnd)
     for server in client.servers:
-        if server.unavailable:
-            first_run   -=  1
-            continue
-        vdbs[server.id]     = vaivora_modules.db.Database(server.id)
-        o_id                = server.owner.id
-        vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
-        await greet(server.id, server.owner)
+        if not server.unavailable:        
+            vdbs[server.id]     = vaivora_modules.db.Database(server.id)
+            o_id                = server.owner.id
+            vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
+            await greet(server.id, server.owner)
         first_run   -=  1
     await asyncio.sleep(1)
     first_run   =   0
@@ -268,6 +270,17 @@ async def on_message(message):
 # @return:
 #       True if succeeded, False otherwise
 async def check_subscription(user, mode="subscribe"):
+    """
+    :func:`check_subscription` checks if the user is subscribed.
+    This function may be moved to :mod:`vaivora_modules.changelogs` in the future.
+
+    Args:
+        user (discord.User): the user who requested his/her subscription status
+        mode (str): (default: )
+
+    Returns:
+        list: A list containing the users who have unsubscribed.
+    """
     file_unsub  = []
     file_sub    = []
     status      = True
