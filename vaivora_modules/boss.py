@@ -750,24 +750,20 @@ def check_maps(boss, maps):
         map_floor   =   map_match.group('floornumber')
         # extract target map string
         target_map  =   re.sub(map_floor, '', maps)
+
+    # default case; includes bosses in bosses_with_floors but unnumbered map
     else:
-        # default case; includes bosses in bosses_with_floors but unnumbered map
         target_map  =   maps
 
     for boss_map in boss_locs[boss]:
-        # map number detected, but not bosses_with_floors; must be bosses_with_some_floors
-        if map_floor:
-            if re.search(target_map, boss_map, re.IGNORECASE) and 
-               re.search(map_floor, boss_map, re.IGNORECASE):
-                if map_idx != -1:
-                    return -1
-                map_idx =   boss_locs[boss].index(boss_map)
-        else:
-            if re.search(target_map, boss_map, re.IGNORECASE):
-                if map_idx != -1:
-                    return -1 # too many matches
-                map_idx =   boss_locs[boss].index(boss_map)
-                
+        if re.search(target_map, boss_map, re.IGNORECASE):
+            if map_floor and not re.search(map_floor, boss_map, re.IGNORECASE):
+                continue
+            # multiple matched; invalid
+            if map_idx != -1:
+                return -1
+            map_idx =   boss_locs[boss].index(boss_map)
+
     return map_idx
 
 
