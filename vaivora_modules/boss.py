@@ -808,12 +808,17 @@ def get_bosses(boss_type):
     return "The following bosses are considered \"" + boss_type "\" bosses: ```python\n" +
            "#   " + '\n#   '.join(bosses_list[boss_type])
 
-# @func:    validate_channel(str) : int
-# @arg:
-#       boss: the name of the boss
-# @return:
-#       the channel parsed, or 1 (default) if ch could not be parsed or incorrect
+
 def validate_channel(ch):
+    """
+    :func:`validate_channel` validates a channel string
+
+    Args:
+        ch (str): the channel as string input by user
+
+    Returns:
+        int: the channel parsed, or 1 (default) if `ch` could not be parsed or was incorrect
+    """
     if rgx_channel.match(ch):
         return int(rgx_letters.sub('', ch))
     else:
