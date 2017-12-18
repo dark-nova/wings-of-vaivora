@@ -1,1 +1,316 @@
-{"1": {"0": {"0": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.0\n[Date:]    2017/03/29```\n```diff\n+ Added features:\n  + 'Wings of Vaivora' has been rewritten using a separate module for constants. Performance should subsequently be higher.\n  + The welcome message should now be clearer with a brighter display.\n\n- Upcoming changes:\n  + Previous modules will be migrated over to separate modules, like constants.\n  + Talt Tracker will now be prioritized.\n  + Custom settings, including the option to 'unsubscribe' from these notifications, will be implemented after.\n  + Custom permissions will also be included.\n```\n"}}, "1": {"0": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.1\n[Date:]    2017/04/09```\n```diff\n+ Added features:\n  + 'Wings of Vaivora' has been rewritten fully with the constants module in place.\n\n+ Fixes:\n  + Squished some bugs related to the migration of modules.\n  + Actually published this. Sorry for the delay on the downtime!\n\n- Upcoming changes:\n  + Talt Tracker to be developed next\n  + Custom settings, including the option to 'unsubscribe' from these notifications, will be implemented after.\n  + Custom permissions will also be included.\n```"}, "a": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.1a\n[Date:]    2017/04/09```\n```diff\n+ Fixes:\n  + Versioning corrected.\n```"}, "b": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.1b\n[Date:]    2017/04/09```\n```diff\n+ Fixes:\n  + Versioning _really_ corrected.\n  + Several bugs related to file creation also fixed.\n```"}, "c": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.1c\n[Date:]    2017/04/09```\n```diff\n+ Fixes:\n  + Fixed issues with databases not connecting.\n  + Fixed issues with commands.\n  + Stopped Wings of Vaivora from shouting changelogs everytime. (MAYBE.)\n    * Thanks to Jiyuu for the feedback on all this.\n```"}, "d": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.1d\n[Date:]    2017/04/10```\n```diff\n+ Fixes:\n  + Fixed issues with Deathweaver's map not recording.\n    * Thanks to Term for the bug report.\n```"}}, "2": {"0": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.2\n[Date:]    2017/04/10```\n```diff\n+ Fixes:\n  + Fixed issues with Deathweaver's map not recording. (For real!)\n    + Corrected some other issues with the code. No more duplicate Deathweaver entries, for example.\n  + Entries should be checked properly for time to prevent overlap.\n    + New error message for overlapping times.\n```"}, "a": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.2a\n[Date:]    2017/04/11```\n```diff\n+ Added features:\n  + Changed the changelog delivery to server owners. Changelogs will come in separate messages. Apologies if you don't want notifications!\n\n+ Fixes:\n  + Fixed logic with missing/broken references -- imported all the relevant modules.\n    + This may have impacted boss alerts. Sorry.\n```"}, "b": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.2b\n[Date:]    2017/04/11```\n```diff\n+ Fixes:\n  + Fixed logic with record files (not databases) that kept deleting contents.\n    + Sorry for the notifications. (Will be many like this for server owners... :( )\n  + Fixed issuee with Deathweaver. You are now required to list map for Deathweaver.\n    * Thanks to Term for the bug report, once again.\n```"}, "c": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.2c\n[Date:]    2017/04/12```\n```diff\n+ Fixes:\n  + Fixed a misreferenced variable that caused issues with recording bosses.\n    * Thanks to Kiito for the bug report.\n```"}, "d": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.2d\n[Date:]    2017/04/12```\n```diff\n+ Fixes:\n  + Identified the issue linked to records not reporting within threshold of 15 mminutes.\n    + Identified several other issues related to this.\n      + The \"no repeat\" file used to archive announced records was repeatedly erased. I suppose I learned a lesson in \"a\" and \"a+\" file modes.\n    * Thanks to Kiito for the bug report.\n```"}}, "3": {"0": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.3\n[Date:]    2017/04/19```\n```diff\n+ Added features:\n  + You can now query for boss aliases (less typing) and boss locations to scout for them better.\n    * Thanks to Jiyuu for the feature request.\n\n+ Fixes:\n  + Migrated boss modules out of the main script, and began the process of developing custom settings.\n\n- Upcoming changes:\n  + Talt Tracker. For real!\n  + Custom settings. This will be done by JSON within Python, most likely.\n  + A way to send bug reports. This will take awhile, but I intend to bake this into the script.\n```"}, "a": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.3a\n[Date:]    2017/04/19```\n```diff\n+ Fixes:\n  + Fixed issue with map and boss detection. Partial map names should now be interpreted correctly.\n    * Thanks to Jiyuu for the bug report.\n```"}, "b": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.3b\n[Date:]    2017/04/20```\n```diff\n+ Fixes:\n  + Fixed potential issue with Kubas interfering with boss reporting.\n  + Fixed issue with channel for world bosses not recording.\n```"}, "c": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.3c\n[Date:]    2017/04/21```\n```diff\n+ Fixes:\n  + Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.\n    * Thanks to Jiyuu and Wolfy for the bug report.\n```"}, "d": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.3d\n[Date:]    2017/04/21```\n```diff\n+ Fixes:\n  + Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.\n    * Thanks to Jiyuu and Wolfy for the bug report.\n```"}}, "4": {"0": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.4\n[Date:]    2017/04/21```\n```diff\n+ Added features:\n  + Added \"$subscribe\" and \"$unsubscribe\" to DM commands.\n    + You can subscribe to changelogs even if you're not a server owner.\n  + Added a small status to show when things are ready.\n    * Thanks to Jiyuu for the feature request.\n\n+ Fixes:\n  + Fixed issue with world bosses with no channel recorded as recorded as ch.0.\n\n- Upcoming changes:\n  + Talt T...I keep mentioning this.\n  + Ways to fetch changelogs\n  + Better help system, and DM commands including feedback\n```"}}, "5": {"0": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.5\n[Date:]    2017/04/22```\n```diff\n+ Added features:\n  + Added \"$help\" for commands. Give it a try in any channel or DM!\n\n+ Fixes:\n  + Added a small status to show when things are ready. Slightly better now.\n```"}, "a": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.5a\n[Date:]    2017/04/23```\n```diff\n+ Fixes:\n  + Corrected issue with specific deletions. Field boss records can now be deleted without issue.\n```"}, "b": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.5b\n[Date:]    2017/04/23```\n```diff\n+ Fixes:\n  + Corrected issue with adding to (un)subscriptions.\n    * Thanks to Wolfy for the bug report.\n```"}, "c": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.5c\n[Date:]    2017/05/08```\n```diff\n+ Fixes:\n  + Corrected issue with recording bosses on multiple channels.\n```"}, "d": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.5d\n[Date:]    2017/05/15```\n```diff\n+ Fixes:\n  + Corrected issue with some commands not printing.\n    + Subsequently, you may reeceive more than 1 message/response when you ask for help on a command.\n      * Thanks to Onesan for the bug report.\n```"}, "e": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.5e\n[Date:]    2017/05/19```\n```diff\n+ Fixes:\n  + Fixed argument count check. Preparing to condense some modules later for code clarity. Open Source SoonTM\n```"}, "f": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.5f\n[Date:]    2017/05/19```\n```diff\n+ Fixes:\n  + Revert previous \"fix\".\n```"}, "g": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.5g\n[Date:]    2017/06/06```\n```diff\n+ Fixes:\n  + Removed @here notification in preparation of custom setting. For now, you may use a role called \"Boss Hunter\" (caps important).\n```"}}, "6": {"0": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6\n[Date:]    2017/06/07```\n```diff\n+ Added features:\n  + Check out the new Settings module! [$settings help] for more info.\n```"}, "a": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6a\n[Date:]    2017/06/07```\n```diff\n+ Fixes:\n  + Corrected issues with Talt Tracker.\n```"}, "b": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6b\n[Date:]    2017/06/07```\n```diff\n+ Fixes:\n  + Corrected issues with Talt Tracker: issues with individual permission comparison fixed.\n    * Thanks to Sunshine for the bug report.\n```"}, "c": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6c\n[Date:]    2017/06/07```\n```diff\n+ Fixes:\n  + Added `$settings help`.\n```"}, "d": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6d\n[Date:]    2017/06/09```\n```diff\n+ Fixes:\n  + Corrected an issue with field boss entries not recording when map is omitted.\n    * Thanks to Wolfy for the bug report.\n```"}, "e": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6e\n[Date:]    2017/06/10```\n```diff\n+ Added features:\n  + Talt verification is now in place.\n    + $settings verify|validate [@user ...]\n    + $settings unverify|invalidate [@user ...]\n    + Leave the mentions blank to mass (in)validate. Suitable only for \"Authorized\" roles only.\n  + Changed an easter egg.\n```"}, "f": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6f\n[Date:]    2017/06/10```\n```diff\n+ Fixes:\n  + Corrected logic issue with assigning permissions.\n```"}, "g": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6g\n[Date:]    2017/06/10```\n```diff\n+ Added features:\n  + Correctly mentions people in \"boss\" specific features, if assigned \"boss\" role.\n```"}, "h": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6h\n[Date:]    2017/06/10```\n```diff\n+ Fixes:\n  + Identified and fixed issue with adding Talt for others. Was impromperly recorded to command user, not the target.\n```"}, "i": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6i\n[Date:]    2017/06/10```\n```diff\n+ Added features:\n  + \"$settings get talt all\" - to get all your guild's contribution\n  + \"$settings reset talt [@user ...]\" - to reset a user's contribution (to fix)\n  + \"$settings rebase\" - to rebuild Talt levels if you think something's wrong\n\n+ Fixes:\n  + Corrected issue with Guild Level corresponding to Talt.\n```"}, "j": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.6j\n[Date:]    2017/06/11```\n```diff\n+ Fixes:\n  + Fixed issues with member level & Talt contribution.\n```"}, "k": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.6k\n[Date:]    2017/06/11```\n```diff\n+ Fixes:\n  + Fixed issues with mentions on boss notice.\n    * Thanks to Galoal for the bug report.\n```"}, "l": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.6l\n[Date:]    2017/06/11```\n```diff\n+ Added features:\n  + Change release system from [milestone, nightly] to [milestone, nightly, bugfix]\n+ Fixes:\n  + Adjusted logic for mentioning group or users with boss alerts.\n```"}, "m": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.6m\n[Date:]    2017/06/14```\n```diff\n+ Fixes:\n  + Adjusted logic for mentioning group or users with boss alerts. For real this time.\n    + Please message Nova#6732 if you've had issues with this so it can be corrected.\n    * Thanks to Wolfy for the bug report and additional testing.\n```"}, "n": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.6n\n[Date:]    2017/06/15```\n```diff\n+ Added features:\n  + Better output for Talt commands.\n```"}, "o": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.6o\n[Date:]    2017/06/15```\n```diff\n+ Added features:\n  + Changed the vocabulary of \"add\"ing and \"set\"ting Talt.\n    + $settings set talt ... ; sets target's Talt directly.\n    + $settings add talt ... ; the former behavior of \"set talt\"; adds Talt.\n```"}, "p": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.6p\n[Date:]    2017/06/15```\n```diff\n+ Fixes:\n  + Corrected old boss record printing completely.\n    * Thanks to Wolfy for the bug report.\n```"}, "q": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.6q\n[Date:]    2017/06/18```\n```diff\n+ Fixes:\n  + Corrected an issue with \"anchor\" keyword for \"$boss\".\n\n- Upcoming changes:\n  + Code rewrite before publishing as open source. Estimated time: 1-2 weeks\n```"}, "r": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.6r\n[Date:]    2017/06/28```\n```diff\n+ Fixes:\n  + Server join issue.\n  + Talt Tracker issue for setting remainder Talt via \"$settings set (0-20) (current points)\".\n    + Send a DM to Nova#6732 if you've had issues with the Talt Tracker module.\n```"}}, "7": {"a": {"status": "[n]", "changelog": "```ini\n[Version:] [n]1.7a\n[Date:]    2017/07/01```\n```diff\n--- Formerly known as svn 2pre-1 ---\n+ Added features:\n  + Migrated boss module files together, mostly.\n```"}, "b": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7b\n[Date:]    2017/07/06```\n```diff\n--- Formerly known as svn 2pre-2 ---\n+ Added features:\n  + Boss module has been fully re-written.\n```"}, "c": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.7c\n[Date:]    2017/07/07```\n```diff\n--- Formerly known as svn 2pre-3 ---\n+ Added features:\n  + Boss module has been fully re-written.\n  + DB module has been re-written, partially. Probably won't need to re-write this in full.\n\n+ Fixes:\n  + Corrected issues with boss module after rewrite.\n\n- Upcoming changes:\n  + Settings module re-write.\n  + Open source Vaivora later\n```"}, "d": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.7d\n[Date:]    2017/07/07```\n```diff\n+ Fixes:\n  + Apologies for the multiple changes to Wings of Vaivora. You may receive fewer notifications now.\n\n- Reminder: you can unsubscribe using \"$unsubscribe\" in this DM.\n```"}, "e": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.7e\n[Date:]    2017/07/08```\n```diff\n+ Added features:\n  + Alerts will no longer use a redundant measure of text files in raw info to prevent repeat of duplicate mentions. And... (see Fixes)\n  \n+ Fixes:\n  + Alerts are now fixed. Sorry. This was long overdue and I've had issues and was occupied today. This was a couple issues:\n    1. not converting local time (Pacific Daylight Time) to server time (Eastern Daylight Time) - solved using timedelta(hours=-3)\n    2. not sending to the right channel, instead a str which discord.py made no sense of - solved using channel.id\n    3. not sending messages after input - solved using message.server instead of server_id\n    4. not sending messages on account of syntax/type error - solved by typing to str\n\n- Caveat to new alert/periodic check system: if bot goes offline and you had a record still valid, you will receive at least one duplicate mention. -\n```"}, "f": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7f\n[Date:]    2017/07/08```\n```diff\n+ Fixes:\n  + Alerts are now fixed for a couple more issues.\n    1. handling 12pm - solved using hour > 24 instead of hour > 23\n    2. handling empty maps - solved by assigning an unbound variable on the condition\n```"}, "g": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7g\n[Date:]    2017/07/08```\n```diff\n+ Fixes:\n  + Fixed logic errors with getting changelogs. Sorry, I know you guys must have gotten too many changelogs lately through PM, mostly repetitive.\n```"}, "h": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7h\n[Date:]    2017/07/08```\n```diff\n+ Fixes:\n  + Fixed logic errors with empty maps again -resolved with changing list with \"Map Unknown\" to empty string\n```"}, "i": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7i\n[Date:]    2017/07/08```\n```diff\n+ Fixes:\n  + Adjusted anchor message using boss list\n```"}, "j": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7j\n[Date:]    2017/07/20```\n```diff\n+ Fixes:\n  + Set exception handling for emojis to prevent total bot failure\n  + Adjusted 12:00am as a time\n    * Thanks to Wolfy for the bug report.\n```"}, "k": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7k\n[Date:]    2017/07/28```\n```diff\n+ Fixes:\n  + Set exception handling for tracking repeat messages\n+ Added featurse:\n  + Added Abomination anchor option. [$boss abom anchored 0:00] produces an alert 1 hour from the anchor time.\n    * Thanks to Wolfy for the request.\n```"}, "l": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.7l\n[Date:]    2017/07/31```\n```diff\n+ Added featurse:\n  + Adjusted field bosses and added two new records corresponding to \"Alluring Succubus\" and \"Frantic Molich\". Times are still hypothetical until the update arrives.\n```"}, "m": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7m\n[Date:]    2017/08/01```\n```diff\n+ Fixes:\n  + Adjusted time to spawn for lesser field bosses.\n    * Thanks to Wolfy for the contribution.\n```"}, "n": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7n\n[Date:]    2017/08/01```\n```diff\n+ Fixes:\n  + Adjusted time to spawn for Demon Lords.\n```"}, "o": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7o\n[Date:]    2017/08/01```\n```diff\n+ Fixes:\n  + Adjusted time to spawn for Demon Lords (for real now; issue was unnoticed arithmetic with regular time)\n  + $boss help works now\n```"}, "p": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7p\n[Date:]    2017/08/02```\n```diff\n+ Fixes:\n  + Changed Demon Lord grouping\n```"}, "q": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7q\n[Date:]    2017/08/02```\n```diff\n+ Fixes:\n  + Changed Demon Lord spawns for real -- I should really just re-evaluate myself\n```"}, "r": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7r\n[Date:]    2017/08/02```\n```diff\n+ Fixes:\n  + What is time? Seven hours, thirty minutes? Seven hours, twenty minutes? Seven hours, ten minutes? Seven hours?\n```"}, "s": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7s\n[Date:]    2017/08/03```\n```diff\n+ Fixes:\n  + Fixed 12pm errors.\n```"}, "t": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7t\n[Date:]    2017/08/08```\n```diff\n+ Fixes:\n  + Punctuation single quote\n\nI have been really busy with life. I don't think I can maintain this project as much as I could before, and I've also had issues motivating myself with this project.\n\nI will have the source readily available, at least one iteration of Wings of Vaivora, once I have completed rewriting Settings. Please bear with me. I know it's been a long while, and for those who may want to look into the code, I'm just one person maintaining everything.\n\nThank you.\n```"}, "u": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7u\n[Date:]    2017/08/08```\n```diff\n+ Fixes:\n  + Channel setting\n    * Thanks to Jiyuu for the bug report.\n```"}, "v": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.7v\n[Date:]    2017/08/09```\n```diff\n+ Fixes:\n  + World boss timers are back\n    * Thanks to Donada for the request.\n  + Demon Lord set A spawns fixed (Inner Wall District 8, etc)\n    * Thanks to Jiyuu, Wolfy, and beeju for the bug reports.\n```"}}, "8": {"0": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.8\n[Date:]    2017/08/23```\n```diff\n--- Major Revision ---\n+ Added features:\n  + Settings has been fully rewritten, so that means I can push this as open source.\n- Github: https://github.com/dark-nova/wings-of-vaivora\n  + Some \"fun\" easter eggs had to be removed to follow the new Discord Bot API.\n  + Similarly, please pay attention to the notice at the bottom of this.\n    + I know this will bother some of you who have unsubscribed, but this will be done once.\n  + Boss timers should now be sorted by time descending.\n    * Thanks to Jiyuu for the feature request.\n\n+ Fixes:\n  + Corrected an unmentioned bug with wrong argument position for `$boss`\n\nThank you for putting up with this project. -- Nova#6732\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"}, "a": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.8a\n[Date:]    2017/08/23```\n```diff\n+ Fixes:\n  + Fixed issue with boss role in settings\n    * Thanks to Jiyuu for the bug report.\n  + Closed an open condition that led to exceptions\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"}, "b": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.8b\n[Date:]    2017/08/23```\n```diff\n+ Fixes:\n  + Identified an issue with discord.py ids no longer having identifying punctuation, and fixed with a workaround\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"}, "c": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.8c\n[Date:]    2017/08/24```\n```diff\n+ Fixes:\n  + Corrected more things (boss module specifically) with unresolved id changes\n  + Began removing some files for uniform use (secrets go into secrets.py; example file on github in vaivora_modules)\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"}, "d": {"status": "[i]", "changelog": "```ini\n[Version:] [i]1.8d\n[Date:]    2017/08/24```\n```diff\n+ Fixes:\n  + Boss role mention\n    * Thanks to Jiyuu for the bug report.\n\n+ Upcoming fixes:\n  + Duplicate guild changelogs if person is server owner of more than 1 server\n\nI'm actually getting quite burnt out on this project. I feel like with the exception of one person, nobody actually cares about the person behind the project.\n\nI'm wearing thin, and I'm wearing thin _fast_.\n\nAs of now, one more bugfix is planned but after that, the project will be indefinitely on hold. If you want to contribute, feel free and I can pull merge requests.\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"}, "e": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.8e\n[Date:]    2017/12/04\n``````diff\n+ The following change has been implemented, not affecting Wings of Vaivora directly:\n  + add_changelog.py has been added to faciliate new changelog additions.\n  + Changelogs have also been migrated from a simple txt implementation to json.\n  + add_changelogs.py will be undergoing some additional changes later as well.\n```"}}, "9": {"": {"status": "[m]", "changelog": "```ini\n[Version:] [m]1.9\n[Date:]    2017/12/17\n``````diff\n+ Updated boss maps (demon lords are now categorized as \"demon\" bosses)\n*  Thanks to Term for the confirmed information on boss timers\n```"}}}}
+{
+    "1": {
+        "0": {
+            "0": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.0\n[Date:]    2017/03/29```\n```diff\n+ Added features:\n  + 'Wings of Vaivora' has been rewritten using a separate module for constants. Performance should subsequently be higher.\n  + The welcome message should now be clearer with a brighter display.\n\n- Upcoming changes:\n  + Previous modules will be migrated over to separate modules, like constants.\n  + Talt Tracker will now be prioritized.\n  + Custom settings, including the option to 'unsubscribe' from these notifications, will be implemented after.\n  + Custom permissions will also be included.\n```\n"
+            }
+        },
+        "1": {
+            "0": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.1\n[Date:]    2017/04/09```\n```diff\n+ Added features:\n  + 'Wings of Vaivora' has been rewritten fully with the constants module in place.\n\n+ Fixes:\n  + Squished some bugs related to the migration of modules.\n  + Actually published this. Sorry for the delay on the downtime!\n\n- Upcoming changes:\n  + Talt Tracker to be developed next\n  + Custom settings, including the option to 'unsubscribe' from these notifications, will be implemented after.\n  + Custom permissions will also be included.\n```"
+            },
+            "a": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.1a\n[Date:]    2017/04/09```\n```diff\n+ Fixes:\n  + Versioning corrected.\n```"
+            },
+            "b": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.1b\n[Date:]    2017/04/09```\n```diff\n+ Fixes:\n  + Versioning _really_ corrected.\n  + Several bugs related to file creation also fixed.\n```"
+            },
+            "c": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.1c\n[Date:]    2017/04/09```\n```diff\n+ Fixes:\n  + Fixed issues with databases not connecting.\n  + Fixed issues with commands.\n  + Stopped Wings of Vaivora from shouting changelogs everytime. (MAYBE.)\n    * Thanks to Jiyuu for the feedback on all this.\n```"
+            },
+            "d": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.1d\n[Date:]    2017/04/10```\n```diff\n+ Fixes:\n  + Fixed issues with Deathweaver's map not recording.\n    * Thanks to Term for the bug report.\n```"
+            }
+        },
+        "2": {
+            "0": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.2\n[Date:]    2017/04/10```\n```diff\n+ Fixes:\n  + Fixed issues with Deathweaver's map not recording. (For real!)\n    + Corrected some other issues with the code. No more duplicate Deathweaver entries, for example.\n  + Entries should be checked properly for time to prevent overlap.\n    + New error message for overlapping times.\n```"
+            },
+            "a": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.2a\n[Date:]    2017/04/11```\n```diff\n+ Added features:\n  + Changed the changelog delivery to server owners. Changelogs will come in separate messages. Apologies if you don't want notifications!\n\n+ Fixes:\n  + Fixed logic with missing/broken references -- imported all the relevant modules.\n    + This may have impacted boss alerts. Sorry.\n```"
+            },
+            "b": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.2b\n[Date:]    2017/04/11```\n```diff\n+ Fixes:\n  + Fixed logic with record files (not databases) that kept deleting contents.\n    + Sorry for the notifications. (Will be many like this for server owners... :( )\n  + Fixed issuee with Deathweaver. You are now required to list map for Deathweaver.\n    * Thanks to Term for the bug report, once again.\n```"
+            },
+            "c": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.2c\n[Date:]    2017/04/12```\n```diff\n+ Fixes:\n  + Fixed a misreferenced variable that caused issues with recording bosses.\n    * Thanks to Kiito for the bug report.\n```"
+            },
+            "d": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.2d\n[Date:]    2017/04/12```\n```diff\n+ Fixes:\n  + Identified the issue linked to records not reporting within threshold of 15 mminutes.\n    + Identified several other issues related to this.\n      + The \"no repeat\" file used to archive announced records was repeatedly erased. I suppose I learned a lesson in \"a\" and \"a+\" file modes.\n    * Thanks to Kiito for the bug report.\n```"
+            }
+        },
+        "3": {
+            "0": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.3\n[Date:]    2017/04/19```\n```diff\n+ Added features:\n  + You can now query for boss aliases (less typing) and boss locations to scout for them better.\n    * Thanks to Jiyuu for the feature request.\n\n+ Fixes:\n  + Migrated boss modules out of the main script, and began the process of developing custom settings.\n\n- Upcoming changes:\n  + Talt Tracker. For real!\n  + Custom settings. This will be done by JSON within Python, most likely.\n  + A way to send bug reports. This will take awhile, but I intend to bake this into the script.\n```"
+            },
+            "a": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.3a\n[Date:]    2017/04/19```\n```diff\n+ Fixes:\n  + Fixed issue with map and boss detection. Partial map names should now be interpreted correctly.\n    * Thanks to Jiyuu for the bug report.\n```"
+            },
+            "b": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.3b\n[Date:]    2017/04/20```\n```diff\n+ Fixes:\n  + Fixed potential issue with Kubas interfering with boss reporting.\n  + Fixed issue with channel for world bosses not recording.\n```"
+            },
+            "c": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.3c\n[Date:]    2017/04/21```\n```diff\n+ Fixes:\n  + Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.\n    * Thanks to Jiyuu and Wolfy for the bug report.\n```"
+            },
+            "d": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.3d\n[Date:]    2017/04/21```\n```diff\n+ Fixes:\n  + Fixed issue with Ellaganos not recording. Possibly some other bosses were impacted.\n    * Thanks to Jiyuu and Wolfy for the bug report.\n```"
+            }
+        },
+        "4": {
+            "0": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.4\n[Date:]    2017/04/21```\n```diff\n+ Added features:\n  + Added \"$subscribe\" and \"$unsubscribe\" to DM commands.\n    + You can subscribe to changelogs even if you're not a server owner.\n  + Added a small status to show when things are ready.\n    * Thanks to Jiyuu for the feature request.\n\n+ Fixes:\n  + Fixed issue with world bosses with no channel recorded as recorded as ch.0.\n\n- Upcoming changes:\n  + Talt T...I keep mentioning this.\n  + Ways to fetch changelogs\n  + Better help system, and DM commands including feedback\n```"
+            }
+        },
+        "5": {
+            "0": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.5\n[Date:]    2017/04/22```\n```diff\n+ Added features:\n  + Added \"$help\" for commands. Give it a try in any channel or DM!\n\n+ Fixes:\n  + Added a small status to show when things are ready. Slightly better now.\n```"
+            },
+            "a": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.5a\n[Date:]    2017/04/23```\n```diff\n+ Fixes:\n  + Corrected issue with specific deletions. Field boss records can now be deleted without issue.\n```"
+            },
+            "b": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.5b\n[Date:]    2017/04/23```\n```diff\n+ Fixes:\n  + Corrected issue with adding to (un)subscriptions.\n    * Thanks to Wolfy for the bug report.\n```"
+            },
+            "c": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.5c\n[Date:]    2017/05/08```\n```diff\n+ Fixes:\n  + Corrected issue with recording bosses on multiple channels.\n```"
+            },
+            "d": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.5d\n[Date:]    2017/05/15```\n```diff\n+ Fixes:\n  + Corrected issue with some commands not printing.\n    + Subsequently, you may reeceive more than 1 message/response when you ask for help on a command.\n      * Thanks to Onesan for the bug report.\n```"
+            },
+            "e": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.5e\n[Date:]    2017/05/19```\n```diff\n+ Fixes:\n  + Fixed argument count check. Preparing to condense some modules later for code clarity. Open Source SoonTM\n```"
+            },
+            "f": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.5f\n[Date:]    2017/05/19```\n```diff\n+ Fixes:\n  + Revert previous \"fix\".\n```"
+            },
+            "g": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.5g\n[Date:]    2017/06/06```\n```diff\n+ Fixes:\n  + Removed @here notification in preparation of custom setting. For now, you may use a role called \"Boss Hunter\" (caps important).\n```"
+            }
+        },
+        "6": {
+            "0": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6\n[Date:]    2017/06/07```\n```diff\n+ Added features:\n  + Check out the new Settings module! [$settings help] for more info.\n```"
+            },
+            "a": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6a\n[Date:]    2017/06/07```\n```diff\n+ Fixes:\n  + Corrected issues with Talt Tracker.\n```"
+            },
+            "b": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6b\n[Date:]    2017/06/07```\n```diff\n+ Fixes:\n  + Corrected issues with Talt Tracker: issues with individual permission comparison fixed.\n    * Thanks to Sunshine for the bug report.\n```"
+            },
+            "c": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6c\n[Date:]    2017/06/07```\n```diff\n+ Fixes:\n  + Added `$settings help`.\n```"
+            },
+            "d": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6d\n[Date:]    2017/06/09```\n```diff\n+ Fixes:\n  + Corrected an issue with field boss entries not recording when map is omitted.\n    * Thanks to Wolfy for the bug report.\n```"
+            },
+            "e": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6e\n[Date:]    2017/06/10```\n```diff\n+ Added features:\n  + Talt verification is now in place.\n    + $settings verify|validate [@user ...]\n    + $settings unverify|invalidate [@user ...]\n    + Leave the mentions blank to mass (in)validate. Suitable only for \"Authorized\" roles only.\n  + Changed an easter egg.\n```"
+            },
+            "f": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6f\n[Date:]    2017/06/10```\n```diff\n+ Fixes:\n  + Corrected logic issue with assigning permissions.\n```"
+            },
+            "g": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6g\n[Date:]    2017/06/10```\n```diff\n+ Added features:\n  + Correctly mentions people in \"boss\" specific features, if assigned \"boss\" role.\n```"
+            },
+            "h": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6h\n[Date:]    2017/06/10```\n```diff\n+ Fixes:\n  + Identified and fixed issue with adding Talt for others. Was impromperly recorded to command user, not the target.\n```"
+            },
+            "i": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6i\n[Date:]    2017/06/10```\n```diff\n+ Added features:\n  + \"$settings get talt all\" - to get all your guild's contribution\n  + \"$settings reset talt [@user ...]\" - to reset a user's contribution (to fix)\n  + \"$settings rebase\" - to rebuild Talt levels if you think something's wrong\n\n+ Fixes:\n  + Corrected issue with Guild Level corresponding to Talt.\n```"
+            },
+            "j": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.6j\n[Date:]    2017/06/11```\n```diff\n+ Fixes:\n  + Fixed issues with member level & Talt contribution.\n```"
+            },
+            "k": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.6k\n[Date:]    2017/06/11```\n```diff\n+ Fixes:\n  + Fixed issues with mentions on boss notice.\n    * Thanks to Galoal for the bug report.\n```"
+            },
+            "l": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.6l\n[Date:]    2017/06/11```\n```diff\n+ Added features:\n  + Change release system from [milestone, nightly] to [milestone, nightly, bugfix]\n+ Fixes:\n  + Adjusted logic for mentioning group or users with boss alerts.\n```"
+            },
+            "m": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.6m\n[Date:]    2017/06/14```\n```diff\n+ Fixes:\n  + Adjusted logic for mentioning group or users with boss alerts. For real this time.\n    + Please message Nova#6732 if you've had issues with this so it can be corrected.\n    * Thanks to Wolfy for the bug report and additional testing.\n```"
+            },
+            "n": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.6n\n[Date:]    2017/06/15```\n```diff\n+ Added features:\n  + Better output for Talt commands.\n```"
+            },
+            "o": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.6o\n[Date:]    2017/06/15```\n```diff\n+ Added features:\n  + Changed the vocabulary of \"add\"ing and \"set\"ting Talt.\n    + $settings set talt ... ; sets target's Talt directly.\n    + $settings add talt ... ; the former behavior of \"set talt\"; adds Talt.\n```"
+            },
+            "p": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.6p\n[Date:]    2017/06/15```\n```diff\n+ Fixes:\n  + Corrected old boss record printing completely.\n    * Thanks to Wolfy for the bug report.\n```"
+            },
+            "q": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.6q\n[Date:]    2017/06/18```\n```diff\n+ Fixes:\n  + Corrected an issue with \"anchor\" keyword for \"$boss\".\n\n- Upcoming changes:\n  + Code rewrite before publishing as open source. Estimated time: 1-2 weeks\n```"
+            },
+            "r": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.6r\n[Date:]    2017/06/28```\n```diff\n+ Fixes:\n  + Server join issue.\n  + Talt Tracker issue for setting remainder Talt via \"$settings set (0-20) (current points)\".\n    + Send a DM to Nova#6732 if you've had issues with the Talt Tracker module.\n```"
+            }
+        },
+        "7": {
+            "a": {
+                "status": "[n]",
+                "changelog": "```ini\n[Version:] [n]1.7a\n[Date:]    2017/07/01```\n```diff\n--- Formerly known as svn 2pre-1 ---\n+ Added features:\n  + Migrated boss module files together, mostly.\n```"
+            },
+            "b": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7b\n[Date:]    2017/07/06```\n```diff\n--- Formerly known as svn 2pre-2 ---\n+ Added features:\n  + Boss module has been fully re-written.\n```"
+            },
+            "c": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.7c\n[Date:]    2017/07/07```\n```diff\n--- Formerly known as svn 2pre-3 ---\n+ Added features:\n  + Boss module has been fully re-written.\n  + DB module has been re-written, partially. Probably won't need to re-write this in full.\n\n+ Fixes:\n  + Corrected issues with boss module after rewrite.\n\n- Upcoming changes:\n  + Settings module re-write.\n  + Open source Vaivora later\n```"
+            },
+            "d": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.7d\n[Date:]    2017/07/07```\n```diff\n+ Fixes:\n  + Apologies for the multiple changes to Wings of Vaivora. You may receive fewer notifications now.\n\n- Reminder: you can unsubscribe using \"$unsubscribe\" in this DM.\n```"
+            },
+            "e": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.7e\n[Date:]    2017/07/08```\n```diff\n+ Added features:\n  + Alerts will no longer use a redundant measure of text files in raw info to prevent repeat of duplicate mentions. And... (see Fixes)\n  \n+ Fixes:\n  + Alerts are now fixed. Sorry. This was long overdue and I've had issues and was occupied today. This was a couple issues:\n    1. not converting local time (Pacific Daylight Time) to server time (Eastern Daylight Time) - solved using timedelta(hours=-3)\n    2. not sending to the right channel, instead a str which discord.py made no sense of - solved using channel.id\n    3. not sending messages after input - solved using message.server instead of server_id\n    4. not sending messages on account of syntax/type error - solved by typing to str\n\n- Caveat to new alert/periodic check system: if bot goes offline and you had a record still valid, you will receive at least one duplicate mention. -\n```"
+            },
+            "f": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7f\n[Date:]    2017/07/08```\n```diff\n+ Fixes:\n  + Alerts are now fixed for a couple more issues.\n    1. handling 12pm - solved using hour > 24 instead of hour > 23\n    2. handling empty maps - solved by assigning an unbound variable on the condition\n```"
+            },
+            "g": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7g\n[Date:]    2017/07/08```\n```diff\n+ Fixes:\n  + Fixed logic errors with getting changelogs. Sorry, I know you guys must have gotten too many changelogs lately through PM, mostly repetitive.\n```"
+            },
+            "h": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7h\n[Date:]    2017/07/08```\n```diff\n+ Fixes:\n  + Fixed logic errors with empty maps again -resolved with changing list with \"Map Unknown\" to empty string\n```"
+            },
+            "i": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7i\n[Date:]    2017/07/08```\n```diff\n+ Fixes:\n  + Adjusted anchor message using boss list\n```"
+            },
+            "j": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7j\n[Date:]    2017/07/20```\n```diff\n+ Fixes:\n  + Set exception handling for emojis to prevent total bot failure\n  + Adjusted 12:00am as a time\n    * Thanks to Wolfy for the bug report.\n```"
+            },
+            "k": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7k\n[Date:]    2017/07/28```\n```diff\n+ Fixes:\n  + Set exception handling for tracking repeat messages\n+ Added featurse:\n  + Added Abomination anchor option. [$boss abom anchored 0:00] produces an alert 1 hour from the anchor time.\n    * Thanks to Wolfy for the request.\n```"
+            },
+            "l": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.7l\n[Date:]    2017/07/31```\n```diff\n+ Added featurse:\n  + Adjusted field bosses and added two new records corresponding to \"Alluring Succubus\" and \"Frantic Molich\". Times are still hypothetical until the update arrives.\n```"
+            },
+            "m": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7m\n[Date:]    2017/08/01```\n```diff\n+ Fixes:\n  + Adjusted time to spawn for lesser field bosses.\n    * Thanks to Wolfy for the contribution.\n```"
+            },
+            "n": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7n\n[Date:]    2017/08/01```\n```diff\n+ Fixes:\n  + Adjusted time to spawn for Demon Lords.\n```"
+            },
+            "o": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7o\n[Date:]    2017/08/01```\n```diff\n+ Fixes:\n  + Adjusted time to spawn for Demon Lords (for real now; issue was unnoticed arithmetic with regular time)\n  + $boss help works now\n```"
+            },
+            "p": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7p\n[Date:]    2017/08/02```\n```diff\n+ Fixes:\n  + Changed Demon Lord grouping\n```"
+            },
+            "q": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7q\n[Date:]    2017/08/02```\n```diff\n+ Fixes:\n  + Changed Demon Lord spawns for real -- I should really just re-evaluate myself\n```"
+            },
+            "r": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7r\n[Date:]    2017/08/02```\n```diff\n+ Fixes:\n  + What is time? Seven hours, thirty minutes? Seven hours, twenty minutes? Seven hours, ten minutes? Seven hours?\n```"
+            },
+            "s": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7s\n[Date:]    2017/08/03```\n```diff\n+ Fixes:\n  + Fixed 12pm errors.\n```"
+            },
+            "t": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7t\n[Date:]    2017/08/08```\n```diff\n+ Fixes:\n  + Punctuation single quote\n\nI have been really busy with life. I don't think I can maintain this project as much as I could before, and I've also had issues motivating myself with this project.\n\nI will have the source readily available, at least one iteration of Wings of Vaivora, once I have completed rewriting Settings. Please bear with me. I know it's been a long while, and for those who may want to look into the code, I'm just one person maintaining everything.\n\nThank you.\n```"
+            },
+            "u": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7u\n[Date:]    2017/08/08```\n```diff\n+ Fixes:\n  + Channel setting\n    * Thanks to Jiyuu for the bug report.\n```"
+            },
+            "v": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.7v\n[Date:]    2017/08/09```\n```diff\n+ Fixes:\n  + World boss timers are back\n    * Thanks to Donada for the request.\n  + Demon Lord set A spawns fixed (Inner Wall District 8, etc)\n    * Thanks to Jiyuu, Wolfy, and beeju for the bug reports.\n```"
+            }
+        },
+        "8": {
+            "0": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.8\n[Date:]    2017/08/23```\n```diff\n--- Major Revision ---\n+ Added features:\n  + Settings has been fully rewritten, so that means I can push this as open source.\n- Github: https://github.com/dark-nova/wings-of-vaivora\n  + Some \"fun\" easter eggs had to be removed to follow the new Discord Bot API.\n  + Similarly, please pay attention to the notice at the bottom of this.\n    + I know this will bother some of you who have unsubscribed, but this will be done once.\n  + Boss timers should now be sorted by time descending.\n    * Thanks to Jiyuu for the feature request.\n\n+ Fixes:\n  + Corrected an unmentioned bug with wrong argument position for `$boss`\n\nThank you for putting up with this project. -- Nova#6732\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"
+            },
+            "a": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.8a\n[Date:]    2017/08/23```\n```diff\n+ Fixes:\n  + Fixed issue with boss role in settings\n    * Thanks to Jiyuu for the bug report.\n  + Closed an open condition that led to exceptions\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"
+            },
+            "b": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.8b\n[Date:]    2017/08/23```\n```diff\n+ Fixes:\n  + Identified an issue with discord.py ids no longer having identifying punctuation, and fixed with a workaround\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"
+            },
+            "c": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.8c\n[Date:]    2017/08/24```\n```diff\n+ Fixes:\n  + Corrected more things (boss module specifically) with unresolved id changes\n  + Began removing some files for uniform use (secrets go into secrets.py; example file on github in vaivora_modules)\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"
+            },
+            "d": {
+                "status": "[i]",
+                "changelog": "```ini\n[Version:] [i]1.8d\n[Date:]    2017/08/24```\n```diff\n+ Fixes:\n  + Boss role mention\n    * Thanks to Jiyuu for the bug report.\n\n+ Upcoming fixes:\n  + Duplicate guild changelogs if person is server owner of more than 1 server\n\nI'm actually getting quite burnt out on this project. I feel like with the exception of one person, nobody actually cares about the person behind the project.\n\nI'm wearing thin, and I'm wearing thin _fast_.\n\nAs of now, one more bugfix is planned but after that, the project will be indefinitely on hold. If you want to contribute, feel free and I can pull merge requests.\n```\n```diff\n+ By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.\n- If you disagree, please revoke authorization for Wings of Vaivora.\n--- Terms ---\n--- 2017/08/22, v.1 ---\n+ Data is not collected from users in an identifiable way. All data stored is in the form of IDs generated by discord.py.\n- However, please be aware that features later may involve personally identifiable data collection.\n-   Wings of Vaivora will have changes to the disclaimer for each of these updates. It is up to you to allow or deny.\n```\n\n"
+            },
+            "e": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.8e\n[Date:]    2017/12/04\n``````diff\n+ The following change has been implemented, not affecting Wings of Vaivora directly:\n  + add_changelog.py has been added to faciliate new changelog additions.\n  + Changelogs have also been migrated from a simple txt implementation to json.\n  + add_changelogs.py will be undergoing some additional changes later as well.\n```"
+            }
+        },
+        "9": {
+            "": {
+                "status": "[m]",
+                "changelog": "```ini\n[Version:] [m]1.9\n[Date:]    2017/12/17\n``````diff\n+ Updated boss maps (demon lords are now categorized as \"demon\" bosses)\n*  Thanks to Term for the confirmed information on boss timers\n```"
+            }
+        }
+    }
+}
