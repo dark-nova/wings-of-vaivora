@@ -727,7 +727,7 @@ def check_boss(entry):
 
 def check_maps(boss, maps):
     """
-    :func:`check_maps` checks whether a string refers to a valid map
+    :func:`check_maps` checks whether a string refers to a valid map.
 
     Args:
         boss (str): the valid boss to check
@@ -769,7 +769,7 @@ def check_maps(boss, maps):
 
 def get_syns(boss):
     """
-    :func:`get_syns` gets the synonyms of a valid boss
+    :func:`get_syns` gets the synonyms of a valid boss.
 
     Args:
         boss (str): the string to get the boss's synonyms
@@ -783,7 +783,7 @@ def get_syns(boss):
 
 def get_maps(boss):
     """
-    :func:`get_maps` gets the maps of a valid boss
+    :func:`get_maps` gets the maps of a valid boss.
 
     Args:
         boss (str): the valid boss to get maps
@@ -811,7 +811,7 @@ def get_bosses(boss_type):
 
 def validate_channel(ch):
     """
-    :func:`validate_channel` validates a channel string
+    :func:`validate_channel` validates a channel string.
 
     Args:
         ch (str): the channel as string input by user
@@ -825,17 +825,15 @@ def validate_channel(ch):
         return 1
 
 
-# @func:    process_command(str, str, list) : list
-# @arg:
-#       server_id : str
-#           id of the server of the originating message
-#       msg_channel : str
-#           id of the channel of the originating message
-#       arg_list : list
-#           list of arguments supplied for the command
-# @return:
-#       an appropriate message for success or fail of command
 def process_command(server_id, msg_channel, arg_list):
+    """
+    :func:`process_command` processes a boss command input by the user.
+
+    Args:
+        server_id (str): the id of the server of the originating message
+        msg_channel (str): the id of the channel of the originating message (belonging to server of `server_id`)
+        arg_list (list): the list of arguments supplied for the command, all str
+    """
     if not vaivora_modules.settings.Settings(server_id).is_ch_type(msg_channel, channel_boss):
         return [""] # silently deny
 
@@ -904,23 +902,21 @@ def process_command(server_id, msg_channel, arg_list):
         return arg_list[1] + " is invalid for `$boss`, argument position 2.\n" + msg_help
 
 
-# @func:    process_cmd_status(str, str, str, str, str, list) : str
-# @arg:
-#       server_id : str
-#           id of the server of the originating message
-#       msg_channel : str
-#           id of the channel of the originating message
-#       boss : str
-#           the boss in question
-#       status : str
-#           the boss's status, or the status command
-#       time : str
-#           time represented for the associated event
-#       opt_list : list
-#           list containing optional parameters. may be null.
-# @return:
-#       an appropriate message for success or fail of command
 def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
+    """
+    :func:`process_cmd_status` processes a specific boss command: status related to recording.
+
+    Args:
+        server_id (str): the id of the server of the originating message
+        msg_channel (str): the id of the channel of the originating message (belonging to server of `server_id`)
+        boss (str): the boss in question
+        status (str): the boss's status, or the status command
+        time (str): time represented for the associated event
+        opt_list (list): a list containing optional parameters; may be null
+
+    Returns:
+        str: an appropriate message for success or fail of command, e.g. boss data recorded
+    """
     offset      =   0
     target      =   dict()
 
@@ -1058,22 +1054,20 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         return "Your command could not be processed. It appears this record overlaps too closely with another.\n" + msg_help
 
 
-# @func:    process_cmd_status(str, str, str, str, str, list) : str
-# @arg:
-#       server_id : str
-#           id of the server of the originating message
-#       msg_channel : str
-#           id of the channel of the originating message
-#       bosses : list
-#           the bosses/target in question
-#       entry : str
-#           the entry command
-#       opt_list : list
-#           (optional) (default: None)
-#           Contains extra parameters 'map' and/or 'channel'
-# @return:
-#       an appropriate message for success or fail of command
 def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
+    """
+    :func:`process_cmd_entry` processes a specific boss command: entry to retrieve records.
+
+    Args:
+        server_id (str): the id of the server of the originating message
+        msg_channel (str): the id of the channel of the originating message (belonging to server of `server_id`)
+        bosses (list): a list of bosses to check
+        entry (str): the entry command (list, erase)
+        opt_list (list): (default: None) a list containing optional parameters; may be null; 'map' or 'channel' may be provided
+
+    Returns:
+        str: an appropriate message for success or fail of command, e.g. confirmation or list of entries
+    """
     # all bosses, no options
     if rgx_erase.match(entry) and not opt_list and tg_bosses == bosses:
         if vaivora_modules.db.Database(server_id).rm_entry_db_boss():
@@ -1211,15 +1205,17 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
         return '\n'.join(valid_boss_records)
 
 
-# @func:    process_cmd_query(str, str, str, str) : str
-# @arg:
-#       boss : str
-#           the boss in question
-#       query: str
-#           the query command, i.e. aliases or maps
-# @return:
-#       an appropriate message for success or fail of command
 def process_cmd_query(tg_boss, query):
+    """
+    :func:`process_cmd_query` processes a query relating to bosses.
+
+    Args:
+        tg_boss (str): the target boss
+        query (str): the query (synonyms, maps)
+
+    Returns:
+        str: an appropriate message for success or fail of command, i.e. maps or aliases
+    """
     # $boss [boss] syns
     if rgx_q_syn.match(query):
         return get_syns(tg_boss)
@@ -1244,21 +1240,20 @@ def process_cmd_type(boss_type):
         return ""
 
 
-# @func:    process_cmd_status(str, str, str, list, str, list) : str
-# @arg:
-#       server_id : str
-#           id of the server of the originating message
-#       msg_channel : str
-#           id of the channel of the originating message
-#       tg_bosses : list
-#           the bosses in question
-#       keyword : str
-#           the special command keyword
-#       opt_args : list
-#           the arguments for the special command
-# @return:
-#       an appropriate message for success or fail of command
 def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
+    """
+    :func:`process_cmd_special` processes special variants of boss commands.
+
+    Args:
+        server_id (str): the id of the server of the originating message
+        msg_channel (str): the id of the channel of the originating message (belonging to server of `server_id`)
+        tg_bosses (list): a list of bosses to check
+        keyword (str): the special keyword to use to start this command (firstspawn)
+        opt_list (list): (default: None) a list containing optional parameters; may be null; 'map' or 'channel' may be provided
+
+    Returns:
+        str: an appropriate message for success or fail of command
+    """
     if keyword != kw_firstspawn:
         return
 
@@ -1340,13 +1335,17 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
     return success
 
 
-# @func:    process_cmd_opt(list) : dict
-# @arg:
-#       opt_list : list
-#           any optional parameters, of 1 length or more
-# @return:
-#       dict containing k:v 'map' and 'channel', both str
 def process_cmd_opt(opt_list, opt_boss):
+    """
+    :func:`process_cmd_opt` processes optional arguments.
+
+    Args:
+        opt_list (list): a list of optional arguments to process
+        opt_boss (list): a list of bosses related to the options
+
+    Returns:
+        dict: a k:v of 'map' and 'channel', both str
+    """
     target  =   dict()
     for cmd_arg in opt_list:
         cmd_arg     =   rgx_invalid.sub('', cmd_arg)
@@ -1388,8 +1387,21 @@ def process_cmd_opt(opt_list, opt_boss):
 # @return:
 #       returns a message formed by the record
 def process_record(boss, status, time, boss_map, channel):
+    """
+    :func:`process_records` processes a record to print out
+
+    Args:
+        boss (str): the boss in question
+        status (str): the status of the boss
+        time (datetime): the `datetime` of the target set to its next approximate spawn
+        boss_map (str): the map containing the last recorded spawn
+        channel (float): the channel of the world boss if applicable; else, 1
+
+    Returns:
+        str: a formatted markdown message containing the records
+    """
     # map does not rotate
-    if boss in bosses_world or (rgx_st_warn.match(status) and boss_map != "N/A"):
+    if boss not in bosses_demon or (rgx_st_warn.match(status) and boss_map != "N/A"):
         ret_message =   ", in the following map:\n" +"#   "
         ret_message +=  boss_map
     elif rgx_st_warn.match(status):
