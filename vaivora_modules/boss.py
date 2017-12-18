@@ -268,7 +268,7 @@ rgx_erase   =   re.compile(r'(erase|del(ete)?|cl(ea)?r)', re.IGNORECASE)
 rgx_query   =   re.compile(r'(syn(onyms|s)?|alias(es)?|maps?)', re.IGNORECASE)
 rgx_q_syn   =   re.compile(r'(syn(onyms|s)?|alias(es)?)', re.IGNORECASE)
 #rgx_maps    =   re.compile(r'maps?', re.IGNORECASE)
-rgx_type    =   re.compile(r'(wor|fie)ld', re.IGNORECASE)
+rgx_type    =   re.compile(r'((wor|fie)ld|demon)', re.IGNORECASE)
 #rgx_type_w  = re.compile(r'world', re.IGNORECASE)
 rgx_type_f  =   re.compile(r'field', re.IGNORECASE)
 rgx_time    =   re.compile(r'[0-2]?[0-9][:.]?[0-5][0-9] ?([ap]m?)*', re.IGNORECASE)
@@ -794,24 +794,16 @@ def get_maps(boss):
     return "**" + boss + "** can be found in the following maps: ```python\n" + 
            "#   " + '\n#   '.join(boss_locs[boss]) + "```\n"
 
-# @func:    get_bosses_world() : str
-# @return:
-#       a str containing the list of world bosses
-def get_bosses_world():
-    return "The following bosses are considered \"world\" bosses: ```python\n" + 
-           "#   " + '\n#   '.join(bosses_world) + "```\n"
-
-# @func:    get_bosses_field() : str
-# @return:
-#       a str containing the list of field bosses
-def get_bosses_field():
-    return "The following bosses are considered \"field\" bosses: ```python\n" + 
-           "#   " + '\n#   '.join(bosses_field) + "```\n"
-
 
 def get_bosses(boss_type):
     """
-    
+    :func:`get_bosses` gets the bosses of a certain boss type.
+
+    Args:
+        boss_type (str): the type of the boss
+
+    Returns:
+        str: a formatted markdown message with bosses of the specified type
     """
     return "The following bosses are considered \"" + boss_type "\" bosses: ```python\n" +
            "#   " + '\n#   '.join(bosses_list[boss_type])
@@ -1231,19 +1223,20 @@ def process_cmd_query(tg_boss, query):
         return get_maps(tg_boss)
 
 
-# @func:    process_cmd_query(str, str, str, str) : str
-# @arg:
-#       btype: str
-#           the btype command, i.e. world or field
-# @return:
-#       an appropriate message for success or fail of command
-def process_cmd_type(btype):
-    # $boss all field
-    if rgx_type_f.match(btype):
-        return get_bosses_field()
-    # $boss all world
+def process_cmd_type(boss_type):
+    """
+    :func:`process_cmd_type` prints out bosses for that boss type.
+
+    Args:
+        boss_type (str): the type of boss to query (world, field, demon)
+
+    Returns:
+        str: a formatted markdown message with bosses of the specified type, or empty string ("") if invalid type
+    """
+    if rgx_type.match(boss_type):
+        return get_bosses(boss_type)
     else:
-        return get_bosses_world()
+        return ""
 
 
 # @func:    process_cmd_status(str, str, str, list, str, list) : str
