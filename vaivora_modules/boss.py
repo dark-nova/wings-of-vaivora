@@ -1372,20 +1372,6 @@ def process_cmd_opt(opt_list, opt_boss):
     return ("N/A", 1)
 
 
-# @func:    process_records(str, str, datetime, str, float) : str
-# @arg:
-#       boss : str
-#           the boss in question
-#       status : str
-#           the status of the boss
-#       time : datetime
-#           the datetime of the target set to its next spawn
-#       boss_map : str
-#           the map containing the last recorded spawn
-#       channel : float
-#           the channel of the world boss if applicable, else 1
-# @return:
-#       returns a message formed by the record
 def process_record(boss, status, time, boss_map, channel):
     """
     :func:`process_records` processes a record to print out
