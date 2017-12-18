@@ -290,6 +290,7 @@ rgx_loc_dwa =   re.compile(r'ashaq[a-z ]*', re.IGNORECASE)
 rgx_loc_h   =   re.compile(r'd(emon)? ?p(ris(on?))? ?', re.IGNORECASE)
 rgx_loc_hno =   re.compile(r'(d ?(ist(rict)?)?)?[125]', re.IGNORECASE)
 rgx_loc_haz =   re.compile(r'(d ?(ist(rict)?)?)?', re.IGNORECASE)
+rgx_loc_iwd =   re.compile(r'inner', re.IGNORECASE)
 
 # END REGEX
 
@@ -313,7 +314,9 @@ bosses_field    =                                   [
                                                         'Violent Cerberus', 
                                                         'Wrathful Harpeia', 
                                                         'Prison Manager Prison Cutter', 
-                                                        'Frantic Molich', 
+                                                        'Frantic Molich'
+                                                    ]
+bosses_demon    =                                   [
                                                         demon_lords_A, 
                                                         demon_lords_B 
                                                     ]
@@ -329,8 +332,14 @@ bosses_world    =                                   [
                                                         'Legwyn Crystal Event' 
                                                     ]
 
+
 bosses          =                                   bosses_field + bosses_world
 
+# shortcut reference
+bosses_list             =   dict()
+bosses_list['world']    =   bosses_world
+bosses_list['field']    =   bosses_field
+bosses_list['demon']    =   bosses_demon
 
 # bosses that 'alt'ernate
 bosses_alt      =                                   [ 
@@ -665,37 +674,15 @@ boss_locs   =       {
             }
 
 
-# unused; pending deletion
-# # synonyms for boss locations
-# boss_loc_synonyms =                                 [ 
-#                                                         'crystal mine', 'ashaq', 
-#                                                         'tenet', 
-#                                                         'novaha', 
-#                                                         'guards', 'graveyard', 
-#                                                         'maus', 'mausoleum', 
-#                                                         'legwyn', 
-#                                                         'bellai', 'zeraha', 'seir', 
-#                                                         'mage tower', 'mt', 
-#                                                         'demon prison', 'dp', 
-#                                                         'main chamber', 'sanctuary', 'sanc', 
-#                                                         'roxona', 
-#                                                         'mokusul', 'videntis', 
-#                                                         'drill', 'quarter', 'battlegrounds', 
-#                                                         'kalejimas', 'storage', 'solitary', 'workshop', 'investigation', 
-#                                                         'thaumas', 'salvia', 'sekta', 'rasvoy', 'oasseu', 
-#                                                         'yudejan', 'nobreer', 'emmet', 'pystis', 'syla', 
-#                                                         'arcus', 'phamer', 'ghibulinas', 'mollogheo', 
-#                                                         'tevhrin'
-#                                                     ]
 
-# bosses that spawn in maps with floors or numbered maps
+# # bosses that spawn in maps with floors or numbered maps
+# bosses_with_floors      =                           [   
+#                                                         'Blasphemous Deathweaver', 
+#                                                         'Burning Fire Lord', 
+#                                                         'Frantic Molich'
+#                                                     ] # obsoleted
+
 bosses_with_floors      =                           [   
-                                                        'Blasphemous Deathweaver', 
-                                                        'Burning Fire Lord', 
-                                                        'Frantic Molich'
-                                                    ] # obsoleted
-
-bosses_with_some_floors =                           [   
                                                         demon_lords_A
                                                     ]
 
@@ -749,20 +736,17 @@ def check_maps(boss, maps):
     Returns:
         int: the map index if valid and matching just one; otherwise, -1
     """
-    map_idx     = -1
-    map_floor   = 0
-    map_match   = None
+    map_idx     =   -1
+    map_floor   =   0
+    map_match   =   None
 
-    if boss in bosses_with_floors or boss in bosses_with_some_floors:
+    # currently a specific case with floors: Inner Wall District [8-9]
+    if boss in bosses_with_some_floors and rgx_loc_iwd.search(maps):
         map_match   = rgx_floors.search(maps)
-
-    if not map_match and boss in bosses_with_floors:
-        # incorrect usage of map, e.g. "inner wall" but no floor number = no match
-        return -1
-    elif map_match and boss in bosses_with_floors:
-        # use map floor as target map
-        target_map  =   map_match.group('floornumber')
-    elif map_match: # and boss in bosses_with_some_floors
+        if not map_match:
+            return -1
+    
+    if map_match: # and boss in bosses_with_some_floors
         map_floor   =   map_match.group('floornumber')
         # extract target map string
         target_map  =   re.sub(map_floor, '', maps)
@@ -783,25 +767,34 @@ def check_maps(boss, maps):
                 if map_idx != -1:
                     return -1 # too many matches
                 map_idx =   boss_locs[boss].index(boss_map)
-    print()
+                
     return map_idx
 
 
-# @func:    get_syns(str) : str
-# @arg:
-#       boss: the name of the boss
-# @return:
-#       a str containing a list of synonyms for boss
 def get_syns(boss):
+    """
+    :func:`get_syns` gets the synonyms of a valid boss
+
+    Args:
+        boss (str): the string to get the boss's synonyms
+
+    Returns:
+        str: a formatted markdown message with synonyms
+    """
     return "**" + boss + "** can be called using the following aliases: ```python\n" + 
            "#   " + '\n#   '.join(boss_synonyms[boss]) + "```\n"
 
-# @func:    get_maps(str) : str
-# @arg:
-#       boss: the name of the boss
-# @return:
-#       a str containing the list of maps for a boss
+
 def get_maps(boss):
+    """
+    :func:`get_maps` gets the maps of a valid boss
+
+    Args:
+        boss (str): the valid boss to get maps
+
+    Returns:
+        str: a formatted markdown message with maps for a boss
+    """
     return "**" + boss + "** can be found in the following maps: ```python\n" + 
            "#   " + '\n#   '.join(boss_locs[boss]) + "```\n"
 
@@ -818,6 +811,14 @@ def get_bosses_world():
 def get_bosses_field():
     return "The following bosses are considered \"field\" bosses: ```python\n" + 
            "#   " + '\n#   '.join(bosses_field) + "```\n"
+
+
+def get_bosses(boss_type):
+    """
+    
+    """
+    return "The following bosses are considered \"" + boss_type "\" bosses: ```python\n" +
+           "#   " + '\n#   '.join(bosses_list[boss_type])
 
 # @func:    validate_channel(str) : int
 # @arg:
@@ -1102,7 +1103,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
         # map is not null but channel is
         elif opts[0] != "N/A" and not opts[1]:
-            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_map=opts[0])
+            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(bosses_list=tg_bosses, boss_map=opts[0])
             
         # error: channel other than 1, and boss is field boss
         elif opts[0] != 1 and not tg_bosses[0] in bosses_world:
@@ -1111,11 +1112,11 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
         # channel is not null but map is
         elif opts[0] and opts[1] == "N/A":
-            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts[1])
+            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(bosses_list=tg_bosses, boss_ch=opts[1])
             
         # implicit catch-all: match with all conditions
         else:
-            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=tg_bosses, boss_ch=opts[1], boss_map=opts[0])
+            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(bosses_list=tg_bosses, boss_ch=opts[1], boss_map=opts[0])
             
     elif rgx_erase.match(entry):
         if vaivora_modules.db.Database(server_id).rm_entry_db_boss():
