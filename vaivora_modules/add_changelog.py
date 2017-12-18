@@ -117,7 +117,7 @@ def add_changelog(sta, ver, svn, fix, message):
         sta =   '[' + sta + ']'
 
     changelogs[ver][svn][fix]['status']     =   sta
-    changelogs[ver][svn][fix]['message']    =   message
+    changelogs[ver][svn][fix]['changelog']  =   message
 
     return save2json()
 
