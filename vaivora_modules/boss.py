@@ -488,6 +488,7 @@ boss_synonyms   =   {
                         demon_lords_B:                    
                                                     [   
                                                         'nuaele', 
+                                                        'nuwhale', 
                                                         'zaura', 
                                                         'blut', 
                                                         'butt'
