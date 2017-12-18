@@ -843,11 +843,14 @@ class Settings:
         :func:`is_ch_type` checks if the channel is a certain type, thus whether the command may execute.
 
         Args:
+            self
             msg_channel (str): id of the channel of the originating message
+            ch_type (str): the channel type ('boss' or 'management')
 
         Returns:
-            bool: True if msg_channel is a management channel, or there are no management channels;
-                False otherwise
+            bool:
+                True if msg_channel is a valid channel, or no valid channels have been set;
+                False otherwise (if msg_channel is not a valid channel)
 
         """
         ch_list         =   self.get_channel(ch_type)
@@ -873,60 +876,59 @@ class Settings:
         Returns:
             list: an appropriate message for success or fail of command; varies in content (see below)
 
-            ``set``, ``add``, ``unset`` return a list. This is from calling :func:`process_setting`.
-            The list of `set` generally can be:
+                ``set``, ``add``, ``unset`` return a list. This is from calling :func:`process_setting`.
+                The list of `set` generally can be:
 
-                Command succeeded and returns:
+                    Command succeeded and returns:
 
-                    list: ``len == 1``
+                        list: ``len == 1``
 
-                        str: message detailing success
+                            str: message detailing success
 
-                ``fail``: Command failed and returns:
-
-                    tuple ``len == 2``
-
-                        list: ``len >= 1``
-
-                            str: discord.py id
-
-                        str: message detailing failure
-
-            ``get`` typically returns a tuple of str, list (as ``fail``).
-            The list of `get` depends:
-
-                ``get talt``, ``get role [@mention]``, ``get channel [#channel]``: different from :func:`process_setting`
-
-                    list
-
-                        list ``len >= 1``
-
-                            tuple ``len==2``
-
-                                str: discord.py id
-
-                                str: message related to query and ID
-
-                        str: message (success)
-
-                ``get role [role]``, ``get channel [channel]``: different from :func:`process_setting`
-
-                    list
+                    ``fail``: Command failed and returns:
 
                         tuple ``len == 2``
 
-                            list
+                            list: ``len >= 1``
 
                                 str: discord.py id
 
-                            str: message related to query and ID
+                            str: message detailing failure
 
-                        str: message (success)
+                ``get`` typically returns a tuple of str, list (as ``fail``).
+                The list of `get` depends:
 
-            ``promote``, ``demote``, ``validate``, ``invalidate``:
+                    ``get talt``, ``get role [@mention]``, ``get channel [#channel]``: different from :func:`process_setting`
 
-                the same as ``set``, ``add``, ``unset``; except not retrieved through :func:`process_setting`.
+                        list
 
+                            list ``len >= 1``
+
+                                tuple ``len==2``
+
+                                    str: discord.py id
+
+                                    str: message related to query and ID
+
+                            str: message (success)
+
+                    ``get role [role]``, ``get channel [channel]``: different from :func:`process_setting`
+
+                        list
+
+                            tuple ``len == 2``
+
+                                list
+
+                                    str: discord.py id
+
+                                str: message related to query and ID
+
+                            str: message (success)
+
+                ``promote``, ``demote``, ``validate``, ``invalidate``:
+
+                    the same as ``set``, ``add``, ``unset``; except not retrieved through :func:`process_setting`.
 
         """
         fail            =   []
@@ -1038,55 +1040,55 @@ class Settings:
         Returns:
             list: an appropriate message for success or fail of command; varies in content (see below)
 
-            ``set``, ``add``, ``unset`` return a list. This is from calling :func:`process_setting`.
-            The list of `set` generally can be:
+                ``set``, ``add``, ``unset`` return a list. This is from calling :func:`process_setting`.
+                The list of `set` generally can be:
 
-                Command succeeded and returns:
+                    Command succeeded and returns:
 
-                    list: ``len == 1``
+                        list: ``len == 1``
 
-                        str: message detailing success
+                            str: message detailing success
 
-                ``fail``: Command failed and returns:
-
-                    tuple ``len == 2``
-
-                        list: ``len >= 1``
-
-                            str: discord.py id
-
-                        str: message detailing failure
-
-            ``get`` typically returns a tuple of str, list (as ``fail``).
-            The list of `get` depends:
-
-                ``get talt``, ``get role [@mention]``, ``get channel [#channel]``:
-
-                    tuple
-
-                        list ``len >= 1``
-
-                            tuple ``len==2``
-
-                                str: discord.py id
-
-                                str: message related to query and ID
-
-                        str: message (success)
-
-                ``get role [role]``, ``get channel [channel]``:
-
-                    tuple
+                    ``fail``: Command failed and returns:
 
                         tuple ``len == 2``
 
-                            list
+                            list: ``len >= 1``
 
                                 str: discord.py id
 
-                            str: message related to query and ID
+                            str: message detailing failure
 
-                        str: message (success)
+                ``get`` typically returns a tuple of str, list (as ``fail``).
+                The list of `get` depends:
+
+                    ``get talt``, ``get role [@mention]``, ``get channel [#channel]``:
+
+                        tuple
+
+                            list ``len >= 1``
+
+                                tuple ``len==2``
+
+                                    str: discord.py id
+
+                                    str: message related to query and ID
+
+                            str: message (success)
+
+                    ``get role [role]``, ``get channel [channel]``:
+
+                        tuple
+
+                            tuple ``len == 2``
+
+                                list
+
+                                    str: discord.py id
+
+                                str: message related to query and ID
+
+                            str: message (success)
         """
 
         if not xargs:
