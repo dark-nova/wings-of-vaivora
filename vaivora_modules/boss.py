@@ -52,8 +52,9 @@ arg_arg         =   "Argument"
 arg_pre_cmd     =   arg_prefix + arg_cmd
 
 # Do not adjust 
-cmd_fragment    =   "```diff\n" + "- " + "[" + arg_defcmd + "] commands" + " -" + "\n" + 
-                    "+ Usage" + "```"
+cmd_fragment    =   ("```diff\n" + "- " + 
+                     "[" + arg_defcmd + "] commands" + " -" + "\n" + 
+                     "+ Usage" + "```")
 command.append(cmd_fragment)
 
 usage           =   "```ini\n"
@@ -82,8 +83,8 @@ msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
 cmd_fragment    =   "```diff\n" + "+ Examples\n" + "```"
 command.append(cmd_fragment)
 
-examples        =   "[$boss cerb died 12:00pm 4f]\n; channel should be omitted for field bosses\n" + 
-                    "[Vaivora, boss crab died 14:00 ch2]\n; map should be omitted for world bosses\n"
+examples        =   ("[$boss cerb died 12:00pm 4f]\n; channel should be omitted for field bosses\n" + 
+                     "[Vaivora, boss crab died 14:00 ch2]\n; map should be omitted for world bosses\n")
 
 cmd_fragment    =   "```ini\n" + examples
 cmd_fragment    +=  "```"
@@ -234,7 +235,7 @@ pacific2server  =   3
 server2pacific  =   -3
 # minutes!
 time_died       =   130
-time_died_330   =   420
+time_died_330   =   390
 # hours!
 time_died_wb    =   4
 time_died_wb_ab =   2
@@ -333,7 +334,7 @@ bosses_world    =                                   [
                                                     ]
 
 
-bosses          =                                   bosses_field + bosses_world
+bosses          =                                   bosses_field + bosses_world + bosses_demon
 
 # shortcut reference
 bosses_list             =   dict()
@@ -777,8 +778,8 @@ def get_syns(boss):
     Returns:
         str: a formatted markdown message with synonyms
     """
-    return "**" + boss + "** can be called using the following aliases: ```python\n" + 
-           "#   " + '\n#   '.join(boss_synonyms[boss]) + "```\n"
+    return ("**" + boss + "** can be called using the following aliases: ```python\n" + 
+            "#   " + '\n#   '.join(boss_synonyms[boss]) + "```\n")
 
 
 def get_maps(boss):
@@ -791,8 +792,8 @@ def get_maps(boss):
     Returns:
         str: a formatted markdown message with maps for a boss
     """
-    return "**" + boss + "** can be found in the following maps: ```python\n" + 
-           "#   " + '\n#   '.join(boss_locs[boss]) + "```\n"
+    return ("**" + boss + "** can be found in the following maps: ```python\n" + 
+            "#   " + '\n#   '.join(boss_locs[boss]) + "```\n")
 
 
 def get_bosses(boss_type):
@@ -805,8 +806,8 @@ def get_bosses(boss_type):
     Returns:
         str: a formatted markdown message with bosses of the specified type
     """
-    return "The following bosses are considered \"" + boss_type "\" bosses: ```python\n" +
-           "#   " + '\n#   '.join(bosses_list[boss_type])
+    return ("The following bosses are considered \"" + boss_type + "\" bosses: ```python\n" + 
+            "#   " + '\n#   '.join(bosses_list[boss_type]))
 
 
 def validate_channel(ch):
@@ -866,10 +867,10 @@ def process_command(server_id, msg_channel, arg_list):
         cmd_boss    =   [bosses[boss_idx], ]
 
     # error: invalid argument 2
-    if not rgx_status.match(arg_list[1]) and 
-       not rgx_entry.match(arg_list[1]) and 
-       not rgx_query.match(arg_list[1]) and 
-       not rgx_type.match(arg_list[1]):
+    if (not rgx_status.match(arg_list[1]) and 
+        not rgx_entry.match(arg_list[1]) and 
+        not rgx_query.match(arg_list[1]) and 
+        not rgx_type.match(arg_list[1])):
         return ["\"" + arg_list[1] + "\" is invalid for `$boss`, argument position 2.\n" + msg_help]
 
     # error: invalid [target] argument for argument 2
@@ -929,7 +930,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         opts                =   process_cmd_opt(opt_list, tg_boss)
         target['map'], target['channel']    = opts
     # 3 or fewer arguments
-    elif not target['boss'] in bosses_world:
+    elif target['boss'] in bosses_demon:
         target['map']       =   "N/A"
         target['channel']   =   1
     else:
@@ -938,8 +939,8 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
 
 
     # $boss [boss] died ...
-    if rgx_st_died.match(status) and not target['boss'] in boss_spawn_330 and 
-       not target['boss'] in boss_spawn_02h and not target['boss'] in bosses_world:
+    if (rgx_st_died.match(status) and not target['boss'] in boss_spawn_330 and 
+        not target['boss'] in boss_spawn_02h and not target['boss'] in bosses_world):
         time_offset         =   timedelta(minutes=time_died)
         target['status']    =   status_died
     elif rgx_st_died.match(status) and target['boss'] == "Abomination":
@@ -956,9 +957,9 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         target['status']    =   status_died
     # $boss [boss] warned ...
     elif rgx_st_warn.match(status):
-        if not target['boss'] in bosses_field:
-            return target['boss'] + " is invalid for `$boss`: `time`: `" + status + "`. " + 
-                   "Only field bosses have warnings.\n" + msg_help
+        if target['boss'] in bosses_world:
+            return (target['boss'] + " is invalid for `$boss`: `time`: `" + status + "`. " + 
+                    "Only field bosses have warnings.\n" + msg_help)
         time_offset         =   timedelta(minutes=time_warned)
         target['status']    =   status_warned
     # $boss [boss] anchored ...
@@ -967,15 +968,15 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         target['status']    =   status_anchored
     else:
         if not target['boss'] in bosses_world:
-            return target['boss'] + " is invalid for `$boss`: `time`: `" + status + "`. " + 
-                   "Only world bosses can be anchored.\n" + msg_help
+            return (target['boss'] + " is invalid for `$boss`: `time`: `" + status + "`. " + 
+                    "Only world bosses can be anchored.\n" + msg_help)
         time_offset         =   timedelta(hours=time_anchored)
         target['status']    =   status_anchored
 
     # error: invalid time
     if not rgx_time.match(time):
-        return time + " is not a valid time for `$boss`: `time`: `" + status + "`. " + 
-               "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+        return (time + " is not a valid time for `$boss`: `time`: `" + status + "`. " + 
+                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help)
 
     # $boss [boss] died [time?]
     # $boss [boss] died [time:am/pm]
@@ -1006,8 +1007,8 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
 
     # error: invalid hours
     if temp_hour > 24 or hours < 0:
-        return time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + 
-               "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+        return (time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + 
+                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help)
 
     # $boss [boss] died [time] ...
     server_date = datetime.now() + timedelta(hours=pacific2server)
@@ -1041,15 +1042,15 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     status = vaivora_modules.db.Database(server_id).update_db_boss(target)
 
     if status:
-        return acknowledge + "```python\n" + 
-               "\"" + target['boss'] + "\" " + 
-               target['status'] + " at " + 
-               ("0" if temp_hour < 10 else "") + 
-               str(temp_hour) + ":" + 
-               ("0" if minutes < 10 else "") + 
-               str(minutes) + 
-               ", in ch." + str(target['channel']) + ": " + 
-               (("\"" + target['map'] + "\"") if target['map'] != "N/A" else "") + "```\n"
+        return (acknowledge + "```python\n" + 
+                "\"" + target['boss'] + "\" " + 
+                target['status'] + " at " + 
+                ("0" if temp_hour < 10 else "") + 
+                str(temp_hour) + ":" + 
+                ("0" if minutes < 10 else "") + 
+                str(minutes) + 
+                ", in ch." + str(target['channel']) + ": " + 
+                (("\"" + target['map'] + "\"") if target['map'] != "N/A" else "") + "```\n")
     else:
         return "Your command could not be processed. It appears this record overlaps too closely with another.\n" + msg_help
 
@@ -1085,8 +1086,8 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
         # process opts
         # too many bosses but only one map
         if opts[0] != "N/A" and len(tg_bosses) > 1:
-            return "Your query:`map`, `" + entry + "`, could not be interpreted.\n" + 
-                   "You listed a map but selected more than one boss.\n" + msg_help
+            return ("Your query:`map`, `" + entry + "`, could not be interpreted.\n" + 
+                    "You listed a map but selected more than one boss.\n" + msg_help)
 
         # map is not null but channel is
         elif opts[0] != "N/A" and not opts[1]:
@@ -1094,8 +1095,8 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             
         # error: channel other than 1, and boss is field boss
         elif opts[0] != 1 and not tg_bosses[0] in bosses_world:
-            return "Your query:`channel`, `" + opts[1] + "`, could not be interpreted.\n" + 
-                   "Field bosses, like `" + tg_bosses[0] + "`, with regular spawn do not spawn in channels other than 1.\n" + msg_help
+            return ("Your query:`channel`, `" + opts[1] + "`, could not be interpreted.\n" + 
+                    "Field bosses, like `" + tg_bosses[0] + "`, with regular spawn do not spawn in channels other than 1.\n" + msg_help)
 
         # channel is not null but map is
         elif opts[0] and opts[1] == "N/A":
@@ -1189,9 +1190,9 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
             # print minutes unconditionally
             # e.g.              0 minutes from now
             # e.g.              59 minutes ago
-            ret_message     +=  str(math.floor(abs_mins%60)) + " minutes " + 
+            ret_message     +=  (str(math.floor(abs_mins%60)) + " minutes " + 
                                 ("from now" if int(time_diff.days) < 0 else "ago") + 
-                                ")"
+                                ")")
 
             # print extra anchored message conditionally
             if boss_status == status_anchored:
@@ -1263,8 +1264,8 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
     
     # error: invalid time
     if not rgx_time.match(time):
-        return time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + 
-               "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+        return (time + " is not a valid time for `$boss`:`time`:`" + status + "`. " + 
+                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help)
 
     offset  =   0
     target['text_channel']  =   msg_channel
@@ -1292,8 +1293,8 @@ def process_cmd_special(server_id, msg_channel, tg_bosses, keyword, opt_args):
 
     # error: invalid hours
     if temp_hour > 24 or hours < 0:
-        return time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + 
-               "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help
+        return (time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + 
+                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help)
     
     server_date =   datetime.now() + timedelta(hours=pacific2server)
 
@@ -1359,7 +1360,7 @@ def process_cmd_opt(opt_list, opt_boss):
             target['channel']   =   int(channel.group(2)) # use channel provided by command
             target['map']       =   boss_locs[opt_boss][0]
             return (target['map'], target['channel'])
-        elif opt_boss and opt_boss in bosses_field: # possibly map instead
+        elif opt_boss and opt_boss in bosses_demon: # possibly map instead
             target['channel']   =   1
             if cmd_arg: # must be map if not null
                 map_idx         =   check_maps(opt_boss, cmd_arg)
@@ -1418,12 +1419,12 @@ def process_record(boss, status, time, boss_map, channel):
     # anchored
     if rgx_st_anch.search(status) and boss == "Abomination":
         time_diff   =   timedelta(hours=(-1*time_anch_abom))
-        when_spawn  =   "between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + 
-                        "and " + time_str + ret_message
+        when_spawn  =   ("between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + 
+                         "and " + time_str + ret_message)
     elif rgx_st_anch.search(status):
         time_diff   =   timedelta(hours=(-1*time_anchored))
-        when_spawn  =   "between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + 
-                        "and " + time_str + ret_message
+        when_spawn  =   ("between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + 
+                         "and " + time_str + ret_message)
     # warned; takes precedence over when the boss will spawn
     elif rgx_st_warn.search(status):
         time_diff   =   timedelta(minutes=(-1*time_warned))
@@ -1448,11 +1449,11 @@ def process_record(boss, status, time, boss_map, channel):
     # e.g. "Blasphemous Deathweaver" died in ch.1 Crystal Mine 3F at 2017/07/06 18:30,
     #      and should spawn at 2017/07/06 22:30, in the following map:
     #      #   Crystal Mine 2F
-    ret_message     =   "\"" + boss + "\" " + status + " " + 
-                        "in ch." + str(math.floor(float(channel))) + 
-                        ((" \"" + boss_map + "\" ") if boss_map else " ") + 
-                        "at " + report_time.strftime("%Y/%m/%d %H:%M") + ",\n" + 
-                        "and should spawn " + when_spawn
+    ret_message     =   ("\"" + boss + "\" " + status + " " + 
+                         "in ch." + str(math.floor(float(channel))) + 
+                         ((" \"" + boss_map + "\" ") if boss_map else " ") + 
+                         "at " + report_time.strftime("%Y/%m/%d %H:%M") + ",\n" + 
+                         "and should spawn " + when_spawn)
 
     return ret_message
     
