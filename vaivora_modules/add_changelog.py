@@ -34,7 +34,7 @@ rgx_letter      =   re.compile(r'[a-z]', re.IGNORECASE)
 rgx_indent      =   re.compile(r'[+-]i?', re.IGNORECASE)
 rgx_plus        =   re.compile(r'^\+.*')
 #rgx_section     =   re.compile(r'&s?', re.IGNORECASE)
-rgx_mention     =   re.compile(r'@m?', re.IGNORECASE)
+rgx_mention     =   re.compile(r'@m? *', re.IGNORECASE)
 rgx_finish      =   re.compile(r'\$x?', re.IGNORECASE)
 #rgx_letter_pre  =   re.compile(r'[0-9]+pre-[0-9]+', re.IGNORECASE)
 # END REGEX
