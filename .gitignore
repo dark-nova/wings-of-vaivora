@@ -1,3 +1,6 @@
+# whitelist #
+!*version.json
+
 # files
 
 # private files
