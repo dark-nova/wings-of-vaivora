@@ -743,12 +743,12 @@ def check_maps(boss, maps):
     map_match   =   None
 
     # currently a specific case with floors: Inner Wall District [8-9]
-    if boss in bosses_with_some_floors and rgx_loc_iwd.search(maps):
+    if boss in bosses_with_floors and rgx_loc_iwd.search(maps):
         map_match   = rgx_floors.search(maps)
         if not map_match:
             return -1
     
-    if map_match: # and boss in bosses_with_some_floors
+    if map_match: # and boss in bosses_with_floors
         map_floor   =   map_match.group('floornumber')
         # extract target map string
         target_map  =   re.sub(map_floor, '', maps)
