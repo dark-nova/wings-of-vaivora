@@ -1,10 +1,9 @@
 __all__ =   [
-                "version", \
-                "disclaimer", \
-                "secrets", \
-                "changelogs", \
-                "db", \
-                "boss", \
+                "version",
+                "disclaimer",
+                "secrets",
+                "db",
+                "boss",
                 "settings"
             ]
 
