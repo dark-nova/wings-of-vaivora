@@ -667,8 +667,8 @@ boss_locs   =       {
                                                         #'Tevhrin Stalactite Cave Section 1', 
                                                         #'Tevhrin Stalactite Cave Section 2', 
                                                         #'Tevhrin Stalactite Cave Section 3', 
-                                                        #'Tevhrin Stalactite Cave Section 4', 
-                                                        'Tevhrin Stalactite Cave Section 5'
+                                                        'Tevhrin Stalactite Cave Section 4', 
+                                                        #'Tevhrin Stalactite Cave Section 5'
                                                     ]
 
             }
