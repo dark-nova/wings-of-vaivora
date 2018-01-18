@@ -608,14 +608,14 @@ async def check_databases():
                 except:
                     if rgx_ch_member.search(uid):
                         uid =   rgx_ch_member.sub('', uid)
+
                     try:
                         # user mention
-                        boss_user   = await srv.get_member(uid)
-                        role_str    += boss_user.mention + " "
+                        boss_user   =   srv.get_member(uid)
+                        role_str    +=  boss_user.mention + " "
                     except:
                         # user or group no longer exists
                         vdst[vdb_id].rm_boss(uid)
-                        continue
 
             # no roles detected; use empty string
             role_str = role_str if role_str else ""
