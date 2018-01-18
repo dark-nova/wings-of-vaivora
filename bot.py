@@ -606,6 +606,8 @@ async def check_databases():
                     idx =   [ro.id for ro in srv.roles].index(uid)
                     role_str    +=  srv.roles[idx].mention + " "
                 except:
+                    if rgx_ch_member.search(uid):
+                        uid =   rgx_ch_member.sub('', uid)
                     try:
                         # user mention
                         boss_user   = await srv.get_member(uid)
