@@ -793,7 +793,13 @@ class Settings:
             self.save_file()
             return True
         except:
-            return False
+            try:
+                user    +=  "@"
+                self.settings['role'][role_boss].remove(user)
+                self.save_file()
+                return True
+            except:
+                return False
 
     def was_welcomed(self):
         try:
