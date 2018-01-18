@@ -1108,13 +1108,14 @@ class Settings:
         warning     =   ""
         user_role   =   self.role_level[user_role_id]
 
+
         # set get add unset
         #               0  1
-        # $settings add 10 talt mention
-        if rgx_set_add.match(settings_cmd) and not rgx_set_talt.match(xargs[0]):
+        # $settings add talt 10 mention
+        if rgx_set_add.match(settings_cmd) and not rgx_set_talt.match(xargs[1]):
             return ("You tried using `setting`:`add` but it only works for `settings`:`talt` module. Please re-check syntax.\n" + msg_help,)
 
-        # $setting [setting] [number] [unit]
+        # $setting [setting] talt [number] [unit]
         if rgx_set_unit_t.match(xargs[0]):
             if not self.is_ch_type(msg_channel, channel_mgmt):
                 return # silently deny changes
@@ -1125,16 +1126,14 @@ class Settings:
             target  =   mode_talt
             unit    =   unit_talt
 
-            # special case: get all
+            # special case: get talt all
             if len(xargs) == 2 and rgx_kw_all.match(xargs[1]) and rgx_set_get.match(settings_cmd):
                 if users:
                     warning +=  "Warning: you can't use `settings`:`talt` `all` with users. Ignoring.\n"
                 return (self.get_all_talt(), warning + "This guild thanks the following for contributing: ")
 
-            # special case: get (guild)
-            if len(xargs) == 1 and rgx_set_get.match(settings_cmd):
-                if users:
-                    warning +=  "Warning: you can't use `settings`:`talt` `guild` with users. Ignoring.\n"
+            # special case: get talt (guild)
+            if len(xargs) == 1 and rgx_set_get.match(settings_cmd) and not users:
                 gtalt   =   self.get_talt()
                 gtaltlv =   self.get_talt_for_nextlevel()
                 gpt     =   str(int(gtalt)*20)
@@ -1186,6 +1185,7 @@ class Settings:
             return ("You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help,)
 
         # `talt`
+        # actual `xargs` begin from index 1 on: index 0 is 'talt'
         if target == mode_talt:
             if rgx_set_add.match(settings_cmd):
                 f   =   self.add_talt
@@ -1200,9 +1200,9 @@ class Settings:
                 for kind, mention in users:
                     if f == self.get_talt:
                         # not actually fail but works with the return
-                        fail.append((mention, "contributed " + f(mention) + " Talt.\n", "@"))
-                    elif not f(cmd_user, int(xargs[0]), unit, mention):
-                        fail.append(mention, "@")
+                        fail.append((mention+'@', "contributed " + f(mention) + " Talt.\n"))
+                    elif not f(cmd_user, int(xargs[1]), unit, mention):
+                        fail.append(mention+'@')
                 if fail and f == self.get_talt:
                     ret_msg +=  acknowledge + msg_records
                 elif fail:
@@ -1213,8 +1213,11 @@ class Settings:
             elif users:
                 return (warning + msg_perms + user_role + "`\n",)
             # $settings [f] [number] # self; only needs member+
-            elif not f(cmd_user, int(xargs[0]), unit):
+            elif not f(cmd_user, int(xargs[1]), unit):
                 return (warning + msg_perms + user_role + "`\n",)
+            # $settings [f] [number] # self; RESULTS of above
+            else:
+                return (acknowledge + "Your Talt contributions were successfully recorded.\n",)
 
         # `channel`
         elif target == mode_channel:
