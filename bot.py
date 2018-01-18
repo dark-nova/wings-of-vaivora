@@ -526,6 +526,10 @@ async def sanitize_cmd(message, command_type):
                 await client.send_message(msg_channel, message_to_send + "```\n")
                 msg_channel =   str()
 
+        # flush remaining
+        if msg_channel:
+            await client.send_message(msg_channel, message_to_send + "```\n")
+
         # except:
         #     pass
         vdst[server_id].toggle_lock(False)
