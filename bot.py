@@ -70,6 +70,7 @@ rgx_settings        =   re.compile(r'settings .+', re.IGNORECASE)
 rgx_meme            =   re.compile(r'pl(ea)?[sz]e?', re.IGNORECASE)
 rgx_ch_hash         =   re.compile(r'#')
 rgx_ch_member       =   re.compile(r'@')
+rgx_talt            =   re.compile(r'talt', re.IGNORECASE)
 
 to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
 
@@ -372,7 +373,7 @@ async def get_unsubscribed():
 async def sanitize_cmd(message, command_type):
     # handle wrong command to destinations; e.g. cannot use Settings module in DM
     if not message.server and (command_type == command_settings or command_type == command_boss):
-        await client.send_message(message.author, \
+        await client.send_message(message.author, 
                                   "You cannot use `$" + command_type + "` commands in Direct Messages.\n")
         return False
 
@@ -389,7 +390,7 @@ async def sanitize_cmd(message, command_type):
     try:
         command =   splitDblQuotesSpaces(cmd_message)
     except ValueError:
-        await client.send_message(message.author if not message.server else message.channel, \
+        await client.send_message(message.author if not message.server else message.channel, 
                                   "Your command for `$" + command_type + "` had misused quotes somewhere.\n")
         return False
 
@@ -431,8 +432,8 @@ async def sanitize_cmd(message, command_type):
         
         
         #def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
-        return_msg  = vdst[server_id].process_command(msg_ch_id, set_cmd, \
-                                                      message.author.id, message.author.roles, \
+        return_msg  = vdst[server_id].process_command(msg_ch_id, set_cmd,
+                                                      message.author.id, message.author.roles,
                                                       mention_u, mention_g, mention_c, xargs=xargs)
         
         # case 1: a list of str, len 1
@@ -446,6 +447,10 @@ async def sanitize_cmd(message, command_type):
                 return False
         # case 2: a list of tuples of IDs and message
         await client.send_message(msg_channel, msg_prefix + return_msg[1])
+
+        if type(return_msg[0]) == dict:
+            return_msg[0]   =   [ (t[0]+'@'," has contributed " + str(int(t[1])) + " Talt.")
+                                  for t in return_msg[0].items() if t[0] != 'guild' and t[0] != 'remainder' ]
 
         for ret in return_msg[0]:
             message_to_send =   "```ini\n"
@@ -461,7 +466,6 @@ async def sanitize_cmd(message, command_type):
                 return True
 
             for r_id in r_ids:
-
                 # if type(r_id[0]) is list:
                 #     ident   =   r_id[-1]
                 #     things  =   r_id[0]
@@ -488,7 +492,8 @@ async def sanitize_cmd(message, command_type):
                             tgt =   [ro.id for ro in message.server.roles].index(mem)
                             nom =   "&" + message.server.roles[tgt].name
                         except: # user or role no longer exists; purge
-                            vdst[server_id].set_role(mem, "users")
+                            if not rgx_talt.search(ret[1]):
+                                vdst[server_id].set_role(mem, "users")
                             continue
                     message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
                 # unknown; no identifying character detected, but role most likely
@@ -498,8 +503,9 @@ async def sanitize_cmd(message, command_type):
                         nom =   "&" + message.server.roles[tgt].name
                         message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
                     except: # user or role no longer exists; total purge (remove all permissions)
-                        vdst[server_id].rm_boss(r_id)
-                        vdst[server_id].set_role(r_id, "users")
+                        if not rgx_talt.search(ret[1]):
+                            vdst[server_id].rm_boss(r_id)
+                            vdst[server_id].set_role(r_id, "users")
                     
             await client.send_message(msg_channel, message_to_send + "```\n")
         # except:
