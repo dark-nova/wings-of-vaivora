@@ -806,7 +806,7 @@ def get_bosses(boss_type):
         str: a formatted markdown message with bosses of the specified type
     """
     return ("The following bosses are considered \"" + boss_type + "\" bosses: ```python\n" + 
-            "#   " + '\n#   '.join(bosses_list[boss_type]))
+            "#   " + '\n#   '.join(bosses_list[boss_type]) + "```")
 
 
 def validate_channel(ch):
