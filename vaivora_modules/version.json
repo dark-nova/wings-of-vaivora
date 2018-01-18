@@ -314,6 +314,10 @@
             "a": {
                 "status": "[i]",
                 "changelog": "```ini\n[Version:] [i]1.9a\n[Date:]    2018/01/09\n``````diff\n+ Tidied up the boss module for obsoleted components.\n+ Corrected Molich spawn map.\n  * Thanks to Wolfy for the information.\n```"
+            },
+            "b": {
+                "status": "[n]",
+                "changelog": "```ini\n[Version:] [n]1.9b\n[Date:]    2018/01/18\n``````diff\n+ Corrected user mentions for `boss`. May also have fixed mentions in other functions.\n```"
             }
         }
     }
