@@ -64,6 +64,7 @@ rgx_set_get     =   re.compile(r'get', re.IGNORECASE)
 rgx_set_talt    =   re.compile(r'[1-9][0-9]*')
 rgx_set_unit    =   re.compile(r'(talt|point)s?', re.IGNORECASE)
 rgx_set_unit_t  =   re.compile(r'talts?', re.IGNORECASE)
+rgx_set_unit_p  =   re.compile(r'p(oin)?ts?', re.IGNORECASE)
 rgx_set_chan    =   re.compile(r'ch(an(nel)*)?', re.IGNORECASE)
 rgx_set_role    =   re.compile(r'role', re.IGNORECASE)
 rgx_set_set     =   re.compile(r'set', re.IGNORECASE)
@@ -967,7 +968,7 @@ class Settings:
             if self.set_remainder_talt(xargs[1], xargs[2]):
                 return [acknowledge + "\n" + "Guild is now set to level " + self.get_guild_level() + ", " + self.get_talt() + " Talt.\n"]
             else:
-                return ["Your command partially or completely failed. Your user may be too low. User level: `" + user_role + "`\n"]
+                return [msg_perms + user_role + "`\n"]
 
         # general setting
         elif rgx_setting.match(settings_cmd):
@@ -1146,7 +1147,7 @@ class Settings:
                 return ("You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help,)
 
             # general cases
-            if len(xargs) == 3 and rgx_set_unit.match(xargs[2]) and rgx_set_unit_t.match(xargs[2]):
+            if len(xargs) == 3 and rgx_set_unit.match(xargs[2]) and not rgx_set_unit_t.match(xargs[2]):
                 unit    =   unit_point
             # ignore invalid input for unit
             elif len(xargs) == 3 and not rgx_set_unit.match(xargs[2]):
@@ -1214,7 +1215,7 @@ class Settings:
                 return (warning + msg_perms + user_role + "`\n",)
             # $settings [f] [number] # self; only needs member+
             elif not f(cmd_user, int(xargs[1]), unit):
-                return (warning + msg_perms + user_role + "`\n",)
+                return (warning + "You entered an invalid amounnt of points. Points are multiples of 20.\n",)
             # $settings [f] [number] # self; RESULTS of above
             else:
                 return (acknowledge + "Your Talt contributions were successfully recorded.\n",)
