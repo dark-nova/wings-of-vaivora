@@ -499,6 +499,7 @@ async def sanitize_cmd(message, command_type):
                                 vdst[server_id].set_role(mem, "users")
                             else:
                                 message_to_send +=  "[ missing user ] " + ret[1] + "\n"
+                            return
                     message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
                 # unknown; no identifying character detected, but role most likely
                 else:
@@ -512,6 +513,7 @@ async def sanitize_cmd(message, command_type):
                             vdst[server_id].set_role(r_id, "users")
                         else:
                             message_to_send +=  "[ missing user ] " + ret[1] + "\n"
+                        return
                     
             await client.send_message(msg_channel, message_to_send + "```\n")
         # except:
