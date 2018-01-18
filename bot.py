@@ -449,8 +449,10 @@ async def sanitize_cmd(message, command_type):
         await client.send_message(msg_channel, msg_prefix + return_msg[1])
 
         if type(return_msg[0]) == dict:
-            return_msg[0]   =   [ (t[0]+'@'," has contributed " + str(int(t[1])) + " Talt.")
-                                  for t in return_msg[0].items() if t[0] != 'guild' and t[0] != 'remainder' ]
+            return_msg[0]   =   [ t for t in return_msg[0].items() if t[0] != 'guild' and t[0] != 'remainder' ]
+            return_msg[0]   =   sorted(return_msg[0], key=lambda t: t[1], reverse=True)
+            return_msg[0]   =   [ (t[0]+'@'," has contributed " + str(int(t[1])) + " Talt.") for t in return_msg[0] ]
+
 
         for ret in return_msg[0]:
             await client.send_typing(msg_channel)
