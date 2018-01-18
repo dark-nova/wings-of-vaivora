@@ -446,7 +446,7 @@ class Settings:
 
         # special case: boss
         if role == role_boss:
-            return self.set_boss(user)
+            return self.set_boss(user, utype)
 
         # this should NEVER be called by users!
         if utype == "users" and role == role_sauth:
@@ -775,7 +775,9 @@ class Settings:
         except:
             return False
 
-    def set_boss(self, user):
+    def set_boss(self, user, utype):
+        if utype == "users":
+            user    += "@"
         try:
             if user in self.settings['role'][role_boss]:
                 return False
@@ -1168,13 +1170,13 @@ class Settings:
         # $settings [setting] role [role] [@mention]
         elif rgx_set_role.match(xargs[0]):
             if not self.is_ch_type(msg_channel, channel_mgmt):
-                return ("",) # silently deny changes
+                return ("",) # silently deny changes (wrong channel)
             target  =   mode_role
 
         # any incorrect combination of arguments
         else:
             if not self.is_ch_type(msg_channel, channel_mgmt):
-                return ("",) # silently deny changes
+                return ("",) # silently deny changes (wrong channel)
             return ("You did not supply the right arguments to `settings`. Please re-check syntax.\n" + msg_help,)
 
         # `talt`
