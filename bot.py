@@ -453,6 +453,7 @@ async def sanitize_cmd(message, command_type):
                                   for t in return_msg[0].items() if t[0] != 'guild' and t[0] != 'remainder' ]
 
         for ret in return_msg[0]:
+            await client.send_typing(msg_channel)
             message_to_send =   "```ini\n"
             # case 2a: tuples contain list of IDs and message
             if type(ret[0]) == list:
@@ -494,7 +495,8 @@ async def sanitize_cmd(message, command_type):
                         except: # user or role no longer exists; purge
                             if not rgx_talt.search(ret[1]):
                                 vdst[server_id].set_role(mem, "users")
-                            continue
+                            else:
+                                message_to_send +=  "[ missing user ] " + ret[1] + "\n"
                     message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
                 # unknown; no identifying character detected, but role most likely
                 else:
@@ -506,6 +508,8 @@ async def sanitize_cmd(message, command_type):
                         if not rgx_talt.search(ret[1]):
                             vdst[server_id].rm_boss(r_id)
                             vdst[server_id].set_role(r_id, "users")
+                        else:
+                            message_to_send +=  "[ missing user ] " + ret[1] + "\n"
                     
             await client.send_message(msg_channel, message_to_send + "```\n")
         # except:
