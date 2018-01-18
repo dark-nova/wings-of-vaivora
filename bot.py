@@ -453,11 +453,11 @@ async def sanitize_cmd(message, command_type):
             return_msg[0]   =   sorted(return_msg[0], key=lambda t: t[1], reverse=True)
             return_msg[0]   =   [ (t[0]+'@'," has contributed " + str(int(t[1])) + " Talt.") for t in return_msg[0] ]
 
-        message_to_send =   str()
+        message_to_send =   "```ini"
 
         for ret in return_msg[0]:
             await client.send_typing(msg_channel)
-            message_to_send +=   "```ini\n"
+            message_to_send +=   "\n"
             # case 2a: tuples contain list of IDs and message
             if type(ret[0]) == list:
                 r_ids   =   ret[0]
@@ -524,7 +524,7 @@ async def sanitize_cmd(message, command_type):
 
             if i % 5 == 0:                    
                 await client.send_message(msg_channel, message_to_send + "```\n")
-                msg_channel =   str()
+                msg_channel =   "```ini\n"
 
         # flush remaining
         if msg_channel:
