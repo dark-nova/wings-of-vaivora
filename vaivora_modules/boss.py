@@ -833,6 +833,9 @@ def process_command(server_id, msg_channel, arg_list):
         server_id (str): the id of the server of the originating message
         msg_channel (str): the id of the channel of the originating message (belonging to server of `server_id`)
         arg_list (list): the list of arguments supplied for the command, all str
+
+    Returns:
+        str: an appropriate message for success or fail of command
     """
     if not vaivora_modules.settings.Settings(server_id).is_ch_type(msg_channel, channel_boss):
         return [""] # silently deny

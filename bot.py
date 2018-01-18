@@ -459,47 +459,48 @@ async def sanitize_cmd(message, command_type):
             if not r_ids:
                 await client.send_message(msg_channel, message_to_send + "*crickets chirping*\n" + "```\n")
                 return True
+
             for r_id in r_ids:
-                if type(r_id[0]) is list:
-                    ident   =   r_id[-1]
-                    things  =   r_id[0]
-                else:
-                    ident   =   ret[-1]
-                    things  =   [r_id]
+
+                # if type(r_id[0]) is list:
+                #     ident   =   r_id[-1]
+                #     things  =   r_id[0]
+                # else:
+                #     ident   =   ret[-1]
+                #     things  =   [r_id]
 
                 # channel
-                if rgx_ch_hash.search(ident):
-                    for thing in things:
-                        try:
-                            nom =   message.server.get_channel(thing).name
-                        except:
-                            vdst[server_id].unset_channel(thing)
-                            continue
+                if rgx_ch_hash.search(r_id):
+                    chn =   rgx_ch_hash.sub('', r_id)
+                    try:
+                        nom =   message.server.get_channel(chn).name
                         message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+                    except: # channel no longer exists; purge
+                        vdst[server_id].unset_channel(chn)
                 # user
-                elif rgx_ch_member.search(ident):
-                    for thing in things:
-                        try:
-                            tgt =   message.server.get_member(thing)
-                            nom =   tgt.name + "#" + tgt.discriminator
-                        except:
-                            try: # it may be a role; esp in case of settings and role
-                                tgt =   [ro.id for ro in message.server.roles].index(thing)
-                                nom =   "&" + message.server.roles[tgt].name
-                            except:
-                                vdst[server_id].set_role(thing, "users")
-                                continue
-                        message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
-                # role
-                else:
-                    for thing in things:
-                        try:
-                            tgt =   [ro.id for ro in message.server.roles].index(thing)
+                elif rgx_ch_member.search(r_id):
+                    mem =   rgx_ch_member.sub('', r_id)
+                    try:
+                        tgt =   message.server.get_member(mem)
+                        nom =   tgt.name + "#" + tgt.discriminator
+                    except:
+                        try: # it may be a role; esp in case of settings and role
+                            tgt =   [ro.id for ro in message.server.roles].index(mem)
                             nom =   "&" + message.server.roles[tgt].name
-                        except:
-                            vdst[server_id].rm_boss(thing)
+                        except: # user or role no longer exists; purge
+                            vdst[server_id].set_role(mem, "users")
                             continue
+                    message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+                # unknown; no identifying character detected, but role most likely
+                else:
+                    try:
+                        tgt =   [ro.id for ro in message.server.roles].index(r_id)
+                        nom =   "&" + message.server.roles[tgt].name
                         message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+                    except: # user or role no longer exists; total purge (remove all permissions)
+                        vdst[server_id].rm_boss(r_id)
+                        vdst[server_id].set_role(r_id, "users")
+                    
             await client.send_message(msg_channel, message_to_send + "```\n")
         # except:
         #     pass
