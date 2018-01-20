@@ -235,20 +235,20 @@ async def on_message(message):
         return await sanitize_cmd(message, command_settings)
 
     # changelogs
-    elif vaivora_modules.changelogs.cmd_csub.search(message.content):
-        # un-
-        if vaivora_modules.changelogs.cmd_un.match(message.content):
-            mode    =   vaivora_modules.changelogs.mode_unsub
-        else:
-            mode    =   vaivora_modules.changelogs.mode_sub
+    # elif vaivora_modules.changelogs.cmd_csub.search(message.content):
+    #     # un-
+    #     if vaivora_modules.changelogs.cmd_un.match(message.content):
+    #         mode    =   vaivora_modules.changelogs.mode_unsub
+    #     else:
+    #         mode    =   vaivora_modules.changelogs.mode_sub
 
-        if await check_subscription(message.author, mode=mode):
-            await client.send_message(message.author, msg_sub + mode + ".\n")
-            return True
-        # subscription change failed because user is already of the same mode
-        else:
-            await client.send_message(message.author, omae_wa_mou + mode + ".\n")
-            return False
+    #     if await check_subscription(message.author, mode=mode):
+    #         await client.send_message(message.author, msg_sub + mode + ".\n")
+    #         return True
+    #     # subscription change failed because user is already of the same mode
+    #     else:
+    #         await client.send_message(message.author, omae_wa_mou + mode + ".\n")
+    #         return False
 
     # help
     elif rgx_help.search(message.content):
