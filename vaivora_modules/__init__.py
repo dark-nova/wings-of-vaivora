@@ -1,6 +1,7 @@
 __all__ =   [
                 "version",
                 "disclaimer",
+                "changelogs", 
                 "secrets",
                 "db",
                 "boss",
