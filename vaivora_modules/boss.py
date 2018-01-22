@@ -275,6 +275,7 @@ rgx_time_12 =   re.compile(r'^12.*', re.IGNORECASE)
 rgx_time_ap =   re.compile(r'[ap]m?', re.IGNORECASE)
 rgx_time_pm =   re.compile(r'pm?', re.IGNORECASE)
 rgx_time_dl =   re.compile(r'[:.]')
+rgx_time_3d =   re.compile(r'[0-9]{3,4}')
 rgx_channel =   re.compile(r'(ch?)*.?([1-4])$', re.IGNORECASE)
 rgx_letters =   re.compile(r"[a-z -']+", re.IGNORECASE)
 rgx_invalid =   re.compile(r"""[^a-z1-589 ']""", re.IGNORECASE)
@@ -971,7 +972,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         target['status']    =   status_anchored
 
     # error: invalid time
-    if not rgx_time.match(time):
+    if not rgx_time.match(time) or not rgx_time_3d.match(time):
         return (time + " is not a valid time for `$boss`: `time`: `" + status + "`. " + 
                 "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help)
 
