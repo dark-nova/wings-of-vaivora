@@ -657,7 +657,12 @@ async def check_databases():
                 if cur_channel != message[-1]:
                     if cur_channel:
                         discord_message += "```"
-                        await client.send_message(srv.get_channel(cur_channel), discord_message)
+
+                        try:
+                            await client.send_message(srv.get_channel(cur_channel), discord_message)
+                        except:
+                            pass
+
                         discord_message = ''
                     cur_channel = message[-1]
 
@@ -666,7 +671,12 @@ async def check_databases():
                 discord_message += message[0]
             # flush
             discord_message += "```"
-            await client.send_message(srv.get_channel(cur_channel), discord_message)
+
+            try:
+                await client.send_message(srv.get_channel(cur_channel), discord_message)
+            except:
+                pass
+
             discord_message = ''
         #await client.process_commands(message)
         await asyncio.sleep(1)
