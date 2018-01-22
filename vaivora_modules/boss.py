@@ -885,7 +885,11 @@ def process_command(server_id, msg_channel, arg_list):
 
     # $boss [boss] [status] ...
     if rgx_status.match(arg_list[1]):
-        return [process_cmd_status(server_id, msg_channel, cmd_boss[0], arg_list[1], arg_list[2], arg_list[3:])]
+        try:
+            return [process_cmd_status(server_id, msg_channel, cmd_boss[0], arg_list[1], arg_list[2], arg_list[3:])]
+        except:
+            return ["You supplied " + str(arg_len) + " arguments; commands must have at least " + 
+                    str(arg_min) + " or at most " + str(arg_max) + " arguments.\n" + msg_help]
     # $boss [boss]|all [entry] ...
     elif rgx_entry.match(arg_list[1]) and len(arg_list) == 2:
         return [process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1])]
