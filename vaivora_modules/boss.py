@@ -976,7 +976,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         target['status']    =   status_anchored
 
     # error: invalid time
-    if not rgx_time.match(time) or not rgx_time_3d.match(time):
+    if not rgx_time.match(time) and not rgx_time_3d.match(time):
         return (time + " is not a valid time for `$boss`: `time`: `" + status + "`. " + 
                 "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help)
 
