@@ -455,6 +455,9 @@ async def sanitize_cmd(message, command_type):
 
         message_to_send =   "```ini"
 
+        # loop count
+        i   =   0
+
         for ret in return_msg[0]:
             await client.send_typing(msg_channel)
             message_to_send +=   "\n"
@@ -469,8 +472,8 @@ async def sanitize_cmd(message, command_type):
                 await client.send_message(msg_channel, message_to_send + "*crickets chirping*\n" + "```\n")
                 return True
 
-            # loop count
-            i   =   0
+            print('ret:',ret,'i: ',i)
+            print(message_to_send)
 
             for r_id in r_ids:
                 # if type(r_id[0]) is list:
@@ -503,7 +506,7 @@ async def sanitize_cmd(message, command_type):
                                 vdst[server_id].set_role(mem, "users")
                             else:
                                 message_to_send +=  "[ missing user ] " + ret[1] + "\n"
-                            return
+                            continue
                     message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
                 # unknown; no identifying character detected, but role most likely
                 else:
@@ -517,14 +520,15 @@ async def sanitize_cmd(message, command_type):
                             vdst[server_id].set_role(r_id, "users")
                         else:
                             message_to_send +=  "[ missing user ] " + ret[1] + "\n"
-                        return
+                        continue
 
 
             i   +=  1
 
             if i % 5 == 0:                    
                 await client.send_message(msg_channel, message_to_send + "```\n")
-                msg_channel =   "```ini\n"
+                message_to_send =   "```ini"
+                i   =   0
 
         # flush remaining
         if msg_channel:
