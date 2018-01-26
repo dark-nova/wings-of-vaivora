@@ -472,9 +472,6 @@ async def sanitize_cmd(message, command_type):
                 await client.send_message(msg_channel, message_to_send + "*crickets chirping*\n" + "```\n")
                 return True
 
-            print('ret:',ret,'i: ',i)
-            print(message_to_send)
-
             for r_id in r_ids:
                 # if type(r_id[0]) is list:
                 #     ident   =   r_id[-1]
