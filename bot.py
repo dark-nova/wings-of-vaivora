@@ -60,6 +60,8 @@ msg_sub             =   "Your subscription preference for changelogs has been up
 
 omae_wa_mou         =   "You are already " # dead
 
+none_matched        =   "```\n\*crickets chirping\*\n```\n"
+
 ### BGN REGEX
 
 rgx_help            =   re.compile(r'help', re.IGNORECASE)
@@ -71,6 +73,7 @@ rgx_meme            =   re.compile(r'pl(ea)?[sz]e?', re.IGNORECASE)
 rgx_ch_hash         =   re.compile(r'#')
 rgx_ch_member       =   re.compile(r'@')
 rgx_talt            =   re.compile(r'talt', re.IGNORECASE)
+rgx_ini             =   re.compile(r'^```\n?ini\n?```', re.IGNORECASE) # match hidden blocks
 
 to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
 
@@ -472,7 +475,10 @@ async def sanitize_cmd(message, command_type):
                 await client.send_message(msg_channel, message_to_send + "*crickets chirping*\n" + "```\n")
                 return True
 
+            print(r_ids)
+
             for r_id in r_ids:
+                print(r_id)
                 # if type(r_id[0]) is list:
                 #     ident   =   r_id[-1]
                 #     things  =   r_id[0]
@@ -488,6 +494,7 @@ async def sanitize_cmd(message, command_type):
                         message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
                     except: # channel no longer exists; purge
                         vdst[server_id].unset_channel(chn)
+
                 # user
                 elif rgx_ch_member.search(r_id):
                     mem =   rgx_ch_member.sub('', r_id)
@@ -495,29 +502,34 @@ async def sanitize_cmd(message, command_type):
                         tgt =   message.server.get_member(mem)
                         nom =   tgt.name + "#" + tgt.discriminator
                     except:
-                        try: # it may be a role; esp in case of settings and role
-                            tgt =   [ro.id for ro in message.server.roles].index(mem)
-                            nom =   "&" + message.server.roles[tgt].name
-                        except: # user or role no longer exists; purge
-                            if not rgx_talt.search(ret[1]):
-                                vdst[server_id].set_role(mem, "users")
-                            else:
-                                message_to_send +=  "[ missing user ] " + ret[1] + "\n"
-                            continue
-                    message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
-                # unknown; no identifying character detected, but role most likely
-                else:
-                    try:
-                        tgt =   [ro.id for ro in message.server.roles].index(r_id)
-                        nom =   "&" + message.server.roles[tgt].name
-                        message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
-                    except: # user or role no longer exists; total purge (remove all permissions)
                         if not rgx_talt.search(ret[1]):
-                            vdst[server_id].rm_boss(r_id)
-                            vdst[server_id].set_role(r_id, "users")
+                            vdst[server_id].set_role(mem, "users")
                         else:
                             message_to_send +=  "[ missing user ] " + ret[1] + "\n"
                         continue
+                    message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+
+                # unknown; no identifying character detected, but role most likely
+                else:
+                    print('a')
+                    try:
+                        print('b')
+                        tgt =   [ro.id for ro in message.server.roles].index(r_id)
+                        nom =   "&" + message.server.roles[tgt].name
+                        message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+                        print('c')
+                    except: # user or role no longer exists; total purge (remove all permissions)
+                        try:
+                            tgt =   message.server.get_member(mem)
+                            nom =   tgt.name + "#" + tgt.discriminator
+                            message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+                        except:
+                            if not rgx_talt.search(ret[1]):
+                                vdst[server_id].rm_boss(r_id)
+                                vdst[server_id].set_role(r_id, "users")
+                            else:
+                                message_to_send +=  "[ missing user ] " + ret[1] + "\n"
+                            continue
 
 
             i   +=  1
@@ -528,8 +540,10 @@ async def sanitize_cmd(message, command_type):
                 i   =   0
 
         # flush remaining
-        if msg_channel:
+        if message_to_send and not rgx_ini.match(message_to_send):
             await client.send_message(msg_channel, message_to_send + "```\n")
+        elif msg_channel:
+            await client.send_message(msg_channel, none_matched)
 
         # except:
         #     pass

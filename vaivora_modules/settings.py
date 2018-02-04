@@ -513,10 +513,11 @@ class Settings:
     def get_role(self, role=role_member):
         role_call = []
         if role == "boss":
+            [ t for t in return_msg[0].items() if t[0] != 'guild' and t[0] != 'remainder' ]
             return self.settings['role'][role]
-        
-        role_call.append((self.settings["group"][role], "&",))
-        role_call.append((self.settings["users"][role], "@",))
+
+        role_call.extend(self.settings["group"][role])
+        role_call.extend(self.settings["users"][role])
         return role_call
 
     def get_role_user(self, user):
