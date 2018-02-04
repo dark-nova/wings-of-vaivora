@@ -203,14 +203,14 @@ msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
 cmd_fragment    =   "```diff\n" + "+ Examples\n" + "```"
 command.append(cmd_fragment)
 
-examples        =   "[$settings add talt 12]\n; adds 12 Talt to yourself\n" + \
-                    "[$settings set talt 12]\n; sets your contribution to 12 Talt. Not the same as above.\n" + \
-                    "[$settings add talt 240 points]\n; equivalent to first command\n" + \
-                    "[$settings add talt 12 @mention]\n; adds 12 Talt to mentioned target(s)\n" + \
-                    "[$settings set channel management #channel]\n; sets the channel(s) as management\n" + \
-                    "[$settings set role authorized @mention]\n; changes the mentioned target(s) to \"authorized\"\n" + \
-                    "[$settings promote @mention]\n; increases the mentioned target(s)'s role by one level, i.e. none -> member -> authorized\n" + \
-                    "[$settings validate @mention]\n; validates the mentioned target(s)'s Talt contribution(s); omit mention to apply to all\n"
+examples        =   ("[$settings add talt 12]\n; adds 12 Talt to yourself\n" + 
+                     "[$settings set talt 12]\n; sets your contribution to 12 Talt. Not the same as above.\n" + 
+                     "[$settings add talt 240 points]\n; equivalent to first command\n" + 
+                     "[$settings add talt 12 @mention]\n; adds 12 Talt to mentioned target(s)\n" + 
+                     "[$settings set channel management #channel]\n; sets the channel(s) as management\n" + 
+                     "[$settings set role authorized @mention]\n; changes the mentioned target(s) to \"authorized\"\n" + 
+                     "[$settings promote @mention]\n; increases the mentioned target(s)'s role by one level, i.e. none -> member -> authorized\n" + 
+                     "[$settings validate @mention]\n; validates the mentioned target(s)'s Talt contribution(s); omit mention to apply to all\n")
 
 cmd_fragment    =  "```ini\n" + examples
 cmd_fragment    += "```"
@@ -220,7 +220,7 @@ command.append(cmd_fragment)
 # immutable
 arg_info        =   list()
 arg_info.append("```ini\n")
-arg_info.append("Prefix=\"" +   arg_prefix +    "\": " + arg_prefix_alt + "\n" + \
+arg_info.append("Prefix=\"" +   arg_prefix +    "\": " + arg_prefix_alt + "\n" + 
                 "; default: [$] or [Vaivora, ]\n" + \
                 "This server may have others. Run [$settings get prefix] to check.\n")
 arg_info.append("\n---\n\n")
@@ -251,7 +251,6 @@ arg_info.append("Argument=\"" + arg_rol_cat + "\n" + \
                 "You must be of \"Authorized\" level.\n" + \
                 "Mentions are required.\n")
 arg_info.append("\n---\n\n")
-arg_info.append("```")
 
 # validation
 arg_info.append("Argument=\"" + arg_val_cat + "\n" + \
@@ -284,14 +283,6 @@ arg_info.append("Argument=\"" + arg_set_talt + "\n" + \
                 "Mentions are optional. If absent, [talt] will apply to yourself.\n")
 arg_info.append("\n---\n\n")
 
-
-cmd_fragment    =   ''.join(arg_info)
-command.append(cmd_fragment)
-
-arg_info        =   list()
-arg_info.append("```ini\n")
-
-
 # setting: channel
 arg_info.append("Argument=\"" + arg_set_chan + "\n" + \
                 "Opt=\"" + arg_set_chanA + "\":\n" + \
@@ -301,6 +292,7 @@ arg_info.append("Argument=\"" + arg_set_chan + "\n" + \
                 "You must be of \"Authorized\" level.\n" + \
                 "Channel mentions are required.\n")
 arg_info.append("\n---\n\n")
+arg_info.append("```")
 
 
 cmd_fragment    =   ''.join(arg_info)
@@ -1359,6 +1351,9 @@ class Settings:
         # "set", etc succeeded
         else:
             return (ret_msg,)
+
+def get_help():
+    return command
 
 #### Examples
 # $settings

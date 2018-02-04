@@ -326,6 +326,10 @@
             "d": {
                 "status": "[n]",
                 "changelog": "```ini\n[Version:] [n]1.9d\n[Date:]    2018/02/04\n``````diff\n+ Fixed role manipulation.\n```"
+            },
+            "e": {
+                "status": "[n]",
+                "changelog": "```ini\n[Version:] [n]1.9e\n[Date:]    2018/02/04\n``````diff\n+ Fixed `settings` help.\n  * Thanks to Wolfy for bug report.\n```"
             }
         }
     }
