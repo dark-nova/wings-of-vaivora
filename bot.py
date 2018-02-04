@@ -416,7 +416,7 @@ async def sanitize_cmd(message, command_type):
         msg_prefix  =   message.author.mention + " "
 
     if command_type == command_boss:
-        return_msg  = vaivora_modules.boss.process_command(server_id, msg_ch_id, command)
+        return_msg  =   vaivora_modules.boss.process_command(server_id, msg_ch_id, command)
         if not return_msg:
             await client.send_message(msg_channel, msg_prefix + "No records were retrieved.")
         await client.send_message(msg_channel, msg_prefix + return_msg[0])
@@ -426,6 +426,14 @@ async def sanitize_cmd(message, command_type):
         return True
 
     elif command_type == command_settings:
+
+        if rgx_help.match(command[0]):
+            return_msg  =   vaivora_modules.settings.get_help()
+            if len(return_msg) > 1:
+                for msg_frag in return_msg[1:]:
+                    await client.send_message(msg_channel, msg_frag)
+            return True
+
         set_cmd     =   command[0]
         mention_u   =   [mention.id for mention in message.mentions]
         mention_g   =   [mention.id for mention in message.role_mentions]
