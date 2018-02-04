@@ -60,7 +60,7 @@ msg_sub             =   "Your subscription preference for changelogs has been up
 
 omae_wa_mou         =   "You are already " # dead
 
-none_matched        =   "```\n\*crickets chirping\*\n```\n"
+none_matched        =   "```\n*crickets chirping*\n```\n"
 
 ### BGN REGEX
 
@@ -73,7 +73,7 @@ rgx_meme            =   re.compile(r'pl(ea)?[sz]e?', re.IGNORECASE)
 rgx_ch_hash         =   re.compile(r'#')
 rgx_ch_member       =   re.compile(r'@')
 rgx_talt            =   re.compile(r'talt', re.IGNORECASE)
-rgx_ini             =   re.compile(r'^```\n?ini\n?```', re.IGNORECASE) # match hidden blocks
+rgx_ini             =   re.compile(r'^```\n?ini\n?(```)?$', re.IGNORECASE) # match hidden blocks
 
 to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
 
@@ -475,10 +475,7 @@ async def sanitize_cmd(message, command_type):
                 await client.send_message(msg_channel, message_to_send + "*crickets chirping*\n" + "```\n")
                 return True
 
-            print(r_ids)
-
             for r_id in r_ids:
-                print(r_id)
                 # if type(r_id[0]) is list:
                 #     ident   =   r_id[-1]
                 #     things  =   r_id[0]
@@ -511,16 +508,13 @@ async def sanitize_cmd(message, command_type):
 
                 # unknown; no identifying character detected, but role most likely
                 else:
-                    print('a')
                     try:
-                        print('b')
                         tgt =   [ro.id for ro in message.server.roles].index(r_id)
                         nom =   "&" + message.server.roles[tgt].name
                         message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
-                        print('c')
                     except: # user or role no longer exists; total purge (remove all permissions)
                         try:
-                            tgt =   message.server.get_member(mem)
+                            tgt =   message.server.get_member(r_id)
                             nom =   tgt.name + "#" + tgt.discriminator
                             message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
                         except:
@@ -537,16 +531,18 @@ async def sanitize_cmd(message, command_type):
             if i % 5 == 0:                    
                 await client.send_message(msg_channel, message_to_send + "```\n")
                 message_to_send =   "```ini"
-                i   =   0
 
-        # flush remaining
-        if message_to_send and not rgx_ini.match(message_to_send):
-            await client.send_message(msg_channel, message_to_send + "```\n")
-        elif msg_channel:
-            await client.send_message(msg_channel, none_matched)
 
-        # except:
-        #     pass
+        try:
+            # flush remaining
+            if message_to_send and not rgx_ini.match(message_to_send):
+                await client.send_message(msg_channel, message_to_send + "```\n")
+            elif message_to_send and i < 5:
+                await client.send_message(msg_channel, none_matched)
+        except Exception as e:
+            # do something with e later
+            pass
+
         vdst[server_id].toggle_lock(False)
 
     else:
