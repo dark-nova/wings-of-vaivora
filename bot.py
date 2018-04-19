@@ -74,6 +74,7 @@ rgx_ch_hash         =   re.compile(r'#')
 rgx_ch_member       =   re.compile(r'@')
 rgx_talt            =   re.compile(r'talt', re.IGNORECASE)
 rgx_ini             =   re.compile(r'^```\n?ini\n?(```)?$', re.IGNORECASE) # match hidden blocks
+rgx_py              =   re.compile(r'^```\n?python\n?(```)?$', re.IGNORECASE) # match hidden blocks again
 
 to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
 
@@ -420,9 +421,29 @@ async def sanitize_cmd(message, command_type):
         if not return_msg:
             await client.send_message(msg_channel, msg_prefix + "No records were retrieved.")
         await client.send_message(msg_channel, msg_prefix + return_msg[0])
+
+        message_to_send =   "```python\n"
+        i   =   0
+
         if len(return_msg) > 1:
             for msg_frag in return_msg[1:]:
-                await client.send_message(msg_channel, msg_frag)
+                message_to_send +=  msg_frag + "\n"
+                i   +=  1
+
+                if i % 5 == 0:
+                    message_to_send +=  "```"
+                    await client.send_message(msg_channel, message_to_send)
+                    message_to_send =   "```python\n"
+
+            try:
+                # flush remaining
+                if message_to_send and not rgx_py.match(message_to_send):
+                    await client.send_message(msg_channel, message_to_send + "```\n")
+                elif message_to_send and i < 5:
+                    await client.send_message(msg_channel, none_matched)
+            except Exception as e:
+                # do something with e later
+                pass
         return True
 
     elif command_type == command_settings:
@@ -464,7 +485,7 @@ async def sanitize_cmd(message, command_type):
             return_msg[0]   =   sorted(return_msg[0], key=lambda t: t[1], reverse=True)
             return_msg[0]   =   [ (t[0]+'@'," has contributed " + str(int(t[1])) + " Talt.") for t in return_msg[0] ]
 
-        message_to_send =   "```ini"
+        message_to_send =   "```ini\n"
 
         # loop count
         i   =   0
