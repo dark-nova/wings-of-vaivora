@@ -296,8 +296,8 @@ rgx_loc_iwd =   re.compile(r'inner', re.IGNORECASE)
 
 # BGN BOSS
 
-demon_lords_A   =   '[Mirtis, Rexipher, Helgasercle, Demon Lord Marnox]'
-demon_lords_B   =   '[Demon Lord Nuaele, Demon Lord Zaura, Demon Lord Blut]'
+demon_lords_A   =   '[Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox]'
+demon_lords_B   =   '[Demon Lords: Nuaele, Zaura, Blut]'
 
 # 'bosses'
 #   list of boss names in full
@@ -892,9 +892,9 @@ def process_command(server_id, msg_channel, arg_list):
                     str(arg_min) + " or at most " + str(arg_max) + " arguments.\n" + msg_help]
     # $boss [boss]|all [entry] ...
     elif rgx_entry.match(arg_list[1]) and len(arg_list) == 2:
-        return [process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1])]
+        return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1])
     elif rgx_entry.match(arg_list[1]):
-        return [process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1], arg_list[2:])]
+        return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1], arg_list[2:])
     # $boss [boss] [query]
     elif rgx_query.match(arg_list[1]):
         return [process_cmd_query(cmd_boss[0], arg_list[1])]
@@ -1122,7 +1122,7 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
     if not rgx_erase.match(entry):
         valid_boss_records = list()
         valid_boss_records.append("Records:")
-        valid_boss_records.append("```python\n")
+        #valid_boss_records.append("```python\n")
         boss_records = vaivora_modules.db.Database(server_id).check_db_boss(bosses=tg_bosses) # possible return
 
         # empty
@@ -1204,8 +1204,8 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
 
             valid_boss_records.append(ret_message)
 
-        valid_boss_records.append("```\n")
-        return '\n'.join(valid_boss_records)
+        #valid_boss_records.append("```\n")
+        return valid_boss_records #'\n'.join(valid_boss_records)
 
 
 def process_cmd_query(tg_boss, query):
