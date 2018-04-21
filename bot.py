@@ -197,14 +197,14 @@ async def on_guild_join(guild):
     Returns:
         True if successful; False otherwise
     """
-    vaivora_version   = vaivora_modules.version.get_current_version()
-    if server.unavailable:
+    vaivora_version = vaivora_modules.version.get_current_version()
+    if guild.unavailable:
         return False
-    vdbs[server.id]     = vaivora_modules.db.Database(server.id)
-    o_id                = server.owner.id
-    vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
-    await greet(server.id, server.owner)
-    await client.send_message(server.owner, welcome)
+    vdbs[guild.id] = vaivora_modules.db.Database(str(guild.id))
+    owner = guild.owner
+    vdst[guild.id] = vaivora_modules.settings.Settings(str(guild.id), str(owner.id))
+    await greet(guild.id, owner)
+    await client.send_message(owner, welcome)
     return True
 
 
