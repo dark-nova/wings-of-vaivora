@@ -186,20 +186,16 @@ async def greet(server_id, server_owner):
             return
 
 
-
-# @func:    on_server_available(discord.Server) : bool
-# @arg:
-#       server : discord.Server
-#           the Discord server joining
-# @return:
-#       True if ready, False otherwise
 @client.event
-async def on_server_join(server):
+async def on_guild_join(guild):
     """
-    :func:`on_server_join` handles what to do when a guild adds Wings of Vaivora.
+    :func:`on_guild_join` handles what to do when a guild adds Wings of Vaivora.
 
     Args:
-        server ()
+        guild (discord.Guild): the guild which this client has joined
+
+    Returns:
+        True if successful; False otherwise
     """
     vaivora_version   = vaivora_modules.version.get_current_version()
     if server.unavailable:
