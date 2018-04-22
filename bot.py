@@ -232,6 +232,25 @@ async def on_guild_join(guild):
     return True
 
 
+@bot.command(aliases=['halp'])
+async def help(ctx):
+    """
+    :func:`help` handles "$help" commands.
+
+    Args:
+        ctx (discord.ext.commands.context): context of the message
+
+    Returns:
+        True if successful; False otherwise
+    """
+    try:
+        await ctx.author.send(msg_help)
+    except:
+        return False
+
+    return True
+
+
 @bot.command()
 async def boss(ctx, *args):
     """
@@ -247,8 +266,8 @@ async def boss(ctx, *args):
     if rgx_help.match(args[0]):
         pass
 
-    if await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
-        pass
+    if not await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
+        return False
 
     pass
 
@@ -268,10 +287,29 @@ async def settings(ctx, *args):
     if rgx_help.match(args[0]):
         pass
 
-    if await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
-        pass
+    if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
+        return False
 
     pass
+
+
+@bot.command(aliases=['pls', 'plz', 'ples'])
+async def please(ctx):
+    """
+    :func:`please` is a meme
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+
+    Returns:
+        True if successful; False otherwise
+    """
+    try:
+        await ctx.send('{} https://i.imgur.com/kW3o6eC.png'.format(ctx.author.mention))
+    except:
+        return False
+
+    return True
 
 
 @client.event
@@ -281,7 +319,7 @@ async def check_channel(guild_id, ch_id, ch_type):
 
     Args:
         guild_id (int): the id of the guild involved
-        ch_id (str, int): the id of the channel to check (i.e. "boss", "management")
+        ch_id (str, int): the id of the channel to check (i.e. "boss":boss, "management":settings)
         ch_type (str): the type (name) of the channel
 
     Returns:
@@ -340,10 +378,10 @@ async def on_message(message):
     #         await client.send_message(message.author, omae_wa_mou + mode + ".\n")
     #         return False
 
-    # help
-    elif rgx_help.search(message.content):
-        await client.send_message(message.author, msg_help)
-        return True
+    # # help
+    # elif rgx_help.search(message.content):
+    #     await client.send_message(message.author, msg_help)
+    #     return True
 
     # nothing else matched
     else:
