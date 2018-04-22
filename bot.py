@@ -23,8 +23,10 @@ for mod in vaivora_modules.modules:
 # basic declarations and initializations
 #client              =   discord.Client()
 bot = commands.Bot(command_prefix=['$','Vaivora, '])
-vdbs                =   dict()
-vdst                =   dict()
+
+# vdbs & vdst will now use int for dict indices; previously str of int
+vdbs = dict()
+vdst = dict()
 
 
 ### BGN CONST
