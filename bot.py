@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import discord
+from discord.ext import commands
 import logging
 import sqlite3
 import asyncio
@@ -233,13 +234,68 @@ async def on_guild_join(guild):
 
 @bot.command()
 async def boss(ctx, *args):
+    """
+    :func:`boss` handles "$boss" commands.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        *args (tuple): arguments to be supplied for the command
+
+    Returns:
+        True if successful; False otherwise
+    """
+    if rgx_help.match(args[0]):
+        pass
+
+    if await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
+        pass
+
     pass
 
 
 @bot.command()
 async def settings(ctx, *args):
+    """
+    :func:`settings` handles "$settings" commands.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        *args (tuple): arguments to be supplied for the command
+
+    Returns:
+        True if successful; False otherwise
+    """
+    if rgx_help.match(args[0]):
+        pass
+
+    if await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
+        pass
+
     pass
 
+
+@client.event
+async def check_channel(guild_id, ch_id, ch_type):
+    """
+    :func:`check_channel` checks whether a channel is allowed to interact with Wings of Vaivora.
+
+    Args:
+        guild_id (int): the id of the guild involved
+        ch_id (str, int): the id of the channel to check (i.e. "boss", "management")
+        ch_type (str): the type (name) of the channel
+
+    Returns:
+        True if successful; False otherwise
+    """
+    if type(ch_id) is int:
+        ch_id = str(ch_id)
+
+    chs = vdst[guild_id].get_channel(ch_type)
+
+    if chs and ch_id not in chs:
+        return False
+    else: # in the case of `None` chs, all channels are valid
+        return True
 
 
 # @func:    on_message(discord.Message) : bool
