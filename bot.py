@@ -21,7 +21,8 @@ for mod in vaivora_modules.modules:
     im(mod)
 
 # basic declarations and initializations
-client              =   discord.Client()
+#client              =   discord.Client()
+bot = commands.Bot(command_prefix=['$','Vaivora, '])
 vdbs                =   dict()
 vdst                =   dict()
 
@@ -134,56 +135,76 @@ def splitDblQuotesSpaces(command):
     return list(lex)
 
 
-# @func:    on_ready()
-# @return:
-#       None
+
 @client.event
 async def on_ready():
+    """
+    :func:`on_ready` handles file prep before the bot is ready.
+
+    Returns:
+        None
+    """
     global first_run
     print("Logging in...")
-    print('Successsfully logged in as: ' + client.user.name + '#' + client.user.id + '. Ready!')
-    await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."), status=discord.Status.idle)
-    first_run   +=  len(client.servers)
-    nservs      =   str(first_run)
-    await client.change_presence(game=discord.Game(name=("with files. Processing " + nservs + " guilds...")), status=discord.Status.dnd)
-    for server in client.servers:
-        if not server.unavailable:        
-            vdbs[server.id]     = vaivora_modules.db.Database(server.id)
-            o_id                = server.owner.id
-            vdst[server.id]     = vaivora_modules.settings.Settings(server.id, o_id)
-            await greet(server.id, server.owner)
-        first_run   -=  1
+    print('Successsfully logged in as: {}#{}. Ready!'.format(client.user.name, client.user.id))
+    await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."),
+                                 status=discord.Status.idle)
+    first_run += len(client.guilds)
+    await client.change_presence(game=discord.Game(name=("with files. Processing {} guilds...".format(str(first_run)))),
+                                 status=discord.Status.dnd)
+    for guild in client.guilds:
+        if not guild.unavailable:
+            guild_id = str(guild.id)
+            guild_owner_id = str(guild.owner.id)
+            vdbs[guild.id] = vaivora_modules.db.Database(guild_id)
+            vdst[guild.id] = vaivora_modules.settings.Settings(guild_id, guild_owner_id)
+            await greet(guild.id, guild.owner)
+        first_run -= 1
     await asyncio.sleep(1)
-    first_run   =   0
-    await client.change_presence(game=discord.Game(name=("in " + nservs + " guilds # [$help] or [Vaivora, help] for info")), status=discord.Status.online)
+    first_run = 0
+    await client.change_presence(game=discord.Game(name=("in {} guilds # [$help] or [Vaivora, help] for info".format(str(len(client.guilds))))),
+                                 status=discord.Status.online)
     return
 
 
-# @func:    greet(str, discord.Member) : void
-# @arg:
-#       server_id : str
-#           the server's id
-#       server_owner : discord.Member
-#           the server's owner
 @client.event
-async def greet(server_id, server_owner):
-    do_not_msg  = await get_unsubscribed()
-    if server_owner.id in do_not_msg:
-        return
+async def greet(guild_id, guild_owner):
+    """
+    :func:`greet` sends welcome messages to new participants of Wings of Vaivora.
 
-    iters   =   0
-    nrevs   =   vdst[server_id].greet(vaivora_modules.version.get_current_version())
+    Args:
+        guild_id (int): the Discord guild's id
+        server_owner (discord.Member): the owner of the aforementioned server
+
+    Returns:
+        True if successful; False otherwise
+    """
+
+    try:
+        do_not_msg = await get_unsubscribed()
+    except:
+        # can't get unsubscribed? avoid sending messages entirely
+        return False
+
+    if guild_owner.id in do_not_msg:
+        return True
+
+    iters = 0
+    nrevs = vdst[guild_id].greet(vaivora_modules.version.get_current_version())
     if nrevs == 0:
-        return
+        return True
 
     for vaivora_log in vaivora_modules.version.get_changelogs(nrevs):
         iters += 1
-        print(server_id, '.', server_owner.id, ": receiving", iters, "logs out of", nrevs*-1)
+        print(server_id, '.', str(guild_owner), guild_owner.id,
+              ": receiving", iters, "logs out of", nrevs*-1)
         try:
             await client.send_message(server_owner, vaivora_log)
         except: # cannot send messages, ignore
             ### TODO: handle deletion/kick from server(?)
-            return
+            return False
+
+    return True
 
 
 @client.event
