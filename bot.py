@@ -24,7 +24,7 @@ for mod in vaivora_modules.modules:
 #client              =   discord.Client()
 bot = commands.Bot(command_prefix=['$','Vaivora, '])
 
-# vdbs & vdst will now use int for dict indices; previously str of int
+# vdbs & vdst will now use int for dict keys; previously str of int
 vdbs = dict()
 vdst = dict()
 
@@ -229,6 +229,17 @@ async def on_guild_join(guild):
     await greet(guild.id, owner)
     await client.send_message(owner, welcome)
     return True
+
+
+@bot.command()
+async def boss(ctx, *args):
+    pass
+
+
+@bot.command()
+async def settings(ctx, *args):
+    pass
+
 
 
 # @func:    on_message(discord.Message) : bool
