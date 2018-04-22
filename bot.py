@@ -196,8 +196,8 @@ async def greet(guild_id, guild_owner):
 
     for vaivora_log in vaivora_modules.version.get_changelogs(nrevs):
         iters += 1
-        print(server_id, '.', str(guild_owner), guild_owner.id,
-              ": receiving", iters, "logs out of", nrevs*-1)
+        print('{}.{}_{}: receiving {} logs of {}'.format(server_id, str(guild_owner), guild_owner.id,
+                                                         str(iters), str(nrevs*-1)))
         try:
             await client.send_message(server_owner, vaivora_log)
         except: # cannot send messages, ignore
