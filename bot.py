@@ -287,6 +287,8 @@ async def settings(ctx, *args):
     if rgx_help.match(args[0]):
         pass
 
+    args = await sanitize(args[1:])
+
     if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
         return False
 
@@ -336,6 +338,25 @@ async def check_channel(guild_id, ch_id, ch_type):
         return True
 
 
+@client.event
+async def sanitize(args: list):
+    """
+    :func:`sanitize` sanitizes command arguments of invalid characters, including setting to lowercase.
+
+    Args:
+        args (list): the arguments to sanitize
+
+    Returns:
+        a list containing the sanitized arguments
+    """
+    sanitized = []
+    for arg in args:
+        arg = to_sanitize.sub('', arg).lower()
+        sanitized.append(arg)
+
+    return sanitized
+
+
 # @func:    on_message(discord.Message) : bool
 #     begin code for message processing
 # @arg:
@@ -350,9 +371,9 @@ async def on_message(message):
     if first_run or not rgx_prefix.match(message.content):
         return False
 
-    if rgx_meme.match(message.content):
-        await client.send_message(message.channel, message.author.mention + " " + "https://i.imgur.com/kW3o6eC.png")
-        return True
+    # if rgx_meme.match(message.content):
+    #     await client.send_message(message.channel, message.author.mention + " " + "https://i.imgur.com/kW3o6eC.png")
+    #     return True
 
     # boss
     if rgx_boss.search(message.content):
