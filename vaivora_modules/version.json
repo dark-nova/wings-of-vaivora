@@ -334,6 +334,10 @@
             "f": {
                 "status": "[i]",
                 "changelog": "```ini\n[Version:] [i]1.9f\n[Date:]    2018/04/19\n``````diff\n+ Corrected issue with \"boss all list\" when printing a very long list\n```"
+            },
+            "g": {
+                "status": "[n]",
+                "changelog": "```ini\n[Version:] [n]1.9g\n[Date:]    2018/04/23\n``````diff\n+ Fixed an issue where boss commands would return strings that were returned 1 character per line\n```"
             }
         }
     }
