@@ -420,6 +420,10 @@ async def sanitize_cmd(message, command_type):
         return_msg  =   vaivora_modules.boss.process_command(server_id, msg_ch_id, command)
         if not return_msg:
             await client.send_message(msg_channel, msg_prefix + "No records were retrieved.")
+
+        if type(return_msg) is str:
+            await client.send_message(msg_channel, msg_prefix + return_msg)
+            
         await client.send_message(msg_channel, msg_prefix + return_msg[0])
 
         message_to_send =   "```python\n"
