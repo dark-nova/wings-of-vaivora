@@ -266,6 +266,8 @@ async def boss(ctx, *args):
     if rgx_help.match(args[0]):
         pass
 
+    args = await sanitize(args[1:]) # this will implicitly remove index 0
+
     if not await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
         return False
 
@@ -287,7 +289,7 @@ async def settings(ctx, *args):
     if rgx_help.match(args[0]):
         pass
 
-    args = await sanitize(args[1:])
+    args = await sanitize(args[1:]) # this will implicitly remove index 0
 
     if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
         return False
