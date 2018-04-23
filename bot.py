@@ -423,6 +423,7 @@ async def sanitize_cmd(message, command_type):
 
         if type(return_msg) is str:
             await client.send_message(msg_channel, msg_prefix + return_msg)
+            return True
             
         await client.send_message(msg_channel, msg_prefix + return_msg[0])
 
