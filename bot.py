@@ -317,7 +317,7 @@ async def please(ctx):
 
 
 @client.event
-async def check_channel(guild_id, ch_id, ch_type):
+async def check_channel(guild_id, ch_id: str, ch_type):
     """
     :func:`check_channel` checks whether a channel is allowed to interact with Wings of Vaivora.
 
@@ -329,8 +329,6 @@ async def check_channel(guild_id, ch_id, ch_type):
     Returns:
         True if successful; False otherwise
     """
-    if type(ch_id) is int:
-        ch_id = str(ch_id)
 
     chs = vdst[guild_id].get_channel(ch_type)
 
