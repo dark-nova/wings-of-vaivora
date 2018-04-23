@@ -1,4 +1,3 @@
-# import additional constants
 from datetime import datetime, timedelta
 import re
 import math
@@ -7,7 +6,7 @@ import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
 from vaivora_modules.settings import channel_boss as channel_boss
-
+from constants.boss import en_us as lang
 
 # BGN CONST
 
