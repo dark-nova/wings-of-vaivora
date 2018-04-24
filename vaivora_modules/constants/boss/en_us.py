@@ -1,4 +1,5 @@
 MODULE_NAME = "boss"
+
 HELP = []
 HELP.append(
 """
@@ -6,6 +7,7 @@ HELP.append(
 Usage:
     $boss <target> <status> <time> [<channel>] [<map>]
     $boss <target> (<entry> [<channel>] | <query> | <type>)
+    $boss help
 
 Examples:
     $boss cerb died 12:00pm mok
@@ -70,6 +72,7 @@ Options:
         This subcommand returns a list of bosses assigned to a type.
         Options:
             "world": bosses that can spawn across all channels in a particular map; they each have a gimmick to spawn
+            "event": bosses/events that can be recorded; usually time gimmick-related
             "field": bosses that spawn only in CH 1; they spawn without a separate mechanism/gimmick
             "demon": Demon Lords, which also count as field bosses; they have longer spawn times and the server announces everywhere prior to a spawn
         <target> must be "all".
@@ -96,38 +99,249 @@ Options (continued):
         You may use part of the map's name. If necessary, enclose the map's name with quotations.
         Omit for world bosses and situations in which you do not know the last map.
         <target> cannot be "all". Only valid for <status>.
+
+    <help>
+        Prints this page.
 ```
 """)
 
+KW_WORLD = "world"
+KW_EVENT = "event"
+KW_FIELD = "field"
+KW_DEMON = "Demon Lord"
 
+# sorted by level
+BOSS_W_ABOMINATION = 'Abomination'
+BOSS_W_TEMPLESHOOTER = 'Earth Templeshooter'
+BOSS_W_CANCERIL = 'Earth Canceril'
+BOSS_W_ARCHON = 'Earth Archon'
+BOSS_W_NECROVENTER = 'Necroventer'
+BOSS_W_KUBAS = 'Kubas Event'
+BOSS_W_MARIONETTE = 'Marionette'
+BOSS_W_DULLAHAN = 'Dullahan Event'
+
+# sorted alphabetically
+EVENT_ALEMETH_FLOWER = 'Alemeth Yellow-Eyed Flower Petal'
+EVENT_LEGWYN_STONE = 'Legwyn Giant Star Stone'
+
+# sorted by level
+BOSS_F_CHAPPARITION = 'Bleak Chapparition'
+BOSS_F_GLACKUMAN = 'Rugged Glackuman'
+BOSS_F_SUCCUBUS = 'Alluring Succubus'
+BOSS_F_VELNIAMONKEY = 'Hungry Velnia Monkey'
+BOSS_F_DEATHWEAVER = 'Blasphemous Deathweaver'
+BOSS_F_MINELOADER = 'Noisy Mineloader'
+BOSS_F_FIRELORD = 'Burning Fire Lord'
+BOSS_F_FERRETMARAUDER = 'Forest Keeper Ferret Marauder'
+BOSS_F_ELLAGANOS = 'Starving Ellaganos'
+BOSS_F_CERBERUS = 'Violent Cerberus'
+BOSS_F_HARPEIA = 'Wrathful Harpeia'
+BOSS_F_PRISONCUTTER = 'Prison Manager Prison Cutter'
+BOSS_F_MOLICH = 'Frantic Molich'
+
+# sorted by "age"
 DEMON_LORDS_A = '[Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox]'
 DEMON_LORDS_B = '[Demon Lords: Nuaele, Zaura, Blut]'
 
-BOSSES_WORLD = ['Abomination', 
-                'Earth Templeshooter', 
-                'Earth Canceril', 
-                'Earth Archon', 
-                'Necroventer', 
-                'Kubas Event', 
-                'Marionette', 
-                'Dullahan Event', 
-                'Legwyn Crystal Event']
+BOSSES = dict()
 
-BOSSES_FIELD = ['Bleak Chapparition', 
-                'Rugged Glackuman', 
-                'Alluring Succubus', 
-                'Hungry Velnia Monkey', 
-                'Blasphemous Deathweaver', 
-                'Noisy Mineloader', 
-                'Burning Fire Lord', 
-                'Forest Keeper Ferret Marauder', 
-                'Starving Ellaganos', 
-                'Violent Cerberus', 
-                'Wrathful Harpeia', 
-                'Prison Manager Prison Cutter', 
-                'Frantic Molich']
+BOSSES[KW_WORLD] = [BOSS_W_ABOMINATION, 
+                    BOSS_W_TEMPLESHOOTER, 
+                    BOSS_W_CANCERIL, 
+                    BOSS_W_ARCHON, 
+                    BOSS_W_NECROVENTER, 
+                    BOSS_W_KUBAS, 
+                    BOSS_W_MARIONETTE, 
+                    BOSS_W_DULLAHAN]
 
-BOSSES_DEMON = [DEMON_LORDS_A,
-                DEMON_LORDS_B]
+BOSSES[KW_EVENT] = [EVENT_ALEMETH_FLOWER, 
+                    EVENT_LEGWYN_STONE]
 
-BOSSES = BOSSES_WORLD + BOSSES_FIELD + BOSSES_DEMON
+BOSSES[KW_FIELD] = [BOSS_F_CHAPPARITION, 
+                    BOSS_F_GLACKUMAN, 
+                    BOSS_F_SUCCUBUS, 
+                    BOSS_F_VELNIAMONKEY, 
+                    BOSS_F_DEATHWEAVER, 
+                    BOSS_F_MINELOADER, 
+                    BOSS_F_FIRELORD, 
+                    BOSS_F_FERRETMARAUDER, 
+                    BOSS_F_ELLAGANOS, 
+                    BOSS_F_CERBERUS, 
+                    BOSS_F_HARPEIA, 
+                    BOSS_F_PRISONCUTTER, 
+                    BOSS_F_MOLICH]
+
+BOSSES[KW_DEMON] = [DEMON_LORDS_A,
+                    DEMON_LORDS_B]
+
+ALL_BOSSES = BOSSES[KW_WORLD] + BOSSES[KW_FIELD] + BOSSES[KW_DEMON]
+
+# bosses that spawn in...
+# ...two hours
+BOSS_SPAWN_02H = [BOSS_W_ABOMINATION, BOSS_W_DULLAHAN]
+# ...seven hours, 30 minutes
+BOSS_SPAWN_330 = BOSSES[KW_DEMON]
+
+BOSSES_EVENTS = [BOSS_W_KUBAS, BOSS_W_DULLAHAN] + BOSSES[KW_EVENT]
+
+# use for literal comparisons only
+BOSS_SYNONYMS = {BOSS_W_ABOMINATION: ['abom'],
+
+                 BOSS_W_TEMPLESHOOTER: ['temple shooter', 
+                                        'ts', 
+                                        'ets', 
+                                        'templeshooter'],
+
+                 BOSS_W_CANCERIL: ['canceril', 
+                                   'ec', 
+                                   'crab'], 
+
+                 BOSS_W_ARCHON: ['archon'],
+
+                 BOSS_W_NECROVENTER: ['nv',
+                                      'necro'],
+
+                 BOSS_W_KUBAS: ['kubas'],
+
+                 BOSS_W_MARIONETTE: ['marionette', 
+                                     'mario',
+                                     'luigi'], 
+
+                 BOSS_W_DULLAHAN: ['dull', 
+                                   'dulla', 
+                                   'dullachan'], 
+
+                 EVENT_ALEMETH_FLOWER: ['flower'],
+
+                 EVENT_LEGWYN_STONE: ['legwyn', 
+                                      'crystal'],
+
+                 BOSS_F_CHAPPARITION: ['chap',
+                                       'chapparition'],
+
+                 BOSS_F_GLACKUMAN: ['glackuman', 
+                                    'glack'],
+
+                 BOSS_F_SUCCUBUS: ['succubus',
+                                   'succ'],
+
+                 BOSS_F_VELNIAMONKEY: ['velnia monkey', 
+                                       'monkey', 
+                                       'velnia', 
+                                       'velniamonkey'],
+
+                 BOSS_F_DEATHWEAVER: ['deathweaver', 
+                                      'dw', 
+                                      'spider'],
+
+                 BOSS_F_MINELOADER: ['ml',
+                                     'mineloader'],
+
+                 BOSS_F_FIRELORD: ['fire lord',
+                                   'fl',
+                                   'firelord'],
+
+                 BOSS_F_FERRETMARAUDER: ['ferret marauder'
+                                         'ferret',
+                                         'marauder'],
+
+                 BOSS_F_ELLAGANOS: ['ellaganos', 
+                                    'ella'],
+
+                 BOSS_F_CERBERUS: ['cerberus',
+                                   'dog',
+                                   'cerb', 
+                                   'doge'], 
+
+                 BOSS_F_HARPEIA: ['harpeia',
+                                  'harp', 
+                                  'harpy', 
+                                  'harpie'],
+
+                 BOSS_F_PRISONCUTTER: ['prison cutter',
+                                       'prison',
+                                       'cutter',
+                                       'pcutter'],
+
+                 BOSS_F_MOLICH: ['molich',
+                                 'molick',
+                                 'mo\'lick'],
+
+                 DEMON_LORDS_A: ['mirtis'
+                                 'rexipher',
+                                 'helgasercle',
+                                 'marnox',
+                                 'rex', 
+                                 'goth',
+                                 'rexifer', 
+                                 'racksifur', 
+                                 'sexipher',
+                                 'helga',
+                                 'footballhead',
+                                 'marn'], 
+
+                 DEMON_LORDS_B: ['nuaele',
+                                 'zaura', 
+                                 'blut', 
+                                 'nuwhale',
+                                 'butt'],
+                }
+
+BOSS_LOCS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
+
+             BOSS_W_TEMPLESHOOTER: ['Royal Mausoleum Workers\' Lodge'],
+
+             BOSS_W_CANCERIL: ['Royal Mausoleum Constructors\' Chapel'], 
+
+             BOSS_W_ARCHON: ['Royal Mausoleum Storage'],
+
+             BOSS_W_NECROVENTER: ['Residence of the Fallen Legwyn Family'],
+
+             BOSS_W_KUBAS: ['Crystal Mine Lot 2 - 2F' ],
+
+             BOSS_W_MARIONETTE: ['Roxona Reconstruction Agency East Building'], 
+
+             BOSS_W_DULLAHAN: ['Roxona Reconstruction Agency West Building'], 
+
+             EVENT_ALEMETH_FLOWER: ['Alemeth Forest'],
+
+             EVENT_LEGWYN_STONE: ['Residence of the Fallen Legwyn Family'],
+
+             BOSS_F_CHAPPARITION: ['Novaha Institute'],
+
+             BOSS_F_GLACKUMAN: ['King\'s Plateau'],
+
+             BOSS_F_SUCCUBUS: ['Feretory Hills'],
+
+             BOSS_F_VELNIAMONKEY: ['Tenants\' Farm'],
+
+             BOSS_F_DEATHWEAVER: ['Demon Prison District 4'],
+
+             BOSS_F_MINELOADER: ['Pilgrim Path'],
+
+             BOSS_F_FIRELORD: ['Mage Tower 5F'],
+
+             BOSS_F_FERRETMARAUDER: ['Uskis Arable Land'],
+
+             BOSS_F_ELLAGANOS: ['Verkti Square'],
+
+             BOSS_F_CERBERUS: ['Mokusul Chamber'], 
+
+             BOSS_F_HARPEIA: ['Nahash Forest'],
+
+             BOSS_F_PRISONCUTTER: ['Investigation Room'],
+
+             BOSS_F_MOLICH: ['Tevhrin Stalactite Cave Section 4'],
+
+             DEMON_LORDS_A: ['City Wall District 8', 
+                             'Inner Wall District 8', 
+                             'Inner Wall District 9', 
+                             'Jeromel Park', 
+                             'Jonael Memorial', 
+                             'Outer Wall District 9'], 
+
+             DEMON_LORDS_B: ['Emmet Forest', 
+                             'Pystis Forest', 
+                             'Syla Forest', 
+                             'Mishekan Forest'],
+            }
