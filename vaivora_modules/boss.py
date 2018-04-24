@@ -693,7 +693,14 @@ bosses_with_floors      =                           [
 
 # END CONST
 
+def help():
+    """
+    :func:`help` returns help for this module.
 
+    Returns:
+        a list of detailed help messages
+    """
+    return lang.HELP
 
 
 def check_boss(entry):
