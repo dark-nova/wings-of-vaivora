@@ -3,7 +3,7 @@ MODULE_NAME = "boss"
 HELP = []
 HELP.append(
 """
-```bash
+```
 Usage:
     $boss <target> <status> <time> [<channel>] [<map>]
     $boss <target> (<entry> [<channel>] | <query> | <type>)
@@ -40,7 +40,7 @@ Examples:
 
 HELP.append(
 """
-```bash
+```
 Options:
     <target>
         This can be either "all" or part of the single boss's name. e.g. "cerb" for "Violent Cerberus"
@@ -81,7 +81,7 @@ Options:
 
 HELP.append(
 """
-```bash
+```
 Options (continued):
     <time>
         This refers only to server time. Remember to report in a format like "10:00".

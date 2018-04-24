@@ -23,7 +23,8 @@ for mod in vaivora_modules.modules:
 
 # basic declarations and initializations
 #client              =   discord.Client()
-bot = commands.Bot(command_prefix=['$','Vaivora, '])
+bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
+bot.remove_command('help')
 
 # vdbs & vdst will now use int for dict keys; previously str of int
 vdbs = dict()
@@ -57,8 +58,8 @@ debug_file  = wings + "debug"       + log
 
 first_run           =   0
 
-command_boss        =   "boss"
-command_settings    =   "settings"
+cmd_boss = "boss"
+cmd_settings = "settings"
 
 msg_sub             =   "Your subscription preference for changelogs has been updated:"
 
@@ -88,34 +89,41 @@ msg_help            =   """
 Here are commands. Valid prefixes are `$` (dollar sign) and `Vaivora,<space>`,
 e.g. `$boss` or `Vaivora, help`
 
-```bash
+```
 "Changelogs" commands
-$unsubscribe            # removes you from notifications if you are subscribed
-$subscribe              # subscribes you (guild/server owners automatically are subscribed)
-```
+    $unsubscribe
+    $subscribe
 
-```bash
+* These functions are currently disabled.
+```
+```
 "Boss" commands
-$boss [args ...]
-$boss help              # I suggest using this for more help and examples
-# Examples
-$boss all list
-$boss mineloader died 13:00 forest
-$boss ml died 1:00p "forest of prayer" # equivalent to above
-```
+    $boss [args ...]
+    $boss help
 
-```bash
+* Use "$boss help" for more information.
+
+Examples:
+    $boss all list
+    $boss mineloader died 13:00 forest
+    $boss ml died 1:00p "forest of prayer"
+
+* More examples in "$boss help"
+```
+```
 "Settings" commands
-$settings [args ...]
-$settings help          # I suggest using this for more help and examples
-# Examples
-$settings set role auth @Leaders
-$settings set role member @Members
-```
+    $settings [args ...]
+    $settings help
 
-```bash
-"General"
-$help                   # prints this page
+* Use "$settings help" for more information.
+
+Examples
+    $settings set role auth @Leaders
+    $settings set role member @Members
+```
+```
+General
+    $help: prints this page in Direct Message
 ```
 """
 
@@ -139,7 +147,7 @@ def splitDblQuotesSpaces(command):
 
 
 
-@client.event
+@bot.event
 async def on_ready():
     """
     :func:`on_ready` handles file prep before the bot is ready.
@@ -149,13 +157,13 @@ async def on_ready():
     """
     global first_run
     print("Logging in...")
-    print('Successsfully logged in as: {}#{}. Ready!'.format(client.user.name, client.user.id))
-    await client.change_presence(game=discord.Game(name="with startup. Please wait a moment..."),
-                                 status=discord.Status.idle)
-    first_run += len(client.guilds)
-    await client.change_presence(game=discord.Game(name=("with files. Processing {} guilds...".format(str(first_run)))),
-                                 status=discord.Status.dnd)
-    for guild in client.guilds:
+    print('Successsfully logged in as: {}#{}. Ready!'.format(bot.user.name, bot.user.id))
+    await bot.change_presence(activity=discord.Game(name="with startup. Please wait a moment..."),
+                              status=discord.Status.idle)
+    first_run += len(bot.guilds)
+    await bot.change_presence(activity=discord.Game(name=("with files. Processing {} guilds...".format(str(first_run)))),
+                              status=discord.Status.dnd)
+    for guild in bot.guilds:
         if not guild.unavailable:
             guild_id = str(guild.id)
             guild_owner_id = str(guild.owner.id)
@@ -165,19 +173,19 @@ async def on_ready():
         first_run -= 1
     await asyncio.sleep(1)
     first_run = 0
-    await client.change_presence(game=discord.Game(name=("in {} guilds # [$help] or [Vaivora, help] for info".format(str(len(client.guilds))))),
-                                 status=discord.Status.online)
+    await bot.change_presence(activity=discord.Game(name=("in {} guilds # [$help] or [Vaivora, help] for info".format(str(len(bot.guilds))))),
+                              status=discord.Status.online)
     return
 
 
-@client.event
+@bot.event
 async def greet(guild_id, guild_owner):
     """
     :func:`greet` sends welcome messages to new participants of Wings of Vaivora.
 
     Args:
         guild_id (int): the Discord guild's id
-        server_owner (discord.Member): the owner of the aforementioned server
+        guild_owner (discord.Member): the owner of the aforementioned server
 
     Returns:
         True if successful; False otherwise
@@ -199,10 +207,10 @@ async def greet(guild_id, guild_owner):
 
     for vaivora_log in vaivora_modules.version.get_changelogs(nrevs):
         iters += 1
-        print('{}.{}_{}: receiving {} logs of {}'.format(server_id, str(guild_owner), guild_owner.id,
+        print('{}.{}_{}: receiving {} logs of {}'.format(guild_id, str(guild_owner), guild_owner.id,
                                                          str(iters), str(nrevs*-1)))
         try:
-            await client.send_message(server_owner, vaivora_log)
+            await guild_owner.send(vaivora_log)
         except: # cannot send messages, ignore
             ### TODO: handle deletion/kick from server(?)
             return False
@@ -210,7 +218,7 @@ async def greet(guild_id, guild_owner):
     return True
 
 
-@client.event
+@bot.event
 async def on_guild_join(guild):
     """
     :func:`on_guild_join` handles what to do when a guild adds Wings of Vaivora.
@@ -228,12 +236,12 @@ async def on_guild_join(guild):
     owner = guild.owner
     vdst[guild.id] = vaivora_modules.settings.Settings(str(guild.id), str(owner.id))
     await greet(guild.id, owner)
-    await client.send_message(owner, welcome)
+    await owner.send(owner, welcome)
     return True
 
 
-@bot.command(aliases=['halp'])
-async def help(ctx):
+@bot.command(aliases=['help', 'halp'])
+async def _help(ctx):
     """
     :func:`help` handles "$help" commands.
 
@@ -264,7 +272,9 @@ async def boss(ctx, *args):
         True if successful; False otherwise
     """
     if rgx_help.match(args[0]):
-        pass
+        boss_help = vaivora_modules.boss.help()
+        for bh in boss_help:
+            await ctx.author.send(bh)
 
     args = await sanitize(args[1:]) # this will implicitly remove index 0
 
@@ -316,7 +326,7 @@ async def please(ctx):
     return True
 
 
-@client.event
+@bot.event
 async def check_channel(guild_id, ch_id: str, ch_type):
     """
     :func:`check_channel` checks whether a channel is allowed to interact with Wings of Vaivora.
@@ -338,7 +348,7 @@ async def check_channel(guild_id, ch_id: str, ch_type):
         return True
 
 
-@client.event
+@bot.event
 async def sanitize(args: list):
     """
     :func:`sanitize` sanitizes command arguments of invalid characters, including setting to lowercase.
@@ -363,51 +373,51 @@ async def sanitize(args: list):
 #     message: discord.Message; includes message among sender (discord.User) and server (discord.Server)
 # @return:
 #     True if succeeded, False otherwise
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return False # do not respond to self
+# @bot.event
+# async def on_message(message):
+#     if message.author == client.user:
+#         return False # do not respond to self
 
-    if first_run or not rgx_prefix.match(message.content):
-        return False
+#     if first_run or not rgx_prefix.match(message.content):
+#         return False
 
-    # if rgx_meme.match(message.content):
-    #     await client.send_message(message.channel, message.author.mention + " " + "https://i.imgur.com/kW3o6eC.png")
-    #     return True
+#     # if rgx_meme.match(message.content):
+#     #     await client.send_message(message.channel, message.author.mention + " " + "https://i.imgur.com/kW3o6eC.png")
+#     #     return True
 
-    # boss
-    if rgx_boss.search(message.content):
-        return await sanitize_cmd(message, command_boss)
+#     # boss
+#     if rgx_boss.search(message.content):
+#         return await sanitize_cmd(message, command_boss)
 
-    # settings
-    elif rgx_settings.search(message.content):
-        return await sanitize_cmd(message, command_settings)
+#     # settings
+#     elif rgx_settings.search(message.content):
+#         return await sanitize_cmd(message, command_settings)
 
-    # changelogs
-    # elif vaivora_modules.changelogs.cmd_csub.search(message.content):
-    #     # un-
-    #     if vaivora_modules.changelogs.cmd_un.match(message.content):
-    #         mode    =   vaivora_modules.changelogs.mode_unsub
-    #     else:
-    #         mode    =   vaivora_modules.changelogs.mode_sub
+#     # changelogs
+#     # elif vaivora_modules.changelogs.cmd_csub.search(message.content):
+#     #     # un-
+#     #     if vaivora_modules.changelogs.cmd_un.match(message.content):
+#     #         mode    =   vaivora_modules.changelogs.mode_unsub
+#     #     else:
+#     #         mode    =   vaivora_modules.changelogs.mode_sub
 
-    #     if await check_subscription(message.author, mode=mode):
-    #         await client.send_message(message.author, msg_sub + mode + ".\n")
-    #         return True
-    #     # subscription change failed because user is already of the same mode
-    #     else:
-    #         await client.send_message(message.author, omae_wa_mou + mode + ".\n")
-    #         return False
+#     #     if await check_subscription(message.author, mode=mode):
+#     #         await client.send_message(message.author, msg_sub + mode + ".\n")
+#     #         return True
+#     #     # subscription change failed because user is already of the same mode
+#     #     else:
+#     #         await client.send_message(message.author, omae_wa_mou + mode + ".\n")
+#     #         return False
 
-    # # help
-    # elif rgx_help.search(message.content):
-    #     await client.send_message(message.author, msg_help)
-    #     return True
+#     # # help
+#     # elif rgx_help.search(message.content):
+#     #     await client.send_message(message.author, msg_help)
+#     #     return True
 
-    # nothing else matched
-    else:
-        return False # silently ignore invalid commands
-    #await client.process_commands(message)
+#     # nothing else matched
+#     else:
+#         return False # silently ignore invalid commands
+#     #await client.process_commands(message)
 
 
 # @func:    check_subscription(discord.User, str) : bool
@@ -518,209 +528,209 @@ async def get_unsubscribed():
 #       command_type : str
 #           command_boss        = "boss"
 #           command_settings    = "settings"
-@client.event
-async def sanitize_cmd(message, command_type):
-    # handle wrong command to destinations; e.g. cannot use Settings module in DM
-    if not message.server and (command_type == command_settings or command_type == command_boss):
-        await client.send_message(message.author, 
-                                  "You cannot use `$" + command_type + "` commands in Direct Messages.\n")
-        return False
+# @bot.event
+# async def sanitize_cmd(message, command_type):
+#     # handle wrong command to destinations; e.g. cannot use Settings module in DM
+#     if not message.server and (command_type == command_settings or command_type == command_boss):
+#         await message.author.send("You cannot use `$" + command_type + "` commands in Direct Messages.\n")
+#         return False
 
-    ch_type     =   "management" if command_type == command_settings else command_boss
-    channels    =   vdst[message.server.id].get_channel(ch_type)
-    if channels and not message.channel.id in channels:
-        return False # silently deny command if not in proper channel
+#     ch_type     =   "management" if command_type == command_settings else command_boss
+#     channels    =   vdst[message.server.id].get_channel(ch_type)
+#     if channels and not message.channel.id in channels:
+#         return False # silently deny command if not in proper channel
 
-    # remove extraneous punctuation, and lower case
-    cmd_message =   to_sanitize.sub('', message.content)
-    cmd_message =   cmd_message.lower()
+#     # remove extraneous punctuation, and lower case
+#     cmd_message =   to_sanitize.sub('', message.content)
+#     cmd_message =   cmd_message.lower()
 
-    # attempt quote splitting
-    try:
-        command =   splitDblQuotesSpaces(cmd_message)
-    except ValueError:
-        await client.send_message(message.author if not message.server else message.channel, 
-                                  "Your command for `$" + command_type + "` had misused quotes somewhere.\n")
-        return False
+#     # attempt quote splitting
+#     try:
+#         command =   splitDblQuotesSpaces(cmd_message)
+#     except ValueError:
+#         recipient = message.author if not message.guild else message.channel
+#         await message.author.send_message(message.author if not message.server else message.channel, 
+#                                   "Your command for `$" + command_type + "` had misused quotes somewhere.\n")
+#         return False
 
-    # silently ignore commands if they have no arguments
-    if len(command) == 1:
-        return False
+#     # silently ignore commands if they have no arguments
+#     if len(command) == 1:
+#         return False
 
-    # extract arguments
-    command     =   command[1:]
+#     # extract arguments
+#     command     =   command[1:]
 
-    if not message.server or rgx_help.match(command[0]):
-        server_id   =   message.author.id
-        msg_ch_id   =   message.author
-        msg_channel =   message.author
-        msg_prefix  =   ""
-    else:
-        server_id   =   message.server.id
-        msg_ch_id   =   message.channel.id
-        msg_channel =   message.channel
-        msg_prefix  =   message.author.mention + " "
+#     if not message.server or rgx_help.match(command[0]):
+#         server_id   =   message.author.id
+#         msg_ch_id   =   message.author
+#         msg_channel =   message.author
+#         msg_prefix  =   ""
+#     else:
+#         server_id   =   message.server.id
+#         msg_ch_id   =   message.channel.id
+#         msg_channel =   message.channel
+#         msg_prefix  =   message.author.mention + " "
 
-    if command_type == command_boss:
-        return_msg  =   vaivora_modules.boss.process_command(server_id, msg_ch_id, command)
-        if not return_msg:
-            await client.send_message(msg_channel, msg_prefix + "No records were retrieved.")
-        await client.send_message(msg_channel, msg_prefix + return_msg[0])
+#     if command_type == command_boss:
+#         return_msg  =   vaivora_modules.boss.process_command(server_id, msg_ch_id, command)
+#         if not return_msg:
+#             await client.send_message(msg_channel, msg_prefix + "No records were retrieved.")
+#         await client.send_message(msg_channel, msg_prefix + return_msg[0])
 
-        message_to_send =   "```python\n"
-        i   =   0
+#         message_to_send =   "```python\n"
+#         i   =   0
 
-        if len(return_msg) > 1:
-            for msg_frag in return_msg[1:]:
-                message_to_send +=  msg_frag + "\n"
-                i   +=  1
+#         if len(return_msg) > 1:
+#             for msg_frag in return_msg[1:]:
+#                 message_to_send +=  msg_frag + "\n"
+#                 i   +=  1
 
-                if i % 5 == 0:
-                    message_to_send +=  "```"
-                    await client.send_message(msg_channel, message_to_send)
-                    message_to_send =   "```python\n"
+#                 if i % 5 == 0:
+#                     message_to_send +=  "```"
+#                     await client.send_message(msg_channel, message_to_send)
+#                     message_to_send =   "```python\n"
 
-            try:
-                # flush remaining
-                if message_to_send and not rgx_py.match(message_to_send):
-                    await client.send_message(msg_channel, message_to_send + "```\n")
-                elif message_to_send and i < 5:
-                    await client.send_message(msg_channel, none_matched)
-            except Exception as e:
-                # do something with e later
-                pass
-        return True
+#             try:
+#                 # flush remaining
+#                 if message_to_send and not rgx_py.match(message_to_send):
+#                     await client.send_message(msg_channel, message_to_send + "```\n")
+#                 elif message_to_send and i < 5:
+#                     await client.send_message(msg_channel, none_matched)
+#             except Exception as e:
+#                 # do something with e later
+#                 pass
+#         return True
 
-    elif command_type == command_settings:
+#     elif command_type == command_settings:
 
-        if rgx_help.match(command[0]):
-            return_msg  =   vaivora_modules.settings.get_help()
-            if len(return_msg) > 1:
-                for msg_frag in return_msg[1:]:
-                    await client.send_message(msg_channel, msg_frag)
-            return True
+#         if rgx_help.match(command[0]):
+#             return_msg  =   vaivora_modules.settings.get_help()
+#             if len(return_msg) > 1:
+#                 for msg_frag in return_msg[1:]:
+#                     await client.send_message(msg_channel, msg_frag)
+#             return True
 
-        set_cmd     =   command[0]
-        mention_u   =   [mention.id for mention in message.mentions]
-        mention_g   =   [mention.id for mention in message.role_mentions]
-        mention_c   =   [mention.id for mention in message.channel_mentions]
-        mention_a   =   mention_u + mention_g + mention_c
-        xargs       =   [c for c in command[1:] if c not in mention_a]
+#         set_cmd     =   command[0]
+#         mention_u   =   [mention.id for mention in message.mentions]
+#         mention_g   =   [mention.id for mention in message.role_mentions]
+#         mention_c   =   [mention.id for mention in message.channel_mentions]
+#         mention_a   =   mention_u + mention_g + mention_c
+#         xargs       =   [c for c in command[1:] if c not in mention_a]
         
         
-        #def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
-        return_msg  = vdst[server_id].process_command(msg_ch_id, set_cmd,
-                                                      message.author.id, message.author.roles,
-                                                      mention_u, mention_g, mention_c, xargs=xargs)
+#         #def process_command(server_id, msg_channel, settings_cmd, cmd_user, usr_roles, users, groups, xargs=None):
+#         return_msg  = vdst[server_id].process_command(msg_ch_id, set_cmd,
+#                                                       message.author.id, message.author.roles,
+#                                                       mention_u, mention_g, mention_c, xargs=xargs)
         
-        # case 1: a list of str, len 1
-        if len(return_msg) == 1:
-            if return_msg[0]:
-                await client.send_message(msg_channel, msg_prefix + return_msg[0])
-                vdst[server_id].toggle_lock(False)
-                return True
-            else:
-                vdst[server_id].toggle_lock(False)
-                return False
-        # case 2: a list of tuples of IDs and message
-        await client.send_message(msg_channel, msg_prefix + return_msg[1])
+#         # case 1: a list of str, len 1
+#         if len(return_msg) == 1:
+#             if return_msg[0]:
+#                 await client.send_message(msg_channel, msg_prefix + return_msg[0])
+#                 vdst[server_id].toggle_lock(False)
+#                 return True
+#             else:
+#                 vdst[server_id].toggle_lock(False)
+#                 return False
+#         # case 2: a list of tuples of IDs and message
+#         await client.send_message(msg_channel, msg_prefix + return_msg[1])
 
-        if type(return_msg[0]) == dict:
-            return_msg[0]   =   [ t for t in return_msg[0].items() if t[0] != 'guild' and t[0] != 'remainder' ]
-            return_msg[0]   =   sorted(return_msg[0], key=lambda t: t[1], reverse=True)
-            return_msg[0]   =   [ (t[0]+'@'," has contributed " + str(int(t[1])) + " Talt.") for t in return_msg[0] ]
+#         if type(return_msg[0]) == dict:
+#             return_msg[0]   =   [ t for t in return_msg[0].items() if t[0] != 'guild' and t[0] != 'remainder' ]
+#             return_msg[0]   =   sorted(return_msg[0], key=lambda t: t[1], reverse=True)
+#             return_msg[0]   =   [ (t[0]+'@'," has contributed " + str(int(t[1])) + " Talt.") for t in return_msg[0] ]
 
-        message_to_send =   "```ini\n"
+#         message_to_send =   "```ini\n"
 
-        # loop count
-        i   =   0
+#         # loop count
+#         i   =   0
 
-        for ret in return_msg[0]:
-            await client.send_typing(msg_channel)
-            message_to_send +=   "\n"
-            # case 2a: tuples contain list of IDs and message
-            if type(ret[0]) == list:
-                r_ids   =   ret[0]
-            # case 2b: tuples contain ID and message
-            else:
-                r_ids   =   [ret[0]]
+#         for ret in return_msg[0]:
+#             await client.send_typing(msg_channel)
+#             message_to_send +=   "\n"
+#             # case 2a: tuples contain list of IDs and message
+#             if type(ret[0]) == list:
+#                 r_ids   =   ret[0]
+#             # case 2b: tuples contain ID and message
+#             else:
+#                 r_ids   =   [ret[0]]
 
-            if not r_ids:
-                await client.send_message(msg_channel, message_to_send + "*crickets chirping*\n" + "```\n")
-                return True
+#             if not r_ids:
+#                 await client.send_message(msg_channel, message_to_send + "*crickets chirping*\n" + "```\n")
+#                 return True
 
-            for r_id in r_ids:
-                # if type(r_id[0]) is list:
-                #     ident   =   r_id[-1]
-                #     things  =   r_id[0]
-                # else:
-                #     ident   =   ret[-1]
-                #     things  =   [r_id]
+#             for r_id in r_ids:
+#                 # if type(r_id[0]) is list:
+#                 #     ident   =   r_id[-1]
+#                 #     things  =   r_id[0]
+#                 # else:
+#                 #     ident   =   ret[-1]
+#                 #     things  =   [r_id]
 
-                # channel
-                if rgx_ch_hash.search(r_id):
-                    chn =   rgx_ch_hash.sub('', r_id)
-                    try:
-                        nom =   message.server.get_channel(chn).name
-                        message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
-                    except: # channel no longer exists; purge
-                        vdst[server_id].unset_channel(chn)
+#                 # channel
+#                 if rgx_ch_hash.search(r_id):
+#                     chn =   rgx_ch_hash.sub('', r_id)
+#                     try:
+#                         nom =   message.server.get_channel(chn).name
+#                         message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+#                     except: # channel no longer exists; purge
+#                         vdst[server_id].unset_channel(chn)
 
-                # user
-                elif rgx_ch_member.search(r_id):
-                    mem =   rgx_ch_member.sub('', r_id)
-                    try:
-                        tgt =   message.server.get_member(mem)
-                        nom =   tgt.name + "#" + tgt.discriminator
-                    except:
-                        if not rgx_talt.search(ret[1]):
-                            vdst[server_id].set_role(mem, "users")
-                        else:
-                            message_to_send +=  "[ missing user ] " + ret[1] + "\n"
-                        continue
-                    message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+#                 # user
+#                 elif rgx_ch_member.search(r_id):
+#                     mem =   rgx_ch_member.sub('', r_id)
+#                     try:
+#                         tgt =   message.server.get_member(mem)
+#                         nom =   tgt.name + "#" + tgt.discriminator
+#                     except:
+#                         if not rgx_talt.search(ret[1]):
+#                             vdst[server_id].set_role(mem, "users")
+#                         else:
+#                             message_to_send +=  "[ missing user ] " + ret[1] + "\n"
+#                         continue
+#                     message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
 
-                # unknown; no identifying character detected, but role most likely
-                else:
-                    try:
-                        tgt =   [ro.id for ro in message.server.roles].index(r_id)
-                        nom =   "&" + message.server.roles[tgt].name
-                        message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
-                    except: # user or role no longer exists; total purge (remove all permissions)
-                        try:
-                            tgt =   message.server.get_member(r_id)
-                            nom =   tgt.name + "#" + tgt.discriminator
-                            message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
-                        except:
-                            if not rgx_talt.search(ret[1]):
-                                vdst[server_id].rm_boss(r_id)
-                                vdst[server_id].set_role(r_id, "users")
-                            else:
-                                message_to_send +=  "[ missing user ] " + ret[1] + "\n"
-                            continue
-
-
-            i   +=  1
-
-            if i % 5 == 0:                    
-                await client.send_message(msg_channel, message_to_send + "```\n")
-                message_to_send =   "```ini"
+#                 # unknown; no identifying character detected, but role most likely
+#                 else:
+#                     try:
+#                         tgt =   [ro.id for ro in message.server.roles].index(r_id)
+#                         nom =   "&" + message.server.roles[tgt].name
+#                         message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+#                     except: # user or role no longer exists; total purge (remove all permissions)
+#                         try:
+#                             tgt =   message.server.get_member(r_id)
+#                             nom =   tgt.name + "#" + tgt.discriminator
+#                             message_to_send +=  "[" + nom + "]" + " " + ret[1] + "\n"
+#                         except:
+#                             if not rgx_talt.search(ret[1]):
+#                                 vdst[server_id].rm_boss(r_id)
+#                                 vdst[server_id].set_role(r_id, "users")
+#                             else:
+#                                 message_to_send +=  "[ missing user ] " + ret[1] + "\n"
+#                             continue
 
 
-        try:
-            # flush remaining
-            if message_to_send and not rgx_ini.match(message_to_send):
-                await client.send_message(msg_channel, message_to_send + "```\n")
-            elif message_to_send and i < 5:
-                await client.send_message(msg_channel, none_matched)
-        except Exception as e:
-            # do something with e later
-            pass
+#             i   +=  1
 
-        vdst[server_id].toggle_lock(False)
+#             if i % 5 == 0:                    
+#                 await client.send_message(msg_channel, message_to_send + "```\n")
+#                 message_to_send =   "```ini"
 
-    else:
-        return False # command was incorrect
+
+#         try:
+#             # flush remaining
+#             if message_to_send and not rgx_ini.match(message_to_send):
+#                 await client.send_message(msg_channel, message_to_send + "```\n")
+#             elif message_to_send and i < 5:
+#                 await client.send_message(msg_channel, none_matched)
+#         except Exception as e:
+#             # do something with e later
+#             pass
+
+#         vdst[server_id].toggle_lock(False)
+
+#     else:
+#         return False # command was incorrect
 
 # begin periodic database check
 ####
@@ -736,7 +746,7 @@ async def check_databases():
     no_repeat       =   list()
     today           =   datetime.today() # check on first launch
 
-    while not client.is_closed:
+    while not bot.is_closed:
         await asyncio.sleep(59)
         print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- Valid DBs:", len(vdbs))
 
@@ -812,7 +822,7 @@ async def check_databases():
             role_str = str()
 
             # compare roles against server
-            srv = client.get_server(vdb_id)
+            srv = bot.get_guild(vdb_id)
             for uid in vdst[vdb_id].get_role("boss"):
                 try:
                     # group mention
@@ -844,7 +854,7 @@ async def check_databases():
                         discord_message += "```"
 
                         try:
-                            await client.send_message(srv.get_channel(cur_channel), discord_message)
+                            await srv.get_channel(cur_channel).send(discord_message)
                         except:
                             pass
 
@@ -858,7 +868,7 @@ async def check_databases():
             discord_message += "```"
 
             try:
-                await client.send_message(srv.get_channel(cur_channel), discord_message)
+                await srv.get_channel(cur_channel).send(discord_message)
             except:
                 pass
 
@@ -872,5 +882,5 @@ async def check_databases():
 # begin everything
 secret = vaivora_modules.secrets.discord_token
 
-client.loop.create_task(check_databases())
-client.run(secret)
+bot.loop.create_task(check_databases())
+bot.run(secret)
