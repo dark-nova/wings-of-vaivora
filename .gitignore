@@ -1,4 +1,4 @@
-# files
+##### FILES #####
 
 # private files
 *secrets.py
@@ -15,13 +15,14 @@ server_settings/*.json
 *.log
 
 
-# directories
 
-# private directories
-venv_ttos # may delete if not necessary for deployment
+##### DIRECTORIES #####
 
-# specific directories
+# venv suggested for virtual env
+venv
 *__pycache__/*
 
-# whitelist #
+
+
+##### WHITELIST #####
 !vaivora_modules/version.json
