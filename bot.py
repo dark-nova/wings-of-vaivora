@@ -367,59 +367,6 @@ async def sanitize(args: list):
     return sanitized
 
 
-# @func:    on_message(discord.Message) : bool
-#     begin code for message processing
-# @arg:
-#     message: discord.Message; includes message among sender (discord.User) and server (discord.Server)
-# @return:
-#     True if succeeded, False otherwise
-# @bot.event
-# async def on_message(message):
-#     if message.author == client.user:
-#         return False # do not respond to self
-
-#     if first_run or not rgx_prefix.match(message.content):
-#         return False
-
-#     # if rgx_meme.match(message.content):
-#     #     await client.send_message(message.channel, message.author.mention + " " + "https://i.imgur.com/kW3o6eC.png")
-#     #     return True
-
-#     # boss
-#     if rgx_boss.search(message.content):
-#         return await sanitize_cmd(message, command_boss)
-
-#     # settings
-#     elif rgx_settings.search(message.content):
-#         return await sanitize_cmd(message, command_settings)
-
-#     # changelogs
-#     # elif vaivora_modules.changelogs.cmd_csub.search(message.content):
-#     #     # un-
-#     #     if vaivora_modules.changelogs.cmd_un.match(message.content):
-#     #         mode    =   vaivora_modules.changelogs.mode_unsub
-#     #     else:
-#     #         mode    =   vaivora_modules.changelogs.mode_sub
-
-#     #     if await check_subscription(message.author, mode=mode):
-#     #         await client.send_message(message.author, msg_sub + mode + ".\n")
-#     #         return True
-#     #     # subscription change failed because user is already of the same mode
-#     #     else:
-#     #         await client.send_message(message.author, omae_wa_mou + mode + ".\n")
-#     #         return False
-
-#     # # help
-#     # elif rgx_help.search(message.content):
-#     #     await client.send_message(message.author, msg_help)
-#     #     return True
-
-#     # nothing else matched
-#     else:
-#         return False # silently ignore invalid commands
-#     #await client.process_commands(message)
-
-
 # @func:    check_subscription(discord.User, str) : bool
 # @arg:
 #       user:
