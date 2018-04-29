@@ -35,4 +35,4 @@ _subject to change_
 [discord.py]: https://github.com/Rapptz/discord.py/tree/rewrite
 [api]: http://discordpy.readthedocs.io/en/rewrite/api.html
 [dev]: https://discordapp.com/developers/applications/me
-[link]: http://dark-nova.me/wings-of-vaivora
+[link]: https://dark-nova.me/wings-of-vaivora
