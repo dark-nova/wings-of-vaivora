@@ -44,8 +44,8 @@ logger      = wings + "logger"
 
 valid_db    = wings + "valid_db"    + txt
 valid_db_t  = wings + "valid_db"    + tmp
-no_repeat_t = wings + "no_repeat"
-no_repeat   = no_repeat_t           + txt
+records_t = wings + "records"
+records   = records_t           + txt
 welcomed    = wings + "welcomed"    + txt
 welcomed_t  = wings + "welcomed"    + tmp
 f_unsubbed  = wings + "unsubbed"    + txt
@@ -741,23 +741,23 @@ async def check_databases():
     while first_run:
         await asyncio.sleep(1)
     print('Startup completed; starting check_database')
-    results         =   dict()
-    minutes         =   dict()
-    no_repeat       =   list()
-    today           =   datetime.today() # check on first launch
+    results = {}
+    minutes = {}
+    records = []
+    today = datetime.today() # check on first launch
 
-    while not bot.is_closed:
+    while not bot.is_closed():
         await asyncio.sleep(59)
         print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- Valid DBs:", len(vdbs))
 
-        # prune no-repeats
-        purged      =   list()
+        # prune records once they're no longer alert-able
+        purged = []
         if len(minutes) > 0:
             for rec_hash, rec_mins in minutes.items():
-                mins_now    =   datetime.now().minute
+                mins_now = datetime.now().minute
                 # e.g. 48 > 03 (if record was 1:03 and time now is 12:48), passes conds 1 & 2 but fails cond 3
-                if rec_mins < mins_now and (mins_now-rec_mins) > 0 and (mins_now-rec_mins+15+1) < 60:
-                    no_repeat.remove(rec_hash)
+                if (rec_mins < mins_now) and ((mins_now-rec_mins) > 0) and ((mins_now-rec_mins+15+1) < 60):
+                    records.remove(rec_hash)
                     purged.append(rec_hash)
 
         for purge in purged:
@@ -766,6 +766,7 @@ async def check_databases():
             except:
                 continue
 
+        # iterate through database results
         for vdb_id, valid_db in vdbs.items():
             loop_time = datetime.today()
             print(loop_time.strftime("%H:%M"), "- in DB:", vdb_id)
@@ -774,46 +775,49 @@ async def check_databases():
                 today = loop_time
 
             # check all timers
-            message_to_send   = list()
-            cur_channel       = str()
-            results[vdb_id]   = valid_db.check_db_boss()
+            message_to_send = []
+            cur_channel = None
+            results[vdb_id] = valid_db.check_db_boss()
 
-            # empty; dismiss
+            # empty record; dismiss
             if not results[vdb_id]:
                 continue
 
             # sort by time - yyyy, mm, dd, hh, mm
             results[vdb_id].sort(key=itemgetter(5,6,7,8,9))
 
-            # iterate
+            # iterate through all results
             for result in results[vdb_id]:
-                cur_channel     =   result[4]
-                list_time       =   [ int(t) for t in result[5:10] ]
-                record_info     =   [ str(r) for r in result[0:5] ]
+                cur_channel = result[4]
+                list_time = [ int(t) for t in result[5:10] ]
+                record_info = [ str(r) for r in result[0:5] ]
 
-                entry_time      =   datetime(*list_time)
-                record          =   vaivora_modules.boss.process_record(record_info[0], record_info[3], entry_time, record_info[2], record_info[1])
+                entry_time = datetime(*list_time)
+
+                record = vaivora_modules.boss.process_record(record_info[0], record_info[3], entry_time, record_info[2], record_info[1])
                 #                   channel           :    boss              :                       2017/01/01 12:00      :    channel
-                record2byte     =   record_info[4] + ":" + record_info[0] + ":" + entry_time.strftime("%Y/%m/%d %H:%M") + ":" + record_info[1]
-                record2byte     =   bytearray(record2byte, 'utf-8')
-                hashedblake     =   blake2b(digest_size=48)
+                record2byte = record_info[4] + ":" + record_info[0] + ":" + entry_time.strftime("%Y/%m/%d %H:%M") + ":" + record_info[1]
+                record2byte = bytearray(record2byte, 'utf-8')
+                hashedblake = blake2b(digest_size=48)
                 hashedblake.update(record2byte)
-                hashed_record   =   hashedblake.hexdigest()
+                hashed_record = hashedblake.hexdigest()
 
-                if hashed_record in no_repeat:
+                # don't add a record that is already stored
+                if hashed_record in records:
                     continue
 
-                time_diff       =   entry_time - datetime.now() + timedelta(hours=-3)
-
                 # process time difference
+                time_diff = entry_time - datetime.now() + timedelta(hours=-3)
+
+                # record is in the past
                 if time_diff.days < 0:
                     continue
 
-                # append record to message queue
+                # record is within range of alert
                 if time_diff.seconds < 900 and time_diff.days == 0:
-                    no_repeat.append(hashed_record)
+                    records.append(hashed_record)
                     message_to_send.append([record, record_info[4],])
-                    minutes[str(hashed_record)]     =   entry_time.minute
+                    minutes[str(hashed_record)] = entry_time.minute
 
             # empty record for this server
             if len(message_to_send) == 0:
@@ -823,7 +827,7 @@ async def check_databases():
 
             # compare roles against server
             srv = bot.get_guild(vdb_id)
-            for uid in vdst[vdb_id].get_role("boss"):
+            for uid in vdst[vdb_id].get_role(cmd_boss):
                 try:
                     # group mention
                     idx =   [ro.id for ro in srv.roles].index(uid)
@@ -846,8 +850,8 @@ async def check_databases():
             # replace time_str with server setting warning, eventually
             time_str = "15"
 
-            cur_channel         =   ''
-            discord_message     =   ''
+            cur_channel = None
+            discord_message = ''
             for message in message_to_send:
                 if cur_channel != message[-1]:
                     if cur_channel:
