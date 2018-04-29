@@ -19,15 +19,15 @@ Please use this [link][link] to add _Wings of Vaivora_. If you choose to manage 
 
 ## Features
 
-### [Boss Tracking](docs/BOSS.md)
++ ### [Boss Tracking](docs/BOSS.md)
 
-### [Guild Settings](docs/BOSS.md)
++ ### [Guild Settings](docs/BOSS.md)
 
 
 #### Want to contribute? Head [here](docs/CONTRIBUTING.md).
 
 
-#### File last modified: 2018-04-29 10:38 (UTC-7)
+#### File last modified: 2018-04-29 10:42 (UTC-7)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
