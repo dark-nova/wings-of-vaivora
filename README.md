@@ -10,7 +10,8 @@ _Wings of Vaivora_ runs on the [discord.py][discord.py] [API][api].
 Please use this [link][link] to add _Wings of Vaivora_. If you choose to manage _Wings of Vaivora_ yourself, see Requirements.
 
 ## Requirements
-#### subject to change
+_subject to change_
+
 + latest Python 3 (`3.6.5` as of this writing)
 + [discord.py][discord.py] and all of its dependencies
 + sqlite3
