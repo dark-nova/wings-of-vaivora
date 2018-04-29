@@ -70,4 +70,4 @@
         * "demon": Demon Lords, which also count as field bosses; they have longer spawn times and the server announces everywhere prior to a spawn
     - <target> must be "all".
 
-#### File last modified: 2018-04-29 10:06 (UTC-7)
+#### File last modified: 2018-04-29 11:47 (UTC-7)
