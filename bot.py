@@ -732,12 +732,12 @@ async def get_unsubscribed():
 #     else:
 #         return False # command was incorrect
 
-# begin periodic database check
-####
 
-# @func:    check_databases() : void
-#       Checks databases routinely, by minute.
 async def check_databases():
+    """
+    :func:`check_databases` checks the database for entries roughly every minute.
+    Records are output to the relevant Discord channels.
+    """
     while first_run:
         await asyncio.sleep(1)
     print('Startup completed; starting check_database')
