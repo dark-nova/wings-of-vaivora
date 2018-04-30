@@ -20,6 +20,8 @@ from importlib import import_module as im
 import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
+from constants.boss import en_us as lang_boss
+
 
 # basic declarations and initializations
 #client              =   discord.Client()
@@ -240,8 +242,8 @@ async def on_guild_join(guild):
     return True
 
 
-@bot.command(aliases=['help', 'halp'])
-async def _help(ctx):
+@bot.command(aliases=['halp'])
+async def help(ctx):
     """
     :func:`help` handles "$help" commands.
 
@@ -276,12 +278,27 @@ async def boss(ctx, *args):
         for bh in boss_help:
             await ctx.author.send(bh)
 
-    args = await sanitize(args[1:]) # this will implicitly remove index 0
-
     if not await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
         return False
 
-    pass
+    args = await sanitize(args[1:]) # this will implicitly remove index 0
+
+    arg_boss = args[0]
+    if arg_boss == "all":
+        if vaivora_modules.boss.what_status(args[1]) or vaivora_modules.boss.what_query(args[1]):
+            await ctx.send('{} {} is invalid for {} {}'.format(ctx.author.mention, args[1],
+                                                               lang_boss.CMD_ARG_TARGET, arg_boss))
+
+    else:
+        boss_idx = vaivora_modules.boss.check_boss(arg_boss)
+        if boss_idx == -1:
+            await ctx.send('{} {} is invalid for {}'.format(ctx.author.mention, arg_boss, 
+                                                            lang_boss.CMD_ARG_TARGET))
+            return False
+
+
+
+    return True
 
 
 @bot.command()
