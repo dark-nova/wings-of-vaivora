@@ -703,6 +703,69 @@ def help():
     return lang.HELP
 
 
+def what_status(entry):
+    """
+    :func:`what_status` checks what "status" the input may be.
+    "Statuses" are defined to be "died" and "anchored".
+
+    Args:
+        entry (str): the string to check for "status"
+
+    Returns:
+        str: the correct "status" if successful
+        None: if unsuccessful
+    """
+    if lang.REGEX_STATUS_DIED.match(entry):
+        return lang.CMD_ARG_STATUS_DIED
+    elif lang.REGEX_STATUS_ANCHORED.match(entry):
+        return lang.CMD_ARG_STATUS_ANCHORED
+    elif lang.REGEX_STATUS_WARNED.match(entry):
+        return lang.CMD_ARG_STATUS_WARNED
+    else:
+        return None
+
+
+def what_query(entry):
+    """
+    :func:`what_query` checks what "query" the input may be.
+    "Queries" are defined to be "maps" and "alias".
+
+    Args:
+        entry (str): the string to check for "query"
+
+    Returns:
+        str: the correct "query" if successful
+        None: if unsuccessful
+    """
+    if lang.REGEX_QUERY_MAPS.match(entry):
+        return lang.CMD_ARG_QUERY_MAPS
+    elif lang.REGEX_QUERY_ALIAS.match(entry):
+        return lang.CMD_ARG_QUERY_ALIAS
+    else:
+        return None
+
+
+
+def what_type(entry):
+    """
+    :func:`what_type` checks what "type" the input may be.
+    "Types" are defined to be "world", "event", "field", and "demon".
+
+    Args:
+        entry (str): the string to check for "type"
+
+    Returns:
+        str: the correct "type" if successful
+        None: if unsuccessful
+    """
+    if entry == lang.KW_WORLD or entry == lang.KW_EVENT or entry == lang.KW_FIELD:
+        return entry
+    elif re.search(entry, lang.KW_DEMON.lower(), re.IGNORECASE):
+        return lang.KW_DEMON
+    else:
+        return None
+
+
 def check_boss(entry):
     """
     :func:`check_boss` checks whether an input string is a valid boss.
@@ -713,7 +776,7 @@ def check_boss(entry):
     Returns:
         int: the boss index if valid and matching just one; otherwise, -1
     """
-    match = ''
+    match = None
     for boss in bosses:
         if entry in boss.lower():
             if not match:
