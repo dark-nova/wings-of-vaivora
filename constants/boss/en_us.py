@@ -1,3 +1,5 @@
+import re
+
 MODULE_NAME = "boss"
 
 HELP = []
@@ -345,3 +347,24 @@ BOSS_LOCS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
                              'Syla Forest', 
                              'Mishekan Forest'],
             }
+
+
+CMD_ARG_TARGET = '<target>'
+CMD_ARG_STATUS = '<status>'
+CMD_ARG_ENTRY = '<entry>'
+CND_ARG_QUERY = '<query>'
+CMD_ARG_TYPE = '<type>'
+
+CMD_ARG_STATUS_DIED = 'died'
+CMD_ARG_STATUS_ANCHORED = 'anchored'
+CMD_ARG_STATUS_WARNED = 'warned'
+
+CMD_ARG_QUERY_MAPS = 'maps' 
+CMD_ARG_QUERY_ALIAS = 'alias'
+
+REGEX_STATUS_DIED = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
+REGEX_STATUS_ANCHORED = re.compile(r'anchor(ed)?', re.IGNORECASE)
+REGEX_STATUS_WARNED = re.compile(r'warn(ed)?', re.IGNORECASE)
+
+REGEX_QUERY_MAPS = re.compile(r'maps?', re.IGNORECASE)
+REGEX_QUERY_ALIAS = re.compile(r'(syn(onym)?s?|alias(es)?)', re.IGNORECASE)
