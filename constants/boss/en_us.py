@@ -358,7 +358,7 @@ CMD_ARG_SUBCMD = '<subcommand>'
 
 CMD_ARG_STATUS_DIED = 'died'
 CMD_ARG_STATUS_ANCHORED = 'anchored'
-CMD_ARG_STATUS_WARNED = 'warned'
+#CMD_ARG_STATUS_WARNED = 'warned'
 
 CMD_ARG_ENTRY_LIST = 'list'
 CMD_ARG_ENTRY_ERASE = 'erase'
@@ -368,7 +368,7 @@ CMD_ARG_QUERY_ALIAS = 'alias'
 
 REGEX_STATUS_DIED = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
 REGEX_STATUS_ANCHORED = re.compile(r'anchor(ed)?', re.IGNORECASE)
-REGEX_STATUS_WARNED = re.compile(r'warn(ed)?', re.IGNORECASE)
+#REGEX_STATUS_WARNED = re.compile(r'warn(ed)?', re.IGNORECASE)
 
 REGEX_ENTRY_LIST = re.compile(r'(show|li?st?)', re.IGNORECASE)
 REGEX_ENTRY_ERASE = re.compile(r'(erase|del(ete))?', re.IGNORECASE)
