@@ -719,8 +719,8 @@ def what_status(entry):
         return lang.CMD_ARG_STATUS_DIED
     elif lang.REGEX_STATUS_ANCHORED.match(entry):
         return lang.CMD_ARG_STATUS_ANCHORED
-    elif lang.REGEX_STATUS_WARNED.match(entry):
-        return lang.CMD_ARG_STATUS_WARNED
+    #elif lang.REGEX_STATUS_WARNED.match(entry):
+    #    return lang.CMD_ARG_STATUS_WARNED
     else:
         return None
 
