@@ -826,33 +826,21 @@ def check_maps(boss, maps):
     Returns:
         int: the map index if valid and matching just one; otherwise, -1
     """
-    map_idx     =   -1
-    map_floor   =   0
-    map_match   =   None
+    map_idx = -1
+    map_floor = re.search('.*([0-9]).*', maps)
 
-    # currently a specific case with floors: Inner Wall District [8-9]
-    if boss in bosses_with_floors and rgx_loc_iwd.search(maps):
-        map_match   = rgx_floors.search(maps)
-        if not map_match:
-            return -1
-    
-    if map_match: # and boss in bosses_with_floors
-        map_floor   =   map_match.group('floornumber')
-        # extract target map string
-        target_map  =   re.sub(map_floor, '', maps)
+    if map_floor:
+        map_floor = map_floor.group(1)
+        maps = re.sub(map_floor, '', maps).strip()
 
-    # default case; includes bosses in bosses_with_floors but unnumbered map
-    else:
-        target_map  =   maps
-
-    for boss_map in boss_locs[boss]:
-        if re.search(target_map, boss_map, re.IGNORECASE):
+    for boss_map in lang.BOSS_MAPS[boss]:
+        if re.search(maps, boss_map, re.IGNORECASE):
             if map_floor and not re.search(map_floor, boss_map, re.IGNORECASE):
-                continue
-            # multiple matched; invalid
-            if map_idx != -1:
-                return -1
-            map_idx =   boss_locs[boss].index(boss_map)
+                continue # similar name; wrong number
+            elif map_idx != -1: 
+                return -1 # multiple matched; invalid
+            else:
+                map_idx = lang.BOSS_MAPS[boss].index(boss_map)
 
     return map_idx
 
@@ -882,7 +870,7 @@ def get_maps(boss):
         str: a formatted markdown message with maps for a boss
     """
     return ("**" + boss + "** can be found in the following maps: ```\n" + 
-            "- " + '\n- '.join(lang.BOSS_LOCS[boss]) + "```\n")
+            "- " + '\n- '.join(lang.BOSS_MAPS[boss]) + "```\n")
 
 
 def get_bosses(boss_type):
