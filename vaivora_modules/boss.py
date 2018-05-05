@@ -867,8 +867,8 @@ def get_syns(boss):
     Returns:
         str: a formatted markdown message with synonyms
     """
-    return ("**" + boss + "** can be called using the following aliases: ```python\n" + 
-            "#   " + '\n#   '.join(lang.BOSS_SYNONYMS[boss]) + "```\n")
+    return ("**" + boss + "** can be called using the following aliases: ```\n" + 
+            "- " + '\n- '.join(lang.BOSS_SYNONYMS[boss]) + "```\n")
 
 
 def get_maps(boss):
@@ -881,8 +881,8 @@ def get_maps(boss):
     Returns:
         str: a formatted markdown message with maps for a boss
     """
-    return ("**" + boss + "** can be found in the following maps: ```python\n" + 
-            "#   " + '\n#   '.join(lang.BOSS_LOCS[boss]) + "```\n")
+    return ("**" + boss + "** can be found in the following maps: ```\n" + 
+            "- " + '\n- '.join(lang.BOSS_LOCS[boss]) + "```\n")
 
 
 def get_bosses(boss_type):
@@ -895,8 +895,8 @@ def get_bosses(boss_type):
     Returns:
         str: a formatted markdown message with bosses of the specified type
     """
-    return ("The following bosses are considered \"" + boss_type + "\" bosses: ```python\n" + 
-            "#   " + '\n#   '.join(lang.BOSSES[boss_type]) + "```")
+    return ("The following bosses are considered \"**" + boss_type + "**\" bosses: ```\n" + 
+            "- " + '\n- '.join(lang.BOSSES[boss_type]) + "```")
 
 
 def validate_channel(ch):
