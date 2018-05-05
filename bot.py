@@ -135,6 +135,7 @@ I am a representative bot for the Wings of Vaivora, here to help you record your
 Please read the following before continuing.
 """ + vaivora_modules.disclaimer.disclaimer + """
 Anyone may add this bot using the short URL: https://dark-nova.me/wings-of-vaivora
+Anyone may contribute to this bot's development: https://github.com/dark-nova/wings-of-vaivora
 """
 
 ### END CONST
