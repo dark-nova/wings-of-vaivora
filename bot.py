@@ -351,7 +351,11 @@ async def settings(ctx, *args):
     if rgx_help.match(args[0]):
         pass
 
-    if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
+    try:
+        if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
+            return False
+    except AttributeError:
+        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND)) # not a guild
         return False
 
     pass
