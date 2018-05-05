@@ -375,3 +375,8 @@ REGEX_ENTRY_ERASE = re.compile(r'(erase|del(ete))?', re.IGNORECASE)
 
 REGEX_QUERY_MAPS = re.compile(r'maps?', re.IGNORECASE)
 REGEX_QUERY_ALIAS = re.compile(r'(syn(onym)?s?|alias(es)?)', re.IGNORECASE)
+
+CMD_USAGE_STATUS = '$boss <target> <status> <time> [<channel>] [<map>]'
+
+ARG_MIN_STATUS = 3
+ARG_MAX_STATUS = 5
