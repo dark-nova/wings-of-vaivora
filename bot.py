@@ -402,15 +402,6 @@ async def sanitize(args: list):
     return sanitized
 
 
-# @func:    check_subscription(discord.User, str) : bool
-# @arg:
-#       user:
-#           the user requesting change
-#       mode:
-#           (default: subscribe)
-#           the requested change to subscription to updates
-# @return:
-#       True if succeeded, False otherwise
 async def check_subscription(user, mode="subscribe"):
     """
     :func:`check_subscription` checks if the user is subscribed.
