@@ -745,6 +745,7 @@ def what_entry(entry):
         return None
 
 
+
 def what_query(entry):
     """
     :func:`what_query` checks what "query" the input may be.
@@ -867,7 +868,7 @@ def get_syns(boss):
         str: a formatted markdown message with synonyms
     """
     return ("**" + boss + "** can be called using the following aliases: ```python\n" + 
-            "#   " + '\n#   '.join(boss_synonyms[boss]) + "```\n")
+            "#   " + '\n#   '.join(lang.BOSS_SYNONYMS[boss]) + "```\n")
 
 
 def get_maps(boss):
@@ -881,7 +882,7 @@ def get_maps(boss):
         str: a formatted markdown message with maps for a boss
     """
     return ("**" + boss + "** can be found in the following maps: ```python\n" + 
-            "#   " + '\n#   '.join(boss_locs[boss]) + "```\n")
+            "#   " + '\n#   '.join(lang.BOSS_LOCS[boss]) + "```\n")
 
 
 def get_bosses(boss_type):
@@ -895,7 +896,7 @@ def get_bosses(boss_type):
         str: a formatted markdown message with bosses of the specified type
     """
     return ("The following bosses are considered \"" + boss_type + "\" bosses: ```python\n" + 
-            "#   " + '\n#   '.join(bosses_list[boss_type]) + "```")
+            "#   " + '\n#   '.join(lang.BOSSES[boss_type]) + "```")
 
 
 def validate_channel(ch):
