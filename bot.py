@@ -376,7 +376,6 @@ async def check_channel(guild_id, ch_id: str, ch_type):
         return True
 
 
-
 def sanitize(args: list):
     """
     :func:`sanitize` sanitizes command arguments of invalid characters, including setting to lowercase.
@@ -393,9 +392,6 @@ def sanitize(args: list):
         sanitized.append(arg)
 
     return sanitized
-
-
-async def 
 
 
 # @func:    check_subscription(discord.User, str) : bool
