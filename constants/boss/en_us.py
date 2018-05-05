@@ -352,7 +352,7 @@ BOSS_LOCS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
 CMD_ARG_TARGET = '<target>'
 CMD_ARG_STATUS = '<status>'
 CMD_ARG_ENTRY = '<entry>'
-CND_ARG_QUERY = '<query>'
+CMD_ARG_QUERY = '<query>'
 CMD_ARG_TYPE = '<type>'
 CMD_ARG_SUBCMD = '<subcommand>'
 
