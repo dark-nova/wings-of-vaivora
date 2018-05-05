@@ -293,19 +293,19 @@ async def boss(ctx, *args):
     elif vaivora_modules.boss.what_type(args[1]):
         arg_subcmd = lang_boss.CMD_ARG_TYPE
     else:
-        await ctx.send('{} {} is invalid for {}'.format(ctx.author.mention, args[1],
-                                                        lang_boss.CMD_ARG_SUBCMD))
+        await ctx.send('{} {} is invalid for {}.'.format(ctx.author.mention, args[1],
+                                                         lang_boss.CMD_ARG_SUBCMD))
 
     if arg_target == "all":
-        if vaivora_modules.boss.what_status(args[1]) or vaivora_modules.boss.what_query(args[1]):
-            await ctx.send('{} {} is invalid for {} {}'.format(ctx.author.mention, args[1],
-                                                               lang_boss.CMD_ARG_TARGET, arg_target))
+        if arg_subcmd == lang_boss.CMD_ARG_STATUS or arg_subcmd == lang_boss.CMD_ARG_QUERY:
+            await ctx.send('{} {} is invalid for {} {}.'.format(ctx.author.mention, args[1],
+                                                                lang_boss.CMD_ARG_TARGET, arg_target))
 
     else:
         boss_idx = vaivora_modules.boss.check_boss(arg_target)
         if boss_idx == -1:
-            await ctx.send('{} {} is invalid for {}'.format(ctx.author.mention, arg_target, 
-                                                            lang_boss.CMD_ARG_TARGET))
+            await ctx.send('{} {} is invalid for {}.'.format(ctx.author.mention, arg_target, 
+                                                             lang_boss.CMD_ARG_TARGET))
             return False
 
 
