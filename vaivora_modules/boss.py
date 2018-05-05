@@ -725,6 +725,26 @@ def what_status(entry):
         return None
 
 
+def what_entry(entry):
+    """
+    :func:`what_entry` checks what "entry" the input may be.
+    "Entries" are defined to be "maps" and "alias".
+
+    Args:
+        entry (str): the string to check for "query"
+
+    Returns:
+        str: the correct "entry" if successful
+        None: if unsuccessful
+    """    
+    if lang.REGEX_ENTRY_LIST.match(entry):
+        return lang.CMD_ARG_ENTRY_LIST
+    elif lang.REGEX_ENTRY_ERASE.match(erase):
+        return lang.CMD_ARG_ENTRY_ERASE
+    else:
+        return None
+
+
 def what_query(entry):
     """
     :func:`what_query` checks what "query" the input may be.
@@ -743,7 +763,6 @@ def what_query(entry):
         return lang.CMD_ARG_QUERY_ALIAS
     else:
         return None
-
 
 
 def what_type(entry):
