@@ -301,6 +301,10 @@ async def boss(ctx, *args: sanitize):
             await ctx.send('{} {} is invalid for {} {}.'.format(ctx.author.mention, args[1],
                                                                 lang_boss.CMD_ARG_TARGET, arg_target))
             return False
+        else: # same as `elif arg_subcmd == lang_boss.CMD_ARG_TYPE:`
+            boss_type = vaivora_modules.boss.what_type(args[1])
+            await ctx.send('{} {}'.format(ctx.author.mention,
+                                          vaivora_modules.boss.get_bosses(boss_type)))
 
     else:
         boss_idx = vaivora_modules.boss.check_boss(arg_target)
