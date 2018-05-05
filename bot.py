@@ -263,7 +263,7 @@ async def help(ctx):
 
 
 @bot.command()
-async def boss(ctx, *args):
+async def boss(ctx, *args: sanitize):
     """
     :func:`boss` handles "$boss" commands.
 
@@ -278,11 +278,10 @@ async def boss(ctx, *args):
         boss_help = vaivora_modules.boss.help()
         for bh in boss_help:
             await ctx.author.send(bh)
+            return True
 
     if not await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
         return False
-
-    args = await sanitize(args[1:]) # this will implicitly remove index 0
 
     arg_target = args[0]
 
@@ -316,7 +315,7 @@ async def boss(ctx, *args):
 
 
 @bot.command()
-async def settings(ctx, *args):
+async def settings(ctx, *args: sanitize):
     """
     :func:`settings` handles "$settings" commands.
 
@@ -329,8 +328,6 @@ async def settings(ctx, *args):
     """
     if rgx_help.match(args[0]):
         pass
-
-    args = await sanitize(args[1:]) # this will implicitly remove index 0
 
     if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
         return False
@@ -379,8 +376,8 @@ async def check_channel(guild_id, ch_id: str, ch_type):
         return True
 
 
-@bot.event
-async def sanitize(args: list):
+
+def sanitize(args: list):
     """
     :func:`sanitize` sanitizes command arguments of invalid characters, including setting to lowercase.
 
