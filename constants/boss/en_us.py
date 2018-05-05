@@ -289,7 +289,7 @@ BOSS_SYNONYMS = {BOSS_W_ABOMINATION: ['abom'],
                                  'butt'],
                 }
 
-BOSS_LOCS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
+BOSS_MAPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
 
              BOSS_W_TEMPLESHOOTER: ['Royal Mausoleum Workers\' Lodge'],
 
