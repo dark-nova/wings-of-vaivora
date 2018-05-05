@@ -315,6 +315,11 @@ async def boss(ctx, *args):
                                                              lang_boss.CMD_ARG_TARGET))
             return False
 
+        if arg_subcmd == lang_boss.CMD_ARG_STATUS:
+            if len(args) < lang_boss.ARG_MIN_STATUS or len(args) > lang_boss.ARG_MAX_STATUS:
+                await ctx.send('{} Usage: {}'.format(ctx.author.mention,
+                                                     lang_boss.CMD_USAGE_STATUS))
+                return False
 
 
     return True
