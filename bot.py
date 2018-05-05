@@ -20,6 +20,7 @@ from importlib import import_module as im
 import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
+from constants.errors import en_us as lang_err
 from constants.boss import en_us as lang_boss
 
 
@@ -232,14 +233,18 @@ async def on_guild_join(guild):
     Returns:
         True if successful; False otherwise
     """
-    vaivora_version = vaivora_modules.version.get_current_version()
+    #vaivora_version = vaivora_modules.version.get_current_version()
+
     if guild.unavailable:
         return False
+
     vdbs[guild.id] = vaivora_modules.db.Database(str(guild.id))
     owner = guild.owner
     vdst[guild.id] = vaivora_modules.settings.Settings(str(guild.id), str(owner.id))
+
     await greet(guild.id, owner)
     await owner.send(owner, welcome)
+
     return True
 
 
@@ -282,7 +287,11 @@ async def boss(ctx, *args):
             await ctx.author.send(bh)
             return True
 
-    if not await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
+    try:
+        if not await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
+            return False
+    except AttributeError:
+        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND)) # not a guild
         return False
 
     arg_target = args[0]
@@ -294,14 +303,14 @@ async def boss(ctx, *args):
     elif vaivora_modules.boss.what_type(args[1]):
         arg_subcmd = lang_boss.CMD_ARG_TYPE
     else:
-        await ctx.send('{} {} is invalid for {}.'.format(ctx.author.mention, args[1],
-                                                         lang_boss.CMD_ARG_SUBCMD))
+        await ctx.send(lang.err.IS_INVALID_2.format(ctx.author.mention, args[1],
+                                                    lang_boss.CMD_ARG_SUBCMD))
         return False
 
     if arg_target == "all":
         if arg_subcmd == lang_boss.CMD_ARG_STATUS or arg_subcmd == lang_boss.CMD_ARG_QUERY:
-            await ctx.send('{} {} is invalid for {} {}.'.format(ctx.author.mention, args[1],
-                                                                lang_boss.CMD_ARG_TARGET, arg_target))
+            await ctx.send(lang.err.IS_INVALID_3.format(ctx.author.mention, args[1],
+                                                        lang_boss.CMD_ARG_TARGET, arg_target))
             return False
         else: # same as `elif arg_subcmd == lang_boss.CMD_ARG_TYPE:`
             boss_type = vaivora_modules.boss.what_type(args[1])
@@ -311,14 +320,14 @@ async def boss(ctx, *args):
     else:
         boss_idx = vaivora_modules.boss.check_boss(arg_target)
         if boss_idx == -1:
-            await ctx.send('{} {} is invalid for {}.'.format(ctx.author.mention, arg_target, 
-                                                             lang_boss.CMD_ARG_TARGET))
+            await ctx.send(lang.err.IS_INVALID_2.format(ctx.author.mention, arg_target, 
+                                                        lang_boss.CMD_ARG_TARGET))
             return False
 
         if arg_subcmd == lang_boss.CMD_ARG_STATUS:
             if len(args) < lang_boss.ARG_MIN_STATUS or len(args) > lang_boss.ARG_MAX_STATUS:
-                await ctx.send('{} Usage: {}'.format(ctx.author.mention,
-                                                     lang_boss.CMD_USAGE_STATUS))
+                await ctx.send(lang_err.TOO_FEW_ARGS.format(ctx.author.mention, lang_boss.CMD_ARG_TARGET,
+                                                            lang_boss.CMD_USAGE_STATUS))
                 return False
 
 
