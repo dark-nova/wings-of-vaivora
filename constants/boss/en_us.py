@@ -50,28 +50,28 @@ Options:
         Some commands do not work with both. Make sure to check which command can accept what <target>.
 
     <status>
-        This refers to specific conditions related to a boss's spawning.
+        This <subcommand> refers to specific conditions related to a boss's spawning.
         Options:
             "died": to refer a known kill
             "anchored": to refer a process known as anchoring for world bosses
         <target> cannot be "all".
 
     <entry>
-        This subcommand allows you to manipulate existing records.
+        This <subcommand> allows you to manipulate existing records.
         Options:
             "list": to list <target> records
             "erase": to erase <target> records
         <target> can be any valid response.
 
     <query>
-        This subcommand supplies info related to a boss.
+        This <subcommand> supplies info related to a boss.
         Options:
             "maps": to show where <target> may spawn
             "alias": to list possible short-hand aliases, e.g. "ml" for "Noisy Mineloader", to use in <target>
         <target> cannot be "all".
 
     <type>
-        This subcommand returns a list of bosses assigned to a type.
+        This <subcommand> returns a list of bosses assigned to a type.
         Options:
             "world": bosses that can spawn across all channels in a particular map; they each have a gimmick to spawn
             "event": bosses/events that can be recorded; usually time gimmick-related
@@ -354,6 +354,7 @@ CMD_ARG_STATUS = '<status>'
 CMD_ARG_ENTRY = '<entry>'
 CND_ARG_QUERY = '<query>'
 CMD_ARG_TYPE = '<type>'
+CMD_ARG_SUBCMD = '<subcommand>'
 
 CMD_ARG_STATUS_DIED = 'died'
 CMD_ARG_STATUS_ANCHORED = 'anchored'
