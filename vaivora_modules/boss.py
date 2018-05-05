@@ -797,22 +797,23 @@ def check_boss(entry):
         int: the boss index if valid and matching just one; otherwise, -1
     """
     match = None
-    for boss in bosses:
-        if entry in boss.lower():
+
+    for boss in lang.BOSS_SYNONYMS:
+        for boss_syn in lang.BOSS_SYNONYMS[boss]:
+            if entry == boss_syn:
+                return lang.ALL_BOSSES.index(boss) # synonyms are unique and exact match only
+
+    for boss in lang.ALL_BOSSES:
+        if re.search(entry, boss, re.IGNORECASE):
             if not match:
                 match = boss
             else:
-                return -1
-    if not match and entry in boss_syns:
-        for b, syns in boss_synonyms.items():
-            if entry in syns and not match:
-                match = b
-            elif entry in syns:
-                return -1    
+                return -1 # duplicate or too ambiguous
+
     if not match:
         return -1
 
-    return bosses.index(match)
+    return lang.ALL_BOSSES.index(match)
 
 
 def check_maps(boss, maps):
