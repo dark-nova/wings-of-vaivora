@@ -1,6 +1,7 @@
 import re
 
 MODULE_NAME = "boss"
+COMMAND = "$" + MODULE_NAME
 
 HELP = []
 HELP.append(
