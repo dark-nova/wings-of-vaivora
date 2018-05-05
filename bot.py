@@ -284,16 +284,27 @@ async def boss(ctx, *args):
 
     args = await sanitize(args[1:]) # this will implicitly remove index 0
 
-    arg_boss = args[0]
-    if arg_boss == "all":
+    arg_target = args[0]
+
+    if vaivora_modules.boss.what_status(args[1]):
+        arg_subcmd = lang_boss.CMD_ARG_STATUS
+    elif vaivora_modules.boss.what_query(args[1]):
+        arg_subcmd = lang_boss.CMD_ARG_QUERY
+    elif vaivora_modules.boss.what_type(args[1]):
+        arg_subcmd = lang_boss.CMD_ARG_TYPE
+    else:
+        await ctx.send('{} {} is invalid for {}'.format(ctx.author.mention, args[1],
+                                                        lang_boss.CMD_ARG_SUBCMD))
+
+    if arg_target == "all":
         if vaivora_modules.boss.what_status(args[1]) or vaivora_modules.boss.what_query(args[1]):
             await ctx.send('{} {} is invalid for {} {}'.format(ctx.author.mention, args[1],
-                                                               lang_boss.CMD_ARG_TARGET, arg_boss))
+                                                               lang_boss.CMD_ARG_TARGET, arg_target))
 
     else:
-        boss_idx = vaivora_modules.boss.check_boss(arg_boss)
+        boss_idx = vaivora_modules.boss.check_boss(arg_target)
         if boss_idx == -1:
-            await ctx.send('{} {} is invalid for {}'.format(ctx.author.mention, arg_boss, 
+            await ctx.send('{} {} is invalid for {}'.format(ctx.author.mention, arg_target, 
                                                             lang_boss.CMD_ARG_TARGET))
             return False
 
@@ -383,6 +394,9 @@ async def sanitize(args: list):
         sanitized.append(arg)
 
     return sanitized
+
+
+async def 
 
 
 # @func:    check_subscription(discord.User, str) : bool
