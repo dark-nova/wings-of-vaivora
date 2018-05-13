@@ -381,3 +381,10 @@ CMD_USAGE_STATUS = '$boss <target> <status> <time> [<channel>] [<map>]'
 
 ARG_MIN_STATUS = 3
 ARG_MAX_STATUS = 5
+
+SUCCESS_ENTRY_ERASE = "our queried records ({}) have successfully been erased.\n"
+SUCCESS_ENTRY_ERASE_ALL = "All of y" + SUCCESS_ENTRY_ERASE
+SUCCESS_ENTRY_ERASE = "Y" + SUCCESS_ENTRY_ERASE
+
+FAIL_ENTRY_ERASE = "*(But **nothing** happend...)*\n"
+FAIL_ENTRY_LIST = "No results found! Try a different boss.\n"
