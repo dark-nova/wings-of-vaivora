@@ -745,7 +745,6 @@ def what_entry(entry):
         return None
 
 
-
 def what_query(entry):
     """
     :func:`what_query` checks what "query" the input may be.
@@ -1135,7 +1134,7 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
         return "Your command could not be processed. It appears this record overlaps too closely with another.\n" + msg_help
 
 
-def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
+def process_cmd_entry(server_id: str, msg_channel: str, bosses, entry, boss_map=None, channel=None):
     """
     :func:`process_cmd_entry` processes a specific boss command: entry to retrieve records.
 
@@ -1149,111 +1148,65 @@ def process_cmd_entry(server_id, msg_channel, tg_bosses, entry, opt_list=None):
     Returns:
         str: an appropriate message for success or fail of command, e.g. confirmation or list of entries
     """
-    # all bosses, no options
-    if rgx_erase.match(entry) and not opt_list and tg_bosses == bosses:
-        if vaivora_modules.db.Database(server_id).rm_entry_db_boss():
-            return "All records have successfully been erased.\n"
+    # $boss <target> erase ...
+    if entry == lang.CMD_ARG_ENTRY_ERASE and not (boss_map or channel):
+        if bosses == lang.ALL_BOSSES or not (boss_map or channel):
+            records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses)
+        elif channel and bosses in lang.BOSSES[lang.KW_WORLD]:
+            records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_ch=channel)
+        elif boss_map and bosses in lang.BOSSES[lang.KW_DEMON]: # may phase out this option
+            records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_map=boss_map)
+
+        if records:
+            return lang.SUCCESS_ENTRY_ERASE_ALL.format(len(records))
         else:
-            return "*(But **nothing** happend...)*\n"
-    # specific bosses to erase, but no options
-    elif rgx_erase.match(entry) and not opt_list:
-        recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(tg_bosses)
-
-    # implicit non-null opt_list, erase
-    elif rgx_erase.match(entry) and len(tg_bosses) == 1:
-        opts    =   process_cmd_opt(opt_list, tg_bosses[0])
-
-        # process opts
-        # too many bosses but only one map
-        if opts[0] != "N/A" and len(tg_bosses) > 1:
-            return ("Your query:`map`, `" + entry + "`, could not be interpreted.\n" + 
-                    "You listed a map but selected more than one boss.\n" + msg_help)
-
-        # map is not null but channel is
-        elif opts[0] != "N/A" and not opts[1]:
-            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(bosses_list=tg_bosses, boss_map=opts[0])
-            
-        # error: channel other than 1, and boss is field boss
-        elif opts[0] != 1 and not tg_bosses[0] in bosses_world:
-            return ("Your query:`channel`, `" + opts[1] + "`, could not be interpreted.\n" + 
-                    "Field bosses, like `" + tg_bosses[0] + "`, with regular spawn do not spawn in channels other than 1.\n" + msg_help)
-
-        # channel is not null but map is
-        elif opts[0] and opts[1] == "N/A":
-            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(bosses_list=tg_bosses, boss_ch=opts[1])
-            
-        # implicit catch-all: match with all conditions
-        else:
-            recs    =   vaivora_modules.db.Database(server_id).rm_entry_db_boss(bosses_list=tg_bosses, boss_ch=opts[1], boss_map=opts[0])
-            
-    elif rgx_erase.match(entry):
-        if vaivora_modules.db.Database(server_id).rm_entry_db_boss():
-            return "All records have successfully been erased.\n"
-        else:
-            return "*(But **nothing** happend...)*\n"
-
-    if rgx_erase.match(entry) and recs:
-        return "Your queried records (" + str(recs) + ") have successfully been erased.\n"
-    elif rgx_erase.match(entry) and not recs:
-        return "*(But nothing happened...)*\n"
-
-    if not rgx_erase.match(entry):
+            return lang.FAIL_ENTRY_ERASE
+    else:
         valid_boss_records = list()
         valid_boss_records.append("Records:")
-        #valid_boss_records.append("```python\n")
-        boss_records = vaivora_modules.db.Database(server_id).check_db_boss(bosses=tg_bosses) # possible return
+        boss_records = vaivora_modules.db.Database(server_id).check_db_boss(bosses=bosses) # possible return
 
-        # empty
         if not boss_records: # empty
-            return "No results found! Try a different boss.\n"
+            return lang.FAIL_ENTRY_LIST
 
         for boss_record in boss_records:
-            boss_name   =   boss_record[0]
-            boss_chan   =   str(math.floor(boss_record[1]))
-            boss_premap =   boss_record[2]
-            boss_status =   boss_record[3]
-            # year, month, day, hour, minutes
-            record_date =   [int(rec) for rec in boss_record[5:10]]
-            record_date =   datetime(*record_date)
-            # e.g.          "Blasphemous Deathweaver"  died          in ch.      1           and
-            # e.g.          "Earth Canceril"           was anchored  in ch.      2           and
-            # e.g.          "Demon Lord Marnox"        was warned to spawn in ch.1           and
-            ret_message =   "\"" + boss_name + "\" " + boss_status + " in ch." + boss_chan + " and "
-            time_diff   = datetime.now() + timedelta(hours=pacific2server) - record_date
+            boss_name = boss_record[0]
+            boss_channel = str(math.floor(boss_record[1]))
+            boss_prev_map = boss_record[2]
+            boss_status = boss_record[3]
 
-            if int(time_diff.days) >= 0 and boss_status != status_anchored:
-                ret_message +=  "should have respawned at "
-                mins_left   =   math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
+            # year, month, day, hour, minutes
+            record_date = datetime(*[int(rec) for rec in boss_record[5:10]])
+            
+            time_diff = datetime.now() + timedelta(hours=pacific2server) - record_date
+
+            if int(time_diff.days) >= 0 and boss_status != lang.CMD_ARG_STATUS_ANCHORED:
+                spawn_msg = "should have respawned at "
+                minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
             # anchored
-            elif boss_status == status_anchored and int(time_diff.days) < 0:
-                ret_message +=  "will spawn as early as "
-                mins_left   =   math.floor((86400-int(time_diff.seconds))/60)
-
-            elif boss_status == status_anchored and int(time_diff.days) >= 0:
-                ret_message +=  "could have spawned at "
-                mins_left   =   math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
-
-            # died
-            elif boss_status == status_died:
-                ret_message +=  "will respawn around "
-                mins_left   =   math.floor((86400-int(time_diff.seconds))/60)
-
-            # warned
-            else:
-                ret_message +=  "will spawn at "
-                mins_left   =   math.floor((86400-int(time_diff.seconds))/60)
+            elif boss_status == lang.CMD_ARG_STATUS_ANCHORED:
+                if int(time_diff.days) < 0:
+                    spawn_msg = "will spawn as early as "
+                    minutes = math.floor((86400-int(time_diff.seconds))/60)
+                else:
+                    spawn_msg = "could have spawned at "
+                    minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400    
+            elif boss_status == lang.CMD_ARG_STATUS_DIED:
+                spawn_msg = "will respawn around "
+                minutes = math.floor((86400-int(time_diff.seconds))/60)
+            else: # same as `elif boss_status == warned:`
+                spawn_msg = "will spawn at "
+                minutes = math.floor((86400-int(time_diff.seconds))/60)
 
             # absolute date and time for spawn
-            # e.g.              2017/07/06 "14:47"
-            ret_message     +=  record_date.strftime("%Y/%m/%d %H:%M")
+            # e.g. 2017/07/06 "14:47"
+            spawn_time = record_date.strftime("%Y/%m/%d %H:%M")
 
             # open parenthesis for minutes
-            ret_message +=  " ("
-            if mins_left >= 0:
-                abs_mins    =   abs(mins_left)
-            else:
-                abs_mins    =   abs(int(time_diff.days))*86400 + mins_left
+            #ret_message +=  " ("
+            if minutes < 0:
+                minutes = abs(int(time_diff.days))*86400 + minutes
 
             # print day or days conditionally
             if int(time_diff.days) > 1:
