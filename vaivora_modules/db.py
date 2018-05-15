@@ -1,11 +1,11 @@
 from operator import itemgetter
 import sqlite3
-
-# import additional constants
 from importlib import import_module as im
 import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
+from constants.boss import en_us as lang
+
 
 class Database:
     # constants
@@ -43,13 +43,15 @@ class Database:
     # dbs[modules[3]]         =   tuple('{} {}'.format(*t) for t in
     #                                   zip(columns[modules[3]], types[modules[3]]))
 
-    sql_select              =   "select * "
-    sql_count               =   "select count(*) "
-    sql_deathweaver_map     =   "from boss where name=? and map like ?"
-    sql_boss_field          =   "from boss where name=? and map=?"
-    sql_boss_world          =   "from boss where name=? and channel=?"
-    sql_boss_default        =   "from boss where name=?"
-    sql_order               =   " order by year desc, month desc, day desc, hour desc, minute desc"
+    sql_select = "select * "
+    sql_count = "select count(*) "
+    sql_from_boss = "from boss "
+    sql_and = "and "
+    sql_boss_name = "name=? "
+    sql_boss_map = "map=? "
+    sql_boss_channel = "channel=?"
+    sql_boss_default = "from boss where name=?"
+    sql_order = "order by year desc, month desc, day desc, hour desc, minute desc "
 
     def __init__(self, db_id):
         self.db_id          = str(db_id)
@@ -77,7 +79,7 @@ class Database:
     # @func:    create_db(self, list)
     # @post:    no invalid databases
     # @arg:
-    #   conn:   
+    #   conn:
     #           the sqlite3 connection
     #   invalid:
     #           invalid databases to redo (default: modules)
@@ -205,38 +207,34 @@ class Database:
         self.save_db()
         return True
 
-    # @func:    rm_entry_db_boss(self, list, int=0, str='') : bool
-    # @arg:
-    #       boss_list : list
-    #           list containing boss names to delete
-    #       boss_ch : int
-    #           (optional; default: 0)
-    #           a condition for channel
-    #       boss_map : str
-    #           (optional; default: '')
-    #           a condition for map
-    # @return:
-    #       implicit True (more than 0) if successful, implicit False (0) if no records were found matching the conditions
-    def rm_entry_db_boss(self, boss_list=vaivora_modules.boss.bosses, boss_ch=0, boss_map=''):
+
+    def rm_entry_db_boss(self, boss_list=vaivora_modules.boss.bosses, boss_ch=0, boss_map=None):
+        """
+        :func:`rm_entry_db_boss` removes records based on the conditions supplied.
+
+        Args:
+            boss_list (list): the list containing boss names (str) with records to erase
+            boss_ch (int): (default: 0) the boss channel filter, if specified
+            boss_map (str): (default: None) the boss map filter, if specified
+
+        Returns:
+            list: a list containing the records that were removed
+        """
         #self.open_db()
-        rec_count   = 0
+        rec_count = 0
         if not boss_list:
-            boss_list = vaivora_modules.boss.bosses
+            boss_list = lang.ALL_BOSSES
         for boss in boss_list:
-            # world bosses
             if boss_ch:
-                sql_statement   =   self.sql_boss_world
-                sql_condition   =   (boss, boss_ch)
-
-            # strictly field bosses with missing maps
-            elif boss_map and boss_map == "N/A" and boss in vaivora_modules.boss.bosses_field:
-                sql_statement   =   self.sql_boss_field
-                sql_condition   =   (boss, "N/A")
-
+                sql_statement = self.sql_boss_world
+                sql_condition = (boss, boss_ch)
+            elif boss_map and boss_map is not None:
+                sql_statement = self.sql_boss_field
+                sql_condition = (boss, boss_map)
             # handle all others, generally field bosses
             else:
-                sql_statement   =   self.sql_boss_default
-                sql_condition   =   (boss,)
+                sql_statement = self.sql_boss_default
+                sql_condition = (boss,)
 
             # process counting
             ct_statement    = "select count(*) " + sql_statement
