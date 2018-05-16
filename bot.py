@@ -120,7 +120,7 @@ Examples:
 
 * Use "$settings help" for more information.
 
-Examples
+Examples:
     $settings set role auth @Leaders
     $settings set role member @Members
 ```
@@ -303,13 +303,13 @@ async def boss(ctx, *args):
     elif vaivora_modules.boss.what_type(args[1]):
         arg_subcmd = lang_boss.CMD_ARG_TYPE
     else:
-        await ctx.send(lang.err.IS_INVALID_2.format(ctx.author.mention, args[1],
+        await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, args[1],
                                                     lang_boss.CMD_ARG_SUBCMD))
         return False
 
     if arg_target == "all":
         if arg_subcmd == lang_boss.CMD_ARG_STATUS or arg_subcmd == lang_boss.CMD_ARG_QUERY:
-            await ctx.send(lang.err.IS_INVALID_3.format(ctx.author.mention, args[1],
+            await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[1],
                                                         lang_boss.CMD_ARG_TARGET, arg_target))
             return False
         else: # same as `elif arg_subcmd == lang_boss.CMD_ARG_TYPE:`
@@ -320,7 +320,7 @@ async def boss(ctx, *args):
     else:
         boss_idx = vaivora_modules.boss.check_boss(arg_target)
         if boss_idx == -1:
-            await ctx.send(lang.err.IS_INVALID_2.format(ctx.author.mention, arg_target, 
+            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, arg_target,
                                                         lang_boss.CMD_ARG_TARGET))
             return False
 
@@ -329,6 +329,7 @@ async def boss(ctx, *args):
                 await ctx.send(lang_err.TOO_FEW_ARGS.format(ctx.author.mention, lang_boss.CMD_ARG_TARGET,
                                                             lang_boss.CMD_USAGE_STATUS))
                 return False
+            else:
 
 
     return True
@@ -351,7 +352,11 @@ async def settings(ctx, *args):
     if rgx_help.match(args[0]):
         pass
 
-    if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
+    try:
+        if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
+            return False
+    except AttributeError:
+        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND)) # not a guild
         return False
 
     pass
