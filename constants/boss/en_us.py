@@ -440,3 +440,7 @@ SUCCESS_ENTRY_ERASE = 'Y' + SUCCESS_ENTRY_ERASE
 
 FAIL_ENTRY_ERASE = '*(But **nothing** happend...)*\n'
 FAIL_ENTRY_LIST = 'No results found! Try a different boss.\n'
+
+TIME_SPAWN_MISSED = 'should have spawned at'
+TIME_SPAWN_ONTIME = 'will spawn around'
+TIME_SPAWN_EARLY = 'will spawn as early as'
