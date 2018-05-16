@@ -1158,9 +1158,12 @@ def process_cmd_entry(server_id: str, msg_channel: str, bosses, entry, boss_map=
             records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_map=boss_map)
 
         if records:
-            return lang.SUCCESS_ENTRY_ERASE_ALL.format(len(records))
+            return '{}{}'.format(lang.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
+                                 '```\n{}\n```'.format('\n'.join(records)))
         else:
             return lang.FAIL_ENTRY_ERASE
+
+    # $boss <target> list ...
     else:
         valid_boss_records = list()
         valid_boss_records.append("Records:")
@@ -1181,22 +1184,18 @@ def process_cmd_entry(server_id: str, msg_channel: str, bosses, entry, boss_map=
             time_diff = datetime.now() + timedelta(hours=pacific2server) - record_date
 
             if int(time_diff.days) >= 0 and boss_status != lang.CMD_ARG_STATUS_ANCHORED:
-                spawn_msg = "should have respawned at "
+                spawn_msg = lang.TIME_SPAWN_MISSED
                 minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
             # anchored
             elif boss_status == lang.CMD_ARG_STATUS_ANCHORED:
+                spawn_msg = lang.TIME_SPAWN_EARLY
                 if int(time_diff.days) < 0:
-                    spawn_msg = "will spawn as early as "
                     minutes = math.floor((86400-int(time_diff.seconds))/60)
                 else:
-                    spawn_msg = "could have spawned at "
                     minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400    
-            elif boss_status == lang.CMD_ARG_STATUS_DIED:
-                spawn_msg = "will respawn around "
-                minutes = math.floor((86400-int(time_diff.seconds))/60)
-            else: # same as `elif boss_status == warned:`
-                spawn_msg = "will spawn at "
+            else: #elif boss_status == lang.CMD_ARG_STATUS_DIED:
+                spawn_msg = lang.TIME_SPAWN_ONTIME
                 minutes = math.floor((86400-int(time_diff.seconds))/60)
 
             # absolute date and time for spawn
@@ -1210,15 +1209,15 @@ def process_cmd_entry(server_id: str, msg_channel: str, bosses, entry, boss_map=
 
             # print day or days conditionally
             if int(time_diff.days) > 1:
-                ret_message     +=  str(time_diff.days) + " days, " 
+                ret_message += str(time_diff.days) + " days, " 
             elif int(time_diff.days) == 1:
-                ret_message     +=  "1 day, "
+                ret_message += "1 day, "
 
             # print hour or hours conditionally
             if abs_mins > 119:
-                ret_message     +=  str(math.floor((abs_mins%86400)/60)) + " hours, "
+                ret_message += str(math.floor((abs_mins%86400)/60)) + " hours, "
             elif abs_mins > 59:
-                ret_message     +=  "1 hour, "
+                ret_message += "1 hour, "
 
             # print minutes unconditionally
             # e.g.              0 minutes from now
