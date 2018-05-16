@@ -148,30 +148,30 @@ DEMON_LORDS_B = '[Demon Lords: Nuaele, Zaura, Blut]'
 
 BOSSES = dict()
 
-BOSSES[KW_WORLD] = [BOSS_W_ABOMINATION, 
-                    BOSS_W_TEMPLESHOOTER, 
-                    BOSS_W_CANCERIL, 
-                    BOSS_W_ARCHON, 
-                    BOSS_W_NECROVENTER, 
-                    BOSS_W_KUBAS, 
-                    BOSS_W_MARIONETTE, 
+BOSSES[KW_WORLD] = [BOSS_W_ABOMINATION,
+                    BOSS_W_TEMPLESHOOTER,
+                    BOSS_W_CANCERIL,
+                    BOSS_W_ARCHON,
+                    BOSS_W_NECROVENTER,
+                    BOSS_W_KUBAS,
+                    BOSS_W_MARIONETTE,
                     BOSS_W_DULLAHAN]
 
-BOSSES[KW_EVENT] = [EVENT_ALEMETH_FLOWER, 
+BOSSES[KW_EVENT] = [EVENT_ALEMETH_FLOWER,
                     EVENT_LEGWYN_STONE]
 
-BOSSES[KW_FIELD] = [BOSS_F_CHAPPARITION, 
-                    BOSS_F_GLACKUMAN, 
-                    BOSS_F_SUCCUBUS, 
-                    BOSS_F_VELNIAMONKEY, 
-                    BOSS_F_DEATHWEAVER, 
-                    BOSS_F_MINELOADER, 
-                    BOSS_F_FIRELORD, 
-                    BOSS_F_FERRETMARAUDER, 
-                    BOSS_F_ELLAGANOS, 
-                    BOSS_F_CERBERUS, 
-                    BOSS_F_HARPEIA, 
-                    BOSS_F_PRISONCUTTER, 
+BOSSES[KW_FIELD] = [BOSS_F_CHAPPARITION,
+                    BOSS_F_GLACKUMAN,
+                    BOSS_F_SUCCUBUS,
+                    BOSS_F_VELNIAMONKEY,
+                    BOSS_F_DEATHWEAVER,
+                    BOSS_F_MINELOADER,
+                    BOSS_F_FIRELORD,
+                    BOSS_F_FERRETMARAUDER,
+                    BOSS_F_ELLAGANOS,
+                    BOSS_F_CERBERUS,
+                    BOSS_F_HARPEIA,
+                    BOSS_F_PRISONCUTTER,
                     BOSS_F_MOLICH]
 
 BOSSES[KW_DEMON] = [DEMON_LORDS_A,
@@ -190,14 +190,14 @@ BOSSES_EVENTS = [BOSS_W_KUBAS, BOSS_W_DULLAHAN] + BOSSES[KW_EVENT]
 # use for literal comparisons only
 BOSS_SYNONYMS = {BOSS_W_ABOMINATION: ['abom'],
 
-                 BOSS_W_TEMPLESHOOTER: ['temple shooter', 
-                                        'ts', 
-                                        'ets', 
+                 BOSS_W_TEMPLESHOOTER: ['temple shooter',
+                                        'ts',
+                                        'ets',
                                         'templeshooter'],
 
-                 BOSS_W_CANCERIL: ['canceril', 
-                                   'ec', 
-                                   'crab'], 
+                 BOSS_W_CANCERIL: ['canceril',
+                                   'ec',
+                                   'crab'],
 
                  BOSS_W_ARCHON: ['archon'],
 
@@ -206,35 +206,35 @@ BOSS_SYNONYMS = {BOSS_W_ABOMINATION: ['abom'],
 
                  BOSS_W_KUBAS: ['kubas'],
 
-                 BOSS_W_MARIONETTE: ['marionette', 
+                 BOSS_W_MARIONETTE: ['marionette',
                                      'mario',
-                                     'luigi'], 
+                                     'luigi'],
 
-                 BOSS_W_DULLAHAN: ['dull', 
-                                   'dulla', 
-                                   'dullachan'], 
+                 BOSS_W_DULLAHAN: ['dull',
+                                   'dulla',
+                                   'dullachan'],
 
                  EVENT_ALEMETH_FLOWER: ['flower'],
 
-                 EVENT_LEGWYN_STONE: ['legwyn', 
+                 EVENT_LEGWYN_STONE: ['legwyn',
                                       'crystal'],
 
                  BOSS_F_CHAPPARITION: ['chap',
                                        'chapparition'],
 
-                 BOSS_F_GLACKUMAN: ['glackuman', 
+                 BOSS_F_GLACKUMAN: ['glackuman',
                                     'glack'],
 
                  BOSS_F_SUCCUBUS: ['succubus',
                                    'succ'],
 
-                 BOSS_F_VELNIAMONKEY: ['velnia monkey', 
-                                       'monkey', 
-                                       'velnia', 
+                 BOSS_F_VELNIAMONKEY: ['velnia monkey',
+                                       'monkey',
+                                       'velnia',
                                        'velniamonkey'],
 
-                 BOSS_F_DEATHWEAVER: ['deathweaver', 
-                                      'dw', 
+                 BOSS_F_DEATHWEAVER: ['deathweaver',
+                                      'dw',
                                       'spider'],
 
                  BOSS_F_MINELOADER: ['ml',
@@ -248,17 +248,17 @@ BOSS_SYNONYMS = {BOSS_W_ABOMINATION: ['abom'],
                                          'ferret',
                                          'marauder'],
 
-                 BOSS_F_ELLAGANOS: ['ellaganos', 
+                 BOSS_F_ELLAGANOS: ['ellaganos',
                                     'ella'],
 
                  BOSS_F_CERBERUS: ['cerberus',
                                    'dog',
-                                   'cerb', 
-                                   'doge'], 
+                                   'cerb',
+                                   'doge'],
 
                  BOSS_F_HARPEIA: ['harpeia',
-                                  'harp', 
-                                  'harpy', 
+                                  'harp',
+                                  'harpy',
                                   'harpie'],
 
                  BOSS_F_PRISONCUTTER: ['prison cutter',
@@ -274,18 +274,18 @@ BOSS_SYNONYMS = {BOSS_W_ABOMINATION: ['abom'],
                                  'rexipher',
                                  'helgasercle',
                                  'marnox',
-                                 'rex', 
+                                 'rex',
                                  'goth',
-                                 'rexifer', 
-                                 'racksifur', 
+                                 'rexifer',
+                                 'racksifur',
                                  'sexipher',
                                  'helga',
                                  'footballhead',
-                                 'marn'], 
+                                 'marn'],
 
                  DEMON_LORDS_B: ['nuaele',
-                                 'zaura', 
-                                 'blut', 
+                                 'zaura',
+                                 'blut',
                                  'nuwhale',
                                  'butt'],
                 }
@@ -294,7 +294,7 @@ BOSS_MAPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
 
              BOSS_W_TEMPLESHOOTER: ['Royal Mausoleum Workers\' Lodge'],
 
-             BOSS_W_CANCERIL: ['Royal Mausoleum Constructors\' Chapel'], 
+             BOSS_W_CANCERIL: ['Royal Mausoleum Constructors\' Chapel'],
 
              BOSS_W_ARCHON: ['Royal Mausoleum Storage'],
 
@@ -302,9 +302,9 @@ BOSS_MAPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
 
              BOSS_W_KUBAS: ['Crystal Mine Lot 2 - 2F' ],
 
-             BOSS_W_MARIONETTE: ['Roxona Reconstruction Agency East Building'], 
+             BOSS_W_MARIONETTE: ['Roxona Reconstruction Agency East Building'],
 
-             BOSS_W_DULLAHAN: ['Roxona Reconstruction Agency West Building'], 
+             BOSS_W_DULLAHAN: ['Roxona Reconstruction Agency West Building'],
 
              EVENT_ALEMETH_FLOWER: ['Alemeth Forest'],
 
@@ -328,7 +328,7 @@ BOSS_MAPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
 
              BOSS_F_ELLAGANOS: ['Verkti Square'],
 
-             BOSS_F_CERBERUS: ['Mokusul Chamber'], 
+             BOSS_F_CERBERUS: ['Mokusul Chamber'],
 
              BOSS_F_HARPEIA: ['Nahash Forest'],
 
@@ -336,18 +336,70 @@ BOSS_MAPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
 
              BOSS_F_MOLICH: ['Tevhrin Stalactite Cave Section 4'],
 
-             DEMON_LORDS_A: ['City Wall District 8', 
-                             'Inner Wall District 8', 
-                             'Inner Wall District 9', 
-                             'Jeromel Park', 
-                             'Jonael Memorial', 
-                             'Outer Wall District 9'], 
+             DEMON_LORDS_A: ['City Wall District 8',
+                             'Inner Wall District 8',
+                             'Inner Wall District 9',
+                             'Jeromel Park',
+                             'Jonael Memorial',
+                             'Outer Wall District 9'],
 
-             DEMON_LORDS_B: ['Emmet Forest', 
-                             'Pystis Forest', 
-                             'Syla Forest', 
+             DEMON_LORDS_B: ['Emmet Forest',
+                             'Pystis Forest',
+                             'Syla Forest',
                              'Mishekan Forest'],
             }
+
+IMG = {BOSS_W_ABOMINATION: 'https://tos.neet.tv/images/bosscard/038_boss_abomination.png',
+
+       BOSS_W_TEMPLESHOOTER: 'https://tos.neet.tv/images/bosscard/063_boss_templeshooter.png',
+
+       BOSS_W_CANCERIL: 'https://tos.neet.tv/images/bosscard/110_canceril.png',
+
+       BOSS_W_ARCHON: 'https://tos.neet.tv/images/bosscard/095_boss_archon.png',
+
+       BOSS_W_NECROVENTER: 'https://tos.neet.tv/images/bosscard/044_boss_necrovanter.png',
+
+       BOSS_W_KUBAS: 'https://tos.neet.tv/images/bosscard/130_boss_kubas.png',
+
+       BOSS_W_MARIONETTE: 'https://tos.neet.tv/images/bosscard/105_marionette.png',
+
+       BOSS_W_DULLAHAN: 'https://tos.neet.tv/images/bosscard/071_durahan.png',
+
+       EVENT_ALEMETH_FLOWER: 'https://dark-nova.me/tos/yellow-eyed_flower.png',
+
+       EVENT_LEGWYN_STONE: 'https://dark-nova.me/tos/star_stone.png',
+
+       BOSS_F_CHAPPARITION: 'https://tos.neet.tv/images/bosscard/068_boss_chapparition.png',
+
+       BOSS_F_GLACKUMAN: 'https://tos.neet.tv/images/bosscard/116_glackuman.png',
+
+       BOSS_F_SUCCUBUS: 'https://tos.neet.tv/images/bosscard/138_boss_succubus.png',
+
+       BOSS_F_VELNIAMONKEY: 'https://tos.neet.tv/images/bosscard/142_boss_velniamonkey.png',
+
+       BOSS_F_DEATHWEAVER: 'https://tos.neet.tv/images/bosscard/081_boss_deathweaver.png',
+
+       BOSS_F_MINELOADER: 'https://tos.neet.tv/images/bosscard/092_boss_mineloader.png',
+
+       BOSS_F_FIRELORD: 'https://tos.neet.tv/images/bosscard/129_boss_firelord.png',
+
+       BOSS_F_FERRETMARAUDER: 'https://tos.neet.tv/images/bosscard/141_boss_ferretmarauder.png',
+
+       BOSS_F_ELLAGANOS: 'https://tos.neet.tv/images/bosscard/037_boss_ellaganos.png',
+
+       BOSS_F_CERBERUS: 'https://tos.neet.tv/images/bosscard/094_boss_kerberos.png',
+
+       BOSS_F_HARPEIA: 'https://tos.neet.tv/images/bosscard/107_boss_harpeia.png',
+
+       BOSS_F_PRISONCUTTER: 'https://tos.neet.tv/images/bosscard/143_boss_prisoncutter.png',
+
+       BOSS_F_MOLICH: 'https://tos.neet.tv/images/bosscard/021_boss_glass_mole.png',
+
+       DEMON_LORDS_A: 'https://dark-nova.me/tos/demon_lords_A.png',
+
+       DEMON_LORDS_B: 'https://dark-nova.me/tos/demon_lords_B.png',
+   
+}
 
 
 CMD_ARG_TARGET = '<target>'
