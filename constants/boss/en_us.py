@@ -1,7 +1,7 @@
 import re
 
-MODULE_NAME = "boss"
-COMMAND = "$" + MODULE_NAME
+MODULE_NAME = 'boss'
+COMMAND = '$' + MODULE_NAME
 
 HELP = []
 HELP.append(
@@ -108,10 +108,10 @@ Options (continued):
 ```
 """)
 
-KW_WORLD = "world"
-KW_EVENT = "event"
-KW_FIELD = "field"
-KW_DEMON = "Demon Lord"
+KW_WORLD = 'world'
+KW_EVENT = 'event'
+KW_FIELD = 'field'
+KW_DEMON = 'Demon Lord'
 
 # sorted by level
 BOSS_W_ABOMINATION = 'Abomination'
@@ -382,9 +382,9 @@ CMD_USAGE_STATUS = '$boss <target> <status> <time> [<channel>] [<map>]'
 ARG_MIN_STATUS = 3
 ARG_MAX_STATUS = 5
 
-SUCCESS_ENTRY_ERASE = "our queried records ({}) have successfully been erased.\n"
-SUCCESS_ENTRY_ERASE_ALL = "All of y" + SUCCESS_ENTRY_ERASE
-SUCCESS_ENTRY_ERASE = "Y" + SUCCESS_ENTRY_ERASE
+SUCCESS_ENTRY_ERASE = 'our queried records ({}) have successfully been erased.\n'
+SUCCESS_ENTRY_ERASE_ALL = 'All of y' + SUCCESS_ENTRY_ERASE
+SUCCESS_ENTRY_ERASE = 'Y' + SUCCESS_ENTRY_ERASE
 
-FAIL_ENTRY_ERASE = "*(But **nothing** happend...)*\n"
-FAIL_ENTRY_LIST = "No results found! Try a different boss.\n"
+FAIL_ENTRY_ERASE = '*(But **nothing** happend...)*\n'
+FAIL_ENTRY_LIST = 'No results found! Try a different boss.\n'
