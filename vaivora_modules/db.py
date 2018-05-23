@@ -195,48 +195,49 @@ class Database:
         #self.open_db()
 
         # handle channels
-        if boss_dict['channel']:
+        if boss_dict[lang_db.COL_BOSS_CHANNEL]:
             sel_statement = construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
                                           construct_filters(lang_db.SQL_WHERE_NAME,
                                                             lang_db.SQL_WHERE_CHANNEL))
-            sql_condition = (boss_dict['boss'], boss_dict['channel'])
+            sql_condition = (boss_dict[lang_db.COL_BOSS_NAME], boss_dict[lang_db.COL_BOSS_CHANNEL])
         # handle everything else
         else:
             sel_statement = construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
                                           construct_filters(lang_db.SQL_WHERE_NAME))
-            sql_condition = (boss_dict['boss'],)
+            sql_condition = (boss_dict[lang_db.COL_BOSS_NAME],)
 
         self.cursor.execute(sel_statement, sql_condition)
         contents.extend(self.cursor.fetchall())
 
-        if contents and (int(contents[0][5]) == boss_dict['year'] and
-                         int(contents[0][6]) == boss_dict['month'] and
-                         int(contents[0][7]) == boss_dict['day'] and
-                         int(contents[0][8]) >  boss_dict['hour']):
+        if contents and (int(contents[0][5]) == boss_dict[lang_db.COL_TIME_YEAR] and
+                         int(contents[0][6]) == boss_dict[lang_db.COL_TIME_MONTH] and
+                         int(contents[0][7]) == boss_dict[lang_db.COL_TIME_DAY] and
+                         int(contents[0][8]) >  boss_dict[lang_db.COL_TIME_HOUR]):
             return False
-        elif contents and (int(contents[0][5]) <= boss_dict['year'] or
-                           int(contents[0][6]) <= boss_dict['month'] or
-                           int(contents[0][7]) <= boss_dict['day'] or
-                           int(contents[0][8]) <= boss_dict['hour']):
+        elif contents and (int(contents[0][5]) <= boss_dict[lang_db.COL_TIME_YEAR] or
+                           int(contents[0][6]) <= boss_dict[lang_db.COL_TIME_MONTH] or
+                           int(contents[0][7]) <= boss_dict[lang_db.COL_TIME_DAY] or
+                           int(contents[0][8]) <= boss_dict[lang_db.COL_TIME_HOUR]):
 
-            if boss_dict['channel']:
-                self.rm_entry_db_boss(boss_list=[boss_dict['boss'],], boss_ch=boss_dict['channel'])
+            if boss_dict[lang_db.COL_BOSS_CHANNEL]:
+                self.rm_entry_db_boss(boss_list=[boss_dict[lang_db.COL_BOSS_NAME],],
+                                      boss_ch=boss_dict[lang_db.COL_BOSS_CHANNEL])
             else:
-                self.rm_entry_db_boss(boss_list=[boss_dict['boss'],])
+                self.rm_entry_db_boss(boss_list=[boss_dict[lang_db.COL_BOSS_NAME],])
 
         try:
             # boss database structure
             self.cursor.execute(lang_db.SQL_UPDATE,
-                                (str(boss_dict['boss']),
-                                 int(boss_dict['channel']),
-                                 str(boss_dict['map']),
-                                 str(boss_dict['status']),
-                                 str(boss_dict['text_channel']),
-                                 int(boss_dict['year']),
-                                 int(boss_dict['month']),
-                                 int(boss_dict['day']),
-                                 int(boss_dict['hour']),
-                                 int(boss_dict['mins'])))
+                                (str(boss_dict[lang_db.COL_BOSS_NAME]),
+                                 int(boss_dict[lang_db.COL_BOSS_CHANNEL]),
+                                 str(boss_dict[lang_db.COL_BOSS_MAP]),
+                                 str(boss_dict[lang_db.COL_BOSS_STATUS]),
+                                 str(boss_dict[lang_db.COL_BOSS_TXT_CHANNEL]),
+                                 int(boss_dict[lang_db.COL_TIME_YEAR]),
+                                 int(boss_dict[lang_db.COL_TIME_MONTH]),
+                                 int(boss_dict[lang_db.COL_TIME_DAY]),
+                                 int(boss_dict[lang_db.COL_TIME_HOUR]),
+                                 int(boss_dict[lang_db.COL_TIME_MINUTE])))
             self.save_db()
             return True
         except:
