@@ -15,3 +15,5 @@ SQL_UPDATE = 'insert into boss values (?,?,?,?,?,?,?,?,?,?)'
 MOD = 'boss'
 DIR = 'db/'
 EXT = '.db'
+
+TIME = 'Time'
