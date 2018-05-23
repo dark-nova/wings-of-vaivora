@@ -17,3 +17,16 @@ DIR = 'db/'
 EXT = '.db'
 
 TIME = 'Time'
+
+COL_TIME_YEAR = 'year'
+COL_TIME_MONTH = 'month'
+COL_TIME_DAY = 'day'
+COL_TIME_HOUR = 'hour'
+COL_TIME_MINUTE = 'minute'
+
+COL_BOSS_NAME = 'name'
+COL_BOSS_CHANNEL = 'channel'
+COL_BOSS_MAP = 'map'
+COL_BOSS_STATUS = 'status'
+COL_BOSS_TXT_CHANNEL = 'text_channel'
+
