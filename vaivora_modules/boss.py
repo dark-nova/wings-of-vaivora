@@ -1314,22 +1314,25 @@ def process_cmd_type(boss_type):
         return ""
         
 
-def process_cmd_opt(boss, option):
+def process_cmd_opt(boss, option=None):
     """
     :func:`process_cmd_opt` processes optional arguments.
 
     Args:
         boss (str): the boss related to the option
-        option (str): an optional argument to process
+        option (str): (default: None) an optional argument to process
 
     Returns:
         dict: a k:v of 'map' and 'channel': 'map' is str; 'channel' is int
     """
     target = {}
 
-    # initialize to default values
+    # initialize to default values: channel = 1; map = 'N/A'
     target[lang_db.COL_BOSS_CHANNEL] = 1
     target[lang_db.COL_BOSS_MAP] = lang_boss.CMD_ARG_QUERY_MAPS_NOT
+
+    if option is None:
+        return target
 
     channel = lang_boss.REGEX_OPT_CHANNEL.match(option)
 
