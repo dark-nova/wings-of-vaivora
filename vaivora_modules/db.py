@@ -36,28 +36,16 @@ def construct_filters(*args):
 
 
 class Database:
-    # constants
-    TIME                    =   "Time"
-    # BOSS        = "Module: Boss"
-    # REMINDERS   = "Module: Reminders"
-    # TALT        = "Module: Talt Tracker"
-    # PERMISSIONS = "Module: Permissions"
+    columns = dict()
+    columns[lang_db.TIME] = (lang_db.COL_TIME_YEAR, lang_db.COL_TIME_MONTH, lang_db.COL_TIME_DAY,
+                             lang_db.COL_TIME_HOUR, lang_db.COL_TIME_MINUTE)
+    columns[lang_db.MOD] = (lang_db.COL_BOSS_NAME, lang_db.COL_BOSS_CHANNEL, lang_db.COL_BOSS_MAP,
+                            lang_db.COL_BOSS_STATUS, lang_db.COL_BOSS_TXT_CHANNEL) + columns[lang_db.TIME]
 
-    # database formats
-    columns                 =   dict()
-    columns[TIME]           =   ('year', 'month', 'day', 'hour', 'minute')
-    columns[lang_db.MOD]     =   ('name', 'channel', 'map', 'status', 'text_channel') + columns[TIME]
-    # columns[modules[1]]     =   ('user', 'comment') + columns[TIME]
-    # columns[modules[2]]     =   ('user', 'previous', 'current', 'valid') + columns[TIME]
-    # columns[modules[3]]     =   ('user', 'role')
-
-    # and the database formats' types
-    types                   =   dict()
-    types[TIME]             =   ('real',)*5
-    types[lang_db.MOD]       =   ('text',) + ('real',) + ('text',)*3 + types[TIME]
-    # types[modules[1]]       =   ('text',)*2 + types[TIME]
-    # types[modules[2]]       =   ('text',) + ('real',)*3 + types[TIME]
-    # types[modules[3]]       =   ('text',)*2
+    types = dict()
+    types[lang_db.TIME] = (lang_db.SQL_TYPE_REAL,)*5
+    types[lang_db.MOD] = ((lang_db.SQL_TYPE_TEXT,) + (lang_db.SQL_TYPE_REAL,) + 
+                          (lang_db.SQL_TYPE_TEXT,)*3 + types[lang_db.TIME])
 
     # zip, create, concatenate into tuple
     dbs = dict()
