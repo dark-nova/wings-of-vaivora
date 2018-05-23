@@ -349,6 +349,7 @@ BOSS_MAPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
                              'Mishekan Forest'],
             }
 
+# IMG would most likely not be used.
 IMG = {BOSS_W_ABOMINATION: 'https://tos.neet.tv/images/bosscard/038_boss_abomination.png',
 
        BOSS_W_TEMPLESHOOTER: 'https://tos.neet.tv/images/bosscard/063_boss_templeshooter.png',
@@ -409,6 +410,8 @@ CMD_ARG_QUERY = '<query>'
 CMD_ARG_TYPE = '<type>'
 CMD_ARG_SUBCMD = '<subcommand>'
 
+CMD_ARG_TARGET_ALL = 'all'
+
 CMD_ARG_STATUS_DIED = 'died'
 CMD_ARG_STATUS_ANCHORED = 'anchored'
 #CMD_ARG_STATUS_WARNED = 'warned'
@@ -417,6 +420,7 @@ CMD_ARG_ENTRY_LIST = 'list'
 CMD_ARG_ENTRY_ERASE = 'erase'
 
 CMD_ARG_QUERY_MAPS = 'maps'
+CMD_ARG_QUERY_MAPS_NOT = 'N/A'
 CMD_ARG_QUERY_ALIAS = 'alias'
 
 REGEX_STATUS_DIED = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
@@ -429,10 +433,9 @@ REGEX_ENTRY_ERASE = re.compile(r'(erase|del(ete))?', re.IGNORECASE)
 REGEX_QUERY_MAPS = re.compile(r'maps?', re.IGNORECASE)
 REGEX_QUERY_ALIAS = re.compile(r'(syn(onym)?s?|alias(es)?)', re.IGNORECASE)
 
-CMD_USAGE_STATUS = '$boss <target> <status> <time> [<channel>] [<map>]'
+REGEX_OPT_CHANNEL = re.compile(r'(ch?)*.?([1-4])$', re.IGNORECASE)
 
-ARG_MIN_STATUS = 3
-ARG_MAX_STATUS = 5
+CMD_USAGE_STATUS = '$boss <target> <status> <time> [<channel>] [<map>]'
 
 SUCCESS_ENTRY_ERASE = 'our queried records ({}) have successfully been erased.\n'
 SUCCESS_ENTRY_ERASE_ALL = 'All of y' + SUCCESS_ENTRY_ERASE
@@ -444,3 +447,21 @@ FAIL_ENTRY_LIST = 'No results found! Try a different boss.\n'
 TIME_SPAWN_MISSED = 'should have spawned at'
 TIME_SPAWN_ONTIME = 'will spawn around'
 TIME_SPAWN_EARLY = 'will spawn as early as'
+
+
+### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
+
+ARG_MIN_STATUS = 3
+ARG_MAX_STATUS = 4
+
+REGEX_TIME = re.compile(r'[0-2]?[0-9][:.]?[0-5][0-9] ?([ap]m?)*', re.IGNORECASE)
+REGEX_TIME_NOON = re.compile(r'^12.*', re.IGNORECASE)
+REGEX_TIME_AMPM = re.compile(r'[ap]m?', re.IGNORECASE)
+REGEX_TIME_PM = re.compile(r'pm?', re.IGNORECASE)
+REGEX_TIME_DELIM = re.compile(r'[:.]')
+REGEX_TIME_DIGITS = re.compile(r'^[0-9]{3,4}$')
+REGEX_TIME_MINUTES = re.compile(r'.*([0-9]{2})$')
+
+TIME = '{}:{}'
+
+### DO NOT CHANGE/TRANSLATE THIS SECTION ABOVE ###
