@@ -464,4 +464,6 @@ REGEX_TIME_MINUTES = re.compile(r'.*([0-9]{2})$')
 
 TIME = '{}:{}'
 
+EMOJI_LOC = '<:location:448912251806810112>'
+
 ### DO NOT CHANGE/TRANSLATE THIS SECTION ABOVE ###
