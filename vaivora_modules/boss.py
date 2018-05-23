@@ -737,7 +737,7 @@ def what_entry(entry):
     Returns:
         str: the correct "entry" if successful
         None: if unsuccessful
-    """    
+    """
     if lang_boss.REGEX_ENTRY_LIST.match(entry):
         return lang_boss.CMD_ARG_ENTRY_LIST
     elif lang_boss.REGEX_ENTRY_ERASE.match(erase):
@@ -888,6 +888,32 @@ def get_bosses(boss_type):
             "- " + '\n- '.join(lang_boss.BOSSES[boss_type]) + "```")
 
 
+def get_offset(boss, status):
+    """
+    :func:`get_offset` returns the timedelta offset for a given boss.
+
+    Args:
+        boss (str): the name of the boss
+        status (str): the status code for the boss
+
+    Returns:
+        timedelta: an appropriate timedelta
+    """
+    # ignore status for all bosses except world bosses
+    if boss in lang_boss.BOSSES[lang_boss.KW_DEMON]:
+        return timedelta(minutes=lang_boss.TIME_STATUS_DEMON)
+    elif boss in lang_boss.BOSSES[lang_boss.KW_FIELD]:
+        return timedelta(minutes=lang_boss.TIME_STATUS_FIELD)
+    elif boss == lang_boss.BOSS_W_ABOMINATION and status == lang_boss.CMD_ARG_STATUS_DIED:
+        return timedelta(minutes=lang_boss.TIME_STATUS_ABOM)
+    elif boss == lang_boss.BOSS_W_ABOMINATION:
+        return timedelta(minutes=lang_boss.TIME_STATUS_ANCHORED_ABOM)
+    elif status == lang_boss.CMD_ARG_STATUS_DIED:
+        return timedelta(minutes=lang_boss.TIME_STATUS_WB)
+    else:
+        return timedelta(minutes=lang_boss.TIME_STATUS_ANCHORED)
+
+
 def validate_time(time):
     """
     :func:`validate_time` validates whether a string representing time is valid or not, returning a standardized one.
@@ -917,14 +943,14 @@ def validate_time(time):
         else:
             if lang_boss.REGEX_TIME_NOON.match(time):
                 offset -= 12
-    
+
     delim = lang_boss.REGEX_TIME_DELIM.search(time)
     hours, minutes = [int(t) for t in arg_time.split(delim.group(0))]
     hours += offset
 
     if temp_hour >= 24 or temp_hour <= 0:
         return None
-        
+
     return lang_boss.TIME.format(str(hours), str(minutes))
 
 
@@ -942,6 +968,15 @@ def validate_channel(ch):
         return int(rgx_letters.sub('', ch))
     else:
         return 1
+
+
+def validate_command(boss, status):
+    """
+    :func:`validate_command` validates whether a command's arguments are valid or not.
+
+    Args:
+        boss()
+    """
 
 
 def process_command(server_id, msg_channel, arg_list):
@@ -1023,7 +1058,7 @@ def process_command(server_id, msg_channel, arg_list):
         return arg_list[1] + " is invalid for `$boss`, argument position 2.\n" + msg_help
 
 
-def process_cmd_status(server_id, msg_channel, boss, status, time, opt_list):
+def process_cmd_status(server_id, msg_channel, boss, status, time, options):
     """
     :func:`process_cmd_status` processes a specific boss command: status related to recording.
 
@@ -1033,7 +1068,7 @@ def process_cmd_status(server_id, msg_channel, boss, status, time, opt_list):
         boss (str): the boss in question
         status (str): the boss's status, or the status command
         time (str): time represented for the associated event
-        opt_list (list): a list containing optional parameters; may be null
+        options (dict): a dict containing optional parameters with possible default values
 
     Returns:
         str: an appropriate message for success or fail of command, e.g. boss data recorded
@@ -1041,57 +1076,18 @@ def process_cmd_status(server_id, msg_channel, boss, status, time, opt_list):
     offset = 0
     target = dict()
 
-    # target - boss
+    if (boss not in lang_boss.BOSSES[lang_boss.KW_WORLD] and
+        status == lang_boss.CMD_ARG_STATUS_ANCHORED):
+
+
     target[lang_db.COL_BOSS_NAME] = boss
     target[lang_db.COL_BOSS_TXT_CHANNEL] = msg_channel
-    target[lang_db.COL_BOSS_CHANNEL] = -1
+    target[lang_db.COL_BOSS_CHANNEL] = options[lang_db.COL_BOSS_CHANNEL]
+    target[lang_db.COL_BOSS_STATUS] = status
 
-    if len(opt_list) > 0:
-        opts = process_cmd_opt(opt_list, boss)
-        target['map'], target['channel']    = opts
-    # 3 or fewer arguments
-    elif target['boss'] in bosses_demon:
-        target['map']       =   "N/A"
-        target['channel']   =   1
-    else:
-        target['map']       =   boss_locs[target['boss']][0]
-        target['channel']   =   1
+    time_offset = get_offset(boss, status)
 
 
-    # $boss [boss] died ...
-    if (rgx_st_died.match(status) and not target['boss'] in boss_spawn_330 and 
-        not target['boss'] in boss_spawn_02h and not target['boss'] in bosses_world):
-        time_offset         =   timedelta(minutes=time_died)
-        target['status']    =   status_died
-    elif rgx_st_died.match(status) and target['boss'] == "Abomination":
-        time_offset         =   timedelta(hours=time_died_wb_ab)
-        target['status']    =   status_died
-    elif rgx_st_died.match(status) and target['boss'] in bosses_world:
-        time_offset         =   timedelta(hours=time_died_wb)
-        target['status']    =   status_died
-    elif rgx_st_died.match(status) and target['boss'] in boss_spawn_330:
-        time_offset         =   timedelta(minutes=time_died_330)
-        target['status']    =   status_died
-    elif rgx_st_died.match(status):
-        time_offset         =   timedelta(hours=2)
-        target['status']    =   status_died
-    # $boss [boss] warned ...
-    elif rgx_st_warn.match(status):
-        if target['boss'] in bosses_world:
-            return (target['boss'] + " is invalid for `$boss`: `time`: `" + status + "`. " + 
-                    "Only field bosses have warnings.\n" + msg_help)
-        time_offset         =   timedelta(minutes=time_warned)
-        target['status']    =   status_warned
-    # $boss [boss] anchored ...
-    elif rgx_st_anch.match(status) and tg_boss == "Abomination":
-        time_offset         =   timedelta(hours=time_anch_abom)
-        target['status']    =   status_anchored
-    else:
-        if not target['boss'] in bosses_world:
-            return (target['boss'] + " is invalid for `$boss`: `time`: `" + status + "`. " + 
-                    "Only world bosses can be anchored.\n" + msg_help)
-        time_offset         =   timedelta(hours=time_anchored)
-        target['status']    =   status_anchored
 
     # error: invalid time
     if not rgx_time.match(time) and not rgx_time_3d.match(time):
