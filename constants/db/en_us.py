@@ -30,3 +30,5 @@ COL_BOSS_MAP = 'map'
 COL_BOSS_STATUS = 'status'
 COL_BOSS_TXT_CHANNEL = 'text_channel'
 
+SQL_TYPE_REAL = 'real'
+SQL_TYPE_TEXT = 'text'
