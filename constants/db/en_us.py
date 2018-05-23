@@ -1,3 +1,5 @@
+### DO NOT CHANGE/TRANSLATE THIS FILE ###
+
 SQL_SELECT = 'select *'
 #SQL_SELECT_COUNT = 'select count(*)'
 SQL_DELETE = 'delete'
@@ -32,3 +34,5 @@ COL_BOSS_TXT_CHANNEL = 'text_channel'
 
 SQL_TYPE_REAL = 'real'
 SQL_TYPE_TEXT = 'text'
+
+### DO NOT CHANGE/TRANSLATE THIS FILE ###
