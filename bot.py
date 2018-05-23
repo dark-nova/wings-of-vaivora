@@ -307,29 +307,44 @@ async def boss(ctx, *args):
                                                     lang_boss.CMD_ARG_SUBCMD))
         return False
 
-    if arg_target == "all":
+    # $boss all ...
+    if arg_target == lang_boss.CMD_ARG_TARGET_ALL:
         if arg_subcmd == lang_boss.CMD_ARG_STATUS or arg_subcmd == lang_boss.CMD_ARG_QUERY:
             await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[1],
                                                         lang_boss.CMD_ARG_TARGET, arg_target))
             return False
+        # $boss all <type>
         else: # same as `elif arg_subcmd == lang_boss.CMD_ARG_TYPE:`
             boss_type = vaivora_modules.boss.what_type(args[1])
             await ctx.send('{} {}'.format(ctx.author.mention,
                                           vaivora_modules.boss.get_bosses(boss_type)))
-
+            return True
+    # $boss <target> ...
     else:
         boss_idx = vaivora_modules.boss.check_boss(arg_target)
         if boss_idx == -1:
             await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, arg_target,
                                                         lang_boss.CMD_ARG_TARGET))
             return False
-
+        # $boss <target> <status> ...
         if arg_subcmd == lang_boss.CMD_ARG_STATUS:
             if len(args) < lang_boss.ARG_MIN_STATUS or len(args) > lang_boss.ARG_MAX_STATUS:
                 await ctx.send(lang_err.TOO_FEW_ARGS.format(ctx.author.mention, lang_boss.CMD_ARG_TARGET,
                                                             lang_boss.CMD_USAGE_STATUS))
                 return False
             else:
+                # $boss <target> <status> <time> ...
+                time = boss.validate_time(args[2])
+                if time is None:
+                    await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[2],
+                                                                arg_subcmd, 'time'))
+                    return False
+                if len(args) == lang_boss.ARG_MAX_STATUS:
+                    # opts = {'channel': int, 'map': str}
+                    opts = boss.process_cmd_opt(lang_boss.ALL_BOSSES[boss_idx], args[3])
+                else:
+                    # opts = {'channel': 1, 'map': 'N/A'}
+                    opts = boss.process_cmd_opt(lang_boss.ALL_BOSSES[boss_idx])
 
 
     return True
