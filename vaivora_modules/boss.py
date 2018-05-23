@@ -6,7 +6,8 @@ import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
 from vaivora_modules.settings import channel_boss as channel_boss
-from constants.boss import en_us as lang
+from constants.boss import en_us as lang_boss
+from constants.db import en_us as lang_db
 
 # BGN CONST
 
@@ -700,7 +701,7 @@ def help():
     Returns:
         a list of detailed help messages
     """
-    return lang.HELP
+    return lang_boss.HELP
 
 
 def what_status(entry):
@@ -715,12 +716,12 @@ def what_status(entry):
         str: the correct "status" if successful
         None: if unsuccessful
     """
-    if lang.REGEX_STATUS_DIED.match(entry):
-        return lang.CMD_ARG_STATUS_DIED
-    elif lang.REGEX_STATUS_ANCHORED.match(entry):
-        return lang.CMD_ARG_STATUS_ANCHORED
-    #elif lang.REGEX_STATUS_WARNED.match(entry):
-    #    return lang.CMD_ARG_STATUS_WARNED
+    if lang_boss.REGEX_STATUS_DIED.match(entry):
+        return lang_boss.CMD_ARG_STATUS_DIED
+    elif lang_boss.REGEX_STATUS_ANCHORED.match(entry):
+        return lang_boss.CMD_ARG_STATUS_ANCHORED
+    #elif lang_boss.REGEX_STATUS_WARNED.match(entry):
+    #    return lang_boss.CMD_ARG_STATUS_WARNED
     else:
         return None
 
@@ -737,10 +738,10 @@ def what_entry(entry):
         str: the correct "entry" if successful
         None: if unsuccessful
     """    
-    if lang.REGEX_ENTRY_LIST.match(entry):
-        return lang.CMD_ARG_ENTRY_LIST
-    elif lang.REGEX_ENTRY_ERASE.match(erase):
-        return lang.CMD_ARG_ENTRY_ERASE
+    if lang_boss.REGEX_ENTRY_LIST.match(entry):
+        return lang_boss.CMD_ARG_ENTRY_LIST
+    elif lang_boss.REGEX_ENTRY_ERASE.match(erase):
+        return lang_boss.CMD_ARG_ENTRY_ERASE
     else:
         return None
 
@@ -757,10 +758,10 @@ def what_query(entry):
         str: the correct "query" if successful
         None: if unsuccessful
     """
-    if lang.REGEX_QUERY_MAPS.match(entry):
-        return lang.CMD_ARG_QUERY_MAPS
-    elif lang.REGEX_QUERY_ALIAS.match(entry):
-        return lang.CMD_ARG_QUERY_ALIAS
+    if lang_boss.REGEX_QUERY_MAPS.match(entry):
+        return lang_boss.CMD_ARG_QUERY_MAPS
+    elif lang_boss.REGEX_QUERY_ALIAS.match(entry):
+        return lang_boss.CMD_ARG_QUERY_ALIAS
     else:
         return None
 
@@ -777,10 +778,10 @@ def what_type(entry):
         str: the correct "type" if successful
         None: if unsuccessful
     """
-    if entry == lang.KW_WORLD or entry == lang.KW_EVENT or entry == lang.KW_FIELD:
+    if entry == lang_boss.KW_WORLD or entry == lang_boss.KW_EVENT or entry == lang_boss.KW_FIELD:
         return entry
-    elif re.search(entry, lang.KW_DEMON.lower(), re.IGNORECASE):
-        return lang.KW_DEMON
+    elif re.search(entry, lang_boss.KW_DEMON.lower(), re.IGNORECASE):
+        return lang_boss.KW_DEMON
     else:
         return None
 
@@ -797,12 +798,12 @@ def check_boss(entry):
     """
     match = None
 
-    for boss in lang.BOSS_SYNONYMS:
-        for boss_syn in lang.BOSS_SYNONYMS[boss]:
+    for boss in lang_boss.BOSS_SYNONYMS:
+        for boss_syn in lang_boss.BOSS_SYNONYMS[boss]:
             if entry == boss_syn:
-                return lang.ALL_BOSSES.index(boss) # synonyms are unique and exact match only
+                return lang_boss.ALL_BOSSES.index(boss) # synonyms are unique and exact match only
 
-    for boss in lang.ALL_BOSSES:
+    for boss in lang_boss.ALL_BOSSES:
         if re.search(entry, boss, re.IGNORECASE):
             if not match:
                 match = boss
@@ -812,7 +813,7 @@ def check_boss(entry):
     if not match:
         return -1
 
-    return lang.ALL_BOSSES.index(match)
+    return lang_boss.ALL_BOSSES.index(match)
 
 
 def check_maps(boss, maps):
@@ -833,14 +834,14 @@ def check_maps(boss, maps):
         map_floor = map_floor.group(1)
         maps = re.sub(map_floor, '', maps).strip()
 
-    for boss_map in lang.BOSS_MAPS[boss]:
+    for boss_map in lang_boss.BOSS_MAPS[boss]:
         if re.search(maps, boss_map, re.IGNORECASE):
             if map_floor and not re.search(map_floor, boss_map, re.IGNORECASE):
                 continue # similar name; wrong number
             elif map_idx != -1: 
                 return -1 # multiple matched; invalid
             else:
-                map_idx = lang.BOSS_MAPS[boss].index(boss_map)
+                map_idx = lang_boss.BOSS_MAPS[boss].index(boss_map)
 
     return map_idx
 
@@ -856,7 +857,7 @@ def get_syns(boss):
         str: a formatted markdown message with synonyms
     """
     return ("**" + boss + "** can be called using the following aliases: ```\n" + 
-            "- " + '\n- '.join(lang.BOSS_SYNONYMS[boss]) + "```\n")
+            "- " + '\n- '.join(lang_boss.BOSS_SYNONYMS[boss]) + "```\n")
 
 
 def get_maps(boss):
@@ -870,7 +871,7 @@ def get_maps(boss):
         str: a formatted markdown message with maps for a boss
     """
     return ("**" + boss + "** can be found in the following maps: ```\n" + 
-            "- " + '\n- '.join(lang.BOSS_MAPS[boss]) + "```\n")
+            "- " + '\n- '.join(lang_boss.BOSS_MAPS[boss]) + "```\n")
 
 
 def get_bosses(boss_type):
@@ -884,7 +885,47 @@ def get_bosses(boss_type):
         str: a formatted markdown message with bosses of the specified type
     """
     return ("The following bosses are considered \"**" + boss_type + "**\" bosses: ```\n" + 
-            "- " + '\n- '.join(lang.BOSSES[boss_type]) + "```")
+            "- " + '\n- '.join(lang_boss.BOSSES[boss_type]) + "```")
+
+
+def validate_time(time):
+    """
+    :func:`validate_time` validates whether a string representing time is valid or not, returning a standardized one.
+
+    Args:
+        time (str): the time str to check
+
+    Returns:
+        str: a standardized time unit, e.g. 0:00 (midnight) or 13:00 (1 PM); or None if invalid
+    """
+    if not lang_boss.REGEX_TIME.match(time):
+        return None
+
+    offset = 0
+
+    # e.g. 900 (or 9:00)
+    if lang_boss.REGEX_TIME_DIGITS.match(time):
+        minutes = lang_boss.REGEX_TIME_MINUTES.match(time).group(1)
+        hours = re.sub(minutes, '', time)
+        return lang_boss.TIME.format(hours, minutes)
+    # e.g. 12:00 am (or 0:00)
+    elif lang_boss.REGEX_TIME_AMPM.search(time):
+        if lang_boss.REGEX_TIME_PM.search(time):
+            if lang_boss.REGEX_TIME_NOON.match(time):
+                offset -= 12
+            offset += 12
+        else:
+            if lang_boss.REGEX_TIME_NOON.match(time):
+                offset -= 12
+    
+    delim = lang_boss.REGEX_TIME_DELIM.search(time)
+    hours, minutes = [int(t) for t in arg_time.split(delim.group(0))]
+    hours += offset
+
+    if temp_hour >= 24 or temp_hour <= 0:
+        return None
+        
+    return lang_boss.TIME.format(str(hours), str(minutes))
 
 
 def validate_channel(ch):
@@ -982,7 +1023,7 @@ def process_command(server_id, msg_channel, arg_list):
         return arg_list[1] + " is invalid for `$boss`, argument position 2.\n" + msg_help
 
 
-def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
+def process_cmd_status(server_id, msg_channel, boss, status, time, opt_list):
     """
     :func:`process_cmd_status` processes a specific boss command: status related to recording.
 
@@ -997,16 +1038,16 @@ def process_cmd_status(server_id, msg_channel, tg_boss, status, time, opt_list):
     Returns:
         str: an appropriate message for success or fail of command, e.g. boss data recorded
     """
-    offset      =   0
-    target      =   dict()
+    offset = 0
+    target = dict()
 
     # target - boss
-    target['boss']          =   tg_boss # cmd_boss[0] # reassign to 'target boss'
-    target['text_channel']  =   msg_channel
-    target['channel']       =   -1
+    target[lang_db.COL_BOSS_NAME] = boss
+    target[lang_db.COL_BOSS_TXT_CHANNEL] = msg_channel
+    target[lang_db.COL_BOSS_CHANNEL] = -1
 
     if len(opt_list) > 0:
-        opts                =   process_cmd_opt(opt_list, tg_boss)
+        opts = process_cmd_opt(opt_list, boss)
         target['map'], target['channel']    = opts
     # 3 or fewer arguments
     elif target['boss'] in bosses_demon:
@@ -1149,19 +1190,19 @@ def process_cmd_entry(server_id: str, msg_channel: str, bosses, entry, boss_map=
         str: an appropriate message for success or fail of command, e.g. confirmation or list of entries
     """
     # $boss <target> erase ...
-    if entry == lang.CMD_ARG_ENTRY_ERASE and not (boss_map or channel):
-        if bosses == lang.ALL_BOSSES or not (boss_map or channel):
+    if entry == lang_boss.CMD_ARG_ENTRY_ERASE and not (boss_map or channel):
+        if bosses == lang_boss.ALL_BOSSES or not (boss_map or channel):
             records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses)
-        elif channel and bosses in lang.BOSSES[lang.KW_WORLD]:
+        elif channel and bosses in lang_boss.BOSSES[lang_boss.KW_WORLD]:
             records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_ch=channel)
-        elif boss_map and bosses in lang.BOSSES[lang.KW_DEMON]: # may phase out this option
+        elif boss_map and bosses in lang_boss.BOSSES[lang_boss.KW_DEMON]: # may phase out this option
             records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_map=boss_map)
 
         if records:
-            return '{}{}'.format(lang.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
+            return '{}{}'.format(lang_boss.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
                                  '```\n{}\n```'.format('\n'.join(records)))
         else:
-            return lang.FAIL_ENTRY_ERASE
+            return lang_boss.FAIL_ENTRY_ERASE
 
     # $boss <target> list ...
     else:
@@ -1170,7 +1211,7 @@ def process_cmd_entry(server_id: str, msg_channel: str, bosses, entry, boss_map=
         boss_records = vaivora_modules.db.Database(server_id).check_db_boss(bosses=bosses) # possible return
 
         if not boss_records: # empty
-            return lang.FAIL_ENTRY_LIST
+            return lang_boss.FAIL_ENTRY_LIST
 
         for boss_record in boss_records:
             boss_name = boss_record[0]
@@ -1183,19 +1224,19 @@ def process_cmd_entry(server_id: str, msg_channel: str, bosses, entry, boss_map=
             
             time_diff = datetime.now() + timedelta(hours=pacific2server) - record_date
 
-            if int(time_diff.days) >= 0 and boss_status != lang.CMD_ARG_STATUS_ANCHORED:
-                spawn_msg = lang.TIME_SPAWN_MISSED
+            if int(time_diff.days) >= 0 and boss_status != lang_boss.CMD_ARG_STATUS_ANCHORED:
+                spawn_msg = lang_boss.TIME_SPAWN_MISSED
                 minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
             # anchored
-            elif boss_status == lang.CMD_ARG_STATUS_ANCHORED:
-                spawn_msg = lang.TIME_SPAWN_EARLY
+            elif boss_status == lang_boss.CMD_ARG_STATUS_ANCHORED:
+                spawn_msg = lang_boss.TIME_SPAWN_EARLY
                 if int(time_diff.days) < 0:
                     minutes = math.floor((86400-int(time_diff.seconds))/60)
                 else:
                     minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400    
-            else: #elif boss_status == lang.CMD_ARG_STATUS_DIED:
-                spawn_msg = lang.TIME_SPAWN_ONTIME
+            else: #elif boss_status == lang_boss.CMD_ARG_STATUS_DIED:
+                spawn_msg = lang_boss.TIME_SPAWN_ONTIME
                 minutes = math.floor((86400-int(time_diff.seconds))/60)
 
             # absolute date and time for spawn
@@ -1273,41 +1314,37 @@ def process_cmd_type(boss_type):
         return ""
         
 
-def process_cmd_opt(opt_list, opt_boss):
+def process_cmd_opt(boss, option):
     """
     :func:`process_cmd_opt` processes optional arguments.
 
     Args:
-        opt_list (list): a list of optional arguments to process
-        opt_boss (list): a list of bosses related to the options
+        boss (str): the boss related to the option
+        option (str): an optional argument to process
 
     Returns:
-        dict: a k:v of 'map' and 'channel', both str
+        dict: a k:v of 'map' and 'channel': 'map' is str; 'channel' is int
     """
-    target  =   dict()
-    for cmd_arg in opt_list:
-        cmd_arg     =   rgx_invalid.sub('', cmd_arg)
-        channel     =   rgx_channel.match(cmd_arg)
-        # target - channel
-        if channel and opt_boss and opt_boss in bosses_with_floors: # all field bosses
-            target['channel']   =   1
-            target['map']       =   boss_locs[opt_boss][check_maps(opt_boss, cmd_arg)]
-            return (target['map'], target['channel'])
-        elif channel and opt_boss and opt_boss in bosses_world:
-            target['channel']   =   int(channel.group(2)) # use channel provided by command
-            target['map']       =   boss_locs[opt_boss][0]
-            return (target['map'], target['channel'])
-        elif opt_boss and opt_boss in bosses_demon: # possibly map instead
-            target['channel']   =   1
-            if cmd_arg: # must be map if not null
-                map_idx         =   check_maps(opt_boss, cmd_arg)
-            # target - map 
-            if cmd_arg and map_idx >= 0 and map_idx < len(boss_locs[opt_boss]):
-                target['map']   =   boss_locs[opt_boss][map_idx]
-            else:
-                target['map']   =   "N/A"
-            return (target['map'], target['channel'])
-    return ("N/A", 1)
+    target = {}
+
+    # initialize to default values
+    target[lang_db.COL_BOSS_CHANNEL] = 1
+    target[lang_db.COL_BOSS_MAP] = lang_boss.CMD_ARG_QUERY_MAPS_NOT
+
+    channel = lang_boss.REGEX_OPT_CHANNEL.match(option)
+
+    # world boss; discard map argument if found and return
+    if channel and boss in lang_boss.BOSSES[lang_boss.KW_WORLD]:
+        target[lang_db.COL_BOSS_CHANNEL] = int(channel.group(2))
+        target[lang_db.COL_BOSS_MAP] = lang_db.BOSS_MAPS[boss]
+    # field boss + Demon Lords; discard channel argument nonetheless
+    elif not channel and (boss in lang_boss.BOSSES[lang_boss.KW_FIELD] or
+                          boss in lang_boss.BOSSES[lang_boss.KW_DEMON]):
+        map_idx = check_maps(boss, option)
+        if map_idx >= 0 and map_idx < len(lang_boss.BOSS_MAPS[boss]):
+            target[lang_db.COL_BOSS_MAP] = boss_locs[boss][map_idx]
+        
+    return target
 
 
 def process_record(boss, status, time, boss_map, channel):
