@@ -1058,7 +1058,6 @@ def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None,
 
     # $boss <target> erase ...
     if entry == lang_boss.CMD_ARG_ENTRY_ERASE:
-        print(entry)
         if bosses == lang_boss.ALL_BOSSES or not (boss_map or channel):
             records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses)
         elif channel and bosses in lang_boss.BOSSES[lang_boss.KW_WORLD]:
