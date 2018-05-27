@@ -3,10 +3,10 @@
 ## Settings Module
 
 ### Usage:
-+ $settings <setting> <talt-value> [<talt-unit>] [<@mention>]
-+ $settings <setting> (<role> [<@mention>] | <channel> [<#channel>])
++ $settings <setting> <talt-value> [<talt-unit>] [`<@mention>`]
++ $settings <setting> (<role> [`<@mention>`] | <channel> [`<#channel>`])
 + $settings <validate>
-+ $settings <role-change> <@mention>
++ $settings <role-change> `<@mention>`
 + $settings help
 
 ### Examples:
@@ -20,24 +20,24 @@
 + $settings add talt 240 points
     - Means: The same as `$settings add talt 12`, with optional unit.
 
-+ $settings add talt 12 @person
-    - Means: Add 12 Talt to @person's guild record.
++ $settings add talt 12 `@person`
+    - Means: Add 12 Talt to `@person`'s guild record.
     - You must be "Authorized" to do this.
 
 + $settings set channel management #management
     - Means: Sets this channel to "Management".
     - Note: this disables Management in all channels not marked as "Management".
 
-+ $settings set role authorized @person
-    - Means: Sets @person to be "Authorized".
++ $settings set role authorized `@person`
+    - Means: Sets `@person` to be "Authorized".
     - You must be "Authorized" to do this.
     - Note: guild owners are considered "Super-Authorized" and must set this up first.
 
-+ $settings promote @person
-    - Means: Raises @person's authorization by one level.
++ $settings promote `@person`
+    - Means: Raises `@person`'s authorization by one level.
     - Note: Maximum authorization is "Authorized".
-+ $settings validate @person
-    - Means: Validate any 'temporary' Talt records for @person.
++ $settings validate `@person`
+    - Means: Validate any 'temporary' Talt records for `@person`.
     - You can omit mention; this is the same as validating everyone at once.
 
 ### Options:
