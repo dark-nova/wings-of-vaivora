@@ -10,6 +10,7 @@ from importlib import import_module as im
 import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
+from constants.settings import en_us as lang
 
 # BGN CONST
 
