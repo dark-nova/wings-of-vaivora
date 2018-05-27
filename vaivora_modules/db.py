@@ -279,8 +279,6 @@ class Database:
             sel_statement = construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS, sql_filters)
             del_statement = construct_SQL(lang_db.SQL_DELETE, lang_db.SQL_FROM_BOSS, sql_filters)
 
-            print(del_statement)
-
             self.cursor.execute(sel_statement, sql_condition)
             results = self.cursor.fetchall()
 
