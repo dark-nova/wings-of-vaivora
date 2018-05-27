@@ -1177,12 +1177,12 @@ def process_cmd_query(boss, query):
     Returns:
         str: an appropriate message for success or fail of command, i.e. maps or aliases
     """
-    # $boss [boss] syns
-    if lang_boss.REGEX_QUERY_ALIAS.match(query):
-        return get_syns(tg_boss)
-    # $boss [boss] maps
+    # $boss <target> syns
+    if query == lang_boss.CMD_ARG_QUERY_ALIAS:
+        return get_syns(boss)
+    # $boss <target> maps
     else:
-        return get_maps(tg_boss)
+        return get_maps(boss)
 
 
 def process_cmd_type(boss_type):
