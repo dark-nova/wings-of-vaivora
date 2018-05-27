@@ -362,7 +362,7 @@ async def boss(ctx, *args):
                 combined_message = result[0]
                 # result should always be a list if successful
                 for r, i in zip(result[1:], range(len(result)-1)):
-                    combined_message = '{}\n{}'.format(combined_message, r)
+                    combined_message = '{}\n\n{}'.format(combined_message, r)
                     if i % 5 == 4:
                         await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
                         combined_message = ''
@@ -373,8 +373,8 @@ async def boss(ctx, *args):
         elif arg_subcmd == lang_boss.CMD_ARG_QUERY:
             query = vaivora_modules.boss.what_query(args[1])
             await ctx.send('{} {}'.format(ctx.author.mention,
-                                          vaivora_modules.boss.process_cmd_query(query)))
-            result = vaivora_modules.boss.process_cmd_query(query)
+                                          vaivora_modules.boss.process_cmd_query(arg_boss, query)))
+            return True
 
     return True
 
@@ -622,7 +622,7 @@ async def check_databases():
                 entry_time = datetime(*list_time)
 
                 record = vaivora_modules.boss.process_record(record_info[0], record_info[3], entry_time, record_info[2], record_info[1])
-                #                   channel           :    boss              :                       2017/01/01 12:00      :    channel
+                #             channel           :    boss              :                       2017/01/01 12:00      :    channel
                 record2byte = record_info[4] + ":" + record_info[0] + ":" + entry_time.strftime("%Y/%m/%d %H:%M") + ":" + record_info[1]
                 record2byte = bytearray(record2byte, 'utf-8')
                 hashedblake = blake2b(digest_size=48)
@@ -650,60 +650,52 @@ async def check_databases():
             if len(message_to_send) == 0:
                 continue
 
-            role_str = ''
+            roles = []
 
             # compare roles against server
-            srv = bot.get_guild(vdb_id)
+            guild = bot.get_guild(vdb_id)
             for uid in vdst[vdb_id].get_role(cmd_boss):
                 try:
                     # group mention
-                    idx =   [ro.id for ro in srv.roles].index(uid)
-                    role_str    +=  srv.roles[idx].mention + " "
+                    idx = [role.id for role in guild.roles].index(uid)
+                    roles.append[guild.roles[idx].mention]
                 except:
                     if rgx_user.search(uid):
-                        uid =   rgx_user.sub('', uid)
+                        uid = rgx_user.sub('', uid)
 
                     try:
                         # user mention
-                        boss_user   =   srv.get_member(uid)
-                        role_str    +=  boss_user.mention + " "
+                        boss_user = guild.get_member(uid)
+                        roles.append(boss_user.mention)
                     except:
                         # user or group no longer exists
                         vdst[vdb_id].rm_boss(uid)
 
-            # no roles detected; use empty string
-            role_str = role_str if role_str else ""
+            role_str = ' '.join(roles)
 
-            # replace time_str with server setting warning, eventually
-            time_str = "15"
-
-            cur_channel = None
-            discord_message = ''
+            current_channel = None
+            discord_message = None
             for message in message_to_send:
-                if cur_channel != message[-1]:
-                    if cur_channel:
-                        discord_message += "```"
-
+                if current_channel != int(message[-1]):
+                    if current_channel:
                         try:
-                            await srv.get_channel(cur_channel).send(discord_message)
+                            await guild.get_channel(current_channel).send(discord_message)
                         except:
                             pass
 
-                        discord_message = ''
-                    cur_channel = message[-1]
+                        discord_message = None
+                    current_channel = int(message[-1])
 
                     # replace time_str with server setting warning, eventually
-                    discord_message = role_str + "The following bosses will spawn within " + time_str + " minutes: ```python\n"
-                discord_message += message[0]
-            # flush
-            discord_message += "```"
+                    discord_message = '{} The following bosses will spawn within 15 minutes:'.format(role_str)
+                discord_message = '{}\n\n{}'.format(discord_message, message[0])
 
             try:
-                await srv.get_channel(cur_channel).send(discord_message)
-            except:
+                await guild.get_channel(current_channel).send(discord_message)
+            except Exception as e:
+                print(e)
                 pass
 
-            discord_message = ''
         #await client.process_commands(message)
         await asyncio.sleep(1)
 ####
