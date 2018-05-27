@@ -295,7 +295,7 @@ class Database:
                 self.save_db()
                 records.append(boss) # guaranteed to be only one entry as per this loop
             except Exception as e: # in case of sqlite3 exceptions
-                print('what', e)
+                print(self.db_id, e)
                 continue
 
         self.save_db()
