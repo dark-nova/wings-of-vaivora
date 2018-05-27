@@ -30,9 +30,6 @@ Examples:
     $boss rexipher erase
         Means: Erase records with "[Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox]".
 
-    $boss crab erase ch2
-        Means: Erase records with "Earth Canceril" but only for CH 2.
-
     $boss crab maps
         Means: Show maps where "Earth Canceril" may spawn.
 
@@ -402,6 +399,9 @@ IMG = {BOSS_W_ABOMINATION: 'https://tos.neet.tv/images/bosscard/038_boss_abomina
    
 }
 
+ACKNOWLEDGED = "Thank you! Your command has been acknowledged and recorded.\n"
+
+MSG_HELP = "Please run `" + COMMAND + " help` for syntax."
 
 CMD_ARG_TARGET = '<target>'
 CMD_ARG_STATUS = '<status>'
@@ -437,12 +437,19 @@ REGEX_OPT_CHANNEL = re.compile(r'(ch?)*.?([1-4])$', re.IGNORECASE)
 
 CMD_USAGE_STATUS = '$boss <target> <status> <time> [<channel>] [<map>]'
 
+SUCCESS_STATUS = '{}\n**{}**\n- {} at **{}**\n- CH {}. {} {}'
+
 SUCCESS_ENTRY_ERASE = 'our queried records ({}) have successfully been erased.\n'
 SUCCESS_ENTRY_ERASE_ALL = 'All of y' + SUCCESS_ENTRY_ERASE
 SUCCESS_ENTRY_ERASE = 'Y' + SUCCESS_ENTRY_ERASE
 
+FAIL_STATUS = "Your command could not be processed. It appears this record overlaps too closely with another."
+FAIL_STATUS_NO_ANCHOR = "This boss cannot be anchored."
+
 FAIL_ENTRY_ERASE = '*(But **nothing** happend...)*\n'
 FAIL_ENTRY_LIST = 'No results found! Try a different boss.\n'
+
+FAIL_TEMPLATE = "{}\n{}"
 
 TIME_SPAWN_MISSED = 'should have spawned at'
 TIME_SPAWN_ONTIME = 'will spawn around'
@@ -458,8 +465,14 @@ TIME_STATUS_ABOM = 120
 TIME_STATUS_ANCHORED = 180 #TIME_STATUS_WB-60
 TIME_STATUS_ANCHORED_ABOM = 60 #TIME_STATUS_ABOM-60
 
+TIME_H_LOCAL_TO_SERVER = 3
+TIME_H_SERVER_TO_LOCAL = -3
+
 ARG_MIN_STATUS = 3
 ARG_MAX_STATUS = 4
+
+ARG_MIN_ENTRY = 2
+ARG_MAX_ENTRY = 3
 
 REGEX_TIME = re.compile(r'[0-2]?[0-9][:.]?[0-5][0-9] ?([ap]m?)*', re.IGNORECASE)
 REGEX_TIME_NOON = re.compile(r'^12.*', re.IGNORECASE)

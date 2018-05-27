@@ -18,7 +18,8 @@ def construct_SQL(*args):
     Returns:
         str: a full SQLite statement
     """
-    return ' '.join([str(arg) for arg in args])
+    args = [str(arg) for arg in args]
+    return ' '.join(args)
 
 
 def construct_filters(*args):
@@ -31,8 +32,9 @@ def construct_filters(*args):
     Returns:
         str: a compound SQLite filter
     """
+    args = [str(arg) for arg in args]
     return '{} {}'.format(lang_db.SQL_WHERE,
-                          ' {} '.format(lang_db.SQL_AND).join([str(arg) for arg in args]))
+                          ' {} '.format(lang_db.SQL_AND).join(args))
 
 
 class Database:
@@ -64,9 +66,8 @@ class Database:
         self.db_id = db_id
         self.db_name = '{}{}{}'.format(lang_db.DIR, self.db_id, lang_db.EXT)
         self.open_db()
-        self.invalid = self.check_if_invalid()
-        if self.invalid:
-            self.create_db(self.invalid)
+        if not self.check_if_valid():
+            self.create_db()
 
 
     def open_db(self):
@@ -83,7 +84,6 @@ class Database:
         :func:`save_db` saves the database.
         """
         self.connect.commit()
-        #self.connect.close()
 
 
     def get_id(self):
@@ -104,13 +104,11 @@ class Database:
             None
         """
         #self.open_db()
-        for invalid_module in invalid:
-            self.cursor.execute('drop table if exists {}'.format(invalid_module))
-            self.cursor.execute('create table {}({})'.format(invalid_module, ','.join(self.dbs[lang_db.MOD])))
+        self.cursor.execute('drop table if exists {}'.format(lang_db.MOD))
+        self.cursor.execute('create table {}({})'.format(lang_db.MOD, ','.join(self.dbs[lang_db.MOD])))
         # else:
         #     for module in modules:
         #         self.cursor.execute('create table {}({})'.format((module, ','.join(dbs[module]),)))
-        self.invalid = []
         self.save_db()
         return
 
@@ -178,7 +176,7 @@ class Database:
             db_record (list): the records to sort
 
         """
-        return sorted(db, key=itemgetter(5,6,7,8,9), reverse=True)
+        return sorted(db_record, key=itemgetter(5,6,7,8,9), reverse=True)
 
 
     def update_db_boss(self, boss_dict):
@@ -279,10 +277,14 @@ class Database:
 
             # process counting
             sel_statement = construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS, sql_filters)
-            del_statement = construct_SQL(lang_db.SQL_DELETE, sql_filters)
+            del_statement = construct_SQL(lang_db.SQL_DELETE, lang_db.SQL_FROM_BOSS, sql_filters)
+
+            print(del_statement)
 
             self.cursor.execute(sel_statement, sql_condition)
             results = self.cursor.fetchall()
+
+            self.save_db()
 
             # no records to delete
             if len(results) == 0:
@@ -292,7 +294,8 @@ class Database:
                 self.cursor.execute(del_statement, sql_condition)
                 self.save_db()
                 records.append(boss) # guaranteed to be only one entry as per this loop
-            except: # in case of sqlite3 exceptions
+            except Exception as e: # in case of sqlite3 exceptions
+                print('what', e)
                 continue
 
         self.save_db()

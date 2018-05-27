@@ -738,9 +738,9 @@ def what_entry(entry):
         str: the correct "entry" if successful
         None: if unsuccessful
     """
-    if lang_boss.REGEX_ENTRY_LIST.match(entry):
+    if lang_boss.REGEX_ENTRY_LIST.search(entry):
         return lang_boss.CMD_ARG_ENTRY_LIST
-    elif lang_boss.REGEX_ENTRY_ERASE.match(erase):
+    elif lang_boss.REGEX_ENTRY_ERASE.search(entry):
         return lang_boss.CMD_ARG_ENTRY_ERASE
     else:
         return None
@@ -945,13 +945,14 @@ def validate_time(time):
                 offset -= 12
 
     delim = lang_boss.REGEX_TIME_DELIM.search(time)
-    hours, minutes = [int(t) for t in arg_time.split(delim.group(0))]
+    hours, minutes = [int(t) for t in time.split(delim.group(0))]
     hours += offset
 
-    if temp_hour >= 24 or temp_hour <= 0:
+    if hours >= 24 or hours <= 0:
         return None
 
-    return lang_boss.TIME.format(str(hours), str(minutes))
+    return lang_boss.TIME.format(str(hours).rjust(2, '0'),
+                                 str(minutes).rjust(2, '0'))
 
 
 def validate_channel(ch):
@@ -970,101 +971,13 @@ def validate_channel(ch):
         return 1
 
 
-def validate_command(boss, status):
-    """
-    :func:`validate_command` validates whether a command's arguments are valid or not.
-
-    Args:
-        boss()
-    """
-
-
-def process_command(server_id, msg_channel, arg_list):
-    """
-    :func:`process_command` processes a boss command input by the user.
-
-    Args:
-        server_id (str): the id of the server of the originating message
-        msg_channel (str): the id of the channel of the originating message (belonging to server of `server_id`)
-        arg_list (list): the list of arguments supplied for the command, all str
-
-    Returns:
-        str: an appropriate message for success or fail of command
-    """
-    if not vaivora_modules.settings.Settings(server_id).is_ch_type(msg_channel, channel_boss):
-        return [""] # silently deny
-
-    # $boss help
-    if rgx_help.match(arg_list[0]):
-        return command
-    arg_len     = len(arg_list)
-
-    # error: not enough arguments
-    if arg_len < arg_min or arg_len > arg_max:
-        return ["You supplied " + str(arg_len) + " arguments; commands must have at least " + 
-                str(arg_min) + " or at most " + str(arg_max) + " arguments.\n" + msg_help]
-
-    # $boss all ...
-    if rgx_tg_all.match(arg_list[0]):
-        cmd_boss    =   bosses
-
-    # $boss [boss] ...
-    else:
-        boss_idx  = check_boss(arg_list[0])
-        if boss_idx == -1:
-            return arg_list[0].split(' ')[0]
-            # return arg_list[0] + " is invalid for `$boss`. This is a list of bosses you may use:```python\n#   " + 
-            #        '\n#   '.join(bosses) + "```\n" + msg_help
-        cmd_boss    =   [bosses[boss_idx], ]
-
-    # error: invalid argument 2
-    if (not rgx_status.match(arg_list[1]) and 
-        not rgx_entry.match(arg_list[1]) and 
-        not rgx_query.match(arg_list[1]) and 
-        not rgx_type.match(arg_list[1])):
-        return ["\"" + arg_list[1] + "\" is invalid for `$boss`, argument position 2.\n" + msg_help]
-
-    # error: invalid [target] argument for argument 2
-    # using 'all' with [status]
-    if rgx_status.match(arg_list[1]) and len(cmd_boss) != 1:
-        return [arg_list[1] + " is invalid for `$boss`:'all', argument position 2.\n" + msg_help]
-    # using 'all' with [query]
-    if rgx_query.match(arg_list[1]) and len(cmd_boss) != 1:
-        return [arg_list[1] + " is invalid for `$boss`:'all' argument position 2.\n" + msg_help]
-    # using [boss] with [type]
-    if rgx_type.match(arg_list[1]) and len(cmd_boss) <= 1:
-        return [arg_list[1] + " is invalid for `$boss`:`" + cmd_boss[0] + "`, argument position 2.\n" + msg_help]
-    # no such errors with entry, since entry accepts both [boss] and 'all'
-
-    # $boss [boss] [status] ...
-    if rgx_status.match(arg_list[1]):
-        try:
-            return [process_cmd_status(server_id, msg_channel, cmd_boss[0], arg_list[1], arg_list[2], arg_list[3:])]
-        except:
-            return ["You supplied " + str(arg_len) + " arguments; commands must have at least " + 
-                    str(arg_min) + " or at most " + str(arg_max) + " arguments.\n" + msg_help]
-    # $boss [boss]|all [entry] ...
-    elif rgx_entry.match(arg_list[1]) and len(arg_list) == 2:
-        return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1])
-    elif rgx_entry.match(arg_list[1]):
-        return process_cmd_entry(server_id, msg_channel, cmd_boss, arg_list[1], arg_list[2:])
-    # $boss [boss] [query]
-    elif rgx_query.match(arg_list[1]):
-        return [process_cmd_query(cmd_boss[0], arg_list[1])]
-    # $boss all [type]
-    elif rgx_type.match(arg_list[1]):
-        return [process_cmd_type(arg_list[1])]
-    else:
-        return arg_list[1] + " is invalid for `$boss`, argument position 2.\n" + msg_help
-
-
 def process_cmd_status(server_id, msg_channel, boss, status, time, options):
     """
     :func:`process_cmd_status` processes a specific boss command: status related to recording.
 
     Args:
-        server_id (str): the id of the server of the originating message
-        msg_channel (str): the id of the channel of the originating message (belonging to server of `server_id`)
+        server_id (int): the id of the server of the originating message
+        msg_channel: the id of the channel of the originating message (belonging to server of `server_id`)
         boss (str): the boss in question
         status (str): the boss's status, or the status command
         time (str): time represented for the associated event
@@ -1074,110 +987,65 @@ def process_cmd_status(server_id, msg_channel, boss, status, time, options):
         str: an appropriate message for success or fail of command, e.g. boss data recorded
     """
     offset = 0
-    target = dict()
+    target = {}
 
     if (boss not in lang_boss.BOSSES[lang_boss.KW_WORLD] and
         status == lang_boss.CMD_ARG_STATUS_ANCHORED):
-
+        return lang_boss.FAIL_TEMPLATE.format(lang_boss.FAIL_STATUS_NO_ANCHOR, lang_boss.MSG_HELP)
 
     target[lang_db.COL_BOSS_NAME] = boss
     target[lang_db.COL_BOSS_TXT_CHANNEL] = msg_channel
     target[lang_db.COL_BOSS_CHANNEL] = options[lang_db.COL_BOSS_CHANNEL]
+    target[lang_db.COL_BOSS_MAP] = options[lang_db.COL_BOSS_MAP]
     target[lang_db.COL_BOSS_STATUS] = status
 
     time_offset = get_offset(boss, status)
 
+    hours, minutes = [int(t) for t in time.split(':')]
 
+    record = {}
 
-    # error: invalid time
-    if not rgx_time.match(time) and not rgx_time_3d.match(time):
-        return (time + " is not a valid time for `$boss`: `time`: `" + status + "`. " + 
-                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help)
+    server_date = datetime.now() + timedelta(hours=lang_boss.TIME_H_LOCAL_TO_SERVER)
 
-    # $boss [boss] died [time?]
-    # $boss [boss] died [time:am/pm]
-    if rgx_time_ap.search(time):
-        # $boss [boss] died [time:pm]
-        if rgx_time_pm.search(time):
-            offset  = 12
-        elif rgx_time_12.match(time):
-            offset  = -12
-        arg_time    = rgx_time_ap.sub('', time)
-    else:
-        arg_time    = time
-
-    delim   = rgx_time_dl.search(arg_time)
-    record  = dict()
-    # $boss [boss] died [time:delimiter]
-    if delim:
-        hours, minutes  =   [int(t) for t in arg_time.split(delim.group(0))]
-        temp_hour       =   hours + offset
-    # $boss [boss] died [time:no delimiter]
-    else:
-        minutes         =   int(arg_time[::-1][0:2][::-1])
-        hours           =   int(re.sub(str(minutes), '', arg_time))
-        temp_hour       =   hours + offset
-
-    if hours == 12 and offset == 12:
-        temp_hour   =   hours
-
-    # error: invalid hours
-    if temp_hour > 24 or hours < 0:
-        return (time + " is not a valid time for `$boss` : `time` : `" + status + "`. " + 
-                "Use either 12 hour (with AM/PM) or 24 hour time.\n" + msg_help)
-
-    # $boss [boss] died [time] ...
-    server_date = datetime.now() + timedelta(hours=pacific2server)
-
-    if temp_hour > int(server_date.hour):
-        server_date += timedelta(days=-1) # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
+    if hours > int(server_date.hour):
+        # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
+        server_date += timedelta(days=-1)
 
     # dates handled like above example, e.g. record on 23:59, December 31st but recorded on New Years Day
-    record['year']  =   int(server_date.year) 
-    record['month'] =   int(server_date.month)
-    record['day']   =   int(server_date.day)
-    record['hour']  =   temp_hour
-    record['mins']  =   minutes
+    record[lang_db.COL_TIME_YEAR] = int(server_date.year)
+    record[lang_db.COL_TIME_MONTH] = int(server_date.month)
+    record[lang_db.COL_TIME_DAY] = int(server_date.day)
+    record[lang_db.COL_TIME_HOUR] = hours
+    record[lang_db.COL_TIME_MINUTE] = minutes
 
     # reconstruct boss kill time
-    record_date     =   datetime(*record.values())
-    record_date     +=  time_offset # value generated by arguments [died, warned, anchored]
-
-    # if target['boss'] in boss_spawn_02h:
-    #     record_date +=  timedelta(hours=time_rel_2h) # 2 hour spawn
-    # elif target['boss'] in boss_spawn_330:
-    #     record_date +=  timedelta(minutes=time_died_330) # 7h20m spawn
+    record_date = datetime(*record.values())
+    record_date += time_offset
 
     # reassign to target data
-    target['year']  =   int(record_date.year)
-    target['month'] =   int(record_date.month)
-    target['day']   =   int(record_date.day)
-    target['hour']  =   int(record_date.hour)
-    target['mins']  =   int(record_date.minute)
+    target[lang_db.COL_TIME_YEAR] = int(record_date.year)
+    target[lang_db.COL_TIME_MONTH] = int(record_date.month)
+    target[lang_db.COL_TIME_DAY] = int(record_date.day)
+    target[lang_db.COL_TIME_HOUR] = int(record_date.hour)
+    target[lang_db.COL_TIME_MINUTE] = int(record_date.minute)
 
-    status = vaivora_modules.db.Database(server_id).update_db_boss(target)
-
-    if status:
-        return (acknowledge + "```python\n" + 
-                "\"" + target['boss'] + "\" " + 
-                target['status'] + " at " + 
-                ("0" if temp_hour < 10 else "") + 
-                str(temp_hour) + ":" + 
-                ("0" if minutes < 10 else "") + 
-                str(minutes) + 
-                ", in ch." + str(target['channel']) + ": " + 
-                (("\"" + target['map'] + "\"") if target['map'] != "N/A" else "") + "```\n")
+    if vaivora_modules.db.Database(server_id).update_db_boss(target):
+        return (lang_boss.SUCCESS_STATUS.format(lang_boss.ACKNOWLEDGED,
+                                                boss, status, time,
+                                                options[lang_db.COL_BOSS_CHANNEL],
+                                                lang_boss.EMOJI_LOC,
+                                                options[lang_db.COL_BOSS_MAP]))
     else:
-        return "Your command could not be processed. It appears this record overlaps too closely with another.\n" + msg_help
+        return lang_boss.FAIL_TEMPLATE.format(lang_boss.FAIL_STATUS, lang_boss.MSG_HELP)
 
 
-def process_cmd_entry(server_id: str, msg_channel: str, bosses, entry, boss_map=None, channel=None):
+def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None, channel=None):
     """
     :func:`process_cmd_entry` processes a specific boss command: entry to retrieve records.
 
     Args:
-        server_id (str): the id of the server of the originating message
-        msg_channel (str): the id of the channel of the originating message (belonging to server of `server_id`)
+        server_id (int): the id of the server of the originating message
+        msg_channel: the id of the channel of the originating message (belonging to server of `server_id`)
         bosses (list): a list of bosses to check
         entry (str): the entry command (list, erase)
         opt_list (list): (default: None) a list containing optional parameters; may be null; 'map' or 'channel' may be provided
@@ -1185,24 +1053,30 @@ def process_cmd_entry(server_id: str, msg_channel: str, bosses, entry, boss_map=
     Returns:
         str: an appropriate message for success or fail of command, e.g. confirmation or list of entries
     """
+    if type(bosses) is str:
+        bosses = [bosses]
+
     # $boss <target> erase ...
-    if entry == lang_boss.CMD_ARG_ENTRY_ERASE and not (boss_map or channel):
+    if entry == lang_boss.CMD_ARG_ENTRY_ERASE:
+        print(entry)
         if bosses == lang_boss.ALL_BOSSES or not (boss_map or channel):
             records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses)
         elif channel and bosses in lang_boss.BOSSES[lang_boss.KW_WORLD]:
             records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_ch=channel)
         elif boss_map and bosses in lang_boss.BOSSES[lang_boss.KW_DEMON]: # may phase out this option
             records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_map=boss_map)
+        else:
+            records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_ch=channel,
+                                                                              boss_map=boss_map)
 
         if records:
             return '{}{}'.format(lang_boss.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
                                  '```\n{}\n```'.format('\n'.join(records)))
         else:
             return lang_boss.FAIL_ENTRY_ERASE
-
     # $boss <target> list ...
     else:
-        valid_boss_records = list()
+        valid_boss_records = []
         valid_boss_records.append("Records:")
         boss_records = vaivora_modules.db.Database(server_id).check_db_boss(bosses=bosses) # possible return
 
@@ -1328,6 +1202,9 @@ def process_cmd_opt(boss, option=None):
     target[lang_db.COL_BOSS_MAP] = lang_boss.CMD_ARG_QUERY_MAPS_NOT
 
     if option is None:
+        if boss in (lang_boss.BOSSES[lang_boss.KW_WORLD]
+                    +lang_boss.BOSSES[lang_boss.KW_FIELD]):
+            target[lang_db.COL_BOSS_MAP] = lang_boss.BOSS_MAPS[boss][0]
         return target
 
     channel = lang_boss.REGEX_OPT_CHANNEL.match(option)
@@ -1341,7 +1218,7 @@ def process_cmd_opt(boss, option=None):
                           boss in lang_boss.BOSSES[lang_boss.KW_DEMON]):
         map_idx = check_maps(boss, option)
         if map_idx >= 0 and map_idx < len(lang_boss.BOSS_MAPS[boss]):
-            target[lang_db.COL_BOSS_MAP] = boss_locs[boss][map_idx]
+            target[lang_db.COL_BOSS_MAP] = lang_boss.BOSS_MAPS[boss][map_idx]
         
     return target
 
