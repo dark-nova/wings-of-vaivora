@@ -570,6 +570,8 @@ def process_record(boss, status, time, boss_map, channel: int):
     # set time difference based on status and type of boss
     # takes the negative (additive complement) to get the original time
     time_diff = get_offset(boss, status, coefficient=-1)
+    # and add it back to get the reported time
+    report_time = time + time_diff
 
     if status == lang_boss.CMD_ARG_STATUS_ANCHORED:
         plus_one = time + timedelta(hours=1)
@@ -578,21 +580,9 @@ def process_record(boss, status, time, boss_map, channel: int):
     else:
         time_fmt = '**{}** ({})'.format(time.strftime("%Y/%m/%d %H:%M"), minutes)
 
-
-    # and add it back to get the reported time
-    report_time     =   time+time_diff
-
-    # e.g. "Blasphemous Deathweaver" died in ch.1 Crystal Mine 3F at 2017/07/06 18:30,
-    #      and should spawn at 2017/07/06 22:30, in the following map:
-    #      #   Crystal Mine 2F
-    ret_message     =   ("\"" + boss + "\" " + status + " " +
-                         "in ch." + str(math.floor(float(channel))) +
-                         ((" \"" + boss_map + "\" ") if boss_map else " ") +
-                         "at " + report_time.strftime("%Y/%m/%d %H:%M") + ",\n" +
-                         "and should spawn " + when_spawn)
-    return ('**{}**\n- {} {}\n- should spawn at {} in: {}'
-            .format(, , , , time_fmt, boss_map))
-    # boss, status at, dead time, spawn time, mins remaining, maps with newlines
+    return ('**{}**\n- {} at {}\n- should spawn at {} in: {}'
+            .format(boss, status, report_time.strftime("%Y/%m/%d %H:%M"), time_fmt, boss_map))
+    # boss, status at, dead time, timefmt, maps with newlines
 
     return ret_message
 
