@@ -856,7 +856,7 @@ def get_syns(boss):
     Returns:
         str: a formatted markdown message with synonyms
     """
-    return ("**{}** can be called using the following aliases: ```\n- {}```\n"
+    return ("**{}** can be called using the following aliases: ```\n- {}```"
             .format(boss, '\n- '.join(lang_boss.BOSS_SYNONYMS[boss])))
 
 
@@ -870,7 +870,7 @@ def get_maps(boss):
     Returns:
         str: a formatted markdown message with maps for a boss
     """
-    return ("**{}** can be found in the following maps: ```\n- {}```\n"
+    return ("**{}** can be found in the following maps: ```\n- {}```"
             .format(boss, '\n- '.join(lang_boss.BOSS_MAPS[boss])))
 
 
@@ -884,8 +884,8 @@ def get_bosses(boss_type):
     Returns:
         str: a formatted markdown message with bosses of the specified type
     """
-    return ("The following bosses are considered \"**" + boss_type + "**\" bosses: ```\n" + 
-            "- " + '\n- '.join(lang_boss.BOSSES[boss_type]) + "```")
+    return ("The following bosses are considered \"**{}**\" bosses: ```\n- {}```"
+            .format(boss_type, "- " + '\n- '.join(lang_boss.BOSSES[boss_type])))
 
 
 def get_offset(boss, status):
