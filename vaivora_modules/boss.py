@@ -885,7 +885,7 @@ def get_bosses(boss_type):
         str: a formatted markdown message with bosses of the specified type
     """
     return ("The following bosses are considered \"**{}**\" bosses: ```\n- {}```"
-            .format(boss_type, "- " + '\n- '.join(lang_boss.BOSSES[boss_type])))
+            .format(boss_type, '\n- '.join(lang_boss.BOSSES[boss_type])))
 
 
 def get_offset(boss, status):
