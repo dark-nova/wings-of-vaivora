@@ -322,7 +322,19 @@ async def boss(ctx, *args):
             result = vaivora_modules.boss.process_cmd_entry(ctx.guild.id, ctx.channel.id,
                                                             lang_boss.ALL_BOSSES,
                                                             entry)
-            await ctx.send('{} {}'.format(ctx.author.mention, result))
+            if type(result) is str:
+                await ctx.send('{} {}'.format(ctx.author.mention, result))
+                return False
+
+            combined_message = result[0]
+            # result should always be a list if successful
+            for r, i in zip(result[1:], range(len(result)-1)):
+                combined_message = '{}\n\n{}'.format(combined_message, r)
+                if i % 5 == 4:
+                    await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+                    combined_message = ''
+            if combined_message:
+                await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
             return True
         # $boss all <type>
         else: # same as `elif arg_subcmd == lang_boss.CMD_ARG_TYPE:`
@@ -378,7 +390,19 @@ async def boss(ctx, *args):
                 result = vaivora_modules.boss.process_cmd_entry(ctx.guild.id, ctx.channel.id,
                                                                 lang_boss.ALL_BOSSES[boss_idx],
                                                                 entry)
-                await ctx.send('{} {}'.format(ctx.author.mention, result))
+                if type(result) is str:
+                    await ctx.send('{} {}'.format(ctx.author.mention, result))
+                    return False
+
+                combined_message = result[0]
+                # result should always be a list if successful
+                for r, i in zip(result[1:], range(len(result)-1)):
+                    combined_message = '{}\n{}'.format(combined_message, r)
+                    if i % 5 == 4:
+                        await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+                        combined_message = ''
+                if combined_message:
+                    await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
                 return True
 
     return True
