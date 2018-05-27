@@ -136,7 +136,7 @@ async def on_ready():
             guild_owner_id = str(guild.owner.id)
             vdbs[guild.id] = vaivora_modules.db.Database(guild_id)
             vdst[guild.id] = vaivora_modules.settings.Settings(guild_id, guild_owner_id)
-            await greet(guild.id, guild.owner)
+            #await greet(guild.id, guild.owner)
         first_run -= 1
     await asyncio.sleep(1)
     first_run = 0
@@ -206,7 +206,7 @@ async def on_guild_join(guild):
     owner = guild.owner
     vdst[guild.id] = vaivora_modules.settings.Settings(str(guild.id), str(owner.id))
 
-    await greet(guild.id, owner)
+    #await greet(guild.id, owner)
     await owner.send(owner, welcome)
 
     return True
