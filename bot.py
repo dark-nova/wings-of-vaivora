@@ -252,10 +252,12 @@ async def boss(ctx, *args):
         return True
 
     try:
+        # invalid channel
         if not await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
             return False
     except AttributeError:
-        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND)) # not a guild
+        # not a guild
+        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
         return False
 
     arg_target = args[0]
@@ -268,7 +270,7 @@ async def boss(ctx, *args):
         arg_subcmd = lang_boss.CMD_ARG_QUERY
     elif vaivora_modules.boss.what_type(args[1]):
         arg_subcmd = lang_boss.CMD_ARG_TYPE
-    else:#if arg_subcmd is None:
+    else:
         await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, args[1],
                                                     lang_boss.CMD_ARG_SUBCMD))
         return False
@@ -279,7 +281,7 @@ async def boss(ctx, *args):
             await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[1],
                                                         lang_boss.CMD_ARG_TARGET, arg_target))
             return False
-        # $boss all entry
+        # $boss all <entry>
         elif arg_subcmd == lang_boss.CMD_ARG_ENTRY:
             entry = vaivora_modules.boss.what_entry(args[1])
             result = vaivora_modules.boss.process_cmd_entry(ctx.guild.id, ctx.channel.id,
@@ -313,6 +315,8 @@ async def boss(ctx, *args):
                                                         lang_boss.CMD_ARG_TARGET))
             return False
 
+        arg_boss = lang_boss.ALL_BOSSES[boss_idx]
+
         # $boss <target> <status> ...
         if arg_subcmd == lang_boss.CMD_ARG_STATUS:
             if len(args) < lang_boss.ARG_MIN_STATUS or len(args) > lang_boss.ARG_MAX_STATUS:
@@ -323,11 +327,11 @@ async def boss(ctx, *args):
                 # $boss <target> <status> <time> <option...>
                 if len(args) == lang_boss.ARG_MAX_STATUS:
                     # opts = {'channel': int, 'map': str}
-                    opts = vaivora_modules.boss.process_cmd_opt(lang_boss.ALL_BOSSES[boss_idx], args[3])
+                    opts = vaivora_modules.boss.process_cmd_opt(arg_boss, args[3])
                 # $boss <target> <status> <time>
                 else:
                     # opts = {'channel': 1, 'map': 'N/A'}
-                    opts = vaivora_modules.boss.process_cmd_opt(lang_boss.ALL_BOSSES[boss_idx])
+                    opts = vaivora_modules.boss.process_cmd_opt(arg_boss)
 
                 status = vaivora_modules.boss.what_status(args[1])
                 time = vaivora_modules.boss.validate_time(args[2])
@@ -337,8 +341,7 @@ async def boss(ctx, *args):
                     return False
 
                 result = vaivora_modules.boss.process_cmd_status(ctx.guild.id, ctx.channel.id,
-                                                                 lang_boss.ALL_BOSSES[boss_idx],
-                                                                 status, time, opts)
+                                                                 arg_boss, status, time, opts)
                 await ctx.send('{} {}'.format(ctx.author.mention, result))
                 return True
         # $boss <target> <entry> ...
@@ -351,8 +354,7 @@ async def boss(ctx, *args):
                 entry = vaivora_modules.boss.what_entry(args[1])
 
                 result = vaivora_modules.boss.process_cmd_entry(ctx.guild.id, ctx.channel.id,
-                                                                lang_boss.ALL_BOSSES[boss_idx],
-                                                                entry)
+                                                                arg_boss, entry)
                 if type(result) is str:
                     await ctx.send('{} {}'.format(ctx.author.mention, result))
                     return False
@@ -367,6 +369,12 @@ async def boss(ctx, *args):
                 if combined_message:
                     await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
                 return True
+        # $boss <target> <query>
+        elif arg_subcmd == lang_boss.CMD_ARG_QUERY:
+            query = vaivora_modules.boss.what_query(args[1])
+            await ctx.send('{} {}'.format(ctx.author.mention,
+                                          vaivora_modules.boss.process_cmd_query(query)))
+            result = vaivora_modules.boss.process_cmd_query(query)
 
     return True
 
@@ -389,10 +397,12 @@ async def settings(ctx, *args):
         pass
 
     try:
+        # invalid channel
         if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
             return False
     except AttributeError:
-        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND)) # not a guild
+        # not a guild
+        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
         return False
 
     pass
