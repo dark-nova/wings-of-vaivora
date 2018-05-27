@@ -100,7 +100,7 @@ Options (continued):
         Omit for world bosses and situations in which you do not know the last map.
         <target> cannot be "all". Only valid for <status>.
 
-    <help>
+    help
         Prints this page.
 ```
 """)
