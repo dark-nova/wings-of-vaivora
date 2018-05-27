@@ -35,38 +35,22 @@ vdbs = {}
 vdst = {}
 
 
-### BGN CONST
+### BGN CONST ###
 
-first_run           =   0
+first_run = 0
 
 cmd_boss = "boss"
 cmd_settings = "settings"
 
-msg_sub             =   "Your subscription preference for changelogs has been updated:"
+### BGN REGEX ###
 
-omae_wa_mou         =   "You are already " # dead
-
-none_matched        =   "```\n*crickets chirping*\n```\n"
-
-### BGN REGEX
-
-rgx_help            =   re.compile(r'help', re.IGNORECASE)
-rgx_prefix          =   re.compile(r'^(va?i[bv]ora ,?|\$)', re.IGNORECASE)
-# this screws up with boss role if I remove the prefix #### to investigate
-rgx_boss            =   re.compile(r'^(va?i[bv]ora ,?|\$)boss .+', re.IGNORECASE)
-rgx_settings        =   re.compile(r'settings .+', re.IGNORECASE)
-rgx_meme            =   re.compile(r'pl(ea)?[sz]e?', re.IGNORECASE)
-rgx_ch_hash         =   re.compile(r'#')
-rgx_ch_member       =   re.compile(r'@')
-rgx_talt            =   re.compile(r'talt', re.IGNORECASE)
-rgx_ini             =   re.compile(r'^```\n?ini\n?(```)?$', re.IGNORECASE) # match hidden blocks
-rgx_py              =   re.compile(r'^```\n?python\n?(```)?$', re.IGNORECASE) # match hidden blocks again
-
-to_sanitize         =   re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
+rgx_help = re.compile(r'help', re.IGNORECASE)
+rgx_user = re.compile(r'@')
+to_sanitize = re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
 
 ### END REGEX
 
-msg_help            =   """
+msg_help = """
 Here are commands. Valid prefixes are `$` (dollar sign) and `Vaivora,<space>`,
 e.g. `$boss` or `Vaivora, help`
 
@@ -108,7 +92,7 @@ General
 ```
 """
 
-welcome     =   """
+welcome = """
 Thank you for inviting me to your server!
 I am a representative bot for the Wings of Vaivora, here to help you record your journey.
 Please read the following before continuing.
@@ -135,7 +119,7 @@ async def on_ready():
     :func:`on_ready` handles file prep before the bot is ready.
 
     Returns:
-        None
+        True
     """
     global first_run
     print("Logging in...")
@@ -143,7 +127,8 @@ async def on_ready():
     await bot.change_presence(activity=discord.Game(name="with startup. Please wait a moment..."),
                               status=discord.Status.idle)
     first_run += len(bot.guilds)
-    await bot.change_presence(activity=discord.Game(name=("with files. Processing {} guilds...".format(str(first_run)))),
+    await bot.change_presence(activity=discord.Game(name=("with files. Processing {} guilds..."
+                                                          .format(str(first_run)))),
                               status=discord.Status.dnd)
     for guild in bot.guilds:
         if not guild.unavailable:
@@ -155,9 +140,10 @@ async def on_ready():
         first_run -= 1
     await asyncio.sleep(1)
     first_run = 0
-    await bot.change_presence(activity=discord.Game(name=("in {} guilds # [$help] or [Vaivora, help] for info".format(str(len(bot.guilds))))),
+    await bot.change_presence(activity=discord.Game(name=("in {} guilds # [$help] or [Vaivora, help] for info"
+                                                          .format(str(len(bot.guilds))))),
                               status=discord.Status.online)
-    return
+    return True
 
 
 @bot.event
@@ -571,7 +557,7 @@ async def check_databases():
     """
     while first_run:
         await asyncio.sleep(1)
-    print('Startup completed; starting check_database')
+    print('Startup completed; starting check_databases')
     results = {}
     minutes = {}
     records = []
@@ -664,8 +650,8 @@ async def check_databases():
                     idx =   [ro.id for ro in srv.roles].index(uid)
                     role_str    +=  srv.roles[idx].mention + " "
                 except:
-                    if rgx_ch_member.search(uid):
-                        uid =   rgx_ch_member.sub('', uid)
+                    if rgx_user.search(uid):
+                        uid =   rgx_user.sub('', uid)
 
                     try:
                         # user mention
