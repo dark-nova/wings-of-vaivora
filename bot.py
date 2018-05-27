@@ -37,29 +37,6 @@ vdst = {}
 
 ### BGN CONST
 
-#### File related constants
-
-wings       = "wings-"
-txt         = ".txt"
-log         = ".log"
-tmp         = ".tmp"
-
-logger      = wings + "logger"
-
-valid_db    = wings + "valid_db"    + txt
-valid_db_t  = wings + "valid_db"    + tmp
-records_t = wings + "records"
-records   = records_t           + txt
-welcomed    = wings + "welcomed"    + txt
-welcomed_t  = wings + "welcomed"    + tmp
-f_unsubbed  = wings + "unsubbed"    + txt
-f_subbed    = wings + "subbed"      + txt
-
-log_file    = logger                + log
-debug_file  = wings + "debug"       + log
-
-####
-
 first_run           =   0
 
 cmd_boss = "boss"
