@@ -437,6 +437,9 @@ REGEX_OPT_CHANNEL = re.compile(r'(ch?)*.?([1-4])$', re.IGNORECASE)
 
 CMD_USAGE_STATUS = '$boss <target> <status> <time> [<channel>] [<map>]'
 
+RECORD = '{} {} CH {}'
+RECORD_KUBAS = '{} {}; Machine of Riddles CH {}'
+
 SUCCESS_STATUS = '{}\n**{}**\n- {} at **{}**\n- CH {}. {} {}'
 
 SUCCESS_ENTRY_ERASE = 'our queried records ({}) have successfully been erased.\n'

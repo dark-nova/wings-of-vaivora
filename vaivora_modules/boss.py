@@ -525,7 +525,7 @@ def process_cmd_opt(boss, option=None):
     return target
 
 
-def process_record(boss, status, time, boss_map, channel: int):
+def process_record(boss, status, time, boss_map, channel):
     """
     :func:`process_records` processes a record to print out
 
@@ -534,12 +534,12 @@ def process_record(boss, status, time, boss_map, channel: int):
         status (str): the status of the boss
         time (datetime): the `datetime` of the target set to its next approximate spawn
         boss_map (str): the map containing the last recorded spawn
-        channel (int): the channel of the world boss if applicable; else, 1
+        channel (str): the channel of the world boss if applicable; else, 1
 
     Returns:
         str: a formatted markdown message containing the records
     """
-    channel = str(channel)
+    channel = str(math.floor(float(channel)))
 
     if boss_map == lang_boss.CMD_ARG_QUERY_MAPS_NOT:
         # use all maps for Demon Lord if not previously known
@@ -580,7 +580,7 @@ def process_record(boss, status, time, boss_map, channel: int):
     else:
         time_fmt = '**{}** ({})'.format(time.strftime("%Y/%m/%d %H:%M"), minutes)
 
-    return ('**{}**\n- {} at {}\n- should spawn at {} in: {}'
+    return ('**{}**\n- {} at {}\n- should spawn at {} in:\n{}'
             .format(boss, status, report_time.strftime("%Y/%m/%d %H:%M"), time_fmt, boss_map))
     # boss, status at, dead time, timefmt, maps with newlines
 
