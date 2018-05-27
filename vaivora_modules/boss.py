@@ -25,7 +25,7 @@ arg_defcmd      =   "$" + module_name
 arg_n_1         =   "[target]"
 arg_n_1_alt     =   "[boss], all"
 arg_n_1_A       =   arg_n_1 + ":(" + arg_n_1_alt + ")"
-arg_n_1_B       =   arg_n_1 + ":[boss]" 
+arg_n_1_B       =   arg_n_1 + ":[boss]"
 arg_n_1_C       =   arg_n_1 + ":all"
 
 # options for argument 2
@@ -1077,7 +1077,8 @@ def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None,
     else:
         valid_boss_records = []
         valid_boss_records.append("Records:")
-        boss_records = vaivora_modules.db.Database(server_id).check_db_boss(bosses=bosses) # possible return
+        boss_records = (vaivora_modules.db.Database(server_id)
+                        .check_db_boss(bosses=bosses)) # possible return
 
         if not boss_records: # empty
             return lang_boss.FAIL_ENTRY_LIST
@@ -1091,7 +1092,9 @@ def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None,
             # year, month, day, hour, minutes
             record_date = datetime(*[int(rec) for rec in boss_record[5:10]])
             
-            time_diff = datetime.now() + timedelta(hours=pacific2server) - record_date
+            time_diff = (datetime.now()
+                         + timedelta(hours=lang_boss.TIME_H_LOCAL_TO_SERVER)
+                         - record_date)
 
             if int(time_diff.days) >= 0 and boss_status != lang_boss.CMD_ARG_STATUS_ANCHORED:
                 spawn_msg = lang_boss.TIME_SPAWN_MISSED
@@ -1103,7 +1106,8 @@ def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None,
                 if int(time_diff.days) < 0:
                     minutes = math.floor((86400-int(time_diff.seconds))/60)
                 else:
-                    minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400    
+                    minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
+
             else: #elif boss_status == lang_boss.CMD_ARG_STATUS_DIED:
                 spawn_msg = lang_boss.TIME_SPAWN_ONTIME
                 minutes = math.floor((86400-int(time_diff.seconds))/60)
@@ -1112,37 +1116,51 @@ def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None,
             # e.g. 2017/07/06 "14:47"
             spawn_time = record_date.strftime("%Y/%m/%d %H:%M")
 
-            # open parenthesis for minutes
-            #ret_message +=  " ("
             if minutes < 0:
                 minutes = abs(int(time_diff.days))*86400 + minutes
 
             # print day or days conditionally
+            msg_days = None
+            
             if int(time_diff.days) > 1:
-                ret_message += str(time_diff.days) + " days, " 
+                msg_days = '{} days'.format(str(time_diff.days))
             elif int(time_diff.days) == 1:
-                ret_message += "1 day, "
+                msg_days = '1 day'
 
             # print hour or hours conditionally
-            if abs_mins > 119:
-                ret_message += str(math.floor((abs_mins%86400)/60)) + " hours, "
-            elif abs_mins > 59:
-                ret_message += "1 hour, "
+            msg_hours = None
+
+            if minutes > 119:
+                msg_hours = '{} hours'.format(str(math.floor((minutes % 86400)/60)))
+            elif minutes > 59:
+                msg_hours = '1 hour'
 
             # print minutes unconditionally
             # e.g.              0 minutes from now
             # e.g.              59 minutes ago
-            ret_message     +=  (str(math.floor(abs_mins%60)) + " minutes " + 
-                                ("from now" if int(time_diff.days) < 0 else "ago") + 
-                                ")")
+            msg_minutes = '{} minutes'.format(str(math.floor(minutes % 60)))
+            msg_when = 'from now' if int(time_diff.days) < 0 else "ago"
+
+            if msg_days is None and msg_hours is None:
+                msg_time = '{} {}'.format(msg_minutes, msg_when)
+            elif msg_days is None:
+                msg_time = '{}, {} {}'.format(msg_hours, msg_minutes, msg_when)
+            elif msg_hours is None:
+                msg_time = '{}, {} {}'.format(msg_days, msg_minutes, msg_when)
+            else:
+                msg_time = '{}, {}, {} {}'.format(msg_days, msg_hours, msg_minutes, msg_when)
 
             # print extra anchored message conditionally
             if boss_status == status_anchored:
-                ret_message     +=  " and as late as one hour later"
+                msg_time = '{} {}'.format(msg_time, 'and as late as one hour later')
 
-            ret_message     += ".\nLast known map: #   " + boss_premap + "\n"
+            last_map = 'last known map: {} {}'.format(lang_boss.EMOJI_LOC, boss_prev_map)
 
-            valid_boss_records.append(ret_message)
+            message = ('**{}**\n- {} **{}** ({})\n- {}'
+                       .format(boss_name, spawn_msg, spawn_time,
+                               msg_time, last_map))
+
+            valid_boss_records.append(message)
 
         #valid_boss_records.append("```\n")
         return valid_boss_records #'\n'.join(valid_boss_records)
@@ -1181,7 +1199,7 @@ def process_cmd_type(boss_type):
         return get_bosses(boss_type)
     else:
         return ""
-        
+
 
 def process_cmd_opt(boss, option=None):
     """
@@ -1218,7 +1236,7 @@ def process_cmd_opt(boss, option=None):
         map_idx = check_maps(boss, option)
         if map_idx >= 0 and map_idx < len(lang_boss.BOSS_MAPS[boss]):
             target[lang_db.COL_BOSS_MAP] = lang_boss.BOSS_MAPS[boss][map_idx]
-        
+
     return target
 
 
@@ -1268,11 +1286,11 @@ def process_record(boss, status, time, boss_map, channel):
     # anchored
     if rgx_st_anch.search(status) and boss == "Abomination":
         time_diff   =   timedelta(hours=(-1*time_anch_abom))
-        when_spawn  =   ("between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + 
+        when_spawn  =   ("between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " +
                          "and " + time_str + ret_message)
     elif rgx_st_anch.search(status):
         time_diff   =   timedelta(hours=(-1*time_anchored))
-        when_spawn  =   ("between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " + 
+        when_spawn  =   ("between " + (time-timedelta(hours=-1)).strftime("%Y/%m/%d %H:%M") + " " +
                          "and " + time_str + ret_message)
     # warned; takes precedence over when the boss will spawn
     elif rgx_st_warn.search(status):
@@ -1294,15 +1312,15 @@ def process_record(boss, status, time, boss_map, channel):
 
     # and add it back to get the reported time
     report_time     =   time+time_diff
-    
+
     # e.g. "Blasphemous Deathweaver" died in ch.1 Crystal Mine 3F at 2017/07/06 18:30,
     #      and should spawn at 2017/07/06 22:30, in the following map:
     #      #   Crystal Mine 2F
-    ret_message     =   ("\"" + boss + "\" " + status + " " + 
-                         "in ch." + str(math.floor(float(channel))) + 
-                         ((" \"" + boss_map + "\" ") if boss_map else " ") + 
-                         "at " + report_time.strftime("%Y/%m/%d %H:%M") + ",\n" + 
+    ret_message     =   ("\"" + boss + "\" " + status + " " +
+                         "in ch." + str(math.floor(float(channel))) +
+                         ((" \"" + boss_map + "\" ") if boss_map else " ") +
+                         "at " + report_time.strftime("%Y/%m/%d %H:%M") + ",\n" +
                          "and should spawn " + when_spawn)
 
     return ret_message
-    
+
