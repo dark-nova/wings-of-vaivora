@@ -31,8 +31,8 @@ bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
 bot.remove_command('help')
 
 # vdbs & vdst will now use int for dict keys; previously str of int
-vdbs = dict()
-vdst = dict()
+vdbs = {}
+vdst = {}
 
 
 ### BGN CONST
@@ -677,7 +677,7 @@ async def check_databases():
             if len(message_to_send) == 0:
                 continue
 
-            role_str = str()
+            role_str = ''
 
             # compare roles against server
             srv = bot.get_guild(vdb_id)
