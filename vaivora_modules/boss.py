@@ -856,8 +856,8 @@ def get_syns(boss):
     Returns:
         str: a formatted markdown message with synonyms
     """
-    return ("**" + boss + "** can be called using the following aliases: ```\n" + 
-            "- " + '\n- '.join(lang_boss.BOSS_SYNONYMS[boss]) + "```\n")
+    return ("**{}** can be called using the following aliases: ```\n- {}```\n"
+            .format(boss, '\n- '.join(lang_boss.BOSS_SYNONYMS[boss])))
 
 
 def get_maps(boss):
@@ -870,8 +870,8 @@ def get_maps(boss):
     Returns:
         str: a formatted markdown message with maps for a boss
     """
-    return ("**" + boss + "** can be found in the following maps: ```\n" + 
-            "- " + '\n- '.join(lang_boss.BOSS_MAPS[boss]) + "```\n")
+    return ("**{}** can be found in the following maps: ```\n- {}```\n"
+            .format(boss, '\n- '.join(lang_boss.BOSS_MAPS[boss])))
 
 
 def get_bosses(boss_type):
@@ -1166,19 +1166,19 @@ def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None,
         return valid_boss_records #'\n'.join(valid_boss_records)
 
 
-def process_cmd_query(tg_boss, query):
+def process_cmd_query(boss, query):
     """
     :func:`process_cmd_query` processes a query relating to bosses.
 
     Args:
-        tg_boss (str): the target boss
+        boss (str): the boss to query
         query (str): the query (synonyms, maps)
 
     Returns:
         str: an appropriate message for success or fail of command, i.e. maps or aliases
     """
     # $boss [boss] syns
-    if rgx_q_syn.match(query):
+    if lang_boss.REGEX_QUERY_ALIAS.match(query):
         return get_syns(tg_boss)
     # $boss [boss] maps
     else:
