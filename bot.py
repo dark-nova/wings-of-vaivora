@@ -442,6 +442,7 @@ async def check_channel(guild_id, ch_id: str, ch_type):
 
     Returns:
         True if successful; False otherwise
+        Note that this means if no channels have registered, *all* channels are valid.
     """
 
     chs = vdst[guild_id].get_channel(ch_type)
