@@ -140,8 +140,14 @@ CMD_ARG_ROLECHANGE_DE = 'demote'
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
-# Guild Levels   1  2   3    4    5    6    7     8     9    10    11     12     13     14     15      16      17      18       19       20
-TALT_LEVEL = [0, 0, 0, 50, 125, 250, 450, 886, 1598, 2907, 4786, 7483, 11353, 16907, 24876, 52726, 160712, 345531, 742891, 1597216, 3434015]
+# Guild Levels     1        2        3        4        5
+TALT_LEVEL = [0,   0,       0,      50,     125,     250,
+# Guild Levels     6        7        8        9       10
+                 450,     886,    1598,    2907,    4786,
+# Guild Levels    11       12       13       14       15
+                7483,   11353,   16907,   24876,   52726,
+# Guild Levels    16       17       18       19       20
+              160712,  345531,  742891, 1597216, 3434015]
 # TALT_LEVEL.append(0)
 # TALT_LEVEL.append(0)            # 1
 # TALT_LEVEL.append(50)           # 2
