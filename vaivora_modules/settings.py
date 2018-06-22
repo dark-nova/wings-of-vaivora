@@ -88,244 +88,17 @@ rgx_gd_points   =   re.compile(r'[1-3]?[0-9]{1,6}')
 
 # END REGEX
 
-
-arg_prefix      =   "[prefix]"
-arg_prefix_alt  =   "\"$\", \"Vaivora, \""
-arg_module      =   "[module]"
-arg_cmd         =   module_name
-arg_defcmd      =   "$" + module_name
-arg_mention     =   "[@mention]"
-arg_chan        =   "[#channel]"
-
-arg_settings    =   "[settings]"
-
-# options for argument 1
-arg_opt_set     =   "[setting]"
-arg_opt_val     =   "[validation]"
-arg_opt_rol     =   "[role change]"
-arg_opt_all     =   ', '.join((arg_opt_set, arg_opt_val, arg_opt_rol, ))
-arg_opt_opts    =   arg_settings + ":(" + arg_opt_all + ")"
-
-# individual categories to describe for argument 1
-#                   [settings]:[setting]
-arg_cat_set     =   arg_settings + ":" + arg_opt_set
-#                   [settings]:[validation]
-arg_cat_val     =   arg_settings + ":" + arg_opt_val
-#                   [settings]:[role change]
-arg_cat_rol     =   arg_settings + ":" + arg_opt_rol
-
-# options for each category, aggregate
-#                   [setting]:(set, unset, get, add)
-arg_set_cat     =   arg_opt_set + ":(set, unset, get, add)"
-#                   [validation]:(verify|validate, unverify|invalidate)
-arg_val_cat     =   arg_opt_val + ":(verify|validate, unverify|invalidate)"
-#                   [role change]:(promote, demote)
-arg_rol_cat     =   arg_opt_rol + ":(promote, demote)"
-
-# options for each category, separate
-#                   [setting]:set
-arg_set_optA    =   arg_opt_set + ":set"
-#                   [setting]:unset
-arg_set_optB    =   arg_opt_set + ":unset"
-#                   [setting]:get
-arg_set_optC    =   arg_opt_set + ":get"
-#                   [setting]:add
-arg_set_optD    =   arg_opt_set + ":add"
-#                   [validation]:(verify|validate)
-arg_val_optA    =   arg_opt_val + ":(verify|validate)"
-#                   [validation]:(unverify|invalidate)
-arg_val_optB    =   arg_opt_val + ":(unverify|invalidate)"
-#                   [role change]:promote
-arg_rol_optA    =   arg_opt_rol + ":promote"
-#                   [role change]:promote
-arg_rol_optB    =   arg_opt_rol + ":demote"
-
-
-# options for [setting], argument 2
-arg_set_talt    =   "[talt]"
-arg_set_role    =   "[role]"
-arg_set_chan    =   "[channel]"
-#                   [setting]:([talt], [role], [channel])
-arg_set_all     =   arg_opt_set + ":(" + \
-                    ', '.join((arg_set_talt, arg_set_role, arg_set_chan, )) + ")"
-
-# options for [setting]:[talt]
-arg_set_taltA   =   arg_set_talt + ":value"
-arg_set_taltB   =   arg_set_talt + ":[unit]"
-
-# options for [setting]:[role]
-arg_set_role    =   arg_set_role + ":(authorized, member)"
-arg_set_roleA   =   arg_set_role + ":authorized"
-arg_set_roleB   =   arg_set_role + ":member"
-arg_set_roleC   =   arg_set_role + ":boss"
-
-# options for [setting]:[channel]
-arg_set_chan    =   arg_set_chan + ":(management, boss)"
-arg_set_chanA   =   arg_set_chan + ":management"
-arg_set_chanB   =   arg_set_chan + ":boss"
-
-
-# auxiliary arguments
-arg_help        =   "help"
-arg_arg         =   "Argument"
-#                   $boss
-arg_pre_cmd     =   arg_prefix + arg_cmd
-
-# Do not adjust \
-cmd_fragment    =   "```diff\n" + "- " + "[" + arg_defcmd + "] commands" + " -" + "\n" + \
-                    "+ Usage" + "```"
-command.append(cmd_fragment)
-
-usage           =  "```ini\n"
-# Do not adjust /
-#                   $settings           [setting]           [talt: value]           [talt: unit]            [@mention]
-usage           +=  arg_pre_cmd + " " + arg_opt_set + " " + arg_set_taltA   + " " + arg_set_taltB   + " " + arg_mention + "\n"
-#                   $settings           [setting]           [role]                  [@mention]
-usage           +=  arg_pre_cmd + " " + arg_opt_set + " " + arg_set_role    + " " + arg_mention + "\n"
-#                   $settings           [setting]           [channel]               [#channel]
-usage           +=  arg_pre_cmd + " " + arg_opt_set + " " + arg_set_chan    + " " + arg_chan    + "\n"
-#                   $settings           [validation]
-usage           +=  arg_pre_cmd + " " + arg_opt_val + "\n"
-#                   $settings           [target: all]       [@mention]
-usage           +=  arg_pre_cmd + " " + arg_opt_rol + " " + arg_mention + "\n"
-# Do not adjust \
-#                   $module             help
-usage           +=  arg_pre_cmd + " " + arg_help + "\n"
-usage           +=  "```"
-
-cmd_fragment    =  usage
-command.append(cmd_fragment)
-
-acknowledge     =   "Thank you! Your command has been acknowledged and recorded.\n"
-msg_help        =   "Please run `" + arg_defcmd + " help` for syntax.\n"
-# Do not adjust /
-
-# examples
-cmd_fragment    =   "```diff\n" + "+ Examples\n" + "```"
-command.append(cmd_fragment)
-
-examples        =   ("[$settings add talt 12]\n; adds 12 Talt to yourself\n" + 
-                     "[$settings set talt 12]\n; sets your contribution to 12 Talt. Not the same as above.\n" + 
-                     "[$settings add talt 240 points]\n; equivalent to first command\n" + 
-                     "[$settings add talt 12 @mention]\n; adds 12 Talt to mentioned target(s)\n" + 
-                     "[$settings set channel management #channel]\n; sets the channel(s) as management\n" + 
-                     "[$settings set role authorized @mention]\n; changes the mentioned target(s) to \"authorized\"\n" + 
-                     "[$settings promote @mention]\n; increases the mentioned target(s)'s role by one level, i.e. none -> member -> authorized\n" + 
-                     "[$settings validate @mention]\n; validates the mentioned target(s)'s Talt contribution(s); omit mention to apply to all\n")
-
-cmd_fragment    =  "```ini\n" + examples
-cmd_fragment    += "```"
-command.append(cmd_fragment)
-
-
-# immutable
-arg_info        =   list()
-arg_info.append("```ini\n")
-arg_info.append("Prefix=\"" +   arg_prefix +    "\": " + arg_prefix_alt + "\n" + 
-                "; default: [$] or [Vaivora, ]\n" + \
-                "This server may have others. Run [$settings get prefix] to check.\n")
-arg_info.append("\n---\n\n")
-arg_info.append("Module=\"" +   arg_module +    "\": '" + arg_cmd + "'\n" + \
-                "; required\n" + \
-                "(always) [" + arg_cmd + "]; goes after prefix. e.g. [$" + arg_cmd + "], [Vaivora, " + arg_cmd + "]\n")
-arg_info.append("\n---\n\n")
-
-# setting
-arg_info.append("Argument=\"" + arg_set_cat + "\n" + \
-                "Opt=\"" + arg_set_optA + "\":\n" + \
-                "    Sets the attribute.\n" + \
-                "Opt=\"" + arg_set_optB + "\":\n" + \
-                "    Removes the attribute.\n" + \
-                "Opt=\"" + arg_set_optC + "\":\n" + \
-                "    Retrieves the attribute.\n" + \
-                "Opt=\"" + arg_set_optD + "\":\n" + \
-                "    [Talt-only] Adds the value of Talt.\n" + \
-                "Some commands only take specific options, so check first.\n")
-arg_info.append("\n---\n\n")
-
-# role change
-arg_info.append("Argument=\"" + arg_rol_cat + "\n" + \
-                "Opt=\"" + arg_rol_optA + "\":\n" + \
-                "    Raises the roles by one level. i.e. none to member, and member to authorized\n" + \
-                "Opt=\"" + arg_rol_optB + "\":\n" + \
-                "    Lowers the roles by one level. i.e. member to none, and authorized to member\n" + \
-                "You must be of \"Authorized\" level.\n" + \
-                "Mentions are required.\n")
-arg_info.append("\n---\n\n")
-
-# validation
-arg_info.append("Argument=\"" + arg_val_cat + "\n" + \
-                "Opt=\"" + arg_val_optA + "\":\n" + \
-                "    Approves temporary records to be saved.\n" + \
-                "Opt=\"" + arg_val_optB + "\":\n" + \
-                "    Nulls temporary records.\n" + \
-                "You must be of \"Authorized\" level.\n" + \
-                "Mentions are optional. If absent, [validation] will apply to all.\n")
-arg_info.append("\n---\n\n")
-arg_info.append("```")
-
-
-cmd_fragment    =   ''.join(arg_info)
-command.append(cmd_fragment)
-
-arg_info        =   list()
-arg_info.append("```ini\n")
-
-
-# setting: talt
-arg_info.append("Argument=\"" + arg_set_talt + "\n" + \
-                "Opt=\"" + arg_set_taltA + "\":\n" + \
-                "    The amount to use.\n" + \
-                "Opt=\"" + arg_set_taltB + "\":\n" + \
-                "    The unit to use. Either \"talt\" or \"points\".\n" + \
-                "; optional\n" + \
-                "You must be of \"Member\" or higher level. If you are not \"Authorized\", your entries will be temporarily recorded.\n" + \
-                "You will need to request an \"Authorized\" member for [validation].\n" + \
-                "Mentions are optional. If absent, [talt] will apply to yourself.\n")
-arg_info.append("\n---\n\n")
-
-# setting: channel
-arg_info.append("Argument=\"" + arg_set_chan + "\n" + \
-                "Opt=\"" + arg_set_chanA + "\":\n" + \
-                "    \"Management\" channel: once set, [settings] commands will cease to work in channels not marked \"Management\".\n" + \
-                "Opt=\"" + arg_set_chanB + "\":\n" + \
-                "    \"Boss\" channel: once set, [boss] commands will cease to work in channels not marked \"Boss\".\n" + \
-                "You must be of \"Authorized\" level.\n" + \
-                "Channel mentions are required.\n")
-arg_info.append("\n---\n\n")
-arg_info.append("```")
-
-
-cmd_fragment    =   ''.join(arg_info)
-command.append(cmd_fragment)
-
-arg_info        =   list()
-arg_info.append("```ini\n")
-
-
-# setting: role
-arg_info.append("Argument=\"" + arg_set_role + "\n" + \
-                "Opt=\"" + arg_set_roleA + "\":\n" + \
-                "    \"Member\" level member: can use Talt functions.\n" + \
-                "Opt=\"" + arg_set_roleB + "\":\n" + \
-                "    \"Authorized\" level member: can use all of [settings].\n" + \
-                "Opt=\"" + arg_set_roleC + "\":\n" + \
-                "    \"Boss\" level member: special role. Works with the [boss] module/command to mention all members of this role for boss alerts.\n" + \
-                "You must be of \"Authorized\" level.\n" + \
-                "Note: to change a user to \"None\" (lowest) role, you must use \"unset\".\n" + \
-                "All server admins are \"Super Authorized\" by default. This cannot be changed. All permissions stem from server admins.\n" + \
-                "Mentions are required.\n")
-arg_info.append("\n---\n\n")
-
-# help
-arg_info.append("Argument=\"" + arg_help + "\"\n" + \
-                "Prints this series of messages.\n")
-arg_info.append("```")
-
-cmd_fragment    =   ''.join(arg_info)
-command.append(cmd_fragment)
-
 # END CONST
+
+def help():
+    """
+    :func:`help` returns help for this module.
+
+    Returns:
+        a list of detailed help messages
+    """
+    return lang_settings.HELP
+
 
 class Settings:
     server_dir                          = "server_settings"
@@ -363,28 +136,28 @@ class Settings:
     talt_temporary                      = dict()
     talt_temporary_actual               = dict()
     settings['lock']                    = False
-    talt_level                          = []
-    talt_level.append(0)
-    talt_level.append(0)            # 1
-    talt_level.append(50)           # 2
-    talt_level.append(125)          # 3
-    talt_level.append(250)          # 4
-    talt_level.append(450)          # 5
-    talt_level.append(886)          # 6
-    talt_level.append(1598)         # 7
-    talt_level.append(2907)         # 8
-    talt_level.append(4786)         # 9
-    talt_level.append(7483)         # 10
-    talt_level.append(11353)        # 11
-    talt_level.append(16907)        # 12
-    talt_level.append(24876)        # 13
-    talt_level.append(36313)        # 14
-    talt_level.append(52726)        # 15
-    talt_level.append(160712)       # 16
-    talt_level.append(345531)       # 17
-    talt_level.append(742891)       # 18
-    talt_level.append(1597216)      # 19
-    talt_level.append(3434015)      # 20
+    # talt_level                          = []
+    # talt_level.append(0)
+    # talt_level.append(0)            # 1
+    # talt_level.append(50)           # 2
+    # talt_level.append(125)          # 3
+    # talt_level.append(250)          # 4
+    # talt_level.append(450)          # 5
+    # talt_level.append(886)          # 6
+    # talt_level.append(1598)         # 7
+    # talt_level.append(2907)         # 8
+    # talt_level.append(4786)         # 9
+    # talt_level.append(7483)         # 10
+    # talt_level.append(11353)        # 11
+    # talt_level.append(16907)        # 12
+    # talt_level.append(24876)        # 13
+    # talt_level.append(36313)        # 14
+    # talt_level.append(52726)        # 15
+    # talt_level.append(160712)       # 16
+    # talt_level.append(345531)       # 17
+    # talt_level.append(742891)       # 18
+    # talt_level.append(1597216)      # 19
+    # talt_level.append(3434015)      # 20
     role_level                          = []
     role_level.append(role_none)
     role_level.append(role_member)
@@ -558,7 +331,7 @@ class Settings:
     def validate_points(self, points):
         return points > 0 and points % 20 == 0
 
-    def set_remainder_talt(self, guild_level, points):        
+    def set_remainder_talt(self, guild_level, points):
         guild_level = int(guild_level)
         points = int(points)
         if guild_level >= len(self.talt_level) or guild_level < 1 or \
@@ -1353,8 +1126,6 @@ class Settings:
         else:
             return (ret_msg,)
 
-def get_help():
-    return command
 
 #### Examples
 # $settings
