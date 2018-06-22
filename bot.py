@@ -394,7 +394,10 @@ async def settings(ctx, *args):
     args = await sanitize(args)
 
     if rgx_help.match(args[0]):
-        pass
+        settings_help = vaivora_modules.settings.help()
+        for sh in settings_help:
+            await ctx.author.send(sh)
+        return True
 
     try:
         # invalid channel
