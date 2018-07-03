@@ -21,6 +21,7 @@ import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
 from constants.errors import en_us as lang_err
+from constants.settings import en_us as lang_settings
 from constants.boss import en_us as lang_boss
 from constants.db import en_us as lang_db
 
@@ -253,7 +254,9 @@ async def boss(ctx, *args):
 
     try:
         # invalid channel
-        if not await check_channel(ctx.guild.id, ctx.message.channel.id, cmd_boss):
+        if not await check_channel(ctx.guild.id,
+                                   ctx.message.channel.id,
+                                   lang_settings.CHANNEL_MGMT):
             return False
     except AttributeError:
         # not a guild
@@ -401,7 +404,9 @@ async def settings(ctx, *args):
 
     try:
         # invalid channel
-        if not await check_channel(ctx.guild.id, ctx.message.channel.id, "management"):
+        if not await check_channel(ctx.guild.id,
+                                   ctx.message.channel.id,
+                                   lang_settings.CHANNEL_MGMT):
             return False
     except AttributeError:
         # not a guild
@@ -437,7 +442,7 @@ async def check_channel(guild_id, ch_id: str, ch_type):
 
     Args:
         guild_id (int): the id of the guild involved
-        ch_id (str, int): the id of the channel to check (i.e. "boss":boss, "management":settings)
+        ch_id (str): the id of the channel to check (i.e. "boss":boss, "management":settings)
         ch_type (str): the type (name) of the channel
 
     Returns:
