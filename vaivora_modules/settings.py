@@ -165,6 +165,28 @@ def what_rolechange(entry):
         return None
 
 
+def what_setting_target(entry):
+    """
+    :func:`what_setting_target` returns the target matched to the entry of "setting".
+    Due to the syntax of the commands, "add" for example cannot be used for anything but "Talt" targets.    
+
+    Args:
+        entry (str): the string to check for "setting" target
+
+    Returns:
+        str: the correct target if successful
+        None: if unsuccessful
+    """
+    if lang_settings.REGEX_SETTING_TARGET_TALT.match(entry):
+        return lang_settings.TARGET_TALT
+    elif lang_settings.REGEX_SETTING_TARGET_ROLE.match(entry):
+        return lang_settings.TARGET_ROLE
+    elif lang_settings.REGEX_SETTING_TARGET_CHANNEL.match(entry):
+        return lang_settings.TARGET_CHANNEL
+    else:
+        return None
+
+
 class Settings:
 
     settings = {}
@@ -191,14 +213,14 @@ class Settings:
                               lang_settings.ROLE_MEMBER: [],
                               lang_settings.ROLE_SUPER_AUTH: []}
     settings[lang_settings
-             .CMD_ARG_SETTING_PREFIX] = []
+             .TABLE_PREFIX] = []
     settings[lang_settings
-             .CMD_ARG_SETTING_CHANNEL] = {lang_settings.CHANNEL_BOSS: [],
+             .TABLE_CHANNEL] = {lang_settings.CHANNEL_BOSS: [],
                                           lang_settings.CHANNEL_MGMT: []}
     settings[lang_settings
-             .CMD_ARG_SETTING_REGION] = {lang_settings.OPT_DEFAULT: ''}
+             .TABLE_REGION] = {lang_settings.OPT_DEFAULT: ''}
     settings[lang_settings
-             .CMD_ARG_SETTING_ROLE] = {lang_settings.ROLE_BOSS: []}
+             .TABLE_ROLE] = {lang_settings.ROLE_BOSS: []}
     talt_temporary = {}
     talt_temporary_actual = {}
     settings[lang_settings
