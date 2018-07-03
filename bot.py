@@ -247,9 +247,9 @@ async def boss(ctx, *args):
     args = await sanitize(args)
 
     if rgx_help.match(args[0]):
-        boss_help = vaivora_modules.boss.help()
-        for bh in boss_help:
-            await ctx.author.send(bh)
+        _help = vaivora_modules.boss.help()
+        for _h in _help:
+            await ctx.author.send(_h)
         return True
 
     try:
@@ -397,9 +397,9 @@ async def settings(ctx, *args):
     args = await sanitize(args)
 
     if rgx_help.match(args[0]):
-        settings_help = vaivora_modules.settings.help()
-        for sh in settings_help:
-            await ctx.author.send(sh)
+        _help = vaivora_modules.settings.help()
+        for _h in _help:
+            await ctx.author.send(_h)
         return True
 
     try:
