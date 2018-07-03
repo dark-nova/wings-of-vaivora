@@ -127,6 +127,8 @@ CMD_ARG_ROLECHANGE = '<role-change>'
 CMD_ARG_SETTING_TALT = 'Talt'
 CMD_ARG_SETTING_TALT_UNIT = 'Talt'
 CMD_ARG_SETTING_TALT_POINTS = 'Points'
+CMD_ARG_SETTING_USER_USERS = 'users'
+CMD_ARG_SETTING_USER_GROUPS = 'groups'
 CMD_ARG_SETTING_PREFIX = 'prefix' # to preserve consistency; not yet implemented
 CMD_ARG_SETTING_CHANNEL = 'channel'
 CMD_ARG_SETTING_CHANNEL_MGMT = 'management'
@@ -175,7 +177,7 @@ ROLE_BOSS = 'boss'
 ROLE_NONE = 'none'
 ROLE_MEMBER = 'member'
 ROLE_AUTH = 'authorized'
-ROLE_SUPER_AUTH = 'super authorized'
+ROLE_SUPER_AUTH = 's-authorized'
 
 # Roles by value      0            1          2                3
 ROLE_LEVEL = [ROLE_NONE, ROLE_MEMBER, ROLE_AUTH, ROLE_SUPER_AUTH]
