@@ -136,8 +136,8 @@ CMD_ARG_SETTING_REGION = 'region' # not yet implemented
 VALIDATION_VAL = 'validate'
 VALIDATION_INV = 'invalidate'
 
-CMD_ARG_ROLECHANGE_PR = 'promote'
-CMD_ARG_ROLECHANGE_DE = 'demote'
+ROLES_PROMOTE = 'promote'
+ROLES_DEMOTE = 'demote'
 
 SETTING_ADD = 'add'
 SETTING_SET = 'set'
@@ -151,6 +151,9 @@ REGEX_SETTING_REMOVE = re.compile(r'(re?m(ove)?|de?l(ete)?)', re.IGNORECASE)
 
 REGEX_VALIDATION_VALIDATE = re.compile(r'(valid.*|confirm)', re.IGNORECASE)
 REGEX_VALIDATION_INVALIDATE = re.compile(r'^in.+', re.IGNORECASE)
+
+REGEX_ROLES_PROMOTE = re.compile(r'^pro.*', re.IGNORECASE)
+REGEX_ROLES_DEMOTE = re.compile(r'^de.*', re.IGNORECASE)
 
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
