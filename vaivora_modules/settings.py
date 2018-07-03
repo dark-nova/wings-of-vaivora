@@ -112,7 +112,37 @@ def what_settings(entry):
         str: the correct "setting" if successful
         None: if unsuccessful
     """
-    pass
+    if lang_settings.REGEX_SETTING_ADD.match(entry):
+        return lang_settings.SETTING_ADD
+    elif lang_settings.REGEX_SETTING_SET.match(entry):
+        return lang_settings.SETTING_SET
+    elif lang_settings.REGEX_SETTING_GET.match(entry):
+        return lang_settings.SETTING_GET
+    elif lang_settings.REGEX_SETTING_REMOVE.match(entry):
+        return lang_settings.SETTING_REMOVE
+    else:
+        return None
+
+
+def what_validation(entry):
+    """
+    :func:`what_validation` returns the "validation" matched to the entry.
+    "Validations" are defined to be "validate" and "invalidate".
+
+    Args:
+        entry (str): the string to check for "validation"
+
+    Returns:
+        str: the correct "validation" if successful
+        None: if unsuccessful
+    """
+    if lang_settings.REGEX_VALIDATION_VALIDATE.match(entry) and
+       lang_settings.REGEX_VALIDATION_INVALIDATE.match(entry):
+        return lang_settings.VALIDATION_INVALIDATE
+    elif lang_settings.REGEX_VALIDATION_VALIDATE.match(entry):
+        return lang_settings.VALIDATION_VALIDATE
+    else:
+        return None
 
 
 class Settings:
