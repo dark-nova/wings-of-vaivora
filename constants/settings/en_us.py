@@ -129,7 +129,8 @@ CMD_ARG_SETTING_TALT_UNIT = 'Talt'
 CMD_ARG_SETTING_TALT_POINTS = 'Points'
 CMD_ARG_SETTING_PREFIX = 'prefix' # to preserve consistency; not yet implemented
 CMD_ARG_SETTING_CHANNEL = 'channel'
-CMD_ARG_SETTING_ROLE = 'Role'
+CMD_ARG_SETTING_ROLE = 'role'
+CMD_ARG_SETTING_REGION = 'region' # not yet implemented
 
 CMD_ARG_VALIDATE_VAL = 'validate'
 CMD_ARG_VALIDATE_INV = 'invalidate'
@@ -169,6 +170,15 @@ TALT_LEVEL = [0,   0,       0,      50,     125,     250,
 # TALT_LEVEL.append(1597216)      # 19
 # TALT_LEVEL.append(3434015)      # 20
 
+TALT = 'talt'
+TALT_GUILD = 'guild'
+TALT_REMAINDER = 'remainder'
+
+TALT_QUOTA = 'quota'
+TALT_QUOTA_PERIODIC = 'periodic_quota'
+
+GUILD_LEVEL = 'guild_level'
+
 ROLE_BOSS = 'boss'
 ROLE_NONE = 'none'
 ROLE_MEMBER = 'member'
@@ -183,5 +193,15 @@ UTYPE_GROUP = 'group'
 
 CHANNEL_BOSS = 'boss'
 CHANNEL_MGMT = 'management'
+
+VAIVORA_VER = 'vaivora-version' # legacy
+WELCOMED = 'welcomed'
+
+DB_LOCK = 'lock'
+
+OPT_DEFAULT = 'default'
+
+SERVER_DIR = 'server_settings'
+FILE_PATH = '{}/{}.json'
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION ABOVE ###
