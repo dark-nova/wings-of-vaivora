@@ -133,6 +133,11 @@ CMD_ARG_SETTING_CHANNEL = 'channel'
 CMD_ARG_SETTING_ROLE = 'role'
 CMD_ARG_SETTING_REGION = 'region' # not yet implemented
 
+TABLE_PREFIX = 'prefix' # to preserve consistency; not yet implemented
+TABLE_CHANNEL = 'channel'
+TABLE_ROLE = 'role'
+TABLE_REGION = 'region' # not yet implemented
+
 VALIDATION_VAL = 'validate'
 VALIDATION_INV = 'invalidate'
 
@@ -154,6 +159,9 @@ REGEX_VALIDATION_INVALIDATE = re.compile(r'^in.+', re.IGNORECASE)
 
 REGEX_ROLES_PROMOTE = re.compile(r'^pro.*', re.IGNORECASE)
 REGEX_ROLES_DEMOTE = re.compile(r'^de.*', re.IGNORECASE)
+
+REGEX_SETTING_TARGET_TALT = re.compile(r'[ts]alt', re.IGNORECASE)
+REGEX_SETTING_TARGET_
 
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
