@@ -413,6 +413,28 @@ async def settings(ctx, *args):
         await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
         return False
 
+    if vaivora_modules.settings.what_setting(args[0]):
+        arg_subcmd = lang_settings.CMD_ARG_SETTING
+    elif vaivora_modules.settings.what_validation(args[0]):
+        arg_subcmd = lang_settings.CMD_ARG_VALIDATION
+    elif vaivora_modules.settings.what_rolechange(args[0]):
+        arg_subcmd = lang_settings.CMD_ARG_ROLECHANGE
+    else:
+        await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, args[0],
+                                                    lang_settings.CMD_ARG_SUBCMD))
+        return False
+
+    if arg_subcmd == lang_settings.CMD_ARG_SETTING:
+        setting = vaivora_modules.settings.what_setting(args[0])
+        target = vaivora_modules.settings.what_setting_target(args[1])
+        if target is None or (target != lang_settings.TARGET_TALT and
+                              setting == lang_settings.SETTING_ADD):
+            await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[0],
+                                                        lang_settings.CMD_ARG_SETTING, arg_subcmd))
+            return False
+
+
+
     pass
 
 
