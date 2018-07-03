@@ -198,6 +198,10 @@ class Settings:
 
 
     def check_file(self):
+        """
+        :func:`check_file` sees whether the settings file is properly created.
+        Also creates the directory and file if either (or both) are missing.
+        """
         if not os.path.isdir(lang_settings.SERVER_DIR):
             os.mkdir(lang_settings.SERVER_DIR)
         if not os.path.isfile(self.server_file):
@@ -208,17 +212,30 @@ class Settings:
             except json.JSONDecodeError:
                 self.init_file()
         
+
     def init_file(self):
+        """
+        :func:`init_file` clears and creates a fresh copy of the settings file.
+        """
         open(self.server_file, 'w').close()
         self.save_file()
 
+
     def read_file(self):
+        """
+        :func:`read_file` reads the settings file into memory.
+        """
         with open(self.server_file, 'r') as sf:
             self.settings = json.load(sf)
 
+
     def save_file(self):
+        """
+        :func:`save_file` saves changes in memory back to the file.
+        """
         with open(self.server_file, 'w') as sf:
             json.dump(self.settings, sf)
+
 
     def set_role(self, user, utype, role=None):
         # unset
