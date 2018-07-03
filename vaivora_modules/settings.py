@@ -145,6 +145,26 @@ def what_validation(entry):
         return None
 
 
+def what_rolechange(entry):
+    """
+    :func:`what_rolechange` returns the "role change" matched to the entry.
+    "Role changes" are defined to be "promote" and "demote".
+
+    Args:
+        entry (str): the string to check for "role change"
+
+    Returns:
+        str: the correct "role change" if successful
+        None: if unsuccessful
+    """
+    if lang_settings.REGEX_ROLES_PROMOTE.match(entry):
+        return lang_settings.ROLES_PROMOTE
+    elif lang_settings.REGEX_ROLES_DEMOTE.match(entry):
+        return lang_settings.ROLES_DEMOTE
+    else:
+        return None
+
+
 class Settings:
 
     settings = {}
