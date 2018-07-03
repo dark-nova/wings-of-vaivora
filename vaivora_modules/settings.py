@@ -100,6 +100,21 @@ def help():
     return lang_settings.HELP
 
 
+def what_settings(entry):
+    """
+    :func:`what_settings` returns the "setting" matched to the entry.
+    "Settings" are defined to be "add", "set", "remove", and "get".
+
+    Args:
+        entry (str): the string to check for "setting"
+
+    Returns:
+        str: the correct "setting" if successful
+        None: if unsuccessful
+    """
+    pass
+
+
 class Settings:
 
     settings = {}
