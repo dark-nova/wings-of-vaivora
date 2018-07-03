@@ -10,7 +10,7 @@ from importlib import import_module as im
 import vaivora_modules
 for mod in vaivora_modules.modules:
     im(mod)
-from constants.settings import en_us as lang
+from constants.settings import en_us as lang_settings
 
 # BGN CONST
 
@@ -101,41 +101,43 @@ def help():
 
 
 class Settings:
-    server_dir                          = "server_settings"
 
-    settings                            = dict()
-    settings['welcomed']                = False
-    #settings['subscribed']              = True
-    settings['vaivora-version']         = ''
-    settings['talt']                    = dict()
-    settings['talt']['guild']           = 0
-    settings['talt']['remainder']       = 0
-    settings['quota']                   = dict()
-    settings['periodic_quota']          = 0
-    settings['guild_level']             = 0
-    settings['users']                   = dict()
-    settings['users'][role_auth]        = []
-    settings['users'][role_member]      = []
-    settings['users']['s-authorized']   = []
-    settings['group']                   = dict()
-    settings['group'][role_auth]        = []
-    settings['group'][role_member]      = []
-    settings['group']['s-authorized']   = [] # compatability. do not use
-    settings['gname']                   = dict()
-    settings['gname'][role_auth]        = []
-    settings['gname'][role_member]      = []
-    settings['gname']['s-authorized']   = [] # compatability. do not use
-    settings['prefix']                  = []
-    settings['channel']                 = dict()
-    settings['channel'][channel_boss]   = []
-    settings['channel'][channel_mgmt]   = []
-    settings['region']                  = dict()
-    settings['region']['default']       = ''
-    settings['role']                    = dict()
-    settings['role'][role_boss]         = []
-    talt_temporary                      = dict()
-    talt_temporary_actual               = dict()
-    settings['lock']                    = False
+    settings = {}
+    settings[lang_settings
+             .WELCOMED] = False
+    #settings['subscribed'] = True
+    settings[lang_settings
+             .VAIVORA_VER] = ''
+    settings[lang_settings
+             .TALT] = {lang_settings.TALT_GUILD: 0,
+                       lang_settings.TALT_REMAINDER: 0}
+    settings[lang_settings
+             .TALT_QUOTA] = {} # will change from dict eventually; legacy only now
+    settings[lang_settings
+             .TALT_QUOTA_PERIODIC] = 0
+    settings[lang_settings
+             .GUILD_LEVEL] = 0
+    settings[lang_settings
+             .UTYPE_USERS] = {lang_settings.ROLE_AUTH: [],
+                              lang_settings.ROLE_MEMBER: [],
+                              lang_settings.ROLE_SUPER_AUTH: []}
+    settings[lang_settings
+             .UTYPE_GROUP] = {lang_settings.ROLE_AUTH: [],
+                              lang_settings.ROLE_MEMBER: [],
+                              lang_settings.ROLE_SUPER_AUTH: []}
+    settings[lang_settings
+             .CMD_ARG_SETTING_PREFIX] = []
+    settings[lang_settings
+             .CMD_ARG_SETTING_CHANNEL] = {lang_settings.CHANNEL_BOSS: [],
+                                          lang_settings.CHANNEL_MGMT: []}
+    settings[lang_settings
+             .CMD_ARG_SETTING_REGION] = {lang_settings.OPT_DEFAULT: ''}
+    settings[lang_settings
+             .CMD_ARG_SETTING_ROLE] = {lang_settings.ROLE_BOSS: []}
+    talt_temporary = {}
+    talt_temporary_actual = {}
+    settings[lang_settings
+             .DB_LOCK] = False
     # talt_level                          = []
     # talt_level.append(0)
     # talt_level.append(0)            # 1
@@ -158,28 +160,46 @@ class Settings:
     # talt_level.append(742891)       # 18
     # talt_level.append(1597216)      # 19
     # talt_level.append(3434015)      # 20
-    role_level                          = []
-    role_level.append(role_none)
-    role_level.append(role_member)
-    role_level.append(role_auth)
-    role_level.append(role_sauth)
+    # role_level                          = []
+    # role_level.append(role_none)
+    # role_level.append(role_member)
+    # role_level.append(role_auth)
+    # role_level.append(role_sauth)
 
     def __init__(self, srv_id, srv_admin=None):
-        if srv_admin:
-            self.server_id      = srv_id
-            self.server_file    = self.server_dir + "/" + self.server_id + ".json"
-            self.check_file()
-            self.set_role(srv_admin, "users", role=role_sauth)
-            self.set_role(vaivora_modules.secrets.discord_user_id, "users", role=role_sauth)
-            self.toggle_lock(False)
-        else:
-            self.server_id      = srv_id
-            self.server_file    = self.server_dir + "/" + self.server_id + ".json"
-            self.check_file()
+        """
+        :func:`__init__` creates and/or checks the file to be used for the server requested.
+
+        Args:
+            srv_id (str): the server id
+            srv_admin (str): the current server owner
+
+        """
+        self.server_id = srv_id
+        self.server_file = lang_settings.FILE_PATH
+                           .format(lang_settings.SERVER_DIR, self.server_id)
+        self.check_file()
+
+        if srv_admin and vaivora_modules.secrets.discord_user_id != srv_admin:
+            self.set_role(srv_admin, lang_settings.UTYPE_USERS,
+                          role=lang_settings.ROLE_SUPER_AUTH)
+            self.set_role(vaivora_modules.secrets.discord_user_id,
+                          lang_settings.UTYPE_USERS,
+                          role=lang_settings.ROLE_SUPER_AUTH)
+        elif srv_admin:
+            self.set_role(srv_admin, lang_settings.UTYPE_USERS,
+                          role=lang_settings.ROLE_SUPER_AUTH)
+
+        self.toggle_lock(False)
+
+
+        # perhaps some additional file check to prune former super authorized
+        pass
+
 
     def check_file(self):
-        if not os.path.isdir(self.server_dir):
-            os.mkdir(self.server_dir)
+        if not os.path.isdir(lang_settings.SERVER_DIR):
+            os.mkdir(lang_settings.SERVER_DIR)
         if not os.path.isfile(self.server_file):
             self.init_file()
         else:
@@ -1125,15 +1145,3 @@ class Settings:
         # "set", etc succeeded
         else:
             return (ret_msg,)
-
-
-#### Examples
-# $settings
-# $settings set role auth @mention...
-# $settings get talt @mention @mention...
-# $settings get talt
-# $settings get role member
-# $settings set channel boss #channel
-# $settings rm channel boss
-# $settings validate talt @mention...
-# $settings set talt 1000 [talt, points] [user]
