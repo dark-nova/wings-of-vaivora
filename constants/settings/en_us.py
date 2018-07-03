@@ -61,7 +61,7 @@ Options:
             "get" can be used for all associated subcommands. Retrieves Talt contribution, highest Role from users mentioned, etc.
         Note: "Super-Authorized" will only be shown as "Authorized".
 
-    <validate>
+    <validation>
         Validates or invalidates records to save.
         Options:
             "validate" affirms temporary changes made by non-Authorized members.
@@ -121,8 +121,9 @@ ACKNOWLEDGED = "Thank you! Your command has been acknowledged and recorded.\n"
 MSG_HELP = "Please run `" + COMMAND + " help` for syntax."
 
 CMD_ARG_SETTING = '<setting>'
-CMD_ARG_VALIDATE = '<validate>'
+CMD_ARG_VALIDATION = '<validation>'
 CMD_ARG_ROLECHANGE = '<role-change>'
+CMD_ARG_SUBCMD = '<subcommand>'
 
 CMD_ARG_SETTING_TALT = 'Talt'
 CMD_ARG_SETTING_TALT_UNIT = 'Talt'
@@ -132,16 +133,23 @@ CMD_ARG_SETTING_CHANNEL = 'channel'
 CMD_ARG_SETTING_ROLE = 'role'
 CMD_ARG_SETTING_REGION = 'region' # not yet implemented
 
-CMD_ARG_VALIDATE_VAL = 'validate'
-CMD_ARG_VALIDATE_INV = 'invalidate'
+CMD_ARG_VALIDATION_VAL = 'validate'
+CMD_ARG_VALIDATION_INV = 'invalidate'
 
 CMD_ARG_ROLECHANGE_PR = 'promote'
 CMD_ARG_ROLECHANGE_DE = 'demote'
 
-REGEX_SETTING_ADD = re.compile(r'(add|plus)', re.IGNORECASE)
+SETTING_ADD = 'add'
+SETTING_SET = 'set'
+SETTING_GET = 'get'
+SETTING_REMOVE = 'remove'
+
+REGEX_SETTING_ADD = re.compile(r'(add?|plus)', re.IGNORECASE)
 REGEX_SETTING_SET = re.compile(r'^set', re.IGNORECASE)
 REGEX_SETTING_GET = re.compile(r'(^get|retr(ieve)?)', re.IGNORECASE)
 REGEX_SETTING_REMOVE = re.compile(r'(re?m(ove)?|de?l(ete)?)', re.IGNORECASE)
+
+REGEX_VALIDATION_VALIDATE = re.compile()
 
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
