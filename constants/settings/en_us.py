@@ -125,13 +125,13 @@ CMD_ARG_VALIDATION = '<validation>'
 CMD_ARG_ROLECHANGE = '<role-change>'
 CMD_ARG_SUBCMD = '<subcommand>'
 
-CMD_ARG_SETTING_TALT = 'Talt'
+CMD_ARG_SETTING_TALT = '<talt>'
 CMD_ARG_SETTING_TALT_UNIT = 'Talt'
 CMD_ARG_SETTING_TALT_POINTS = 'Points'
-CMD_ARG_SETTING_PREFIX = 'prefix' # to preserve consistency; not yet implemented
-CMD_ARG_SETTING_CHANNEL = 'channel'
-CMD_ARG_SETTING_ROLE = 'role'
-CMD_ARG_SETTING_REGION = 'region' # not yet implemented
+CMD_ARG_SETTING_PREFIX = '<prefix>' # to preserve consistency; not yet implemented
+CMD_ARG_SETTING_CHANNEL = '<channel>'
+CMD_ARG_SETTING_ROLE = '<role>'
+CMD_ARG_SETTING_REGION = '<region>' # not yet implemented
 
 TABLE_PREFIX = 'prefix' # to preserve consistency; not yet implemented
 TABLE_CHANNEL = 'channel'
@@ -149,6 +149,10 @@ SETTING_SET = 'set'
 SETTING_GET = 'get'
 SETTING_REMOVE = 'remove'
 
+TARGET_TALT = '<talt>'
+TARGET_ROLE = '<role>'
+TARGET_CHANNEL = '<channel>'
+
 REGEX_SETTING_ADD = re.compile(r'(add?|plus)', re.IGNORECASE)
 REGEX_SETTING_SET = re.compile(r'^set', re.IGNORECASE)
 REGEX_SETTING_GET = re.compile(r'(^get|retr(ieve)?)', re.IGNORECASE)
@@ -161,7 +165,8 @@ REGEX_ROLES_PROMOTE = re.compile(r'^pro.*', re.IGNORECASE)
 REGEX_ROLES_DEMOTE = re.compile(r'^de.*', re.IGNORECASE)
 
 REGEX_SETTING_TARGET_TALT = re.compile(r'[ts]alt', re.IGNORECASE)
-REGEX_SETTING_TARGET_
+REGEX_SETTING_TARGET_ROLE = re.compile(r'^rol.?', re.IGNORECASE)
+REGEX_SETTING_TARGET_CHANNEL = re.compile(r'ch(an(nel)?)*', re.IGNORECASE)
 
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
