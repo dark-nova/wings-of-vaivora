@@ -138,6 +138,12 @@ CMD_ARG_VALIDATE_INV = 'invalidate'
 CMD_ARG_ROLECHANGE_PR = 'promote'
 CMD_ARG_ROLECHANGE_DE = 'demote'
 
+REGEX_SETTING_ADD = re.compile(r'(add|plus)', re.IGNORECASE)
+REGEX_SETTING_SET = re.compile(r'^set', re.IGNORECASE)
+REGEX_SETTING_GET = re.compile(r'(^get|retr(ieve)?)', re.IGNORECASE)
+REGEX_SETTING_REMOVE = re.compile(r'(re?m(ove)?|de?l(ete)?)', re.IGNORECASE)
+
+
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
 # Guild Levels     1        2        3        4        5
