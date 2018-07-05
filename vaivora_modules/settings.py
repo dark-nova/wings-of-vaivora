@@ -324,6 +324,35 @@ class Settings:
             json.dump(self.settings, sf)
 
 
+    def is_member(self, uuid: str):
+        """
+        :func:`is_member` determines whether a user is in the member role.
+        The member role is allowed to modify self talt records.
+
+        Args:
+            uuid (str): the Discord.user.id of the user calling the command
+
+        Returns:
+            bool: True if so; False if not
+        """
+        pass
+
+
+    def is_authorized(self, uuid: str):
+        """
+        :func:`is_authorized` determines whether a user is in the authorized role.
+        The authorized role is essentially the administrator role and can modify everything.
+        For consistency, super authorized also counts.
+
+        Args:
+            uuid (str): the Discord.user.id of the user calling the command
+
+        Returns:
+            bool: True if so; False if not
+        """
+        pass
+
+
     def process_setting(self, setting, target, value: str, uid, uuid: str):
         """
         :func:`process_setting` processes a setting command.
@@ -333,7 +362,7 @@ class Settings:
             target (str): i.e. talt, channel, role
             value (str): the value to use relative to target; can be numeric (talt), a type (channel), etc.
             uid (list, str): a Discord.user.id in str; can be mentions' or the user's id
-            uuid (str): the Discord.user.id of the user
+            uuid (str): the Discord.user.id of the user calling the command
 
         Returns:
             str: a return message if applicable
