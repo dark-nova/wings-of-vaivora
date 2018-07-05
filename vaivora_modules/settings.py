@@ -324,6 +324,13 @@ class Settings:
             json.dump(self.settings, sf)
 
 
+    def process_setting(self, setting, target):
+        """
+        :func:`process_setting` processes a setting command.
+        """
+        pass
+
+
     def set_role(self, user, utype, role=None):
         # unset
         if not role or role == role_none:
