@@ -324,9 +324,17 @@ class Settings:
             json.dump(self.settings, sf)
 
 
-    def process_setting(self, setting, target):
+    def process_setting(self, setting, target, value):
         """
         :func:`process_setting` processes a setting command.
+
+        Args:
+            setting (str): i.e. add, set, get, remove
+            target (str): a Discord.user.id in str; can be mentions' or the user's id
+            value (str): the value to use relative to target; can be numeric (talt), a type (channel), etc.
+
+        Returns:
+            True if successful; False otherwise
         """
         pass
 
