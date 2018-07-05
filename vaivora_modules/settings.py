@@ -324,18 +324,59 @@ class Settings:
             json.dump(self.settings, sf)
 
 
-    def process_setting(self, setting, target, value):
+    def process_setting(self, setting, target, value: str, uid, uuid: str):
         """
         :func:`process_setting` processes a setting command.
 
         Args:
             setting (str): i.e. add, set, get, remove
-            target (str): a Discord.user.id in str; can be mentions' or the user's id
+            target (str): i.e. talt, channel, role
             value (str): the value to use relative to target; can be numeric (talt), a type (channel), etc.
+            uid (list, str): a Discord.user.id in str; can be mentions' or the user's id
+            uuid (str): the Discord.user.id of the user
 
         Returns:
-            True if successful; False otherwise
+            str: a return message if applicable
         """
+        # handle <talt>
+        if target == lang_settings.TARGET_TALT:
+            if setting == lang_settings.SETTING_ADD:
+                pass
+
+            elif setting == lang_settings.SETTING_SET:
+                pass
+
+            elif setting == lang_settings.SETTING_GET:
+                pass
+
+            else: #elif setting == lang_settings.SETTING_REMOVE
+                pass
+
+        # handle <channel>
+        elif target == lang_settings.TARGET_CHANNEL:
+            if setting == lang_settings.SETTING_SET:
+                pass
+
+            elif setting == lang_settings.SETTING_GET:
+                pass
+
+            else: #elif setting == lang_settings.SETTING_REMOVE
+                pass
+
+
+        # handle <role>
+        else: #elif target == lang_settings.TARGET_ROLE
+            if setting == lang_settings.SETTING_SET:
+                pass
+
+            elif setting == lang_settings.SETTING_GET:
+                pass
+
+            else: #elif setting == lang_settings.SETTING_REMOVE
+                pass
+
+
+        #lang_settings.SETTING_ADD
         pass
 
 
