@@ -361,7 +361,7 @@ class Settings:
             setting (str): i.e. add, set, get, remove
             target (str): i.e. talt, channel, role
             value (str): the value to use relative to target; can be numeric (talt), a type (channel), etc.
-            uid (list, str): a Discord.user.id in str; can be mentions' or the user's id
+            uid (list): a list of Discord.user.id in str; can be mentions' or the user's id
             uuid (str): the Discord.user.id of the user calling the command
 
         Returns:
@@ -370,7 +370,13 @@ class Settings:
         # handle <talt>
         if target == lang_settings.TARGET_TALT:
             if setting == lang_settings.SETTING_ADD:
-                pass
+                # handle permissions here before allowing access
+                pass 
+                for _uid in uid:
+                    try:
+                        self.settings[lang_settings.TALT][_uid] += int(value)
+                    except:
+                        self.settings[lang_settings.TALT][_uid] = int(value)
 
             elif setting == lang_settings.SETTING_SET:
                 pass
