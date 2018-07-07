@@ -13,7 +13,7 @@ server.txt
 *.bak
 server_settings/*.json
 *.log
-*.sublime-project
+*.sublime*
 
 
 
