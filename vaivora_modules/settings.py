@@ -396,7 +396,7 @@ class Settings:
                 for _uid in uid:
                     try:
                         rec[_uid] += int(value)
-                    except:
+                    except KeyError:
                         rec[_uid] = int(value)
 
             elif setting == lang_settings.SETTING_SET:
