@@ -335,7 +335,13 @@ class Settings:
         Returns:
             bool: True if so; False if not
         """
-        pass
+        if self.is_authorized(uuid):
+            return True
+
+        return uuid in self.settings[lang_settings
+                                     .UTYPE_USERS][lang_settings.ROLE_MEMBER] or
+               uuid in self.settings[lang_settings
+                                     .UTYPE_GROUP][lang_settings.ROLE_MEMBER]
 
 
     def is_authorized(self, uuid: str):
@@ -350,7 +356,14 @@ class Settings:
         Returns:
             bool: True if so; False if not
         """
-        pass
+        return uuid in self.settings[lang_settings
+                                     .UTYPE_USERS][lang_settings.ROLE_SUPER_AUTH] or 
+               uuid in self.settings[lang_settings
+                                     .UTYPE_GROUP][lang_settings.ROLE_SUPER_AUTH] or
+               uuid in self.settings[lang_settings
+                                     .UTYPE_USERS][lang_settings.ROLE_AUTH] or
+               uuid in self.settings[lang_settings
+                                     .UTYPE_GROUP][lang_settings.ROLE_AUTH]
 
 
     def process_setting(self, setting, target, value: str, uid, uuid: str):
@@ -361,6 +374,7 @@ class Settings:
             setting (str): i.e. add, set, get, remove
             target (str): i.e. talt, channel, role
             value (str): the value to use relative to target; can be numeric (talt), a type (channel), etc.
+                         if talt is selected, value must reflect talt count, not points (where points == talt * 20)
             uid (list): a list of Discord.user.id in str; can be mentions' or the user's id
             uuid (str): the Discord.user.id of the user calling the command
 
@@ -371,12 +385,18 @@ class Settings:
         if target == lang_settings.TARGET_TALT:
             if setting == lang_settings.SETTING_ADD:
                 # handle permissions here before allowing access
-                pass 
+                if self.is_authorized(uuid):
+                    rec = self.settings[lang_settings.TALT]
+                elif self.is_member(uuid):
+                    rec = self.talt_temporary
+                else:
+                    return lang_settings.FAIL_PERMS
+
                 for _uid in uid:
                     try:
-                        self.settings[lang_settings.TALT][_uid] += int(value)
+                        rec[_uid] += int(value)
                     except:
-                        self.settings[lang_settings.TALT][_uid] = int(value)
+                        rec[_uid] = int(value)
 
             elif setting == lang_settings.SETTING_SET:
                 pass
