@@ -398,6 +398,11 @@ class Settings:
                         rec[_uid] += int(value)
                     except KeyError:
                         rec[_uid] = int(value)
+                    except Exception as e:
+                        print(e, '| {}: {}; {}: {}; {}: {}; {}: {}'
+                              .format('uuid', uuid, 'setting', setting,
+                                      'value', value, 'uid', _uid))
+                        return
 
             elif setting == lang_settings.SETTING_SET:
                 pass
