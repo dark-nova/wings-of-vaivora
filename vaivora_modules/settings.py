@@ -382,16 +382,17 @@ class Settings:
             str: a return message if applicable
         """
         # handle <talt>
+        if not self.is_member(uuid):
+            return lang_settings.FAIL_PERMS
+
         if target == lang_settings.TARGET_TALT:
             if setting == lang_settings.SETTING_ADD:
                 # handle permissions here before allowing access
                 if self.is_authorized(uuid):
                     rec = self.settings[lang_settings.TALT]
-                elif self.is_member(uuid):
+                else: #elif self.is_member(uuid):
                     rec = self.talt_temporary
-                else:
-                    return lang_settings.FAIL_PERMS
-
+                
                 for _uid in uid:
                     try:
                         rec[_uid] += int(value)
