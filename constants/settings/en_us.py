@@ -168,6 +168,8 @@ REGEX_SETTING_TARGET_TALT = re.compile(r'[ts]alt', re.IGNORECASE)
 REGEX_SETTING_TARGET_ROLE = re.compile(r'^rol.?', re.IGNORECASE)
 REGEX_SETTING_TARGET_CHANNEL = re.compile(r'ch(an(nel)?)*', re.IGNORECASE)
 
+FAIL_PERMS = 'You do not have the permission to do this.'
+
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
