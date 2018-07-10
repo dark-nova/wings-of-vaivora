@@ -153,6 +153,9 @@ TARGET_TALT = '<talt>'
 TARGET_ROLE = '<role>'
 TARGET_CHANNEL = '<channel>'
 
+REC_PERMANENTLY = 'permanently'
+REC_TEMPORARILY = 'temporarily'
+
 REGEX_SETTING_ADD = re.compile(r'(add?|plus)', re.IGNORECASE)
 REGEX_SETTING_SET = re.compile(r'^set', re.IGNORECASE)
 REGEX_SETTING_GET = re.compile(r'(^get|retr(ieve)?)', re.IGNORECASE)
@@ -168,8 +171,12 @@ REGEX_SETTING_TARGET_TALT = re.compile(r'[ts]alt', re.IGNORECASE)
 REGEX_SETTING_TARGET_ROLE = re.compile(r'^rol.?', re.IGNORECASE)
 REGEX_SETTING_TARGET_CHANNEL = re.compile(r'ch(an(nel)?)*', re.IGNORECASE)
 
-FAIL_PERMS = 'You do not have the permission to do this.'
+#               Record modified: id : target
+SUCCESS_RECS = 'Record modified: {} : {} : {}'
 
+FAIL_PERMS = 'You do not have the permission to do this.'
+FAIL_NOT_PARSED = 'Your command could not be parsed.'
+FAIL_COULD_NOT = FAIL_NOT_PARSED + '\nCould not {} {}\'s {} record.'
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
@@ -236,5 +243,7 @@ OPT_DEFAULT = 'default'
 
 SERVER_DIR = 'server_settings'
 FILE_PATH = '{}/{}.json'
+
+FMT_SETTING_FAIL = '| {}: {}; {}: {}; {}: {}; {}: {}'
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION ABOVE ###
