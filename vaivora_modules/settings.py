@@ -379,36 +379,57 @@ class Settings:
             uuid (str): the Discord.user.id of the user calling the command
 
         Returns:
-            str: a return message if applicable
+            str: a return message if applicable including error messages
+            list: if records are available, a list is returned instead
         """
-        # handle <talt>
         if not self.is_member(uuid):
             return lang_settings.FAIL_PERMS
 
+        resp = []
+
+        # handle <talt>
         if target == lang_settings.TARGET_TALT:
             if setting == lang_settings.SETTING_ADD:
                 # handle permissions here before allowing access
                 if self.is_authorized(uuid):
                     rec = self.settings[lang_settings.TALT]
+                    _r = lang_settings.REC_PERMANENTLY
                 else: #elif self.is_member(uuid):
                     rec = self.talt_temporary
+                    _r = lang_settings.REC_TEMPORARILY
                 
                 for _uid in uid:
                     try:
                         rec[_uid] += int(value)
+                        resp.append()
                     except KeyError:
                         rec[_uid] = int(value)
                     except Exception as e:
-                        print(e, '| {}: {}; {}: {}; {}: {}; {}: {}'
+                        print(e, lang_settings.FMT_SETTING_FAIL
                               .format('uuid', uuid, 'setting', setting,
                                       'value', value, 'uid', _uid))
-                        return
+                        resp.append(lang_settings.FAIL_COULD_NOT
+                                    .format(setting, _uid, target))
+                return lang_settings.ACKNOWLEDGED
 
             elif setting == lang_settings.SETTING_SET:
-                pass
+                if self.is_authorized(uuid):
+                    rec = self.settings[lang_settings.TALT]
+                else:
+                    rec = self.talt_temporary
+
+                for _uid in uid:
+                    try:
+                        rec[_uid] = int(value)
+                    except:
+                        print(e, lang_settings.FMT_SETTING_FAIL
+                              .format('uuid', uuid, 'setting', setting,
+                                      'value', value, 'uid', _uid))
+                        return lang_settings.FAIL_NOT_PARSED
 
             elif setting == lang_settings.SETTING_GET:
-                pass
+                # both member and auth can use 'get'
+
 
             else: #elif setting == lang_settings.SETTING_REMOVE
                 pass
