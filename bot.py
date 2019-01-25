@@ -104,6 +104,8 @@ Anyone may contribute to this bot's development: https://github.com/dark-nova/wi
 
 ### END CONST
 
+bosses = []
+
 
 def splitDblQuotesSpaces(command):
     lex = shlex.shlex(command)
@@ -232,270 +234,294 @@ async def help(ctx):
     return True
 
 
-@bot.command()
-async def boss(ctx, *args):
+@bot.group(invoke_without_command=True)
+async def boss(ctx, arg: str):
     """
     :func:`boss` handles "$boss" commands.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        *args (tuple): arguments to be supplied for the command
+        arg (str): the boss to check
 
     Returns:
         True if successful; False otherwise
     """
-    args = await sanitize(args)
+    arg = await sanitize(arg)
 
-    if rgx_help.match(args[0]):
-        _help = vaivora_modules.boss.help()
-        for _h in _help:
-            await ctx.author.send(_h)
-        return True
+    print('in boss')
+    return False
 
-    try:
-        # invalid channel
-        if not await check_channel(ctx.guild.id,
-                                   ctx.message.channel.id,
-                                   lang_settings.CHANNEL_MGMT):
-            return False
-    except AttributeError:
-        # not a guild
-        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
-        return False
+    # if rgx_help.match(args[0]):
+    #     _help = vaivora_modules.boss.help()
+    #     for _h in _help:
+    #         await ctx.author.send(_h)
+    #     return True
 
-    arg_target = args[0]
+    # try:
+    #     # invalid channel
+    #     if not await check_channel(ctx.guild.id,
+    #                                ctx.message.channel.id,
+    #                                lang_settings.CHANNEL_MGMT):
+    #         return False
+    # except AttributeError:
+    #     # not a guild
+    #     await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
+    #     return False
 
-    if vaivora_modules.boss.what_status(args[1]):
-        arg_subcmd = lang_boss.CMD_ARG_STATUS
-    elif vaivora_modules.boss.what_entry(args[1]):
-        arg_subcmd = lang_boss.CMD_ARG_ENTRY
-    elif vaivora_modules.boss.what_query(args[1]):
-        arg_subcmd = lang_boss.CMD_ARG_QUERY
-    elif vaivora_modules.boss.what_type(args[1]):
-        arg_subcmd = lang_boss.CMD_ARG_TYPE
-    else:
-        await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, args[1],
-                                                    lang_boss.CMD_ARG_SUBCMD))
-        return False
+    # arg_target = args[0]
 
-    # $boss all ...
-    if arg_target == lang_boss.CMD_ARG_TARGET_ALL:
-        if arg_subcmd == lang_boss.CMD_ARG_STATUS or arg_subcmd == lang_boss.CMD_ARG_QUERY:
-            await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[1],
-                                                        lang_boss.CMD_ARG_TARGET, arg_target))
-            return False
-        # $boss all <entry>
-        elif arg_subcmd == lang_boss.CMD_ARG_ENTRY:
-            entry = vaivora_modules.boss.what_entry(args[1])
-            result = vaivora_modules.boss.process_cmd_entry(ctx.guild.id, ctx.channel.id,
-                                                            lang_boss.ALL_BOSSES,
-                                                            entry)
-            if type(result) is str:
-                await ctx.send('{} {}'.format(ctx.author.mention, result))
-                return False
+    # if vaivora_modules.boss.what_status(args[1]):
+    #     arg_subcmd = lang_boss.CMD_ARG_STATUS
+    # elif vaivora_modules.boss.what_entry(args[1]):
+    #     arg_subcmd = lang_boss.CMD_ARG_ENTRY
+    # elif vaivora_modules.boss.what_query(args[1]):
+    #     arg_subcmd = lang_boss.CMD_ARG_QUERY
+    # elif vaivora_modules.boss.what_type(args[1]):
+    #     arg_subcmd = lang_boss.CMD_ARG_TYPE
+    # else:
+    #     await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, args[1],
+    #                                                 lang_boss.CMD_ARG_SUBCMD))
+    #     return False
 
-            combined_message = result[0]
-            # result should always be a list if successful
-            for r, i in zip(result[1:], range(len(result)-1)):
-                combined_message = '{}\n\n{}'.format(combined_message, r)
-                if i % 5 == 4:
-                    await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
-                    combined_message = ''
-            if combined_message:
-                await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
-            return True
-        # $boss all <type>
-        else: # same as `elif arg_subcmd == lang_boss.CMD_ARG_TYPE:`
-            boss_type = vaivora_modules.boss.what_type(args[1])
-            await ctx.send('{} {}'.format(ctx.author.mention,
-                                          vaivora_modules.boss.get_bosses(boss_type)))
-            return True
-    # $boss <target> ...
-    else:
-        boss_idx = vaivora_modules.boss.check_boss(arg_target)
-        if boss_idx == -1:
-            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, arg_target,
-                                                        lang_boss.CMD_ARG_TARGET))
-            return False
+    # # $boss all ...
+    # if arg_target == lang_boss.CMD_ARG_TARGET_ALL:
+    #     if arg_subcmd == lang_boss.CMD_ARG_STATUS or arg_subcmd == lang_boss.CMD_ARG_QUERY:
+    #         await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[1],
+    #                                                     lang_boss.CMD_ARG_TARGET, arg_target))
+    #         return False
+    #     # $boss all <entry>
+    #     elif arg_subcmd == lang_boss.CMD_ARG_ENTRY:
+    #         entry = vaivora_modules.boss.what_entry(args[1])
+    #         result = vaivora_modules.boss.process_cmd_entry(ctx.guild.id, ctx.channel.id,
+    #                                                         lang_boss.ALL_BOSSES,
+    #                                                         entry)
+    #         if type(result) is str:
+    #             await ctx.send('{} {}'.format(ctx.author.mention, result))
+    #             return False
 
-        arg_boss = lang_boss.ALL_BOSSES[boss_idx]
+    #         combined_message = result[0]
+    #         # result should always be a list if successful
+    #         for r, i in zip(result[1:], range(len(result)-1)):
+    #             combined_message = '{}\n\n{}'.format(combined_message, r)
+    #             if i % 5 == 4:
+    #                 await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+    #                 combined_message = ''
+    #         if combined_message:
+    #             await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+    #         return True
+    #     # $boss all <type>
+    #     else: # same as `elif arg_subcmd == lang_boss.CMD_ARG_TYPE:`
+    #         boss_type = vaivora_modules.boss.what_type(args[1])
+    #         await ctx.send('{} {}'.format(ctx.author.mention,
+    #                                       vaivora_modules.boss.get_bosses(boss_type)))
+    #         return True
+    # # $boss <target> ...
+    # else:
+    #     boss_idx = vaivora_modules.boss.check_boss(arg_target)
+    #     if boss_idx == -1:
+    #         await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, arg_target,
+    #                                                     lang_boss.CMD_ARG_TARGET))
+    #         return False
 
-        # $boss <target> <status> ...
-        if arg_subcmd == lang_boss.CMD_ARG_STATUS:
-            if len(args) < lang_boss.ARG_MIN_STATUS or len(args) > lang_boss.ARG_MAX_STATUS:
-                await ctx.send(lang_err.TOO_FEW_ARGS.format(ctx.author.mention, lang_boss.CMD_ARG_TARGET,
-                                                            lang_boss.CMD_USAGE_STATUS))
-                return False
-            else:
-                # $boss <target> <status> <time> <option...>
-                if len(args) == lang_boss.ARG_MAX_STATUS:
-                    # opts = {'channel': int, 'map': str}
-                    opts = vaivora_modules.boss.process_cmd_opt(arg_boss, args[3])
-                # $boss <target> <status> <time>
-                else:
-                    # opts = {'channel': 1, 'map': 'N/A'}
-                    opts = vaivora_modules.boss.process_cmd_opt(arg_boss)
+    #     arg_boss = lang_boss.ALL_BOSSES[boss_idx]
 
-                status = vaivora_modules.boss.what_status(args[1])
-                time = vaivora_modules.boss.validate_time(args[2])
-                if time is None:
-                    await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[2],
-                                                                arg_subcmd, 'time'))
-                    return False
+    #     # $boss <target> <status> ...
+    #     if arg_subcmd == lang_boss.CMD_ARG_STATUS:
+    #         if len(args) < lang_boss.ARG_MIN_STATUS or len(args) > lang_boss.ARG_MAX_STATUS:
+    #             await ctx.send(lang_err.TOO_FEW_ARGS.format(ctx.author.mention, lang_boss.CMD_ARG_TARGET,
+    #                                                         lang_boss.CMD_USAGE_STATUS))
+    #             return False
+    #         else:
+    #             # $boss <target> <status> <time> <option...>
+    #             if len(args) == lang_boss.ARG_MAX_STATUS:
+    #                 # opts = {'channel': int, 'map': str}
+    #                 opts = vaivora_modules.boss.process_cmd_opt(arg_boss, args[3])
+    #             # $boss <target> <status> <time>
+    #             else:
+    #                 # opts = {'channel': 1, 'map': 'N/A'}
+    #                 opts = vaivora_modules.boss.process_cmd_opt(arg_boss)
 
-                result = vaivora_modules.boss.process_cmd_status(ctx.guild.id, ctx.channel.id,
-                                                                 arg_boss, status, time, opts)
-                await ctx.send('{} {}'.format(ctx.author.mention, result))
-                return True
-        # $boss <target> <entry> ...
-        elif arg_subcmd == lang_boss.CMD_ARG_ENTRY:
-            if len(args) < lang_boss.ARG_MIN_ENTRY or len(args) > lang_boss.ARG_MAX_ENTRY:
-                await ctx.send(lang_err.TOO_FEW_ARGS.format(ctx.author.mention, lang_boss.CMD_ARG_TARGET,
-                                                            lang_boss.CMD_USAGE_STATUS))
-                return False
-            else:
-                entry = vaivora_modules.boss.what_entry(args[1])
+    #             status = vaivora_modules.boss.what_status(args[1])
+    #             time = vaivora_modules.boss.validate_time(args[2])
+    #             if time is None:
+    #                 await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[2],
+    #                                                             arg_subcmd, 'time'))
+    #                 return False
 
-                result = vaivora_modules.boss.process_cmd_entry(ctx.guild.id, ctx.channel.id,
-                                                                arg_boss, entry)
-                if type(result) is str:
-                    await ctx.send('{} {}'.format(ctx.author.mention, result))
-                    return False
+    #             result = vaivora_modules.boss.process_cmd_status(ctx.guild.id, ctx.channel.id,
+    #                                                              arg_boss, status, time, opts)
+    #             await ctx.send('{} {}'.format(ctx.author.mention, result))
+    #             return True
+    #     # $boss <target> <entry> ...
+    #     elif arg_subcmd == lang_boss.CMD_ARG_ENTRY:
+    #         if len(args) < lang_boss.ARG_MIN_ENTRY or len(args) > lang_boss.ARG_MAX_ENTRY:
+    #             await ctx.send(lang_err.TOO_FEW_ARGS.format(ctx.author.mention, lang_boss.CMD_ARG_TARGET,
+    #                                                         lang_boss.CMD_USAGE_STATUS))
+    #             return False
+    #         else:
+    #             entry = vaivora_modules.boss.what_entry(args[1])
 
-                combined_message = result[0]
-                # result should always be a list if successful
-                for r, i in zip(result[1:], range(len(result)-1)):
-                    combined_message = '{}\n\n{}'.format(combined_message, r)
-                    if i % 5 == 4:
-                        await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
-                        combined_message = ''
-                if combined_message:
-                    await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
-                return True
-        # $boss <target> <query>
-        elif arg_subcmd == lang_boss.CMD_ARG_QUERY:
-            query = vaivora_modules.boss.what_query(args[1])
-            await ctx.send('{} {}'.format(ctx.author.mention,
-                                          vaivora_modules.boss.process_cmd_query(arg_boss, query)))
-            return True
+    #             result = vaivora_modules.boss.process_cmd_entry(ctx.guild.id, ctx.channel.id,
+    #                                                             arg_boss, entry)
+    #             if type(result) is str:
+    #                 await ctx.send('{} {}'.format(ctx.author.mention, result))
+    #                 return False
+
+    #             combined_message = result[0]
+    #             # result should always be a list if successful
+    #             for r, i in zip(result[1:], range(len(result)-1)):
+    #                 combined_message = '{}\n\n{}'.format(combined_message, r)
+    #                 if i % 5 == 4:
+    #                     await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+    #                     combined_message = ''
+    #             if combined_message:
+    #                 await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+    #             return True
+    #     # $boss <target> <query>
+    #     elif arg_subcmd == lang_boss.CMD_ARG_QUERY:
+    #         query = vaivora_modules.boss.what_query(args[1])
+    #         await ctx.send('{} {}'.format(ctx.author.mention,
+    #                                       vaivora_modules.boss.process_cmd_query(arg_boss, query)))
+    #         return True
 
     return True
 
 
-@bot.command()
-async def settings(ctx, *args):
+# $boss <boss> died <time> [channel]
+@boss.command(aliases=['die', 'dead'])
+async def died(ctx, *, time: str, channel = 1):
     """
-    :func:`settings` handles "$settings" commands.
+    :func:`died` is a subcommand for `boss`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        *args (tuple): arguments to be supplied for the command
+        time (str): time when the boss died
+        channel (int): (default: 1) the channel in which the boss died
 
     Returns:
         True if successful; False otherwise
     """
-    args = await sanitize(args)
-
-    if rgx_help.match(args[0]):
-        _help = vaivora_modules.settings.help()
-        for _h in _help:
-            await ctx.author.send(_h)
-        return True
-
-    try:
-        # invalid channel
-        if not await check_channel(ctx.guild.id,
-                                   ctx.message.channel.id,
-                                   lang_settings.CHANNEL_MGMT):
-            return False
-    except AttributeError:
-        # not a guild
-        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
-        return False
-
-    if vaivora_modules.settings.what_setting(args[0]):
-        arg_subcmd = lang_settings.CMD_ARG_SETTING
-    elif vaivora_modules.settings.what_validation(args[0]):
-        arg_subcmd = lang_settings.CMD_ARG_VALIDATION
-    elif vaivora_modules.settings.what_rolechange(args[0]):
-        arg_subcmd = lang_settings.CMD_ARG_ROLECHANGE
-    else:
-        await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, args[0],
-                                                    lang_settings.CMD_ARG_SUBCMD))
-        return False
-
-    if arg_subcmd == lang_settings.CMD_ARG_SETTING:
-        setting = vaivora_modules.settings.what_setting(args[0])
-        target = vaivora_modules.settings.what_setting_target(args[1])
-        if target is None or (target != lang_settings.TARGET_TALT and
-                              setting == lang_settings.SETTING_ADD):
-            await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[0],
-                                                        lang_settings.CMD_ARG_SETTING, arg_subcmd))
-            return False
+    ctx.boss
 
 
 
-    pass
+# @bot.command()
+# async def settings(ctx, *args):
+#     """
+#     :func:`settings` handles "$settings" commands.
+
+#     Args:
+#         ctx (discord.ext.commands.Context): context of the message
+#         *args (tuple): arguments to be supplied for the command
+
+#     Returns:
+#         True if successful; False otherwise
+#     """
+#     args = await sanitize(args)
+
+#     if rgx_help.match(args[0]):
+#         _help = vaivora_modules.settings.help()
+#         for _h in _help:
+#             await ctx.author.send(_h)
+#         return True
+
+#     try:
+#         # invalid channel
+#         if not await check_channel(ctx.guild.id,
+#                                    ctx.message.channel.id,
+#                                    lang_settings.CHANNEL_MGMT):
+#             return False
+#     except AttributeError:
+#         # not a guild
+#         await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
+#         return False
+
+#     if vaivora_modules.settings.what_setting(args[0]):
+#         arg_subcmd = lang_settings.CMD_ARG_SETTING
+#     elif vaivora_modules.settings.what_validation(args[0]):
+#         arg_subcmd = lang_settings.CMD_ARG_VALIDATION
+#     elif vaivora_modules.settings.what_rolechange(args[0]):
+#         arg_subcmd = lang_settings.CMD_ARG_ROLECHANGE
+#     else:
+#         await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, args[0],
+#                                                     lang_settings.CMD_ARG_SUBCMD))
+#         return False
+
+#     if arg_subcmd == lang_settings.CMD_ARG_SETTING:
+#         setting = vaivora_modules.settings.what_setting(args[0])
+#         target = vaivora_modules.settings.what_setting_target(args[1])
+#         if target is None or (target != lang_settings.TARGET_TALT and
+#                               setting == lang_settings.SETTING_ADD):
+#             await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[0],
+#                                                         lang_settings.CMD_ARG_SETTING, arg_subcmd))
+#             return False
 
 
-@bot.command(aliases=['pls', 'plz', 'ples'])
-async def please(ctx):
-    """
-    :func:`please` is a meme
 
-    Args:
-        ctx (discord.ext.commands.Context): context of the message
-
-    Returns:
-        True if successful; False otherwise
-    """
-    try:
-        await ctx.send('{} https://i.imgur.com/kW3o6eC.png'.format(ctx.author.mention))
-    except:
-        return False
-
-    return True
+#     pass
 
 
-@bot.event
-async def check_channel(guild_id, ch_id: str, ch_type):
-    """
-    :func:`check_channel` checks whether a channel is allowed to interact with Wings of Vaivora.
+# @bot.command(aliases=['pls', 'plz', 'ples'])
+# async def please(ctx):
+#     """
+#     :func:`please` is a meme
 
-    Args:
-        guild_id (int): the id of the guild involved
-        ch_id (str): the id of the channel to check (i.e. "boss":boss, "management":settings)
-        ch_type (str): the type (name) of the channel
+#     Args:
+#         ctx (discord.ext.commands.Context): context of the message
 
-    Returns:
-        True if successful; False otherwise
-        Note that this means if no channels have registered, *all* channels are valid.
-    """
+#     Returns:
+#         True if successful; False otherwise
+#     """
+#     try:
+#         await ctx.send('{} https://i.imgur.com/kW3o6eC.png'.format(ctx.author.mention))
+#     except:
+#         return False
 
-    chs = vdst[guild_id].get_channel(ch_type)
-
-    if chs and ch_id not in chs:
-        return False
-    else: # in the case of `None` chs, all channels are valid
-        return True
+#     return True
 
 
-async def sanitize(args: list):
+# @bot.event
+# async def check_channel(guild_id, ch_id: str, ch_type):
+#     """
+#     :func:`check_channel` checks whether a channel is allowed to interact with Wings of Vaivora.
+
+#     Args:
+#         guild_id (int): the id of the guild involved
+#         ch_id (str): the id of the channel to check (i.e. "boss":boss, "management":settings)
+#         ch_type (str): the type (name) of the channel
+
+#     Returns:
+#         True if successful; False otherwise
+#         Note that this means if no channels have registered, *all* channels are valid.
+#     """
+
+#     chs = vdst[guild_id].get_channel(ch_type)
+
+#     if chs and ch_id not in chs:
+#         return False
+#     else: # in the case of `None` chs, all channels are valid
+#         return True
+
+
+async def sanitize(arg):
     """
     :func:`sanitize` sanitizes command arguments of invalid characters, including setting to lowercase.
 
     Args:
-        args (list): the arguments to sanitize
+        arg (str, iter): the argument (or arguments) to sanitize
 
     Returns:
-        a list containing the sanitized arguments
+        same type as arg, sanitized
     """
-    sanitized = []
-    for arg in args:
-        arg = to_sanitize.sub('', arg).lower()
-        sanitized.append(arg)
+    if type(arg) is str:
+        return to_sanitize.sub('', arg).lower()
+    else:
+        sanitized = []
+        for arg in args:
+            arg = to_sanitize.sub('', arg).lower()
+            sanitized.append(arg)
 
-    return sanitized
+        return sanitized
 
 
 async def check_subscription(user, mode="subscribe"):
