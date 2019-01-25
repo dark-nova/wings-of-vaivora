@@ -136,8 +136,8 @@ def what_validation(entry):
         str: the correct "validation" if successful
         None: if unsuccessful
     """
-    if lang_settings.REGEX_VALIDATION_VALIDATE.match(entry) and
-       lang_settings.REGEX_VALIDATION_INVALIDATE.match(entry):
+    if (lang_settings.REGEX_VALIDATION_VALIDATE.match(entry) and
+       lang_settings.REGEX_VALIDATION_INVALIDATE.match(entry)):
         return lang_settings.VALIDATION_INVALIDATE
     elif lang_settings.REGEX_VALIDATION_VALIDATE.match(entry):
         return lang_settings.VALIDATION_VALIDATE
@@ -263,8 +263,8 @@ class Settings:
 
         """
         self.server_id = srv_id
-        self.server_file = lang_settings.FILE_PATH
-                           .format(lang_settings.SERVER_DIR, self.server_id)
+        self.server_file = (lang_settings.FILE_PATH
+                            .format(lang_settings.SERVER_DIR, self.server_id))
         self.check_file()
 
         if srv_admin and vaivora_modules.secrets.discord_user_id != srv_admin:
@@ -338,10 +338,10 @@ class Settings:
         if self.is_authorized(uuid):
             return True
 
-        return uuid in self.settings[lang_settings
+        return (uuid in self.settings[lang_settings
                                      .UTYPE_USERS][lang_settings.ROLE_MEMBER] or
-               uuid in self.settings[lang_settings
-                                     .UTYPE_GROUP][lang_settings.ROLE_MEMBER]
+                uuid in self.settings[lang_settings
+                                     .UTYPE_GROUP][lang_settings.ROLE_MEMBER])
 
 
     def is_authorized(self, uuid: str):
@@ -356,14 +356,14 @@ class Settings:
         Returns:
             bool: True if so; False if not
         """
-        return uuid in self.settings[lang_settings
+        return (uuid in self.settings[lang_settings
                                      .UTYPE_USERS][lang_settings.ROLE_SUPER_AUTH] or 
-               uuid in self.settings[lang_settings
+                uuid in self.settings[lang_settings
                                      .UTYPE_GROUP][lang_settings.ROLE_SUPER_AUTH] or
-               uuid in self.settings[lang_settings
+                uuid in self.settings[lang_settings
                                      .UTYPE_USERS][lang_settings.ROLE_AUTH] or
-               uuid in self.settings[lang_settings
-                                     .UTYPE_GROUP][lang_settings.ROLE_AUTH]
+                uuid in self.settings[lang_settings
+                                     .UTYPE_GROUP][lang_settings.ROLE_AUTH])
 
 
     def process_setting(self, setting, target, value: str, uid, uuid: str):
@@ -429,7 +429,7 @@ class Settings:
 
             elif setting == lang_settings.SETTING_GET:
                 # both member and auth can use 'get'
-
+                pass
 
             else: #elif setting == lang_settings.SETTING_REMOVE
                 pass
