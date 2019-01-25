@@ -347,57 +347,57 @@ BOSS_MAPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
             }
 
 # IMG would most likely not be used.
-IMG = {BOSS_W_ABOMINATION: 'https://tos.neet.tv/images/bosscard/038_boss_abomination.png',
+# IMG = {BOSS_W_ABOMINATION: 'https://tos.neet.tv/images/bosscard/038_boss_abomination.png',
 
-       BOSS_W_TEMPLESHOOTER: 'https://tos.neet.tv/images/bosscard/063_boss_templeshooter.png',
+#        BOSS_W_TEMPLESHOOTER: 'https://tos.neet.tv/images/bosscard/063_boss_templeshooter.png',
 
-       BOSS_W_CANCERIL: 'https://tos.neet.tv/images/bosscard/110_canceril.png',
+#        BOSS_W_CANCERIL: 'https://tos.neet.tv/images/bosscard/110_canceril.png',
 
-       BOSS_W_ARCHON: 'https://tos.neet.tv/images/bosscard/095_boss_archon.png',
+#        BOSS_W_ARCHON: 'https://tos.neet.tv/images/bosscard/095_boss_archon.png',
 
-       BOSS_W_NECROVENTER: 'https://tos.neet.tv/images/bosscard/044_boss_necrovanter.png',
+#        BOSS_W_NECROVENTER: 'https://tos.neet.tv/images/bosscard/044_boss_necrovanter.png',
 
-       BOSS_W_KUBAS: 'https://tos.neet.tv/images/bosscard/130_boss_kubas.png',
+#        BOSS_W_KUBAS: 'https://tos.neet.tv/images/bosscard/130_boss_kubas.png',
 
-       BOSS_W_MARIONETTE: 'https://tos.neet.tv/images/bosscard/105_marionette.png',
+#        BOSS_W_MARIONETTE: 'https://tos.neet.tv/images/bosscard/105_marionette.png',
 
-       BOSS_W_DULLAHAN: 'https://tos.neet.tv/images/bosscard/071_durahan.png',
+#        BOSS_W_DULLAHAN: 'https://tos.neet.tv/images/bosscard/071_durahan.png',
 
-       EVENT_ALEMETH_FLOWER: 'https://dark-nova.me/tos/yellow-eyed_flower.png',
+#        EVENT_ALEMETH_FLOWER: 'https://dark-nova.me/tos/yellow-eyed_flower.png',
 
-       EVENT_LEGWYN_STONE: 'https://dark-nova.me/tos/star_stone.png',
+#        EVENT_LEGWYN_STONE: 'https://dark-nova.me/tos/star_stone.png',
 
-       BOSS_F_CHAPPARITION: 'https://tos.neet.tv/images/bosscard/068_boss_chapparition.png',
+#        BOSS_F_CHAPPARITION: 'https://tos.neet.tv/images/bosscard/068_boss_chapparition.png',
 
-       BOSS_F_GLACKUMAN: 'https://tos.neet.tv/images/bosscard/116_glackuman.png',
+#        BOSS_F_GLACKUMAN: 'https://tos.neet.tv/images/bosscard/116_glackuman.png',
 
-       BOSS_F_SUCCUBUS: 'https://tos.neet.tv/images/bosscard/138_boss_succubus.png',
+#        BOSS_F_SUCCUBUS: 'https://tos.neet.tv/images/bosscard/138_boss_succubus.png',
 
-       BOSS_F_VELNIAMONKEY: 'https://tos.neet.tv/images/bosscard/142_boss_velniamonkey.png',
+#        BOSS_F_VELNIAMONKEY: 'https://tos.neet.tv/images/bosscard/142_boss_velniamonkey.png',
 
-       BOSS_F_DEATHWEAVER: 'https://tos.neet.tv/images/bosscard/081_boss_deathweaver.png',
+#        BOSS_F_DEATHWEAVER: 'https://tos.neet.tv/images/bosscard/081_boss_deathweaver.png',
 
-       BOSS_F_MINELOADER: 'https://tos.neet.tv/images/bosscard/092_boss_mineloader.png',
+#        BOSS_F_MINELOADER: 'https://tos.neet.tv/images/bosscard/092_boss_mineloader.png',
 
-       BOSS_F_FIRELORD: 'https://tos.neet.tv/images/bosscard/129_boss_firelord.png',
+#        BOSS_F_FIRELORD: 'https://tos.neet.tv/images/bosscard/129_boss_firelord.png',
 
-       BOSS_F_FERRETMARAUDER: 'https://tos.neet.tv/images/bosscard/141_boss_ferretmarauder.png',
+#        BOSS_F_FERRETMARAUDER: 'https://tos.neet.tv/images/bosscard/141_boss_ferretmarauder.png',
 
-       BOSS_F_ELLAGANOS: 'https://tos.neet.tv/images/bosscard/037_boss_ellaganos.png',
+#        BOSS_F_ELLAGANOS: 'https://tos.neet.tv/images/bosscard/037_boss_ellaganos.png',
 
-       BOSS_F_CERBERUS: 'https://tos.neet.tv/images/bosscard/094_boss_kerberos.png',
+#        BOSS_F_CERBERUS: 'https://tos.neet.tv/images/bosscard/094_boss_kerberos.png',
 
-       BOSS_F_HARPEIA: 'https://tos.neet.tv/images/bosscard/107_boss_harpeia.png',
+#        BOSS_F_HARPEIA: 'https://tos.neet.tv/images/bosscard/107_boss_harpeia.png',
 
-       BOSS_F_PRISONCUTTER: 'https://tos.neet.tv/images/bosscard/143_boss_prisoncutter.png',
+#        BOSS_F_PRISONCUTTER: 'https://tos.neet.tv/images/bosscard/143_boss_prisoncutter.png',
 
-       BOSS_F_MOLICH: 'https://tos.neet.tv/images/bosscard/021_boss_glass_mole.png',
+#        BOSS_F_MOLICH: 'https://tos.neet.tv/images/bosscard/021_boss_glass_mole.png',
 
-       DEMON_LORDS_A: 'https://dark-nova.me/tos/demon_lords_A.png',
+#        DEMON_LORDS_A: 'https://dark-nova.me/tos/demon_lords_A.png',
 
-       DEMON_LORDS_B: 'https://dark-nova.me/tos/demon_lords_B.png',
+#        DEMON_LORDS_B: 'https://dark-nova.me/tos/demon_lords_B.png',
    
-}
+# }
 
 ACKNOWLEDGED = "Thank you! Your command has been acknowledged and recorded.\n"
 
