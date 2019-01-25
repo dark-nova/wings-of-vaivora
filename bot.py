@@ -2,7 +2,6 @@
 import discord
 from discord.ext import commands
 import logging
-import sqlite3
 import asyncio
 import random
 import shlex
@@ -254,6 +253,8 @@ async def boss(ctx, arg: str):
             await ctx.author.send(_h)
         return True
 
+    ctx.boss = arg
+
     return True
 
     # try:
@@ -400,8 +401,60 @@ async def died(ctx, time: str, map_or_channel = None):
     Returns:
         True if successful; False otherwise
     """
-    print('in died', time, map_or_channel)
-    return True
+
+
+# $boss <boss> died <time> [channel]
+@boss.command(aliases=['anch', 'anchor'])
+async def anchored(ctx, time: str, map_or_channel = None):
+    """
+    :func:`died` is a subcommand for `boss`.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        time (str): time when the boss died
+        map_or_channel: (default: None) the map xor channel in which the boss died
+
+    Returns:
+        True if successful; False otherwise
+    """
+    _boss, _time, _map, _channel = await boss_helper(ctx.boss, time, map_or_channel)
+
+
+async def boss_helper(boss, time, map_or_channel):
+    """
+    :func:`boss_helper` processes for `died` and `anchored`.
+
+    Args:
+        time (str): time when the boss died
+        map_or_channel: (default: None) the map xor channel in which the boss died
+
+    Returns:
+        tuple: (boss_idx, channel, map)
+    """
+    channel = 1 # base case
+    map_idx = None # don't assume map
+
+    boss_idx = await vaivora_modules.boss.check_boss(boss)
+
+    if boss_idx == -1: # invalid boss
+        return (None,)*4
+
+    if len(lang_boss.BOSS_MAPS[boss_idx]) == 1:
+        map_idx = 0 # it just is
+
+    if map_or_channel and type(map_or_channel) is int:
+        if map_or_channel <= 4 or map_or_channel > 1:
+            channel = map_or_channel # use user-input channel only if valid
+    elif map_or_channel and lang_boss.REGEX_OPT_CHANNEL.match(map_or_channel):
+        channel = lang_boss.REGEX_OPT_CHANNEL.sub('', map_or_channel)
+        channel = int(channel.group(2)) # channel will always be 1 through 4 inclusive
+    elif type(map_or_channel) is str and map_idx != 0: # possibly map
+        map_idx = await vaivora_modules.boss.check_maps(boss_idx, map_or_channel)
+
+    if not map_idx or map_idx == -1:
+        map_idx = None
+
+    return (boss_idx, time, map_idx, channel)
 
 
 # @bot.command()
