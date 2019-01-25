@@ -234,7 +234,7 @@ async def help(ctx):
     return True
 
 
-@bot.group(invoke_without_command=True)
+@bot.group()
 async def boss(ctx, arg: str):
     """
     :func:`boss` handles "$boss" commands.
@@ -248,14 +248,13 @@ async def boss(ctx, arg: str):
     """
     arg = await sanitize(arg)
 
-    print('in boss')
-    return False
+    if rgx_help.match(arg):
+        _help = vaivora_modules.boss.help()
+        for _h in _help:
+            await ctx.author.send(_h)
+        return True
 
-    # if rgx_help.match(args[0]):
-    #     _help = vaivora_modules.boss.help()
-    #     for _h in _help:
-    #         await ctx.author.send(_h)
-    #     return True
+    return True
 
     # try:
     #     # invalid channel
@@ -389,20 +388,20 @@ async def boss(ctx, arg: str):
 
 # $boss <boss> died <time> [channel]
 @boss.command(aliases=['die', 'dead'])
-async def died(ctx, *, time: str, channel = 1):
+async def died(ctx, time: str, map_or_channel = None):
     """
     :func:`died` is a subcommand for `boss`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
         time (str): time when the boss died
-        channel (int): (default: 1) the channel in which the boss died
+        map_or_channel: (default: None) the map xor channel in which the boss died
 
     Returns:
         True if successful; False otherwise
     """
-    ctx.boss
-
+    print('in died', time, map_or_channel)
+    return True
 
 
 # @bot.command()
