@@ -103,7 +103,7 @@ def what_type(entry):
         return None
 
 
-def check_boss(entry):
+async def check_boss(entry):
     """
     :func:`check_boss` checks whether an input string is a valid boss.
 
@@ -133,12 +133,12 @@ def check_boss(entry):
     return lang_boss.ALL_BOSSES.index(match)
 
 
-def check_maps(boss, maps):
+async def check_maps(boss_idx, maps):
     """
     :func:`check_maps` checks whether a string refers to a valid map.
 
     Args:
-        boss (str): the valid boss to check
+        boss_idx (int): the valid boss index to check
         maps (str): the string to check for valid map
 
     Returns:
@@ -146,6 +146,7 @@ def check_maps(boss, maps):
     """
     map_idx = -1
     map_floor = re.search('.*([0-9]).*', maps)
+    boss = lang_boss.ALL_BOSSES[boss_idx]
 
     if map_floor:
         map_floor = map_floor.group(1)
