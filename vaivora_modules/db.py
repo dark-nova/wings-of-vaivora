@@ -1,5 +1,6 @@
 from operator import itemgetter
-import sqlite3
+import aiosqlite
+import asyncio
 from importlib import import_module as im
 import vaivora_modules
 for mod in vaivora_modules.modules:
@@ -65,21 +66,21 @@ class Database:
         """
         self.db_id = db_id
         self.db_name = '{}{}{}'.format(lang_db.DIR, self.db_id, lang_db.EXT)
-        self.open_db()
-        if not self.check_if_valid():
-            self.create_db()
+        await self.open_db()
+        if not await self.check_if_valid():
+            await self.create_db()
 
 
-    def open_db(self):
+    async def open_db(self):
         """
         :func:`open_db` opens the database for use.
         """
-        self.connect = sqlite3.connect(self.db_name)
-        self.connect.row_factory = sqlite3.Row
-        self.cursor = self.connect.cursor()
+        self.connect = await aiosqlite.connect(self.db_name)
+        self.connect.row_factory = aiosqlite.Row
+        self.cursor = await self.connect.cursor()
 
 
-    def save_db(self):
+    async def save_db(self):
         """
         :func:`save_db` saves the database.
         """
@@ -96,24 +97,21 @@ class Database:
         return self.db_id
 
 
-    def create_db(self):
+    async def create_db(self):
         """
         :func:`create_db` creates a db when none (or invalid) exists.
-
-        Returns:
-            None
         """
         #self.open_db()
-        self.cursor.execute('drop table if exists {}'.format(lang_db.MOD))
-        self.cursor.execute('create table {}({})'.format(lang_db.MOD, ','.join(self.dbs[lang_db.MOD])))
+        await self.cursor.execute('drop table if exists {}'.format(lang_db.MOD))
+        await self.cursor.execute('create table {}({})'.format(lang_db.MOD, ','.join(self.dbs[lang_db.MOD])))
         # else:
         #     for module in modules:
         #         self.cursor.execute('create table {}({})'.format((module, ','.join(dbs[module]),)))
-        self.save_db()
+        await self.save_db()
         return
 
 
-    def check_if_valid(self):
+    async def check_if_valid(self):
         """
         :func:`check_if_valid` checks if the database is valid. Since only one module uses db, this will be one check only.
 
@@ -122,11 +120,11 @@ class Database:
         """
         #self.open_db()
         try:
-            self.cursor.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS))
+            await self.cursor.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS))
         except:
             return False
 
-        r = self.cursor.fetchone()
+        r = await self.cursor.fetchone()
         if not r:
             return True
 
@@ -136,7 +134,7 @@ class Database:
             return True
 
 
-    def check_db_boss(self, bosses=lang_boss.ALL_BOSSES, channel=0):
+    async def check_db_boss(self, bosses=lang_boss.ALL_BOSSES, channel=0):
         """
         :func:`check_db_boss` checks the database for the conditions in argument
 
@@ -151,24 +149,24 @@ class Database:
         db_record = []
         for boss in bosses:
             if channel:
-                self.cursor.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
+                await self.cursor.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
                                                   construct_filters(lang_db.SQL_WHERE_NAME,
                                                                     lang_db.SQL_WHERE_CHANNEL)),
                                     (boss, channel,))
             else:
-                self.cursor.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
+                await self.cursor.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
                                                   construct_filters(lang_db.SQL_WHERE_NAME)),
                                     (boss,))
 
-            records = self.cursor.fetchall()
+            records = await self.cursor.fetchall()
             for record in records:
                 db_record.append(tuple(record))
 
-        self.save_db()
+        await self.save_db()
         return self.sort_db_record(db_record)
 
 
-    def sort_db_record(self, db_record):
+    async def sort_db_record(self, db_record):
         """
         :func:`sort_db_record` sorts the db records by chronological order.
 
@@ -179,7 +177,7 @@ class Database:
         return sorted(db_record, key=itemgetter(5,6,7,8,9), reverse=True)
 
 
-    def update_db_boss(self, boss_dict):
+    async def update_db_boss(self, boss_dict):
         """
         :func:`update_db_boss` updates the record with a new entry.
 
@@ -204,8 +202,8 @@ class Database:
                                           construct_filters(lang_db.SQL_WHERE_NAME))
             sql_condition = (boss_dict[lang_db.COL_BOSS_NAME],)
 
-        self.cursor.execute(sel_statement, sql_condition)
-        contents.extend(self.cursor.fetchall())
+        await self.cursor.execute(sel_statement, sql_condition)
+        contents.extend(await self.cursor.fetchall())
 
         if contents and (int(contents[0][5]) == boss_dict[lang_db.COL_TIME_YEAR] and
                          int(contents[0][6]) == boss_dict[lang_db.COL_TIME_MONTH] and
@@ -225,7 +223,7 @@ class Database:
 
         try:
             # boss database structure
-            self.cursor.execute(lang_db.SQL_UPDATE,
+            await self.cursor.execute(lang_db.SQL_UPDATE,
                                 (str(boss_dict[lang_db.COL_BOSS_NAME]),
                                  int(boss_dict[lang_db.COL_BOSS_CHANNEL]),
                                  str(boss_dict[lang_db.COL_BOSS_MAP]),
@@ -236,13 +234,13 @@ class Database:
                                  int(boss_dict[lang_db.COL_TIME_DAY]),
                                  int(boss_dict[lang_db.COL_TIME_HOUR]),
                                  int(boss_dict[lang_db.COL_TIME_MINUTE])))
-            self.save_db()
+            await self.save_db()
             return True
         except:
             return False
 
 
-    def rm_entry_db_boss(self, boss_list=lang_boss.ALL_BOSSES, boss_ch=0, boss_map=None):
+    async def rm_entry_db_boss(self, boss_list=lang_boss.ALL_BOSSES, boss_ch=0, boss_map=None):
         """
         :func:`rm_entry_db_boss` removes records based on the conditions supplied.
 
@@ -279,22 +277,22 @@ class Database:
             sel_statement = construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS, sql_filters)
             del_statement = construct_SQL(lang_db.SQL_DELETE, lang_db.SQL_FROM_BOSS, sql_filters)
 
-            self.cursor.execute(sel_statement, sql_condition)
-            results = self.cursor.fetchall()
+            await self.cursor.execute(sel_statement, sql_condition)
+            results = await self.cursor.fetchall()
 
-            self.save_db()
+            await self.save_db()
 
             # no records to delete
             if len(results) == 0:
                 continue
 
             try:
-                self.cursor.execute(del_statement, sql_condition)
-                self.save_db()
+                await self.cursor.execute(del_statement, sql_condition)
+                await self.save_db()
                 records.append(boss) # guaranteed to be only one entry as per this loop
             except Exception as e: # in case of sqlite3 exceptions
                 print(self.db_id, e)
                 continue
 
-        self.save_db()
+        await self.save_db()
         return records # return an implicit bool for how many were deleted
