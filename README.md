@@ -30,7 +30,7 @@ _subject to change_
 #### Want to contribute? Head [here](docs/CONTRIBUTING.md).
 
 
-#### File last modified: 2019-02-03 13:54 (UTC-7)
+#### File last modified: 2019-02-03 13:54 (UTC-8)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
