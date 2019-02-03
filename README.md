@@ -8,7 +8,8 @@ The previous version built on `discord.py` asyncio has been frozen in branch `as
 
 ## Usage
 
-Please use this [link][link] to add _Wings of Vaivora_. If you choose to manage _Wings of Vaivora_ yourself, see Requirements.
+Set up your environment for self-hosting. Read Requirements below for dependencies.
+Python virtualenv is highly recommended for managing your files.
 
 ## Requirements
 _subject to change_
@@ -29,11 +30,10 @@ _subject to change_
 #### Want to contribute? Head [here](docs/CONTRIBUTING.md).
 
 
-#### File last modified: 2019-02-03 13:46 (UTC-7)
+#### File last modified: 2019-02-03 13:54 (UTC-7)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
 [discord.py]: https://github.com/Rapptz/discord.py/tree/rewrite
 [api]: http://discordpy.readthedocs.io/en/rewrite/api.html
 [dev]: https://discordapp.com/developers/applications/me
-[link]: https://dark-nova.me/wings-of-vaivora
