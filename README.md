@@ -15,9 +15,9 @@ _subject to change_
 
 + latest Python 3 (`3.6.5` to `3.7` are fine)
 + [discord.py][discord.py] and all of its dependencies
-+ dependencies in `requirements.txt`
++ dependencies in [requirements.txt](requirements.txt)
 + setup with [Discord Developer Apps][dev]
-    - setup with `vaivora_modules/secrets.py`
+    - setup with [vaivora_modules/secrets.py](vaivora_modules/secrets.py.example)
 
 ## Features
 
@@ -29,7 +29,7 @@ _subject to change_
 #### Want to contribute? Head [here](docs/CONTRIBUTING.md).
 
 
-#### File last modified: 2019-02-03 13:43 (UTC-7)
+#### File last modified: 2019-02-03 13:46 (UTC-7)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
