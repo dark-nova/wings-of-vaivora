@@ -36,7 +36,8 @@
 
 ### Options:
 + <target>
-    - This can be either "all" or part of the single boss's name. e.g. "cerb" for "Violent Cerberus"
+    - This can be either "all" or part of (or entirely) the single boss's name. e.g. "cerb" for "Violent Cerberus"
+    - Aliases may also be used for single boss names.
     - "all" will always target all valid bosses for the command. The name (or part of it) will only target that boss.
     - Some commands do not work with both. Make sure to check which command can accept what <target>.
 
@@ -70,4 +71,14 @@
         * "demon": Demon Lords, which also count as field bosses; they have longer spawn times and the server announces everywhere prior to a spawn
     - <target> must be "all".
 
-#### File last modified: 2018-04-29 11:47 (UTC-7)
++ [<channel>]
+    - An optional argument for <status>.
+    - Must be in format of "1" or "CH1".
+    - Always omit for field bosses including Demon Lords.
+
++ [<map>]
+    - An optional argument for <status>.
+    - Can be the whole name (enclosed in quotation marks), e.g. "Inner Wall District 8", or part of the name, e.g. inner8
+    - Always omit for all bosses except Demon Lords.
+
+#### File last modified: 2019-02-03 14:11 (UTC-8)
