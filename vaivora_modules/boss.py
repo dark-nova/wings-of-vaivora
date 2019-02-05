@@ -343,7 +343,7 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
         return lang_boss.FAIL_TEMPLATE.format(lang_boss.FAIL_STATUS, lang_boss.MSG_HELP)
 
 
-async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None, channel=None):
+async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=None):
     """
     :func:`process_cmd_entry` processes a specific boss command: entry to retrieve records.
 
@@ -352,7 +352,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map
         msg_channel: the id of the channel of the originating message (belonging to server of `server_id`)
         bosses (list): a list of bosses to check
         entry (str): the entry command (list, erase)
-        opt_list (list): (default: None) a list containing optional parameters; may be null; 'map' or 'channel' may be provided
+        channel: (default: None) the channel for the record
 
     Returns:
         str: an appropriate message for success or fail of command, e.g. confirmation or list of entries
@@ -365,15 +365,10 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map
 
     # $boss <target> erase ...
     if entry == lang_boss.CMD_ARG_ENTRY_ERASE:
-        if bosses == lang_boss.ALL_BOSSES or not (boss_map or channel):
-            records = vdb.rm_entry_db_boss(boss_list=bosses)
-        elif channel and bosses in lang_boss.BOSSES[lang_boss.KW_WORLD]:
+        if channel and bosses in lang_boss.BOSSES[lang_boss.KW_WORLD]:
             records = vdb.rm_entry_db_boss(boss_list=bosses, boss_ch=channel)
-        elif boss_map and bosses in lang_boss.BOSSES[lang_boss.KW_DEMON]: # may phase out this option
-            records = vdb.rm_entry_db_boss(boss_list=bosses, boss_map=boss_map)
         else:
-            records = vdb.rm_entry_db_boss(boss_list=bosses, boss_ch=channel,
-                                           boss_map=boss_map)
+            records = vdb.rm_entry_db_boss(boss_list=bosses)
 
         if records:
             return '{}{}'.format(lang_boss.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
