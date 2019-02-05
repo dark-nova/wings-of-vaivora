@@ -388,10 +388,10 @@ async def boss(ctx, arg: str):
 
 
 # $boss <boss> <status> <time> [channel]
-@boss.command(aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
-async def died(ctx, time: str, map_or_channel = None):
+@boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
+async def status(ctx, time: str, map_or_channel = None):
     """
-    :func:`died` is a subcommand for `boss`.
+    :func:`status` is a subcommand for `boss`.
     Essentially stores valid data into a database.
 
     Args:
@@ -411,7 +411,7 @@ async def died(ctx, time: str, map_or_channel = None):
     except:
         which_fail = await boss_helper(ctx.boss, time, map_or_channel)
         if len(which_fail) == 1:
-            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, arg_target,
+            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, ctx.boss,
                                                         lang_boss.CMD_ARG_TARGET))
         elif len(which_fail) == 2:
             await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, time,
@@ -422,8 +422,12 @@ async def died(ctx, time: str, map_or_channel = None):
 
     subcmd = await vaivora_modules.boss.what_status(ctx.subcommand_passed)
     opt = {lang_db.COL_BOSS_CHANNEL: _channel, lang_db.COL_BOSS_MAP: _map}
-    msg = await vaivora_modules.boss.process_cmd_status(ctx.guild.id, ctx.channel,
-                                                        _boss, subcmd, _time, opt)
+    msg = await vaivora_modules.boss.process_cmd_status(ctx.guild.id,
+                                                        ctx.channel,
+                                                        _boss,
+                                                        subcmd,
+                                                        _time,
+                                                        opt)
     await ctx.send('{} {}'.format(ctx.author.mention, msg))
     return True
 
@@ -432,8 +436,8 @@ async def died(ctx, time: str, map_or_channel = None):
 # async def anchored(ctx, time: str, map_or_channel = None):
 
 
-@boss.command(name='list', aliases=['ls'])
-async def _list(ctx, channel=None):
+@boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
+async def entry(ctx, channel=None):
     """
     :func:`_list` is a subcommand for `boss`.
     Lists records for bosses given.
@@ -445,6 +449,34 @@ async def _list(ctx, channel=None):
     Returns:
         True if run successfully, regardless of result 
     """
+    if ctx.guild == None: # not a guild
+        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
+        return False
+
+    if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
+        boss_idx = await vaivora_modules.boss.check_boss(boss)
+        if boss_idx == -1:
+            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention,
+                                                        ctx.boss,
+                                                        lang_boss.CMD_ARG_TARGET))
+            return False
+        boss = lang_boss.ALL_BOSSES[boss_idx]
+    else:
+        boss = lang_boss.ALL_BOSSES
+
+    if channel is not None:
+        channel = lang_boss.REGEX_OPT_CHANNEL.match(channel)
+        channel = int(channel.group(2))
+
+    subcmd = await vaivora_modules.boss.what_entry(ctx.subcommand_passed)
+
+    msg = await vaivora_modules.boss.process_cmd_entry(ctx.guild.id,
+                                                       ctx.channel,
+                                                       boss,
+                                                       subcmd,
+                                                       channel)
+    await ctx.send('{} {}'.format(ctx.author.mention, msg))
+    return True
 
 
 async def boss_helper(boss, time, map_or_channel):
