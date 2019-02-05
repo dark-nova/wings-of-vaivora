@@ -411,11 +411,14 @@ async def status(ctx, time: str, map_or_channel = None):
     except:
         which_fail = await boss_helper(ctx.boss, time, map_or_channel)
         if len(which_fail) == 1:
-            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, ctx.boss,
+            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention,
+                                                        ctx.boss,
                                                         lang_boss.CMD_ARG_TARGET))
         elif len(which_fail) == 2:
-            await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, time,
-                                                        arg_subcmd, 'time'))
+            await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention,
+                                                        time,
+                                                        ctx.subcommand_passed,
+                                                        'time'))
         else:
             pass
         return False
@@ -423,17 +426,14 @@ async def status(ctx, time: str, map_or_channel = None):
     subcmd = await vaivora_modules.boss.what_status(ctx.subcommand_passed)
     opt = {lang_db.COL_BOSS_CHANNEL: _channel, lang_db.COL_BOSS_MAP: _map}
     msg = await vaivora_modules.boss.process_cmd_status(ctx.guild.id,
-                                                        ctx.channel,
+                                                        ctx.channel.id,
                                                         _boss,
                                                         subcmd,
                                                         _time,
                                                         opt)
     await ctx.send('{} {}'.format(ctx.author.mention, msg))
-    return True
 
-# # $boss <boss> died <time> [channel]
-# @boss.command(aliases=['anch', 'anchor'])
-# async def anchored(ctx, time: str, map_or_channel = None):
+    return True
 
 
 @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
@@ -454,7 +454,7 @@ async def entry(ctx, channel=None):
         return False
 
     if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
-        boss_idx = await vaivora_modules.boss.check_boss(boss)
+        boss_idx = await vaivora_modules.boss.check_boss(ctx.boss)
         if boss_idx == -1:
             await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention,
                                                         ctx.boss,
@@ -471,11 +471,19 @@ async def entry(ctx, channel=None):
     subcmd = await vaivora_modules.boss.what_entry(ctx.subcommand_passed)
 
     msg = await vaivora_modules.boss.process_cmd_entry(ctx.guild.id,
-                                                       ctx.channel,
+                                                       ctx.channel.id,
                                                        boss,
                                                        subcmd,
                                                        channel)
-    await ctx.send('{} {}'.format(ctx.author.mention, msg))
+    combined_message = msg[0]
+    for r, i in zip(msg[1:], range(len(msg)-1)):
+        combined_message = '{}\n\n{}'.format(combined_message, r)
+        if i % 5 == 4:
+            await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+            combined_message = ''
+    if combined_message:
+        await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+
     return True
 
 
@@ -512,7 +520,7 @@ async def boss_helper(boss, time, map_or_channel):
         if map_or_channel <= 4 or map_or_channel > 1:
             channel = map_or_channel # use user-input channel only if valid
     elif map_or_channel and lang_boss.REGEX_OPT_CHANNEL.match(map_or_channel):
-        channel = lang_boss.REGEX_OPT_CHANNEL.sub('', map_or_channel)
+        channel = lang_boss.REGEX_OPT_CHANNEL.match(map_or_channel)
         channel = int(channel.group(2)) # channel will always be 1 through 4 inclusive
     elif type(map_or_channel) is str and map_idx != 0: # possibly map
         map_idx = await vaivora_modules.boss.check_maps(boss_idx, map_or_channel)
@@ -781,6 +789,9 @@ async def check_databases():
             # check all timers
             message_to_send = []
             discord_channel = None
+            if not await valid_db.check_if_valid():
+                await valid_db.create_db()
+                continue
             results[vdb_id] = await valid_db.check_db_boss()
 
             # empty record; dismiss
@@ -832,7 +843,7 @@ async def check_databases():
                 # record is within range of alert
                 if time_diff.seconds < 900 and time_diff.days == 0:
                     records.append(hashed_record)
-                    message_to_send.append([record, record_info[4],])
+                    message_to_send.append([record, discord_channel,])
                     minutes[str(hashed_record)] = entry_time.minute
 
             # empty record for this server
