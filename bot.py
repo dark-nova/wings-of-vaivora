@@ -392,6 +392,7 @@ async def boss(ctx, arg: str):
 async def died(ctx, time: str, map_or_channel = None):
     """
     :func:`died` is a subcommand for `boss`.
+    Essentially stores valid data into a database.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -399,7 +400,7 @@ async def died(ctx, time: str, map_or_channel = None):
         map_or_channel: (default: None) the map xor channel in which the boss died
 
     Returns:
-        True if successful; False otherwise
+        True if run successfully, regardless of result
     """
     if ctx.guild == None: # not a guild
         await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
@@ -429,18 +430,21 @@ async def died(ctx, time: str, map_or_channel = None):
 # # $boss <boss> died <time> [channel]
 # @boss.command(aliases=['anch', 'anchor'])
 # async def anchored(ctx, time: str, map_or_channel = None):
-#     """
-#     :func:`died` is a subcommand for `boss`.
 
-#     Args:
-#         ctx (discord.ext.commands.Context): context of the message
-#         time (str): time when the boss died
-#         map_or_channel: (default: None) the map xor channel in which the boss died
 
-#     Returns:
-#         True if successful; False otherwise
-#     """
-#     _boss, _time, _map, _channel = await boss_helper(ctx.boss, time, map_or_channel)
+@boss.command(name='list', aliases=['ls'])
+async def _list(ctx, channel=None):
+    """
+    :func:`_list` is a subcommand for `boss`.
+    Lists records for bosses given.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        channel: (default: None) the channel to show, if supplied
+
+    Returns:
+        True if run successfully, regardless of result 
+    """
 
 
 async def boss_helper(boss, time, map_or_channel):
