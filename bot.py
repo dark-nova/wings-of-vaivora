@@ -406,31 +406,35 @@ async def status(ctx, time: str, map_or_channel = None):
         await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
         return False
 
+    subcmd = await vaivora_modules.boss.what_status(ctx.subcommand_passed)
+
+
+    if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
+       await ctx.send(lang_err.IS_INVALID_3
+                      .format(ctx.author.mention, ctx.boss,
+                              lang_boss.CMD_ARG_TARGET, subcmd))
+       return False
+
     try:
         _boss, _time, _map, _channel = await boss_helper(ctx.boss, time, map_or_channel)
     except:
         which_fail = await boss_helper(ctx.boss, time, map_or_channel)
         if len(which_fail) == 1:
-            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention,
-                                                        ctx.boss,
-                                                        lang_boss.CMD_ARG_TARGET))
+            await ctx.send(lang_err.IS_INVALID_2
+                           .format(ctx.author.mention, ctx.boss,
+                                   lang_boss.CMD_ARG_TARGET))
         elif len(which_fail) == 2:
-            await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention,
-                                                        time,
-                                                        ctx.subcommand_passed,
-                                                        'time'))
+            await ctx.send(lang_err.IS_INVALID_3
+                           .format(ctx.author.mention, time,
+                                   ctx.subcommand_passed, 'time'))
         else:
             pass
         return False
 
-    subcmd = await vaivora_modules.boss.what_status(ctx.subcommand_passed)
     opt = {lang_db.COL_BOSS_CHANNEL: _channel, lang_db.COL_BOSS_MAP: _map}
-    msg = await vaivora_modules.boss.process_cmd_status(ctx.guild.id,
-                                                        ctx.channel.id,
-                                                        _boss,
-                                                        subcmd,
-                                                        _time,
-                                                        opt)
+    msg = await (vaivora_modules.boss
+                 .process_cmd_status(ctx.guild.id, ctx.channel.id,
+                                     _boss, subcmd, _time, opt))
     await ctx.send('{} {}'.format(ctx.author.mention, msg))
 
     return True
@@ -456,9 +460,9 @@ async def entry(ctx, channel=None):
     if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
         boss_idx = await vaivora_modules.boss.check_boss(ctx.boss)
         if boss_idx == -1:
-            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention,
-                                                        ctx.boss,
-                                                        lang_boss.CMD_ARG_TARGET))
+            await ctx.send(lang_err.IS_INVALID_2
+                           .format(ctx.author.mention, ctx.boss,
+                                   lang_boss.CMD_ARG_TARGET))
             return False
         boss = lang_boss.ALL_BOSSES[boss_idx]
     else:
@@ -470,11 +474,10 @@ async def entry(ctx, channel=None):
 
     subcmd = await vaivora_modules.boss.what_entry(ctx.subcommand_passed)
 
-    msg = await vaivora_modules.boss.process_cmd_entry(ctx.guild.id,
-                                                       ctx.channel.id,
-                                                       boss,
-                                                       subcmd,
-                                                       channel)
+    msg = await (vaivora_modules.boss
+                 .process_cmd_entry(ctx.guild.id, ctx.channel.id,
+                                    boss, subcmd, channel))
+
     combined_message = msg[0]
     for r, i in zip(msg[1:], range(len(msg)-1)):
         combined_message = '{}\n\n{}'.format(combined_message, r)
@@ -485,6 +488,24 @@ async def entry(ctx, channel=None):
         await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
 
     return True
+
+@boss.command(name='maps', aliases=['map', 'alias', 'aliases'])
+async def query(ctx):
+    """
+    :func:`query` returns a user-usable list of maps and aliases for a given target.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+    """
+    subcmd = await vaivora_modules.boss.what_query(ctx.subcommand_passed)
+
+    if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
+       await ctx.send(lang_err.IS_INVALID_3
+                      .format(ctx.author.mention, ctx.boss,
+                              lang_boss.CMD_ARG_TARGET, subcmd))
+       return False
+
+    pass
 
 
 async def boss_helper(boss, time, map_or_channel):
