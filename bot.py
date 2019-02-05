@@ -387,8 +387,8 @@ async def boss(ctx, arg: str):
     return True
 
 
-# $boss <boss> died <time> [channel]
-@boss.command(aliases=['die', 'dead'])
+# $boss <boss> <status> <time> [channel]
+@boss.command(aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
 async def died(ctx, time: str, map_or_channel = None):
     """
     :func:`died` is a subcommand for `boss`.
@@ -401,23 +401,46 @@ async def died(ctx, time: str, map_or_channel = None):
     Returns:
         True if successful; False otherwise
     """
+    if ctx.guild == None: # not a guild
+        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
+        return False
 
+    try:
+        _boss, _time, _map, _channel = await boss_helper(ctx.boss, time, map_or_channel)
+    except:
+        which_fail = await boss_helper(ctx.boss, time, map_or_channel)
+        if len(which_fail) == 1:
+            await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, arg_target,
+                                                        lang_boss.CMD_ARG_TARGET))
+        elif len(which_fail) == 2:
+            await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, time,
+                                                        arg_subcmd, 'time'))
+        else:
+            pass
+        return False
 
-# $boss <boss> died <time> [channel]
-@boss.command(aliases=['anch', 'anchor'])
-async def anchored(ctx, time: str, map_or_channel = None):
-    """
-    :func:`died` is a subcommand for `boss`.
+    subcmd = await vaivora_modules.boss.what_status(ctx.subcommand_passed)
+    opt = {lang_db.COL_BOSS_CHANNEL: _channel, lang_db.COL_BOSS_MAP: _map}
+    msg = await vaivora_modules.boss.process_cmd_status(ctx.guild.id, ctx.channel,
+                                                        _boss, subcmd, _time, opt)
+    await ctx.send('{} {}'.format(ctx.author.mention, msg))
+    return True
 
-    Args:
-        ctx (discord.ext.commands.Context): context of the message
-        time (str): time when the boss died
-        map_or_channel: (default: None) the map xor channel in which the boss died
+# # $boss <boss> died <time> [channel]
+# @boss.command(aliases=['anch', 'anchor'])
+# async def anchored(ctx, time: str, map_or_channel = None):
+#     """
+#     :func:`died` is a subcommand for `boss`.
 
-    Returns:
-        True if successful; False otherwise
-    """
-    _boss, _time, _map, _channel = await boss_helper(ctx.boss, time, map_or_channel)
+#     Args:
+#         ctx (discord.ext.commands.Context): context of the message
+#         time (str): time when the boss died
+#         map_or_channel: (default: None) the map xor channel in which the boss died
+
+#     Returns:
+#         True if successful; False otherwise
+#     """
+#     _boss, _time, _map, _channel = await boss_helper(ctx.boss, time, map_or_channel)
 
 
 async def boss_helper(boss, time, map_or_channel):
@@ -437,9 +460,16 @@ async def boss_helper(boss, time, map_or_channel):
     boss_idx = await vaivora_modules.boss.check_boss(boss)
 
     if boss_idx == -1: # invalid boss
-        return (None,)*4
+        return (None,)
 
-    if len(lang_boss.BOSS_MAPS[boss_idx]) == 1:
+    time = await vaivora_modules.boss.validate_time(time)
+
+    if not time: # invalid time
+        return (None,None)
+
+    boss = lang_boss.ALL_BOSSES[boss_idx]
+
+    if len(lang_boss.BOSS_MAPS[boss]) == 1:
         map_idx = 0 # it just is
 
     if map_or_channel and type(map_or_channel) is int:
@@ -451,10 +481,12 @@ async def boss_helper(boss, time, map_or_channel):
     elif type(map_or_channel) is str and map_idx != 0: # possibly map
         map_idx = await vaivora_modules.boss.check_maps(boss_idx, map_or_channel)
 
-    if not map_idx or map_idx == -1:
-        map_idx = None
+    if (not map_idx and map_idx != 0) or map_idx == -1:
+        _map = ""
+    else:
+        _map = lang_boss.BOSS_MAPS[boss][map_idx]
 
-    return (boss_idx, time, map_idx, channel)
+    return (boss, time, _map, channel)
 
 
 # @bot.command()
@@ -712,8 +744,8 @@ async def check_databases():
 
             # check all timers
             message_to_send = []
-            cur_channel = None
-            results[vdb_id] = valid_db.check_db_boss()
+            discord_channel = None
+            results[vdb_id] = await valid_db.check_db_boss()
 
             # empty record; dismiss
             if not results[vdb_id]:
@@ -724,15 +756,27 @@ async def check_databases():
 
             # iterate through all results
             for result in results[vdb_id]:
-                cur_channel = result[4]
+                discord_channel = result[4]
                 list_time = [ int(t) for t in result[5:10] ]
-                record_info = [ str(r) for r in result[0:5] ]
+                record_info = [ str(r) for r in result[0:4] ]
+
+                current_boss = record_info[0]
+                current_channel = record_info[1]
+                current_time = record_info[2]
+                current_status = record_info[3]
 
                 entry_time = datetime(*list_time)
 
-                record = vaivora_modules.boss.process_record(record_info[0], record_info[3], entry_time, record_info[2], record_info[1])
-                #             channel           :    boss              :                       2017/01/01 12:00      :    channel
-                record2byte = record_info[4] + ":" + record_info[0] + ":" + entry_time.strftime("%Y/%m/%d %H:%M") + ":" + record_info[1]
+                record = vaivora_modules.boss.process_record(current_boss,
+                                                             current_status,
+                                                             entry_time,
+                                                             current_time,
+                                                             current_channel)
+
+                record2byte = "{}:{}:{}:{}".format(discord_channel,
+                                                   current_boss,
+                                                   entry_time.strftime("%Y/%m/%d %H:%M"),
+                                                   current_channel)
                 record2byte = bytearray(record2byte, 'utf-8')
                 hashedblake = blake2b(digest_size=48)
                 hashedblake.update(record2byte)
@@ -782,25 +826,25 @@ async def check_databases():
 
             role_str = ' '.join(roles)
 
-            current_channel = None
+            discord_channel = None
             discord_message = None
             for message in message_to_send:
-                if current_channel != int(message[-1]):
-                    if current_channel:
+                if discord_channel != int(message[-1]):
+                    if discord_channel:
                         try:
-                            await guild.get_channel(current_channel).send(discord_message)
+                            await guild.get_channel(discord_channel).send(discord_message)
                         except:
                             pass
 
                         discord_message = None
-                    current_channel = int(message[-1])
+                    discord_channel = int(message[-1])
 
                     # replace time_str with server setting warning, eventually
                     discord_message = '{} The following bosses will spawn within 15 minutes:'.format(role_str)
                 discord_message = '{}\n\n{}'.format(discord_message, message[0])
 
             try:
-                await guild.get_channel(current_channel).send(discord_message)
+                await guild.get_channel(discord_channel).send(discord_message)
             except Exception as e:
                 print(e)
                 pass
