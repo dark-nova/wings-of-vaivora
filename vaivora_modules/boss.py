@@ -21,7 +21,7 @@ def help():
     return lang_boss.HELP
 
 
-def what_status(entry):
+async def what_status(entry):
     """
     :func:`what_status` checks what "status" the input may be.
     "Statuses" are defined to be "died" and "anchored".
@@ -223,17 +223,15 @@ def get_offset(boss, status, coefficient=1):
         return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_DEMON))
     elif boss in lang_boss.BOSSES[lang_boss.KW_FIELD]:
         return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_FIELD))
-    elif boss == lang_boss.BOSS_W_ABOMINATION and status == lang_boss.CMD_ARG_STATUS_DIED:
-        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_ABOM))
     elif boss == lang_boss.BOSS_W_ABOMINATION:
-        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_ANCHORED_ABOM))
-    elif status == lang_boss.CMD_ARG_STATUS_DIED:
-        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_WB))
+        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_ABOM))
     else:
-        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_ANCHORED))
+        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_WB))
+    # else:
+    #     return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_ANCHORED))
 
 
-def validate_time(time):
+async def validate_time(time):
     """
     :func:`validate_time` validates whether a string representing time is valid or not, returning a standardized one.
 
@@ -274,7 +272,7 @@ def validate_time(time):
                                  str(minutes).rjust(2, '0'))
 
 
-def process_cmd_status(server_id, msg_channel, boss, status, time, options):
+async def process_cmd_status(server_id, msg_channel, boss, status, time, options):
     """
     :func:`process_cmd_status` processes a specific boss command: status related to recording.
 
@@ -332,7 +330,10 @@ def process_cmd_status(server_id, msg_channel, boss, status, time, options):
     target[lang_db.COL_TIME_HOUR] = int(record_date.hour)
     target[lang_db.COL_TIME_MINUTE] = int(record_date.minute)
 
-    if vaivora_modules.db.Database(server_id).update_db_boss(target):
+    vdb = vaivora_modules.db.Database(server_id)
+    await vdb.check_if_valid()
+
+    if await vdb.update_db_boss(target):
         return (lang_boss.SUCCESS_STATUS.format(lang_boss.ACKNOWLEDGED,
                                                 boss, status, time,
                                                 options[lang_db.COL_BOSS_CHANNEL],
@@ -342,7 +343,7 @@ def process_cmd_status(server_id, msg_channel, boss, status, time, options):
         return lang_boss.FAIL_TEMPLATE.format(lang_boss.FAIL_STATUS, lang_boss.MSG_HELP)
 
 
-def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None, channel=None):
+async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None, channel=None):
     """
     :func:`process_cmd_entry` processes a specific boss command: entry to retrieve records.
 
@@ -359,17 +360,20 @@ def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None,
     if type(bosses) is str:
         bosses = [bosses]
 
+    vdb = vaivora_modules.db.Database(server_id)
+    await vdb.check_if_valid()
+
     # $boss <target> erase ...
     if entry == lang_boss.CMD_ARG_ENTRY_ERASE:
         if bosses == lang_boss.ALL_BOSSES or not (boss_map or channel):
-            records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses)
+            records = vdb.rm_entry_db_boss(boss_list=bosses)
         elif channel and bosses in lang_boss.BOSSES[lang_boss.KW_WORLD]:
-            records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_ch=channel)
+            records = vdb.rm_entry_db_boss(boss_list=bosses, boss_ch=channel)
         elif boss_map and bosses in lang_boss.BOSSES[lang_boss.KW_DEMON]: # may phase out this option
-            records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_map=boss_map)
+            records = vdb.rm_entry_db_boss(boss_list=bosses, boss_map=boss_map)
         else:
-            records = vaivora_modules.db.Database(server_id).rm_entry_db_boss(boss_list=bosses, boss_ch=channel,
-                                                                              boss_map=boss_map)
+            records = vdb.rm_entry_db_boss(boss_list=bosses, boss_ch=channel,
+                                           boss_map=boss_map)
 
         if records:
             return '{}{}'.format(lang_boss.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
@@ -380,8 +384,7 @@ def process_cmd_entry(server_id: int, msg_channel, bosses, entry, boss_map=None,
     else:
         valid_boss_records = []
         valid_boss_records.append("Records:")
-        boss_records = (vaivora_modules.db.Database(server_id)
-                        .check_db_boss(bosses=bosses)) # possible return
+        boss_records = vdb.check_db_boss(bosses=bosses) # possible return
 
         if not boss_records: # empty
             return lang_boss.FAIL_ENTRY_LIST

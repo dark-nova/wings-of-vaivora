@@ -424,7 +424,7 @@ CMD_ARG_QUERY_MAPS_NOT = 'N/A'
 CMD_ARG_QUERY_ALIAS = 'alias'
 
 REGEX_STATUS_DIED = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
-REGEX_STATUS_ANCHORED = re.compile(r'anchor(ed)?', re.IGNORECASE)
+REGEX_STATUS_ANCHORED = re.compile(r'anch(or(ed)?)?', re.IGNORECASE)
 #REGEX_STATUS_WARNED = re.compile(r'warn(ed)?', re.IGNORECASE)
 
 REGEX_ENTRY_LIST = re.compile(r'(show|li?st?)', re.IGNORECASE)
