@@ -101,8 +101,6 @@ class Database:
             try:
                 cursor = await _db.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS))
             except:
-                await cursor.close()
-                await self.create_db()
                 return False
 
             r = await cursor.fetchone()
