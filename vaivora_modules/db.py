@@ -231,14 +231,13 @@ class Database:
                 return False
 
 
-    async def rm_entry_db_boss(self, boss_list=lang_boss.ALL_BOSSES, boss_ch=0, boss_map=None):
+    async def rm_entry_db_boss(self, boss_list=lang_boss.ALL_BOSSES, boss_ch=0):
         """
         :func:`rm_entry_db_boss` removes records based on the conditions supplied.
 
         Args:
             boss_list (list): the list containing boss names (str) with records to erase
             boss_ch (int): (default: 0) the boss channel filter, if specified
-            boss_map (str): (default: None) the boss map filter, if specified
 
         Returns:
             list: a list containing the records that were removed
@@ -256,11 +255,6 @@ class Database:
                     sql_filters = construct_filters(lang_db.SQL_WHERE_NAME,
                                                     lang_db.SQL_WHERE_CHANNEL)
                     sql_condition = (boss, boss_ch)
-                # map is provided
-                elif boss_map is not None:
-                    sql_filters = construct_filters(lang_db.SQL_WHERE_NAME,
-                                                    lang_db.SQL_WHERE_MAP)
-                    sql_condition = (boss, boss_map)
                 # only name                
                 else:
                     sql_filters = construct_filters(lang_db.SQL_WHERE_NAME)
