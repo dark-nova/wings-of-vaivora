@@ -43,7 +43,7 @@ async def what_status(entry):
         return None
 
 
-def what_entry(entry):
+async def what_entry(entry):
     """
     :func:`what_entry` checks what "entry" the input may be.
     "Entries" are defined to be "maps" and "alias".
@@ -63,7 +63,7 @@ def what_entry(entry):
         return None
 
 
-def what_query(entry):
+async def what_query(entry):
     """
     :func:`what_query` checks what "query" the input may be.
     "Queries" are defined to be "maps" and "alias".
@@ -265,7 +265,7 @@ async def validate_time(time):
     hours, minutes = [int(t) for t in time.split(delim.group(0))]
     hours += offset
 
-    if hours >= 24 or hours <= 0:
+    if hours >= 24 or hours < 0:
         return None
 
     return lang_boss.TIME.format(str(hours).rjust(2, '0'),
@@ -361,28 +361,29 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
         bosses = [bosses]
 
     vdb = vaivora_modules.db.Database(server_id)
-    await vdb.check_if_valid()
+    if not await vdb.check_if_valid():
+        await vdb.create_db()
 
     # $boss <target> erase ...
     if entry == lang_boss.CMD_ARG_ENTRY_ERASE:
         if channel and bosses in lang_boss.BOSSES[lang_boss.KW_WORLD]:
-            records = vdb.rm_entry_db_boss(boss_list=bosses, boss_ch=channel)
+            records = await vdb.rm_entry_db_boss(boss_list=bosses, boss_ch=channel)
         else:
-            records = vdb.rm_entry_db_boss(boss_list=bosses)
+            records = await vdb.rm_entry_db_boss(boss_list=bosses)
 
         if records:
-            return '{}{}'.format(lang_boss.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
-                                 '```\n{}\n```'.format('\n'.join(records)))
+            return ['{}{}'.format(lang_boss.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
+                                  '```\n{}\n```'.format('\n'.join(records))),]
         else:
-            return lang_boss.FAIL_ENTRY_ERASE
+            return [lang_boss.FAIL_ENTRY_ERASE,]
     # $boss <target> list ...
     else:
         valid_boss_records = []
         valid_boss_records.append("Records:")
-        boss_records = vdb.check_db_boss(bosses=bosses) # possible return
+        boss_records = await vdb.check_db_boss(bosses=bosses) # possible return
 
         if not boss_records: # empty
-            return lang_boss.FAIL_ENTRY_LIST
+            return [lang_boss.FAIL_ENTRY_LIST,]
 
         for boss_record in boss_records:
             boss_name = boss_record[0]
