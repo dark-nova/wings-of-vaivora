@@ -164,7 +164,7 @@ async def check_maps(boss_idx, maps):
     return map_idx
 
 
-def get_syns(boss):
+async def get_syns(boss):
     """
     :func:`get_syns` gets the synonyms of a valid boss.
 
@@ -174,11 +174,11 @@ def get_syns(boss):
     Returns:
         str: a formatted markdown message with synonyms
     """
-    return ("**{}** can be called using the following aliases: ```\n- {}```"
+    return ("**{}** can be called using the following aliases:\n\n- {}"
             .format(boss, '\n- '.join(lang_boss.BOSS_SYNONYMS[boss])))
 
 
-def get_maps(boss):
+async def get_maps(boss):
     """
     :func:`get_maps` gets the maps of a valid boss.
 
@@ -188,8 +188,20 @@ def get_maps(boss):
     Returns:
         str: a formatted markdown message with maps for a boss
     """
-    return ("**{}** can be found in the following maps: ```\n- {}```"
-            .format(boss, '\n- '.join(lang_boss.BOSS_MAPS[boss])))
+    _maps = ("**{}** can be found in the following maps:\n\n- {}"
+             .format(boss, '\n- '.join(lang_boss.BOSS_MAPS[boss])))
+
+    warps = lang_boss.NEAREST_WARPS[boss]
+    if type(warps[0]) is not str:
+        return (lang_boss.MAPAWAY_PLURAL
+                .format(lang_boss.NEAREST_PLURAL.format(_maps),
+                        warps[0][0], warps[0][1],
+                        warps[1][0], warps[1][1]))
+    else:
+
+        return (lang_boss.MAPAWAY_SINGLE
+                .format(lang_boss.NEAREST_SINGLE.format(_maps),
+                        warps[0], warps[1]))
 
 
 def get_bosses(boss_type):
@@ -336,9 +348,9 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
     if await vdb.update_db_boss(target):
         return (lang_boss.SUCCESS_STATUS.format(lang_boss.ACKNOWLEDGED,
                                                 boss, status, time,
-                                                options[lang_db.COL_BOSS_CHANNEL],
                                                 lang_boss.EMOJI_LOC,
-                                                options[lang_db.COL_BOSS_MAP]))
+                                                options[lang_db.COL_BOSS_MAP],
+                                                options[lang_db.COL_BOSS_CHANNEL]))
     else:
         return lang_boss.FAIL_TEMPLATE.format(lang_boss.FAIL_STATUS, lang_boss.MSG_HELP)
 
@@ -372,8 +384,9 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
             records = await vdb.rm_entry_db_boss(boss_list=bosses)
 
         if records:
+            records = '\n'.join(['**{}**'.format(rec) for rec in records])
             return ['{}{}'.format(lang_boss.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
-                                  '```\n{}\n```'.format('\n'.join(records))),]
+                                  '\n\n{}'.format(records)),]
         else:
             return [lang_boss.FAIL_ENTRY_ERASE,]
     # $boss <target> list ...
@@ -468,7 +481,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
         return valid_boss_records #'\n'.join(valid_boss_records)
 
 
-def process_cmd_query(boss, query):
+async def process_cmd_query(boss, query):
     """
     :func:`process_cmd_query` processes a query relating to bosses.
 
@@ -481,10 +494,10 @@ def process_cmd_query(boss, query):
     """
     # $boss <target> syns
     if query == lang_boss.CMD_ARG_QUERY_ALIAS:
-        return get_syns(boss)
+        return await get_syns(boss)
     # $boss <target> maps
     else:
-        return get_maps(boss)
+        return await get_maps(boss)
 
 
 def process_cmd_opt(boss, option=None):
