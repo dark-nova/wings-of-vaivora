@@ -350,57 +350,57 @@ BOSS_MAPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
 # Key: [Value1, Value2] where
 #   Value1 is Nearest Warp Map (same if map has it)
 #   Value2 is number of maps away or 0 if same
-NEAREST_WARPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard', 0],
+NEAREST_WARPS = {BOSS_W_ABOMINATION: ['**Guards\' Graveyard**', 0],
 
-                 BOSS_W_TEMPLESHOOTER: ['Royal Mausoleum Workers\' Chapel', 1],
+                 BOSS_W_TEMPLESHOOTER: ['**Royal Mausoleum Workers\' Chapel**', 1],
 
-                 BOSS_W_CANCERIL: ['Royal Mausoleum Constructors\' Chapel', 0],
+                 BOSS_W_CANCERIL: ['**Royal Mausoleum Constructors\' Chapel**', 0],
 
-                 BOSS_W_ARCHON: ['Royal Mausoleum Constructors\' Chapel', 1],
+                 BOSS_W_ARCHON: ['**Royal Mausoleum Constructors\' Chapel**', 1],
 
-                 BOSS_W_NECROVENTER: ['Residence of the Fallen Legwyn Family', 0],
+                 BOSS_W_NECROVENTER: ['**Residence of the Fallen Legwyn Family**', 0],
 
-                 BOSS_W_KUBAS: ['Crystal Mine 3F', 2],
+                 BOSS_W_KUBAS: ['**Crystal Mine 3F**', 2],
 
-                 BOSS_W_MARIONETTE: ['Roxona Reconstruction Agency East Building', 0],
+                 BOSS_W_MARIONETTE: ['**Roxona Reconstruction Agency East Building**', 0],
 
-                 BOSS_W_DULLAHAN: ['Roxona Reconstruction Agency East Building', 1],
+                 BOSS_W_DULLAHAN: ['**Roxona Reconstruction Agency East Building**', 1],
 
-                 EVENT_ALEMETH_FLOWER: ['Forest of Prayer', 1],
+                 EVENT_ALEMETH_FLOWER: ['**Forest of Prayer**', 1],
 
-                 EVENT_LEGWYN_STONE: ['Residence of the Fallen Legwyn Family', 0],
+                 EVENT_LEGWYN_STONE: ['**Residence of the Fallen Legwyn Family**', 0],
 
-                 BOSS_F_CHAPPARITION: ['Novaha Institute', 0],
+                 BOSS_F_CHAPPARITION: ['**Novaha Institute**', 0],
 
-                 BOSS_F_GLACKUMAN: ['King\'s Plateau', 0],
+                 BOSS_F_GLACKUMAN: ['**King\'s Plateau**', 0],
 
-                 BOSS_F_SUCCUBUS: ['Mochia Forest', 1],
+                 BOSS_F_SUCCUBUS: ['**Mochia Forest**', 1],
 
-                 BOSS_F_VELNIAMONKEY: ['Tenants\' Farm', 0],
+                 BOSS_F_VELNIAMONKEY: ['**Tenants\' Farm**', 0],
 
-                 BOSS_F_DEATHWEAVER: ['Demon Prison District 2', 2],
+                 BOSS_F_DEATHWEAVER: ['**Demon Prison District 2**', 2],
 
-                 BOSS_F_MINELOADER: ['Saalus Convent', 1],
+                 BOSS_F_MINELOADER: ['**Saalus Convent**', 1],
 
-                 BOSS_F_FIRELORD: ['Mage Tower 5F', 0],
+                 BOSS_F_FIRELORD: ['**Mage Tower 5F**', 0],
 
-                 BOSS_F_FERRETMARAUDER: ['Dina Bee Farm', 1],
+                 BOSS_F_FERRETMARAUDER: ['**Dina Bee Farm**', 1],
 
-                 BOSS_F_ELLAGANOS: ['Ruklys Street', 1],
+                 BOSS_F_ELLAGANOS: ['**Ruklys Street**', 1],
 
-                 BOSS_F_CERBERUS: ['Mokusul Chamber', 0],
+                 BOSS_F_CERBERUS: ['**Mokusul Chamber**', 0],
 
-                 BOSS_F_HARPEIA: ['Nahash Forest', 0],
+                 BOSS_F_HARPEIA: ['**Nahash Forest**', 0],
 
-                 BOSS_F_PRISONCUTTER: ['Investigation Room'],
+                 BOSS_F_PRISONCUTTER: ['**Investigation Room**'],
 
-                 BOSS_F_MOLICH: ['Tevhrin Stalactite Cave Section 4'],
+                 BOSS_F_MOLICH: ['**Tevhrin Stalactite Cave Section 4**'],
 
-                 DEMON_LORDS_A: [('Inner Wall District 8', 0),
-                                 ('Lanko 26 Waters', 1)],
+                 DEMON_LORDS_A: [('**Inner Wall District 8**', 0),
+                                 ('**Lanko 26 Waters**', 1)],
 
-                 DEMON_LORDS_B: [('Izoliacjia Plateau', 1),
-                                 ('Pystis Forest', 0)],
+                 DEMON_LORDS_B: [('**Izoliacjia Plateau**', 1),
+                                 ('**Pystis Forest**', 0)],
                 }
 
 # IMG would most likely not be used.
@@ -497,7 +497,7 @@ CMD_USAGE_STATUS = '$boss <target> <status> <time> [<channel>] [<map>]'
 RECORD = '{} {} CH {}'
 RECORD_KUBAS = '{} {}; Machine of Riddles CH {}'
 
-SUCCESS_STATUS = '{}\n**{}**\n- {} at **{}**\n- CH {}. {} {}'
+SUCCESS_STATUS = '{}\n**{}**\n- {} at **{}**\n- {} {} CH {}'
 
 SUCCESS_ENTRY_ERASE = 'our queried records ({}) have successfully been erased.\n'
 SUCCESS_ENTRY_ERASE_ALL = 'All of y' + SUCCESS_ENTRY_ERASE
@@ -515,6 +515,16 @@ TIME_SPAWN_MISSED = 'should have spawned at'
 TIME_SPAWN_ONTIME = 'will spawn around'
 TIME_SPAWN_EARLY = 'will spawn as early as'
 
+NEAREST = '{}\n\nThe nearest'
+MAP = 'map'
+MAPS = 'maps'
+WITH = 'with'
+STATUE = 'a Vakarine statue'
+STATUES = 'Vakarine statues'
+NEAREST_SINGLE = '{} {} {} {} is'.format(NEAREST, MAP, WITH, STATUE)
+NEAREST_PLURAL = '{} {} {} {} are'.format(NEAREST, MAPS, WITH, STATUES)
+MAPAWAY_SINGLE = "{} {} ({} map away)."
+MAPAWAY_PLURAL = "{} {} ({} map away) and {} ({} map away)."
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
