@@ -479,15 +479,18 @@ async def entry(ctx, channel=None):
                                     boss, subcmd, channel))
 
     combined_message = msg[0]
+    await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+    combined_message = ''
     for r, i in zip(msg[1:], range(len(msg)-1)):
         combined_message = '{}\n\n{}'.format(combined_message, r)
         if i % 5 == 4:
-            await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+            await ctx.send(combined_message)
             combined_message = ''
     if combined_message:
-        await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+        await ctx.send(combined_message)
 
     return True
+
 
 @boss.command(name='maps', aliases=['map', 'alias', 'aliases'])
 async def query(ctx):
@@ -496,16 +499,29 @@ async def query(ctx):
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
+
+    Returns:
+        True if run successfully, regardless of result
     """
     subcmd = await vaivora_modules.boss.what_query(ctx.subcommand_passed)
 
-    if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
+    if ctx.boss == lang_boss.CMD_ARG_TARGET_ALL:
        await ctx.send(lang_err.IS_INVALID_3
                       .format(ctx.author.mention, ctx.boss,
                               lang_boss.CMD_ARG_TARGET, subcmd))
        return False
+    else:
+        boss_idx = await vaivora_modules.boss.check_boss(ctx.boss)
+        if boss_idx == -1:
+            await ctx.send(lang_err.IS_INVALID_2
+                           .format(ctx.author.mention, ctx.boss,
+                                   lang_boss.CMD_ARG_TARGET))
+            return False
+        boss = lang_boss.ALL_BOSSES[boss_idx]
 
-    pass
+    msg = await vaivora_modules.boss.process_cmd_query(boss, subcmd)
+
+    await ctx.send('{} {}'.format(ctx.author.mention, msg))
 
 
 async def boss_helper(boss, time, map_or_channel):
@@ -909,7 +925,7 @@ async def check_databases():
 
                     # replace time_str with server setting warning, eventually
                     discord_message = '{} The following bosses will spawn within 15 minutes:'.format(role_str)
-                discord_message = '{}\n\n{}'.format(discord_message, message[0])
+                discord_message = '{} {}'.format(discord_message, message[0])
 
             try:
                 await guild.get_channel(discord_channel).send(discord_message)
