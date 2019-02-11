@@ -478,11 +478,10 @@ async def entry(ctx, channel=None):
                  .process_cmd_entry(ctx.guild.id, ctx.channel.id,
                                     boss, subcmd, channel))
 
-    combined_message = msg[0]
-    await ctx.send('{} {}'.format(ctx.author.mention, combined_message))
+    await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg[0]))
     combined_message = ''
-    for r, i in zip(msg[1:], range(len(msg)-1)):
-        combined_message = '{}\n\n{}'.format(combined_message, r)
+    for _msg, i in zip(msg[1:], range(len(msg)-1)):
+        combined_message = '{}\n\n{}'.format(combined_message, _msg)
         if i % 5 == 4:
             await ctx.send(combined_message)
             combined_message = ''
@@ -521,7 +520,31 @@ async def query(ctx):
 
     msg = await vaivora_modules.boss.process_cmd_query(boss, subcmd)
 
-    await ctx.send('{} {}'.format(ctx.author.mention, msg))
+    await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg))
+
+
+@boss.command(name='world', aliases=['w', 'field', 'f', 'demon', 'd', 'dl'])
+async def _type(ctx):
+    """
+    :func:`_type` returns a user-usable list of types of bosses: World, Field, Demon.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+
+    Returns:
+        True if run successfully, regardless of result
+    """
+    subcmd = await vaivora_modules.boss.what_type(ctx.subcommand_passed)
+
+    if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
+       await ctx.send(lang_err.IS_INVALID_3
+                      .format(ctx.author.mention, ctx.boss,
+                              lang_boss.CMD_ARG_TARGET, subcmd))
+       return False
+
+    msg = await vaivora_modules.boss.get_bosses(subcmd)
+
+    await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg))
 
 
 async def boss_helper(boss, time, map_or_channel):

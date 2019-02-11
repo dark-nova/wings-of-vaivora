@@ -83,7 +83,7 @@ async def what_query(entry):
         return None
 
 
-def what_type(entry):
+async def what_type(entry):
     """
     :func:`what_type` checks what "type" the input may be.
     "Types" are defined to be "world", "event", "field", and "demon".
@@ -95,9 +95,11 @@ def what_type(entry):
         str: the correct "type" if successful
         None: if unsuccessful
     """
-    if entry == lang_boss.KW_WORLD or entry == lang_boss.KW_EVENT or entry == lang_boss.KW_FIELD:
-        return entry
-    elif re.search(entry, lang_boss.KW_DEMON.lower(), re.IGNORECASE):
+    if lang_boss.REGEX_TYPE_WORLD.search(entry):
+        return lang_boss.KW_WORLD
+    elif lang_boss.REGEX_TYPE_FIELD.search(entry):
+        return lang_boss.KW_FIELD
+    elif lang_boss.REGEX_TYPE_DEMON.search(entry):
         return lang_boss.KW_DEMON
     else:
         return None
@@ -188,7 +190,7 @@ async def get_maps(boss):
     Returns:
         str: a formatted markdown message with maps for a boss
     """
-    _maps = ("**{}** can be found in the following maps:\n\n- {}"
+    _maps = (lang_boss.GET_MAPS
              .format(boss, '\n- '.join(lang_boss.BOSS_MAPS[boss])))
 
     warps = lang_boss.NEAREST_WARPS[boss]
@@ -198,13 +200,12 @@ async def get_maps(boss):
                         warps[0][0], warps[0][1],
                         warps[1][0], warps[1][1]))
     else:
-
         return (lang_boss.MAPAWAY_SINGLE
                 .format(lang_boss.NEAREST_SINGLE.format(_maps),
                         warps[0], warps[1]))
 
 
-def get_bosses(boss_type):
+async def get_bosses(boss_type):
     """
     :func:`get_bosses` gets the bosses of a certain boss type.
 
@@ -214,7 +215,7 @@ def get_bosses(boss_type):
     Returns:
         str: a formatted markdown message with bosses of the specified type
     """
-    return ("The following bosses are considered \"**{}**\" bosses: ```\n- {}```"
+    return (lang_boss.GET_BOSSES
             .format(boss_type, '\n- '.join(lang_boss.BOSSES[boss_type])))
 
 
