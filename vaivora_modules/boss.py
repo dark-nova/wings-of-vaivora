@@ -200,6 +200,12 @@ async def get_maps(boss):
                         warps[0][0], warps[0][1],
                         warps[1][0], warps[1][1]))
     else:
+        if warps[1] == 0:
+            warps[1] = lang_boss.SAME_MAP
+        elif warps[1] > 1:
+            warps[1] = '{} {}'.format(str(warps[1]), lang_boss.MAPS_AWAY)
+        else:
+            warps[1] = '{} {}'.format(str(warps[1]), lang_boss.MAP_AWAY)
         return (lang_boss.MAPAWAY_SINGLE
                 .format(lang_boss.NEAREST_SINGLE.format(_maps),
                         warps[0], warps[1]))

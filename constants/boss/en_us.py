@@ -392,9 +392,9 @@ NEAREST_WARPS = {BOSS_W_ABOMINATION: ['**Guards\' Graveyard**', 0],
 
                  BOSS_F_HARPEIA: ['**Nahash Forest**', 0],
 
-                 BOSS_F_PRISONCUTTER: ['**Investigation Room**'],
+                 BOSS_F_PRISONCUTTER: ['**Workshop**', 1],
 
-                 BOSS_F_MOLICH: ['**Tevhrin Stalactite Cave Section 4**'],
+                 BOSS_F_MOLICH: ['**Tevhrin Stalactite Cave Section 5**', 1],
 
                  DEMON_LORDS_A: [('**Inner Wall District 8**', 0),
                                  ('**Lanko 26 Waters**', 1)],
@@ -457,6 +457,8 @@ SUCCESS_ENTRY_ERASE = 'Y' + SUCCESS_ENTRY_ERASE
 GET_MAPS = '**{}** can be found in the following maps:\n\n- {}'
 GET_BOSSES= 'The following bosses are considered \"**{}**\" bosses:\n\n- {}'
 
+SAME_MAP = 'same map'
+
 FAIL_STATUS = "Your command could not be processed. It appears this record overlaps too closely with another."
 FAIL_STATUS_NO_ANCHOR = "This boss cannot be anchored."
 
@@ -477,8 +479,10 @@ STATUE = 'a Vakarine statue'
 STATUES = 'Vakarine statues'
 NEAREST_SINGLE = '{} {} {} {} is'.format(NEAREST, MAP, WITH, STATUE)
 NEAREST_PLURAL = '{} {} {} {} are'.format(NEAREST, MAPS, WITH, STATUES)
-MAPAWAY_SINGLE = "{} {} ({} map away)."
-MAPAWAY_PLURAL = "{} {} ({} map away) and {} ({} map away)."
+MAPAWAY_SINGLE = '{} {} ({}).'
+MAPAWAY_PLURAL = '{} {} ({} map away) and {} ({} map away).'
+MAP_AWAY = 'map away'
+MAPS_AWAY = 'maps away'
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
