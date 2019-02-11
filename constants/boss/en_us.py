@@ -352,7 +352,7 @@ BOSS_MAPS = {BOSS_W_ABOMINATION: ['Guards\' Graveyard'],
 #   Value2 is number of maps away or 0 if same
 NEAREST_WARPS = {BOSS_W_ABOMINATION: ['**Guards\' Graveyard**', 0],
 
-                 BOSS_W_TEMPLESHOOTER: ['**Royal Mausoleum Workers\' Chapel**', 1],
+                 BOSS_W_TEMPLESHOOTER: ['**Royal Mausoleum Constructors\' Chapel**', 1],
 
                  BOSS_W_CANCERIL: ['**Royal Mausoleum Constructors\' Chapel**', 0],
 
@@ -407,6 +407,11 @@ ACKNOWLEDGED = "Thank you! Your command has been acknowledged and recorded.\n"
 
 MSG_HELP = "Please run `" + COMMAND + " help` for syntax."
 
+# change these to your own emoji
+EMOJI_LOC = '<:location:448912251806810112>'
+EMOJI_WARP = '<:warp:542445189785190400>'
+# change these to your own emoji
+
 CMD_ARG_TARGET = '<target>'
 CMD_ARG_STATUS = '<status>'
 CMD_ARG_ENTRY = '<entry>'
@@ -454,7 +459,7 @@ SUCCESS_ENTRY_ERASE = 'our queried records ({}) have successfully been erased.\n
 SUCCESS_ENTRY_ERASE_ALL = 'All of y' + SUCCESS_ENTRY_ERASE
 SUCCESS_ENTRY_ERASE = 'Y' + SUCCESS_ENTRY_ERASE
 
-GET_MAPS = '**{}** can be found in the following maps:\n\n- {}'
+GET_MAPS = '**{}** can be found in the following maps:\n\n' + EMOJI_LOC + ' {}'
 GET_BOSSES= 'The following bosses are considered \"**{}**\" bosses:\n\n- {}'
 
 SAME_MAP = 'same map'
@@ -471,16 +476,16 @@ TIME_SPAWN_MISSED = 'should have spawned at'
 TIME_SPAWN_ONTIME = 'will spawn around'
 TIME_SPAWN_EARLY = 'will spawn as early as'
 
-NEAREST = '{}\n\nThe nearest'
+NEAREST = '{}\n\n The nearest'
 MAP = 'map'
 MAPS = 'maps'
 WITH = 'with'
 STATUE = 'a Vakarine statue'
 STATUES = 'Vakarine statues'
-NEAREST_SINGLE = '{} {} {} {} is'.format(NEAREST, MAP, WITH, STATUE)
-NEAREST_PLURAL = '{} {} {} {} are'.format(NEAREST, MAPS, WITH, STATUES)
-MAPAWAY_SINGLE = '{} {} ({}).'
-MAPAWAY_PLURAL = '{} {} ({} map away) and {} ({} map away).'
+NEAREST_SINGLE = '{} {} {} {}:\n\n'.format(NEAREST, MAP, WITH, STATUE)
+NEAREST_PLURAL = '{} {} {} {}:\n\n'.format(NEAREST, MAPS, WITH, STATUES)
+MAPAWAY = '{}{}'
+MAP_DIST = EMOJI_WARP + ' {} ({})' # map (dist)
 MAP_AWAY = 'map away'
 MAPS_AWAY = 'maps away'
 
@@ -513,10 +518,5 @@ REGEX_TIME_DIGITS = re.compile(r'^[0-9]{3,4}$')
 REGEX_TIME_MINUTES = re.compile(r'.*([0-9]{2})$')
 
 TIME = '{}:{}'
-
-# change these to your own emoji
-EMOJI_LOC = '<:location:448912251806810112>'
-EMOJI_WARP = '<:warp:542445189785190400>'
-# change these to your own emoji
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION ABOVE ###
