@@ -288,6 +288,7 @@ async def validate_time(time):
         else:
             if lang_boss.REGEX_TIME_NOON.match(time):
                 offset -= 12
+        time = lang_boss.REGEX_TIME_AMPM.sub('', time)
 
     delim = lang_boss.REGEX_TIME_DELIM.search(time)
     hours, minutes = [int(t) for t in time.split(delim.group(0))]
@@ -400,9 +401,13 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
             records = await vdb.rm_entry_db_boss(boss_list=bosses)
 
         if records:
-            records = '\n'.join(['**{}**'.format(rec) for rec in records])
-            return ['{}{}'.format(lang_boss.SUCCESS_ENTRY_ERASE_ALL.format(len(records)),
-                                  '\n\n{}'.format(records)),]
+            if bosses != lang_boss.ALL_BOSSES:
+                erase_msg = lang_boss.SUCCESS_ENTRY_ERASE
+            else:
+                erase_msg = lang_boss.SUCCESS_ENTRY_ERASE_ALL
+            _records = '\n- '.join(['**{}**'.format(rec) for rec in records])
+            return ['{}{}'.format(erase_msg.format(len(records)),
+                                  '\n- {}'.format(_records)),]
         else:
             return [lang_boss.FAIL_ENTRY_ERASE,]
     # $boss <target> list ...
