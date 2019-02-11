@@ -23,6 +23,7 @@ from constants.errors import en_us as lang_err
 from constants.settings import en_us as lang_settings
 from constants.boss import en_us as lang_boss
 from constants.db import en_us as lang_db
+from constants.main import en_us as lang
 
 
 # basic declarations and initializations
@@ -97,23 +98,12 @@ Thank you for inviting me to your server!
 I am a representative bot for the Wings of Vaivora, here to help you record your journey.
 Please read the following before continuing.
 """ + vaivora_modules.disclaimer.disclaimer + """
-Anyone may add this bot using the short URL: https://dark-nova.me/wings-of-vaivora
 Anyone may contribute to this bot's development: https://github.com/dark-nova/wings-of-vaivora
 """
 
 ### END CONST
 
 bosses = []
-
-
-def splitDblQuotesSpaces(command):
-    lex = shlex.shlex(command)
-    lex.quotes = '"'
-    lex.commenters = ""
-    lex.whitespace_split = True
-    return list(lex)
-
-
 
 @bot.event
 async def on_ready():
@@ -280,7 +270,7 @@ async def status(ctx, time: str, map_or_channel = None):
     subcmd = await vaivora_modules.boss.what_status(ctx.subcommand_passed)
 
 
-    if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
+    if ctx.boss == lang_boss.CMD_ARG_TARGET_ALL:
        await ctx.send(lang_err.IS_INVALID_3
                       .format(ctx.author.mention, ctx.boss,
                               lang_boss.CMD_ARG_TARGET, subcmd))
@@ -818,7 +808,7 @@ async def check_databases():
                     discord_channel = int(message[-1])
 
                     # replace time_str with server setting warning, eventually
-                    discord_message = '{} The following bosses will spawn within 15 minutes:'.format(role_str)
+                    discord_message = lang.BOSS_ALERT.format(role_str)
                 discord_message = '{} {}'.format(discord_message, message[0])
 
             try:
