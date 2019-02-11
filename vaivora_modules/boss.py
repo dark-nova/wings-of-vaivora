@@ -191,24 +191,33 @@ async def get_maps(boss):
         str: a formatted markdown message with maps for a boss
     """
     _maps = (lang_boss.GET_MAPS
-             .format(boss, '\n- '.join(lang_boss.BOSS_MAPS[boss])))
+             .format(boss, ('\n{} '.format(lang_boss.EMOJI_LOC))
+                            .join(lang_boss.BOSS_MAPS[boss])))
 
     warps = lang_boss.NEAREST_WARPS[boss]
+    _warps = []
     if type(warps[0]) is not str:
-        return (lang_boss.MAPAWAY_PLURAL
+        for warp in warps:
+            if warp[1] == 0:
+                away = lang_boss.SAME_MAP
+            elif warp[1] > 1:
+                away = '{} {}'.format(str(warp[1]), lang_boss.MAPS_AWAY)
+            else:
+                away = '{} {}'.format(str(warp[1]), lang_boss.MAP_AWAY)
+            _warps.append(lang_boss.MAP_DIST.format(warp[0], away))
+        return (lang_boss.MAPAWAY
                 .format(lang_boss.NEAREST_PLURAL.format(_maps),
-                        warps[0][0], warps[0][1],
-                        warps[1][0], warps[1][1]))
+                        '\n'.join(_warps)))
     else:
         if warps[1] == 0:
-            warps[1] = lang_boss.SAME_MAP
+            away = lang_boss.SAME_MAP
         elif warps[1] > 1:
-            warps[1] = '{} {}'.format(str(warps[1]), lang_boss.MAPS_AWAY)
+            away = '{} {}'.format(str(warps[1]), lang_boss.MAPS_AWAY)
         else:
-            warps[1] = '{} {}'.format(str(warps[1]), lang_boss.MAP_AWAY)
-        return (lang_boss.MAPAWAY_SINGLE
+            away = '{} {}'.format(str(warps[1]), lang_boss.MAP_AWAY)
+        return (lang_boss.MAPAWAY
                 .format(lang_boss.NEAREST_SINGLE.format(_maps),
-                        warps[0], warps[1]))
+                        lang_boss.MAP_DIST.format(warps[0], away)))
 
 
 async def get_bosses(boss_type):
