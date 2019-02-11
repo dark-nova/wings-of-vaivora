@@ -1,0 +1,1 @@
+BOSS_ALERT = '{} The following bosses will spawn within 15 minutes:\n\n'
