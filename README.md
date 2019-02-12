@@ -3,34 +3,32 @@
 
 ## Overview
 
-_Wings of Vaivora_ runs on the [discord.py][discord.py] [API][api].
-The previous version built on `discord.py` asyncio has been frozen in branch `asyncio_archive`.
+_Wings of Vaivora_ runs on the [discord.py][discord.py] [API][api] ("rewrite").
+The previous version built on `discord.py` "asyncio" has been frozen in branch `asyncio_archive`.
 
 ## Usage
 
 Set up your environment for self-hosting. Read Requirements below for dependencies.
-Python virtualenv is highly recommended for managing your files.
+Python virtualenv is highly recommended for managing your files, including dependencies.
 
 ## Requirements
 _subject to change_
 
-+ latest Python 3 (`3.6.5` to `3.7` are fine)
-+ [discord.py][discord.py] and all of its dependencies
-+ dependencies in [requirements.txt](requirements.txt)
-+ setup with [Discord Developer Apps][dev]
+- latest Python 3 (`3.6.5` to `3.7` are fine, but `3.6` is suggested)
+- [discord.py][discord.py] and all of its dependencies
+- dependencies in [requirements.txt](requirements.txt)
+- setup with [Discord Developer Apps][dev]
     - setup with [vaivora_modules/secrets.py](vaivora_modules/secrets.py.example)
 
 ## Features
 
-+ ### [Boss Tracking](docs/BOSS.md)
-
-+ ### [Guild Settings](docs/SETTINGS.md)
+- [Boss Tracking](docs/BOSS.md)
+- [Guild Settings](docs/SETTINGS.md)
 
 
 #### Want to contribute? Head [here](docs/CONTRIBUTING.md).
 
-
-#### File last modified: 2019-02-03 13:54 (UTC-8)
+#### File last modified: 2019-02-11 15:06 (UTC-8)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
