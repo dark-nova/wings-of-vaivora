@@ -54,7 +54,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Corrected Molich spawn map.
 
 ### Acknowledgment
-- Thanks to Wolfy for the information.
+- Thanks to **Wolfy** for the information.
 
 ## [m1.9] - 2017-12-17
 ### Changed
