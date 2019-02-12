@@ -38,10 +38,6 @@ vdst = {}
 
 ### BGN CONST ###
 
-first_run = 0
-
-cmd_boss = "boss"
-cmd_settings = "settings"
 
 ### BGN REGEX ###
 
@@ -51,47 +47,7 @@ to_sanitize = re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
 
 ### END REGEX
 
-msg_help = """
-Here are commands. Valid prefixes are `$` (dollar sign) and `Vaivora,<space>`,
-e.g. `$boss` or `Vaivora, help`
 
-```
-"Changelogs" commands
-    $unsubscribe
-    $subscribe
-
-* These functions are currently disabled.
-```
-```
-"Boss" commands
-    $boss [args ...]
-    $boss help
-
-* Use "$boss help" for more information.
-
-Examples:
-    $boss all list
-    $boss mineloader died 13:00 forest
-    $boss ml died 1:00p "forest of prayer"
-
-* More examples in "$boss help"
-```
-```
-"Settings" commands
-    $settings [args ...]
-    $settings help
-
-* Use "$settings help" for more information.
-
-Examples:
-    $settings set role auth @Leaders
-    $settings set role member @Members
-```
-```
-General
-    $help: prints this page in Direct Message
-```
-"""
 
 welcome = """
 Thank you for inviting me to your server!
@@ -113,26 +69,10 @@ async def on_ready():
     Returns:
         True
     """
-    global first_run
     print("Logging in...")
     print('Successsfully logged in as: {}#{}. Ready!'.format(bot.user.name, bot.user.id))
-    await bot.change_presence(activity=discord.Game(name="with startup. Please wait a moment..."),
-                              status=discord.Status.idle)
-    first_run += len(bot.guilds)
-    await bot.change_presence(activity=discord.Game(name=("with files. Processing {} guilds..."
-                                                          .format(str(first_run)))),
-                              status=discord.Status.dnd)
-    for guild in bot.guilds:
-        if not guild.unavailable:
-            guild_id = str(guild.id)
-            guild_owner_id = str(guild.owner.id)
-            vdbs[guild.id] = vaivora_modules.db.Database(guild_id)
-            vdst[guild.id] = vaivora_modules.settings.Settings(guild_id, guild_owner_id)
-            #await greet(guild.id, guild.owner)
-        first_run -= 1
-    await asyncio.sleep(1)
-    first_run = 0
-    await bot.change_presence(activity=discord.Game(name=("in {} guilds # [$help] or [Vaivora, help] for info"
+    await bot.change_presence(status=discord.Status.dnd)
+    await bot.change_presence(activity=discord.Game(name=("in {} guilds. [$help] for info"
                                                           .format(str(len(bot.guilds))))),
                               status=discord.Status.online)
     return True
@@ -216,7 +156,7 @@ async def help(ctx):
         True if successful; False otherwise
     """
     try:
-        await ctx.author.send(msg_help)
+        await ctx.author.send(lang.MSG_HELP)
     except:
         return False
 
@@ -671,9 +611,17 @@ async def check_databases():
     :func:`check_databases` checks the database for entries roughly every minute.
     Records are output to the relevant Discord channels.
     """
-    while first_run:
-        await asyncio.sleep(1)
+    await bot.wait_until_ready()
     print('Startup completed; starting check_databases')
+
+    for guild in bot.guilds:
+        if not guild.unavailable:
+            guild_id = str(guild.id)
+            guild_owner_id = str(guild.owner.id)
+            vdbs[guild.id] = vaivora_modules.db.Database(guild_id)
+            vdst[guild.id] = vaivora_modules.settings.Settings(guild_id, guild_owner_id)
+            #await greet(guild.id, guild.owner)
+
     results = {}
     minutes = {}
     records = []
@@ -775,7 +723,7 @@ async def check_databases():
 
             # compare roles against server
             guild = bot.get_guild(vdb_id)
-            for uid in vdst[vdb_id].get_role(cmd_boss):
+            for uid in vdst[vdb_id].get_role(lang.ROLE_BOSS):
                 try:
                     # group mention
                     idx = [role.id for role in guild.roles].index(uid)
