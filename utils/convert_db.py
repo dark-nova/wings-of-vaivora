@@ -1,10 +1,12 @@
 import json
+import sqlite3
 import os
 import sys
 
-def main():
+
+def get_dirs():
     """
-    :func:`main`.
+    :func:`get_dirs` checks whether the directories exist, and gets their paths.
 
     Returns:
         tuple if successful; False otherwise
@@ -27,5 +29,34 @@ def main():
     else:
         print('No existing system settings directory found!')
         return False
-    
-main()
+
+    return db_dir, ss_dir
+
+
+def update_db(db_dir):
+    """
+    :func:`update_db` amends databases given a `db_dir`.
+    This assumes the existing databases, if they exist at all, are valid.
+
+    Returns:
+        list: len of 0 for no errors, +1 for each additional error
+    """
+    errs = []
+
+    for db in os.listdir(db_dir):
+        if db.endswith('.db'):
+            try:
+                db = os.path.join(os.path.abspath(db_dir), db)
+                conn = sqlite3.connect(db)
+                cursor = conn.cursor()
+                cursor.execute('create table roles(role text, mention text)')
+                cursor.execute('create table channels(type text, channel text)')
+                cursor.execute('create table contribution(userid text, points real)')
+                conn.commit()
+                conn.close()
+            except:
+                errs.append(db)
+
+
+db_dir, ss_dir = get_dirs()
+update_db(db_dir)
