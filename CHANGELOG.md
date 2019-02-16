@@ -3,6 +3,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+### Added
+- Custom checks were added, to streamline valid command usage.
+
+### Changed
+- The `$settings` module has been rewritten from a class interface to a helper module for the `db` module.
+- `$settings` no longer has its own class. Instead, it will act as a middleman similar to how `$boss` works.
+- `db.py` consequently has become the backend of data manipulation.
+
 ## [2.0] - 2019-02-11
 ### Added
 - Documents for more info have been added to `docs`.
@@ -44,7 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [n1.9b] - 2018-01-18
 ### Fixed
-- Corrected user mentions for `boss`. May also have fixed mentions in other functions.
+- Corrected user mentions for `$boss`. May also have fixed mentions in other functions.
 
 ## [i1.9a] - 2018-01-09
 ### Changed
@@ -343,7 +352,7 @@ Thank you.
 
 ## [m1.6g] - 2017-06-10
 ### Fixed
-- Correctly mentions people in `boss` specific features, if assigned `boss` role.
+- Correctly mentions people in `$boss` specific features, if assigned `boss` role.
 
 ## [m1.6f] - 2017-06-10
 ### Fixed
