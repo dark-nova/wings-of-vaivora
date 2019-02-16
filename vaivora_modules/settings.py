@@ -1,15 +1,12 @@
-#vaivora_modules.settings
-import json
 import re
 import os
 import os.path
+import json
+import asyncio
+import aiosqlite
 from itertools import chain
 
-# import additional constants
-from importlib import import_module as im
-import vaivora_modules
-for mod in vaivora_modules.modules:
-    im(mod)
+from vaivora_modules.secrets import discord_user_id
 from constants.settings import en_us as lang_settings
 
 # BGN CONST
@@ -267,10 +264,10 @@ class Settings:
                             .format(lang_settings.SERVER_DIR, self.server_id))
         self.check_file()
 
-        if srv_admin and vaivora_modules.secrets.discord_user_id != srv_admin:
+        if srv_admin and discord_user_id != srv_admin:
             self.set_role(srv_admin, lang_settings.UTYPE_USERS,
                           role=lang_settings.ROLE_SUPER_AUTH)
-            self.set_role(vaivora_modules.secrets.discord_user_id,
+            self.set_role(discord_user_id,
                           lang_settings.UTYPE_USERS,
                           role=lang_settings.ROLE_SUPER_AUTH)
         elif srv_admin:

@@ -1,24 +1,19 @@
 #!/usr/bin/env python
-import discord
-from discord.ext import commands
-import logging
-import asyncio
-import random
-import shlex
-#from queue import Queue as q
-from hashlib import blake2b
-from itertools import chain
-import json
 import re
 import os
+import asyncio
+from hashlib import blake2b
 from datetime import datetime, timedelta
 from operator import itemgetter
 
-# import additional constants
-from importlib import import_module as im
-import vaivora_modules
-for mod in vaivora_modules.modules:
-    im(mod)
+import discord
+from discord.ext import commands
+
+import vaivora_modules.boss
+import vaivora_modules.db
+import vaivora_modules.disclaimer
+import vaivora_modules.secrets
+import vaivora_modules.settings
 from constants.errors import en_us as lang_err
 from constants.settings import en_us as lang_settings
 from constants.boss import en_us as lang_boss

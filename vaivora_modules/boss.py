@@ -1,12 +1,9 @@
-from datetime import datetime, timedelta
 import re
-import math
 import asyncio
-from importlib import import_module as im
-import vaivora_modules
-for mod in vaivora_modules.modules:
-    im(mod)
-from vaivora_modules.settings import channel_boss as channel_boss
+from math import floor
+from datetime import datetime, timedelta
+
+import vaivora_modules.db
 from constants.boss import en_us as lang_boss
 from constants.db import en_us as lang_db
 
@@ -421,7 +418,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
 
         for boss_record in boss_records:
             boss_name = boss_record[0]
-            boss_channel = str(math.floor(boss_record[1]))
+            boss_channel = str(floor(boss_record[1]))
             boss_prev_map = boss_record[2]
             boss_status = boss_record[3]
 
@@ -434,19 +431,19 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
 
             if int(time_diff.days) >= 0 and boss_status != lang_boss.CMD_ARG_STATUS_ANCHORED:
                 spawn_msg = lang_boss.TIME_SPAWN_MISSED
-                minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
+                minutes = floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
             # anchored
             elif boss_status == lang_boss.CMD_ARG_STATUS_ANCHORED:
                 spawn_msg = lang_boss.TIME_SPAWN_EARLY
                 if int(time_diff.days) < 0:
-                    minutes = math.floor((86400-int(time_diff.seconds))/60)
+                    minutes = floor((86400-int(time_diff.seconds))/60)
                 else:
-                    minutes = math.floor(time_diff.seconds/60) + int(time_diff.days)*86400
+                    minutes = floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
             else: #elif boss_status == lang_boss.CMD_ARG_STATUS_DIED:
                 spawn_msg = lang_boss.TIME_SPAWN_ONTIME
-                minutes = math.floor((86400-int(time_diff.seconds))/60)
+                minutes = floor((86400-int(time_diff.seconds))/60)
 
             # absolute date and time for spawn
             # e.g. 2017/07/06 "14:47"
@@ -467,14 +464,14 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
             msg_hours = None
 
             if minutes > 119:
-                msg_hours = '{} hours'.format(str(math.floor((minutes % 86400)/60)))
+                msg_hours = '{} hours'.format(str(floor((minutes % 86400)/60)))
             elif minutes > 59:
                 msg_hours = '1 hour'
 
             # print minutes unconditionally
             # e.g.              0 minutes from now
             # e.g.              59 minutes ago
-            msg_minutes = '{} minutes'.format(str(math.floor(minutes % 60)))
+            msg_minutes = '{} minutes'.format(str(floor(minutes % 60)))
             msg_when = 'from now' if int(time_diff.days) < 0 else "ago"
 
             if msg_days is None and msg_hours is None:
@@ -574,7 +571,7 @@ def process_record(boss, status, time, boss_map, channel):
     Returns:
         str: a formatted markdown message containing the records
     """
-    channel = str(math.floor(float(channel)))
+    channel = str(floor(float(channel)))
 
     if boss_map == lang_boss.CMD_ARG_QUERY_MAPS_NOT:
         # use all maps for Demon Lord if not previously known
@@ -597,7 +594,7 @@ def process_record(boss, status, time, boss_map, channel):
         boss_map = lang_boss.RECORD.format(lang_boss.EMOJI_LOC, boss_map, channel)
         
 
-    minutes = math.floor((time - (datetime.now() 
+    minutes = floor((time - (datetime.now() 
                                   + timedelta(hours=lang_boss.TIME_H_LOCAL_TO_SERVER)))
                         .seconds / 60)
     minutes = '{} minutes'.format(str(minutes))
