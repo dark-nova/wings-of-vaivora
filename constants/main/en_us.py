@@ -53,3 +53,4 @@ Anyone may contribute to this bot's development: https://github.com/dark-nova/wi
 """
 
 ROLE_BOSS = "boss"
+ROLE_SETTINGS = "settings"
