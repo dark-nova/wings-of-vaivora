@@ -21,38 +21,16 @@ from constants.db import en_us as lang_db
 from constants.main import en_us as lang
 
 
-# basic declarations and initializations
-#client              =   discord.Client()
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
 bot.remove_command('help')
 
 # vdbs & vdst will now use int for dict keys; previously str of int
 vdbs = {}
-vdst = {}
-
-
-### BGN CONST ###
-
-
-### BGN REGEX ###
+#vdst = {}
 
 rgx_help = re.compile(r'help', re.IGNORECASE)
 rgx_user = re.compile(r'@')
 to_sanitize = re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
-
-### END REGEX
-
-
-
-welcome = """
-Thank you for inviting me to your server!
-I am a representative bot for the Wings of Vaivora, here to help you record your journey.
-Please read the following before continuing.
-""" + vaivora_modules.disclaimer.disclaimer + """
-Anyone may contribute to this bot's development: https://github.com/dark-nova/wings-of-vaivora
-"""
-
-### END CONST
 
 bosses = []
 
@@ -73,6 +51,27 @@ async def on_ready():
     return True
 
 
+def check_channel(ch_type):
+    """
+    :func:`check_channel` checks whether a channel is allowed to interact with Wings of Vaivora.
+
+    Args:
+        ch_type (str): the type (name) of the channel
+
+    Returns:
+        True if successful; False otherwise
+        Note that this means if no channels have registered, *all* channels are valid.
+    """
+    @commands.check
+    async def check(ctx):
+        chs = await vdbs[ctx.guild_id].get_channel(ch_type)
+
+        if chs and ctx.channel.id not in chs:
+            return False # silently ignore wrong channel
+        else: # in the case of `None` chs, all channels are valid
+            return True
+
+
 @bot.event
 async def on_guild_join(guild):
     """
@@ -91,10 +90,10 @@ async def on_guild_join(guild):
 
     vdbs[guild.id] = vaivora_modules.db.Database(str(guild.id))
     owner = guild.owner
-    vdst[guild.id] = vaivora_modules.settings.Settings(str(guild.id), str(owner.id))
+    #vdst[guild.id] = vaivora_modules.settings.Settings(str(guild.id), str(owner.id))
 
     #await greet(guild.id, owner)
-    await owner.send(owner, welcome)
+    await owner.send(owner, lang.WELCOME)
 
     return True
 
@@ -424,29 +423,6 @@ async def boss_helper(boss, time, map_or_channel):
 #     return True
 
 
-# @bot.event
-# async def check_channel(guild_id, ch_id: str, ch_type):
-#     """
-#     :func:`check_channel` checks whether a channel is allowed to interact with Wings of Vaivora.
-
-#     Args:
-#         guild_id (int): the id of the guild involved
-#         ch_id (str): the id of the channel to check (i.e. "boss":boss, "management":settings)
-#         ch_type (str): the type (name) of the channel
-
-#     Returns:
-#         True if successful; False otherwise
-#         Note that this means if no channels have registered, *all* channels are valid.
-#     """
-
-#     chs = vdst[guild_id].get_channel(ch_type)
-
-#     if chs and ch_id not in chs:
-#         return False
-#     else: # in the case of `None` chs, all channels are valid
-#         return True
-
-
 async def sanitize(arg):
     """
     :func:`sanitize` sanitizes command arguments of invalid characters, including setting to lowercase.
@@ -481,7 +457,7 @@ async def check_databases():
             guild_id = str(guild.id)
             guild_owner_id = str(guild.owner.id)
             vdbs[guild.id] = vaivora_modules.db.Database(guild_id)
-            vdst[guild.id] = vaivora_modules.settings.Settings(guild_id, guild_owner_id)
+            #vdst[guild.id] = vaivora_modules.settings.Settings(guild_id, guild_owner_id)
             #await greet(guild.id, guild.owner)
 
     results = {}
@@ -585,22 +561,23 @@ async def check_databases():
 
             # compare roles against server
             guild = bot.get_guild(vdb_id)
-            for uid in vdst[vdb_id].get_role(lang.ROLE_BOSS):
+            guild_boss_roles = await vdbs[vdb_id].get_role(lang.ROLE_BOSS)
+            for boss_role in guild_boss_roles:
                 try:
                     # group mention
-                    idx = [role.id for role in guild.roles].index(uid)
+                    idx = [role.id for role in guild.roles].index(boss_role)
                     roles.append[guild.roles[idx].mention]
                 except:
-                    if rgx_user.search(uid):
-                        uid = rgx_user.sub('', uid)
+                    if rgx_user.search(boss_role):
+                        boss_role = rgx_user.sub('', boss_role)
 
                     try:
                         # user mention
-                        boss_user = guild.get_member(uid)
+                        boss_user = guild.get_member(boss_role)
                         roles.append(boss_user.mention)
                     except:
                         # user or group no longer exists
-                        vdst[vdb_id].rm_boss(uid)
+                        await vdbs[vdb_id].rm_boss(boss_role)
 
             role_str = ' '.join(roles)
 
