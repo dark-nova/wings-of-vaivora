@@ -6,7 +6,7 @@ from constants.boss import en_us as lang_boss
 from constants.db import en_us as lang_db
 
 
-def construct_SQL(*args):
+async def construct_SQL(*args):
     """
     :func:`construct_SQL` creates a SQLite statement.
 
@@ -20,9 +20,10 @@ def construct_SQL(*args):
     return ' '.join(args)
 
 
-def construct_filters(*args):
+async def construct_filters(*args):
     """
-    :func:`construct_filters` creates a compound SQLite filter in string form.
+    :func:`construct_filters` creates a compound SQLite filter
+    in string form.
 
     Args:
         args (tuple): the filters
@@ -37,15 +38,17 @@ def construct_filters(*args):
 
 class Database:
     columns = dict()
-    columns[lang_db.TIME] = (lang_db.COL_TIME_YEAR, lang_db.COL_TIME_MONTH, lang_db.COL_TIME_DAY,
-                             lang_db.COL_TIME_HOUR, lang_db.COL_TIME_MINUTE)
-    columns[lang_db.MOD] = (lang_db.COL_BOSS_NAME, lang_db.COL_BOSS_CHANNEL, lang_db.COL_BOSS_MAP,
-                            lang_db.COL_BOSS_STATUS, lang_db.COL_BOSS_TXT_CHANNEL) + columns[lang_db.TIME]
+    columns[lang_db.TIME] = (lang_db.COL_TIME_YEAR, lang_db.COL_TIME_MONTH,
+                             lang_db.COL_TIME_DAY, lang_db.COL_TIME_HOUR,
+                             lang_db.COL_TIME_MINUTE)
+    columns[lang_db.MOD] = (lang_db.COL_BOSS_NAME, lang_db.COL_BOSS_CHANNEL,
+                            lang_db.COL_BOSS_MAP, lang_db.COL_BOSS_STATUS,
+                            lang_db.COL_BOSS_TXT_CHANNEL) + columns[lang_db.TIME]
 
     types = dict()
     types[lang_db.TIME] = (lang_db.SQL_TYPE_REAL,)*5
-    types[lang_db.MOD] = ((lang_db.SQL_TYPE_TEXT,) + (lang_db.SQL_TYPE_REAL,) + 
-                          (lang_db.SQL_TYPE_TEXT,)*3 + types[lang_db.TIME])
+    types[lang_db.MOD] = ((lang_db.SQL_TYPE_TEXT,) + (lang_db.SQL_TYPE_REAL,) 
+                          + (lang_db.SQL_TYPE_TEXT,)*3 + types[lang_db.TIME])
 
     # zip, create, concatenate into tuple
     dbs = dict()
@@ -74,17 +77,17 @@ class Database:
         """
         return self.db_id
 
-
     async def create_db(self):
         """
         :func:`create_db` creates a db when none (or invalid) exists.
         """
         async with aiosqlite.connect(self.db_name) as _db:
             await _db.execute('drop table if exists {}'.format(lang_db.MOD))
-            await _db.execute('create table {}({})'.format(lang_db.MOD, ','.join(self.dbs[lang_db.MOD])))
+            await _db.execute('create table {}({})'
+                              .format(lang_db.MOD,
+                                      ','.join(self.dbs[lang_db.MOD])))
             await _db.commit()
         return
-
 
     async def check_if_valid(self):
         """
@@ -96,7 +99,9 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             _db.row_factory = aiosqlite.Row
             try:
-                cursor = await _db.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS))
+                cursor = await _db.execute(
+                            await construct_SQL(lang_db.SQL_SELECT,
+                                                lang_db.SQL_FROM_BOSS))
             except:
                 return False
 
@@ -111,7 +116,6 @@ class Database:
             
             await cursor.close()
         return True
-
 
     async def check_db_boss(self, bosses=lang_boss.ALL_BOSSES, channel=0):
         """
@@ -129,40 +133,48 @@ class Database:
             _db.row_factory = aiosqlite.Row
             for boss in bosses:
                 if channel:
-                    cursor = await _db.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
-                                                             construct_filters(lang_db.SQL_WHERE_NAME,
-                                                                        lang_db.SQL_WHERE_CHANNEL)),
-                                               (boss, channel,))
+                    cursor = await _db.execute(
+                                await construct_SQL(lang_db.SQL_SELECT,
+                                                    lang_db.SQL_FROM_BOSS,
+                                                    await construct_filters(
+                                                        lang_db.SQL_WHERE_NAME,
+                                                        lang_db.SQL_WHERE_CHANNEL)),
+                                                (boss, channel,))
                 else:
-                    cursor = await _db.execute(construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
-                                                             construct_filters(lang_db.SQL_WHERE_NAME)),
-                                              (boss,))
+                    cursor = await _db.execute(
+                                await construct_SQL(lang_db.SQL_SELECT,
+                                                    lang_db.SQL_FROM_BOSS,
+                                                    await construct_filters(
+                                                        lang_db.SQL_WHERE_NAME)),
+                                                (boss,))
 
                 records = await cursor.fetchall()
                 for record in records:
                     db_record.append(tuple(record))
             
             await cursor.close()
-        return await self.sort_db_record(db_record)
-
+        return await self.sort_db_boss_record(db_record)
 
     async def sort_db_boss_record(self, db_record):
         """
-        :func:`sort_db_record` sorts the db records by chronological order.
+        :func:`sort_db_record` sorts the db records
+        by chronological order, for bosses.
 
         Args:
             db_record (list): the records to sort
 
+        Returns:
+            list: the sorted records
         """
         return sorted(db_record, key=itemgetter(5,6,7,8,9), reverse=True)
-
 
     async def update_db_boss(self, boss_dict):
         """
         :func:`update_db_boss` updates the record with a new entry.
 
         Args:
-            boss_dict (dict): the boss dictionary containing the new record
+            boss_dict (dict): the boss dictionary
+                containing the new record
 
         Returns:
             bool: True if successful; False otherwise
@@ -174,14 +186,18 @@ class Database:
 
         # handle channels
         if boss_channel:
-            sel_statement = construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
-                                          construct_filters(lang_db.SQL_WHERE_NAME,
-                                                            lang_db.SQL_WHERE_CHANNEL))
+            sel_statement = await construct_SQL(lang_db.SQL_SELECT,
+                                                lang_db.SQL_FROM_BOSS,
+                                                await construct_filters(
+                                                    lang_db.SQL_WHERE_NAME,
+                                                    lang_db.SQL_WHERE_CHANNEL))
             sql_condition = (boss_name, boss_channel)
         # handle everything else
         else:
-            sel_statement = construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS,
-                                          construct_filters(lang_db.SQL_WHERE_NAME))
+            sel_statement = await construct_SQL(lang_db.SQL_SELECT,
+                                                lang_db.SQL_FROM_BOSS,
+                                                await construct_filters(
+                                                    lang_db.SQL_WHERE_NAME))
             sql_condition = (boss_name,)
 
         async with aiosqlite.connect(self.db_name) as _db:
@@ -190,16 +206,24 @@ class Database:
             cursor = await _db.execute(sel_statement, sql_condition)
             contents.extend(await cursor.fetchall())
 
-            if contents and (int(contents[0][5]) == boss_dict[lang_db.COL_TIME_YEAR] and
-                             int(contents[0][6]) == boss_dict[lang_db.COL_TIME_MONTH] and
-                             int(contents[0][7]) == boss_dict[lang_db.COL_TIME_DAY] and
-                             int(contents[0][8]) >  boss_dict[lang_db.COL_TIME_HOUR]):
-                cursor.close()
+            if contents and ((int(contents[0][5])
+                              == boss_dict[lang_db.COL_TIME_YEAR]) and
+                             (int(contents[0][6])
+                              == boss_dict[lang_db.COL_TIME_MONTH]) and
+                             (int(contents[0][7])
+                              == boss_dict[lang_db.COL_TIME_DAY])and
+                             (int(contents[0][8])
+                              > boss_dict[lang_db.COL_TIME_HOUR])):
+                await cursor.close()
                 return False
-            elif contents and (int(contents[0][5]) <= boss_dict[lang_db.COL_TIME_YEAR] or
-                               int(contents[0][6]) <= boss_dict[lang_db.COL_TIME_MONTH] or
-                               int(contents[0][7]) <= boss_dict[lang_db.COL_TIME_DAY] or
-                               int(contents[0][8]) <= boss_dict[lang_db.COL_TIME_HOUR]):
+            elif contents and ((int(contents[0][5])
+                                <= boss_dict[lang_db.COL_TIME_YEAR]) or
+                               (int(contents[0][6])
+                                <= boss_dict[lang_db.COL_TIME_MONTH]) or
+                               (int(contents[0][7])
+                                <= boss_dict[lang_db.COL_TIME_DAY]) or
+                               (int(contents[0][8])
+                                <= boss_dict[lang_db.COL_TIME_HOUR])):
 
                 if boss_channel:
                     await self.rm_entry_db_boss(boss_list=[boss_name,],
@@ -209,30 +233,33 @@ class Database:
 
             try:
                 # boss database structure
-                await _db.execute(lang_db.SQL_UPDATE,
-                                  (str(boss_name),
-                                   int(boss_channel),
-                                   str(boss_dict[lang_db.COL_BOSS_MAP]),
-                                   str(boss_dict[lang_db.COL_BOSS_STATUS]),
-                                   str(boss_dict[lang_db.COL_BOSS_TXT_CHANNEL]),
-                                   int(boss_dict[lang_db.COL_TIME_YEAR]),
-                                   int(boss_dict[lang_db.COL_TIME_MONTH]),
-                                   int(boss_dict[lang_db.COL_TIME_DAY]),
-                                   int(boss_dict[lang_db.COL_TIME_HOUR]),
-                                   int(boss_dict[lang_db.COL_TIME_MINUTE])))
+                await _db.execute(
+                    lang_db.SQL_UPDATE,
+                    (str(boss_name),
+                     int(boss_channel),
+                     str(boss_dict[lang_db.COL_BOSS_MAP]),
+                     str(boss_dict[lang_db.COL_BOSS_STATUS]),
+                     str(boss_dict[lang_db.COL_BOSS_TXT_CHANNEL]),
+                     int(boss_dict[lang_db.COL_TIME_YEAR]),
+                     int(boss_dict[lang_db.COL_TIME_MONTH]),
+                     int(boss_dict[lang_db.COL_TIME_DAY]),
+                     int(boss_dict[lang_db.COL_TIME_HOUR]),
+                     int(boss_dict[lang_db.COL_TIME_MINUTE])))
                 await _db.commit()
                 return True
             except:
                 return False
 
-
     async def rm_entry_db_boss(self, boss_list=lang_boss.ALL_BOSSES, boss_ch=0):
         """
-        :func:`rm_entry_db_boss` removes records based on the conditions supplied.
+        :func:`rm_entry_db_boss` removes records based on
+        the conditions supplied.
 
         Args:
-            boss_list (list): the list containing boss names (str) with records to erase
-            boss_ch (int): (default: 0) the boss channel filter, if specified
+            boss_list (list): the list containing boss names (str)
+                with records to erase
+            boss_ch (int): (default: 0) the boss channel filter,
+                if specified
 
         Returns:
             list: a list containing the records that were removed
@@ -247,17 +274,23 @@ class Database:
             for boss in boss_list:
                 # channel is provided
                 if boss_ch:
-                    sql_filters = construct_filters(lang_db.SQL_WHERE_NAME,
-                                                    lang_db.SQL_WHERE_CHANNEL)
+                    sql_filters = await construct_filters(
+                                            lang_db.SQL_WHERE_NAME,
+                                            lang_db.SQL_WHERE_CHANNEL)
                     sql_condition = (boss, boss_ch)
                 # only name                
                 else:
-                    sql_filters = construct_filters(lang_db.SQL_WHERE_NAME)
+                    sql_filters = await construct_filters(
+                                            lang_db.SQL_WHERE_NAME)
                     sql_condition = (boss,)
 
                 # process counting
-                sel_statement = construct_SQL(lang_db.SQL_SELECT, lang_db.SQL_FROM_BOSS, sql_filters)
-                del_statement = construct_SQL(lang_db.SQL_DELETE, lang_db.SQL_FROM_BOSS, sql_filters)
+                sel_statement = await construct_SQL(lang_db.SQL_SELECT,
+                                                    lang_db.SQL_FROM_BOSS,
+                                                    sql_filters)
+                del_statement = await construct_SQL(lang_db.SQL_DELETE,
+                                                    lang_db.SQL_FROM_BOSS,
+                                                    sql_filters)
 
                 cursor = await _db.execute(sel_statement, sql_condition)
                 results = await cursor.fetchall()
