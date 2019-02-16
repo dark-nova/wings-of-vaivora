@@ -34,6 +34,7 @@ to_sanitize = re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
 
 bosses = []
 
+
 @bot.event
 async def on_ready():
     """
@@ -53,23 +54,63 @@ async def on_ready():
 
 def check_channel(ch_type):
     """
-    :func:`check_channel` checks whether a channel is allowed to interact with Wings of Vaivora.
+    :func:`check_channel` checks whether a channel is allowed
+    to interact with Wings of Vaivora.
 
     Args:
         ch_type (str): the type (name) of the channel
 
     Returns:
         True if successful; False otherwise
-        Note that this means if no channels have registered, *all* channels are valid.
+            Note that this means if no channels have registered,
+            *all* channels are valid.
     """
     @commands.check
     async def check(ctx):
-        chs = await vdbs[ctx.guild_id].get_channel(ch_type)
+        chs = await (vaivora_modules.settings
+                     .get_channel(ctx.guild.id, ch_type))
 
         if chs and ctx.channel.id not in chs:
             return False # silently ignore wrong channel
         else: # in the case of `None` chs, all channels are valid
             return True
+
+
+def check_role():
+    """
+    :func:`check_role` sees whether the user is authorized
+    to run a settings command.
+
+    Returns:
+        True if the user is authorized; False otherwise
+    """
+    @commands.check
+    async def check(ctx):
+        users = await (vaivora_modules.settings
+                       .get_authorized(ctx.guild.id))
+
+        if users and ctx.author.id in users:
+            return True
+        else:
+            await ctx.send('{} {}'
+                            .format(ctx.author.mention,
+                                    lang.FAIL_NOT_AUTH))
+
+
+
+def only_in_guild():
+    """
+    :func:`only_in_guild` checks whether a command can run.
+
+    Returns:
+        True if guild; False otherwise
+    """
+    @commands.check
+    async def check(ctx):
+        if ctx.guild == None: # not a guild
+            await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
+            return False
+        return True
 
 
 @bot.event
@@ -144,6 +185,8 @@ async def boss(ctx, arg: str):
 
 # $boss <boss> <status> <time> [channel]
 @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
+@check_channel(lang.ROLE_BOSS)
+@only_in_guild
 async def status(ctx, time: str, map_or_channel = None):
     """
     :func:`status` is a subcommand for `boss`.
@@ -157,12 +200,7 @@ async def status(ctx, time: str, map_or_channel = None):
     Returns:
         True if run successfully, regardless of result
     """
-    if ctx.guild == None: # not a guild
-        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
-        return False
-
     subcmd = await vaivora_modules.boss.what_status(ctx.subcommand_passed)
-
 
     if ctx.boss == lang_boss.CMD_ARG_TARGET_ALL:
        await ctx.send(lang_err.IS_INVALID_3
@@ -196,6 +234,8 @@ async def status(ctx, time: str, map_or_channel = None):
 
 
 @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
+@check_channel(lang.ROLE_BOSS)
+@only_in_guild
 async def entry(ctx, channel=None):
     """
     :func:`_list` is a subcommand for `boss`.
@@ -208,10 +248,6 @@ async def entry(ctx, channel=None):
     Returns:
         True if run successfully, regardless of result 
     """
-    if ctx.guild == None: # not a guild
-        await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
-        return False
-
     if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
         boss_idx = await vaivora_modules.boss.check_boss(ctx.boss)
         if boss_idx == -1:
@@ -250,6 +286,7 @@ async def entry(ctx, channel=None):
 async def query(ctx):
     """
     :func:`query` returns a user-usable list of maps and aliases for a given target.
+    Unlike other boss commands, :func:`query` and :func:`_type` can be used in DMs.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -282,6 +319,7 @@ async def query(ctx):
 async def _type(ctx):
     """
     :func:`_type` returns a user-usable list of types of bosses: World, Field, Demon.
+    Unlike other boss commands, :func:`query` and :func:`_type` can be used in DMs.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -348,6 +386,38 @@ async def boss_helper(boss, time, map_or_channel):
     return (boss, time, _map, channel)
 
 
+@bot.group()
+@check_channel(lang.ROLE_SETTINGS)
+@only_in_guild
+async def settings(ctx, arg=None):
+    """
+    :func:`boss` handles "$boss" commands.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        arg: (default: None) e.g. 'help'
+
+    Returns:
+        True if successful; False otherwise
+    """
+    arg = await sanitize(arg)
+
+    if rgx_help.match(arg):
+        _help = vaivora_modules.settings.help()
+        for _h in _help:
+            await ctx.author.send(_h)
+        return True
+    else:
+        return False
+
+
+# $settings set <target>
+@settings.command('')
+@check_channel(lang.ROLE_SETTINGS)
+@check_role
+@only_in_guild
+async def set(ctx, target, )
+
 # @bot.command()
 # async def settings(ctx, *args):
 #     """
@@ -362,22 +432,7 @@ async def boss_helper(boss, time, map_or_channel):
 #     """
 #     args = await sanitize(args)
 
-#     if rgx_help.match(args[0]):
-#         _help = vaivora_modules.settings.help()
-#         for _h in _help:
-#             await ctx.author.send(_h)
-#         return True
 
-#     try:
-#         # invalid channel
-#         if not await check_channel(ctx.guild.id,
-#                                    ctx.message.channel.id,
-#                                    lang_settings.CHANNEL_MGMT):
-#             return False
-#     except AttributeError:
-#         # not a guild
-#         await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
-#         return False
 
 #     if vaivora_modules.settings.what_setting(args[0]):
 #         arg_subcmd = lang_settings.CMD_ARG_SETTING
