@@ -1,10 +1,7 @@
-from operator import itemgetter
-import aiosqlite
 import asyncio
-from importlib import import_module as im
-import vaivora_modules
-for mod in vaivora_modules.modules:
-    im(mod)
+import aiosqlite
+from operator import itemgetter
+
 from constants.boss import en_us as lang_boss
 from constants.db import en_us as lang_db
 
@@ -149,7 +146,7 @@ class Database:
         return await self.sort_db_record(db_record)
 
 
-    async def sort_db_record(self, db_record):
+    async def sort_db_boss_record(self, db_record):
         """
         :func:`sort_db_record` sorts the db records by chronological order.
 
