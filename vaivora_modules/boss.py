@@ -357,7 +357,7 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
     target[lang_db.COL_TIME_MINUTE] = int(record_date.minute)
 
     vdb = vaivora_modules.db.Database(server_id)
-    await vdb.check_if_valid()
+    await vdb.check_if_valid(lang_boss.MODULE_NAME)
 
     if await vdb.update_db_boss(target):
         return (lang_boss.SUCCESS_STATUS.format(lang_boss.ACKNOWLEDGED,
@@ -371,24 +371,27 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
 
 async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=None):
     """
-    :func:`process_cmd_entry` processes a specific boss command: entry to retrieve records.
+    :func:`process_cmd_entry` processes a specific boss subcommand:
+    entry to retrieve records.
 
     Args:
         server_id (int): the id of the server of the originating message
-        msg_channel: the id of the channel of the originating message (belonging to server of `server_id`)
+        msg_channel: the id of the channel of the originating message
+            (belonging to server of `server_id`)
         bosses (list): a list of bosses to check
         entry (str): the entry command (list, erase)
         channel: (default: None) the channel for the record
 
     Returns:
-        str: an appropriate message for success or fail of command, e.g. confirmation or list of entries
+        str: an appropriate message for success or fail of command,
+            e.g. confirmation or list of entries
     """
     if type(bosses) is str:
         bosses = [bosses]
 
     vdb = vaivora_modules.db.Database(server_id)
-    if not await vdb.check_if_valid():
-        await vdb.create_db()
+    if not await vdb.check_if_valid(lang_boss.MODULE_NAME):
+        await vdb.create_db(lang_db.SQL_FROM_BOSS)
 
     # $boss <target> erase ...
     if entry == lang_boss.CMD_ARG_ENTRY_ERASE:
