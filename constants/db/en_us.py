@@ -11,10 +11,27 @@ SQL_WHERE_MAP = 'map=?'
 SQL_WHERE_CHANNEL = 'channel=?'
 SQL_FROM_BOSS_DEFAULT = 'from boss where name=?'
 SQL_ORDER = 'order by year desc, month desc, day desc, hour desc, minute desc'
-
 SQL_UPDATE = 'insert into boss values (?,?,?,?,?,?,?,?,?,?)'
 
-MOD = 'boss'
+SQL_FROM_ROLES = 'from roles'
+SQL_FROM_ROLES_ROLE = 'from roles where role = "{}"'
+SQL_FROM_CHANS = 'from channels'
+COL_SQL_FROM_CHANS = 'select channel from channels where type = "{}"'
+SQL_FROM_GUILD = 'from guild'
+COL_SQL_FROM_GUILD = 'select {} from guild' # {} can be level or points
+SQL_FROM_CONTR = 'from contribution'
+SQL_FROM_CONTR_USER = 'select points from contribution where userid = "{}"'
+SQL_FROM_OFFSET = 'from offset'
+SQL_FROM_SETS = [
+    SQL_FROM_ROLES,
+    SQL_FROM_CHANS,
+    SQL_FROM_GUILD,
+    SQL_FROM_CONTR,
+    SQL_FROM_OFFSET
+    ]
+
+MOD_BOSS = 'boss'
+MOD_SETS = 'settings'
 DIR = 'db/'
 EXT = '.db'
 
@@ -32,7 +49,13 @@ COL_BOSS_MAP = 'map'
 COL_BOSS_STATUS = 'status'
 COL_BOSS_TXT_CHANNEL = 'text_channel'
 
-SQL_TYPE_REAL = 'real'
+COL_SETS_ROLES = ('role', 'mention')
+COL_SETS_CHANS = ('type', 'channel')
+COL_SETS_GUILD = ('level', 'points')
+COL_SETS_CONTR = ('userid', 'points')
+COL_SETS_OFFSET = ('hours',)
+
+SQL_TYPE_INT = 'integer'
 SQL_TYPE_TEXT = 'text'
 
 ### DO NOT CHANGE/TRANSLATE THIS FILE ###
