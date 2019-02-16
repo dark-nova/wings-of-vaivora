@@ -247,3 +247,8 @@ FILE_PATH = '{}/{}.json'
 FMT_SETTING_FAIL = '| {}: {}; {}: {}; {}: {}; {}: {}'
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION ABOVE ###
+
+SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
+
+FAIL_NO_CHANNELS = 'No channels were found associated with the {} type.'
+FAIL_NOT_AUTH = 'You are not authorized to do this!'
