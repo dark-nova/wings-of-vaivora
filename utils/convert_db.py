@@ -62,7 +62,7 @@ def update_db(db_dir):
                 cursor.execute(
                     'create table roles(role text, mention text)')
                 cursor.execute(
-                    'create table channels(type text, channel text)')
+                    'create table channels(type text, channel integer)')
                 cursor.execute(
                     'create table contribution(userid text, points integer)')
                 conn.commit()
