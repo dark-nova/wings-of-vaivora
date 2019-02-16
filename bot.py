@@ -74,6 +74,7 @@ def check_channel(ch_type):
             return False # silently ignore wrong channel
         else: # in the case of `None` chs, all channels are valid
             return True
+    return commands.check(check)
 
 
 def check_role():
@@ -94,8 +95,9 @@ def check_role():
         else:
             await ctx.send('{} {}'
                             .format(ctx.author.mention,
-                                    lang.FAIL_NOT_AUTH))
-
+                                    lang_settings.FAIL_NOT_AUTH))
+            return False
+    return commands.check(check)
 
 
 def only_in_guild():
@@ -111,6 +113,7 @@ def only_in_guild():
             await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
             return False
         return True
+    return commands.check(check)
 
 
 @bot.event
@@ -186,7 +189,7 @@ async def boss(ctx, arg: str):
 # $boss <boss> <status> <time> [channel]
 @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
 @check_channel(lang.ROLE_BOSS)
-@only_in_guild
+@only_in_guild()
 async def status(ctx, time: str, map_or_channel = None):
     """
     :func:`status` is a subcommand for `boss`.
@@ -235,7 +238,7 @@ async def status(ctx, time: str, map_or_channel = None):
 
 @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
 @check_channel(lang.ROLE_BOSS)
-@only_in_guild
+@only_in_guild()
 async def entry(ctx, channel=None):
     """
     :func:`_list` is a subcommand for `boss`.
@@ -387,8 +390,8 @@ async def boss_helper(boss, time, map_or_channel):
 
 
 @bot.group()
+@only_in_guild()
 @check_channel(lang.ROLE_SETTINGS)
-@only_in_guild
 async def settings(ctx, arg=None):
     """
     :func:`boss` handles "$boss" commands.
@@ -411,12 +414,29 @@ async def settings(ctx, arg=None):
         return False
 
 
-# $settings set <target>
-@settings.command('')
+# $settings set <target> <kind> <discord object>
+@settings.command()
 @check_channel(lang.ROLE_SETTINGS)
-@check_role
-@only_in_guild
-async def set(ctx, target, )
+@check_role()
+@only_in_guild()
+async def set(ctx, target, kind, something=None):
+    """
+    :func:`set` sets `target`s to `kind`s.
+    e.g. sets a channel (target) to boss (kind)
+
+    Args:
+        target (str): the object to set
+        kind (str): the kind/type to use
+
+    Returns:
+        True if run successfully, regardless of result
+    """
+    if lang_settings.REGEX_SETTING_TARGET_CHANNEL.match(target):
+        target = lang_settings.TARGET_CHANNEL
+        if not ctx.channel_mentions:
+            pass
+
+
 
 # @bot.command()
 # async def settings(ctx, *args):
@@ -551,7 +571,7 @@ async def check_databases():
             # check all timers
             message_to_send = []
             discord_channel = None
-            if not await valid_db.check_if_valid():
+            if not await valid_db.check_if_valid(lang.ROLE_BOSS):
                 await valid_db.create_db()
                 continue
             results[vdb_id] = await valid_db.check_db_boss()
