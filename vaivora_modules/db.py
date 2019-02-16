@@ -6,6 +6,73 @@ from constants.boss import en_us as lang_boss
 from constants.db import en_us as lang_db
 
 
+columns = {}
+columns[lang_db.SQL_FROM_BOSS] = (
+    lang_db.COL_BOSS_NAME,
+    lang_db.COL_BOSS_CHANNEL,
+    lang_db.COL_BOSS_MAP,
+    lang_db.COL_BOSS_STATUS,
+    lang_db.COL_BOSS_TXT_CHANNEL,
+    lang_db.COL_TIME_YEAR,
+    lang_db.COL_TIME_MONTH,
+    lang_db.COL_TIME_DAY,
+    lang_db.COL_TIME_HOUR,
+    lang_db.COL_TIME_MINUTE
+    )
+
+columns[lang_db.SQL_FROM_ROLES] = (
+    lang_db.COL_SETS_ROLES
+    )
+
+columns[lang_db.SQL_FROM_CHANS] = (
+    lang_db.COL_SETS_CHANS
+    )
+
+columns[lang_db.SQL_FROM_GUILD] = (
+    lang_db.COL_SETS_GUILD
+    )
+
+columns[lang_db.SQL_FROM_CONTR] = (
+    lang_db.COL_SETS_CONTR
+    )
+
+columns[lang_db.SQL_FROM_OFFSET] = (
+    lang_db.COL_SETS_OFFSET
+    )
+
+types = {}
+types[lang_db.SQL_FROM_BOSS] = ((lang_db.SQL_TYPE_TEXT,
+                                 lang_db.SQL_TYPE_INT,)
+                                + (lang_db.SQL_TYPE_TEXT,)*3
+                                + (lang_db.SQL_TYPE_INT,)*5)
+
+types[lang_db.SQL_FROM_ROLES] = (lang_db.SQL_TYPE_TEXT,)*2
+
+types[lang_db.SQL_FROM_GUILD] = (lang_db.SQL_TYPE_INT,)*2
+
+types[lang_db.SQL_FROM_CONTR] = (lang_db.SQL_TYPE_TEXT,
+                                 lang_db.SQL_TYPE_INT)
+
+types[lang_db.SQL_FROM_CHANS] = types[lang_db.SQL_FROM_CONTR]
+
+types[lang_db.SQL_FROM_OFFSET] = (lang_db.SQL_TYPE_INT,)
+
+
+async def get_dbs(kind):
+    """
+    :func:`get_dbs` returns a _d_ata_b_ase _s_ignature
+    of the table of a given `kind`.
+
+    Args:
+        kind (str): to generate a table signature
+
+    Returns:
+        tuple: a tuple of tuples with (field name, sql type)
+    """
+    return tuple('{} {}'
+                 .format(*t) for t in zip(columns[kind], types[kind]))
+
+
 async def construct_SQL(*args):
     """
     :func:`construct_SQL` creates a SQLite statement.
@@ -37,25 +104,7 @@ async def construct_filters(*args):
 
 
 class Database:
-    columns = dict()
-    columns[lang_db.TIME] = (lang_db.COL_TIME_YEAR, lang_db.COL_TIME_MONTH,
-                             lang_db.COL_TIME_DAY, lang_db.COL_TIME_HOUR,
-                             lang_db.COL_TIME_MINUTE)
-    columns[lang_db.MOD] = (lang_db.COL_BOSS_NAME, lang_db.COL_BOSS_CHANNEL,
-                            lang_db.COL_BOSS_MAP, lang_db.COL_BOSS_STATUS,
-                            lang_db.COL_BOSS_TXT_CHANNEL) + columns[lang_db.TIME]
-
-    types = dict()
-    types[lang_db.TIME] = (lang_db.SQL_TYPE_REAL,)*5
-    types[lang_db.MOD] = ((lang_db.SQL_TYPE_TEXT,) + (lang_db.SQL_TYPE_REAL,) 
-                          + (lang_db.SQL_TYPE_TEXT,)*3 + types[lang_db.TIME])
-
-    # zip, create, concatenate into tuple
-    dbs = dict()
-    dbs[lang_db.MOD] = tuple('{} {}'.format(*t) for t in 
-                             zip(columns[lang_db.MOD], types[lang_db.MOD]))
-    # lang_db.MOD being solely 'boss' is a legacy design
-
+    """:class:`Database` serves as the backend for all of the Vaivora modules."""
 
     def __init__(self, db_id: str):
         """
@@ -67,7 +116,6 @@ class Database:
         self.db_id = db_id
         self.db_name = '{}{}{}'.format(lang_db.DIR, self.db_id, lang_db.EXT)
 
-
     def get_id(self):
         """
         :func:`get_id` returns the database id.
@@ -77,43 +125,60 @@ class Database:
         """
         return self.db_id
 
-    async def create_db(self):
+    async def create_db(self, kind):
         """
-        :func:`create_db` creates a db when none (or invalid) exists.
+        :func:`create_db` creates a db when none (or invalid) exists,
+        on the spec for `kind`.
+
+        Args:
+            kind (str): see :func:`get_dbs`
         """
+        if kind == lang_db.SQL_FROM_BOSS:
+            module = lang_db.MOD_BOSS
+        else:
+            module = lang_db.MOD_SETS
         async with aiosqlite.connect(self.db_name) as _db:
-            await _db.execute('drop table if exists {}'.format(lang_db.MOD))
+            await _db.execute('drop table if exists {}'.format(module))
             await _db.execute('create table {}({})'
                               .format(lang_db.MOD,
-                                      ','.join(self.dbs[lang_db.MOD])))
+                                      ','.join(await get_dbs(kind))))
             await _db.commit()
         return
 
-    async def check_if_valid(self):
+    async def check_if_valid(self, module):
         """
-        :func:`check_if_valid` checks if the database is valid.
+        :func:`check_if_valid_boss` checks if the database is valid.
+
+        Args:
+            module (str): the module name
 
         Returns:
             bool: True if valid; False otherwise
         """
+        if module == lang_db.MOD_BOSS:
+            select = [lang_db.SQL_FROM_BOSS]
+        elif module == lang_db.MOD_SETS:
+            select = lang_db.SQL_FROM_SETS
+
         async with aiosqlite.connect(self.db_name) as _db:
             _db.row_factory = aiosqlite.Row
-            try:
-                cursor = await _db.execute(
-                            await construct_SQL(lang_db.SQL_SELECT,
-                                                lang_db.SQL_FROM_BOSS))
-            except:
-                return False
+            for _s in select:
+                try:
+                    cursor = await _db.execute(
+                                    await construct_SQL(lang_db.SQL_SELECT,
+                                                        _s))
+                except:
+                    return False
 
-            r = await cursor.fetchone()
-            if not r:
-                await cursor.close()
-                return True
+                r = await cursor.fetchone()
+                if not r:
+                    await cursor.close()
+                    return True
 
-            if sorted(tuple(r.keys())) != sorted(self.columns[lang_db.MOD]):
-                await cursor.close()
-                return False
-            
+                if sorted(tuple(r.keys())) != sorted(columns[_s]):
+                    await cursor.close()
+                    return False
+
             await cursor.close()
         return True
 
@@ -151,7 +216,7 @@ class Database:
                 records = await cursor.fetchall()
                 for record in records:
                     db_record.append(tuple(record))
-            
+
             await cursor.close()
         return await self.sort_db_boss_record(db_record)
 
@@ -309,3 +374,35 @@ class Database:
             await cursor.close()
 
         return records # return an implicit bool for how many were deleted
+
+    async def get_channels(self, ch_type):
+        """
+        :func:`get_channels` gets channels of a given `ch_type`.
+
+        Args:
+            ch_type (str): the channel type to filter
+                e.g. 'boss', 'management'
+
+        Returns:
+            list: a list of channels of `ch_type`
+            None: if no such channels were configured
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            _db.row_factory = aiosqlite.Row
+            try:
+                cursor = await _db.execute(
+                                await construct_SQL(lang_db.COL_SQL_FROM_CHANS
+                                                    .format(ch_type)))
+                results = await cursor.fetchall()
+                return results
+            except:
+                return None
+
+    async def set_channels(self, ch_id, ch_type):
+        """
+        :func:`set_channels` adds a channel as a `ch_type`
+
+        Args:
+            ch_id (str): the 
+        """
+        pass
