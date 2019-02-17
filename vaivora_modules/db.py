@@ -2,61 +2,63 @@ import asyncio
 import aiosqlite
 from operator import itemgetter
 
-from constants.settings import en_us as lang_settings
-from constants.boss import en_us as lang_boss
-from constants.db import en_us as lang_db
-
+import constants.settings
+import constants.boss
+import constants.db
+# from constants.settings import en_us as lang_settings
+# from constants.boss import en_us as lang_boss
+# from constants.db import en_us as lang_db
 
 columns = {}
-columns[lang_db.SQL_FROM_BOSS] = (
-    lang_db.COL_BOSS_NAME,
-    lang_db.COL_BOSS_CHANNEL,
-    lang_db.COL_BOSS_MAP,
-    lang_db.COL_BOSS_STATUS,
-    lang_db.COL_BOSS_TXT_CHANNEL,
-    lang_db.COL_TIME_YEAR,
-    lang_db.COL_TIME_MONTH,
-    lang_db.COL_TIME_DAY,
-    lang_db.COL_TIME_HOUR,
-    lang_db.COL_TIME_MINUTE
+columns[constants.db.SQL_FROM_BOSS] = (
+    constants.db.COL_BOSS_NAME,
+    constants.db.COL_BOSS_CHANNEL,
+    constants.db.COL_BOSS_MAP,
+    constants.db.COL_BOSS_STATUS,
+    constants.db.COL_BOSS_TXT_CHANNEL,
+    constants.db.COL_TIME_YEAR,
+    constants.db.COL_TIME_MONTH,
+    constants.db.COL_TIME_DAY,
+    constants.db.COL_TIME_HOUR,
+    constants.db.COL_TIME_MINUTE
     )
 
-columns[lang_db.SQL_FROM_ROLES] = (
-    lang_db.COL_SETS_ROLES
+columns[constants.db.SQL_FROM_ROLES] = (
+    constants.db.COL_SETS_ROLES
     )
 
-columns[lang_db.SQL_FROM_CHANS] = (
-    lang_db.COL_SETS_CHANS
+columns[constants.db.SQL_FROM_CHANS] = (
+    constants.db.COL_SETS_CHANS
     )
 
-columns[lang_db.SQL_FROM_GUILD] = (
-    lang_db.COL_SETS_GUILD
+columns[constants.db.SQL_FROM_GUILD] = (
+    constants.db.COL_SETS_GUILD
     )
 
-columns[lang_db.SQL_FROM_CONTR] = (
-    lang_db.COL_SETS_CONTR
+columns[constants.db.SQL_FROM_CONTR] = (
+    constants.db.COL_SETS_CONTR
     )
 
-columns[lang_db.SQL_FROM_OFFSET] = (
-    lang_db.COL_SETS_OFFSET
+columns[constants.db.SQL_FROM_OFFSET] = (
+    constants.db.COL_SETS_OFFSET
     )
 
 types = {}
-types[lang_db.SQL_FROM_BOSS] = ((lang_db.SQL_TYPE_TEXT,
-                                 lang_db.SQL_TYPE_INT,)
-                                + (lang_db.SQL_TYPE_TEXT,)*3
-                                + (lang_db.SQL_TYPE_INT,)*5)
+types[constants.db.SQL_FROM_BOSS] = ((constants.db.SQL_TYPE_TEXT,
+                                 constants.db.SQL_TYPE_INT,)
+                                + (constants.db.SQL_TYPE_TEXT,)*3
+                                + (constants.db.SQL_TYPE_INT,)*5)
 
-types[lang_db.SQL_FROM_ROLES] = (lang_db.SQL_TYPE_TEXT,)*2
+types[constants.db.SQL_FROM_ROLES] = (constants.db.SQL_TYPE_TEXT,)*2
 
-types[lang_db.SQL_FROM_GUILD] = (lang_db.SQL_TYPE_INT,)*2
+types[constants.db.SQL_FROM_GUILD] = (constants.db.SQL_TYPE_INT,)*2
 
-types[lang_db.SQL_FROM_CONTR] = (lang_db.SQL_TYPE_TEXT,
-                                 lang_db.SQL_TYPE_INT)
+types[constants.db.SQL_FROM_CONTR] = (constants.db.SQL_TYPE_TEXT,
+                                 constants.db.SQL_TYPE_INT)
 
-types[lang_db.SQL_FROM_CHANS] = types[lang_db.SQL_FROM_CONTR]
+types[constants.db.SQL_FROM_CHANS] = types[constants.db.SQL_FROM_CONTR]
 
-types[lang_db.SQL_FROM_OFFSET] = (lang_db.SQL_TYPE_INT,)
+types[constants.db.SQL_FROM_OFFSET] = (constants.db.SQL_TYPE_INT,)
 
 
 async def get_dbs(kind):
@@ -100,8 +102,8 @@ async def construct_filters(*args):
         str: a compound SQLite filter
     """
     args = [str(arg) for arg in args]
-    return '{} {}'.format(lang_db.SQL_WHERE,
-                          ' {} '.format(lang_db.SQL_AND).join(args))
+    return '{} {}'.format(constants.db.SQL_WHERE,
+                          ' {} '.format(constants.db.SQL_AND).join(args))
 
 
 class Database:
@@ -115,7 +117,7 @@ class Database:
             db_id (str): the db id for the guild
         """
         self.db_id = db_id
-        self.db_name = '{}{}{}'.format(lang_db.DIR, self.db_id, lang_db.EXT)
+        self.db_name = '{}{}{}'.format(constants.db.DIR, self.db_id, constants.db.EXT)
 
     def get_id(self):
         """
@@ -134,14 +136,14 @@ class Database:
         Args:
             kind (str): see :func:`get_dbs`
         """
-        if kind == lang_db.SQL_FROM_BOSS:
-            module = lang_db.MOD_BOSS
+        if kind == constants.db.SQL_FROM_BOSS:
+            module = constants.db.MOD_BOSS
         else:
-            module = lang_db.MOD_SETS
+            module = constants.db.MOD_SETS
         async with aiosqlite.connect(self.db_name) as _db:
             await _db.execute('drop table if exists {}'.format(module))
             await _db.execute('create table {}({})'
-                              .format(lang_db.MOD,
+                              .format(constants.db.MOD,
                                       ','.join(await get_dbs(kind))))
             await _db.commit()
         return
@@ -156,17 +158,17 @@ class Database:
         Returns:
             bool: True if valid; False otherwise
         """
-        if module == lang_db.MOD_BOSS:
-            select = [lang_db.SQL_FROM_BOSS]
-        elif module == lang_db.MOD_SETS:
-            select = lang_db.SQL_FROM_SETS
+        if module == constants.db.MOD_BOSS:
+            select = [constants.db.SQL_FROM_BOSS]
+        elif module == constants.db.MOD_SETS:
+            select = constants.db.SQL_FROM_SETS
 
         async with aiosqlite.connect(self.db_name) as _db:
             _db.row_factory = aiosqlite.Row
             for _s in select:
                 try:
                     cursor = await _db.execute(
-                                await construct_SQL(lang_db.SQL_SELECT,
+                                await construct_SQL(constants.db.SQL_SELECT,
                                                     _s))
                 except:
                     return False
@@ -183,12 +185,12 @@ class Database:
             await cursor.close()
         return True
 
-    async def check_db_boss(self, bosses=lang_boss.ALL_BOSSES, channel=0):
+    async def check_db_boss(self, bosses=constants.boss.ALL_BOSSES, channel=0):
         """
         :func:`check_db_boss` checks the database for the conditions in argument
 
         Args:
-            bosses (list): (default: lang_boss.ALL_BOSSES) the bosses to check
+            bosses (list): (default: constants.boss.ALL_BOSSES) the bosses to check
             channel (int): (default: 0) channels to filter
 
         Returns:
@@ -200,18 +202,18 @@ class Database:
             for boss in bosses:
                 if channel:
                     cursor = await _db.execute(
-                                await construct_SQL(lang_db.SQL_SELECT,
-                                                    lang_db.SQL_FROM_BOSS,
+                                await construct_SQL(constants.db.SQL_SELECT,
+                                                    constants.db.SQL_FROM_BOSS,
                                                     await construct_filters(
-                                                        lang_db.SQL_WHERE_NAME,
-                                                        lang_db.SQL_WHERE_CHANNEL)),
+                                                        constants.db.SQL_WHERE_NAME,
+                                                        constants.db.SQL_WHERE_CHANNEL)),
                                                 (boss, channel,))
                 else:
                     cursor = await _db.execute(
-                                await construct_SQL(lang_db.SQL_SELECT,
-                                                    lang_db.SQL_FROM_BOSS,
+                                await construct_SQL(constants.db.SQL_SELECT,
+                                                    constants.db.SQL_FROM_BOSS,
                                                     await construct_filters(
-                                                        lang_db.SQL_WHERE_NAME)),
+                                                        constants.db.SQL_WHERE_NAME)),
                                                 (boss,))
 
                 records = await cursor.fetchall()
@@ -247,23 +249,23 @@ class Database:
         """
         contents = []
 
-        boss_name = boss_dict[lang_db.COL_BOSS_NAME]
-        boss_channel = boss_dict[lang_db.COL_BOSS_CHANNEL]
+        boss_name = boss_dict[constants.db.COL_BOSS_NAME]
+        boss_channel = boss_dict[constants.db.COL_BOSS_CHANNEL]
 
         # handle channels
         if boss_channel:
-            sel_statement = await construct_SQL(lang_db.SQL_SELECT,
-                                                lang_db.SQL_FROM_BOSS,
+            sel_statement = await construct_SQL(constants.db.SQL_SELECT,
+                                                constants.db.SQL_FROM_BOSS,
                                                 await construct_filters(
-                                                    lang_db.SQL_WHERE_NAME,
-                                                    lang_db.SQL_WHERE_CHANNEL))
+                                                    constants.db.SQL_WHERE_NAME,
+                                                    constants.db.SQL_WHERE_CHANNEL))
             sql_condition = (boss_name, boss_channel)
         # handle everything else
         else:
-            sel_statement = await construct_SQL(lang_db.SQL_SELECT,
-                                                lang_db.SQL_FROM_BOSS,
+            sel_statement = await construct_SQL(constants.db.SQL_SELECT,
+                                                constants.db.SQL_FROM_BOSS,
                                                 await construct_filters(
-                                                    lang_db.SQL_WHERE_NAME))
+                                                    constants.db.SQL_WHERE_NAME))
             sql_condition = (boss_name,)
 
         async with aiosqlite.connect(self.db_name) as _db:
@@ -273,23 +275,23 @@ class Database:
             contents.extend(await cursor.fetchall())
 
             if contents and ((int(contents[0][5])
-                              == boss_dict[lang_db.COL_TIME_YEAR]) and
+                              == boss_dict[constants.db.COL_TIME_YEAR]) and
                              (int(contents[0][6])
-                              == boss_dict[lang_db.COL_TIME_MONTH]) and
+                              == boss_dict[constants.db.COL_TIME_MONTH]) and
                              (int(contents[0][7])
-                              == boss_dict[lang_db.COL_TIME_DAY])and
+                              == boss_dict[constants.db.COL_TIME_DAY])and
                              (int(contents[0][8])
-                              > boss_dict[lang_db.COL_TIME_HOUR])):
+                              > boss_dict[constants.db.COL_TIME_HOUR])):
                 await cursor.close()
                 return False
             elif contents and ((int(contents[0][5])
-                                <= boss_dict[lang_db.COL_TIME_YEAR]) or
+                                <= boss_dict[constants.db.COL_TIME_YEAR]) or
                                (int(contents[0][6])
-                                <= boss_dict[lang_db.COL_TIME_MONTH]) or
+                                <= boss_dict[constants.db.COL_TIME_MONTH]) or
                                (int(contents[0][7])
-                                <= boss_dict[lang_db.COL_TIME_DAY]) or
+                                <= boss_dict[constants.db.COL_TIME_DAY]) or
                                (int(contents[0][8])
-                                <= boss_dict[lang_db.COL_TIME_HOUR])):
+                                <= boss_dict[constants.db.COL_TIME_HOUR])):
 
                 if boss_channel:
                     await self.rm_entry_db_boss(boss_list=[boss_name,],
@@ -300,23 +302,23 @@ class Database:
             try:
                 # boss database structure
                 await _db.execute(
-                    lang_db.SQL_UPDATE,
+                    constants.db.SQL_UPDATE,
                     (str(boss_name),
                      int(boss_channel),
-                     str(boss_dict[lang_db.COL_BOSS_MAP]),
-                     str(boss_dict[lang_db.COL_BOSS_STATUS]),
-                     str(boss_dict[lang_db.COL_BOSS_TXT_CHANNEL]),
-                     int(boss_dict[lang_db.COL_TIME_YEAR]),
-                     int(boss_dict[lang_db.COL_TIME_MONTH]),
-                     int(boss_dict[lang_db.COL_TIME_DAY]),
-                     int(boss_dict[lang_db.COL_TIME_HOUR]),
-                     int(boss_dict[lang_db.COL_TIME_MINUTE])))
+                     str(boss_dict[constants.db.COL_BOSS_MAP]),
+                     str(boss_dict[constants.db.COL_BOSS_STATUS]),
+                     str(boss_dict[constants.db.COL_BOSS_TXT_CHANNEL]),
+                     int(boss_dict[constants.db.COL_TIME_YEAR]),
+                     int(boss_dict[constants.db.COL_TIME_MONTH]),
+                     int(boss_dict[constants.db.COL_TIME_DAY]),
+                     int(boss_dict[constants.db.COL_TIME_HOUR]),
+                     int(boss_dict[constants.db.COL_TIME_MINUTE])))
                 await _db.commit()
                 return True
             except:
                 return False
 
-    async def rm_entry_db_boss(self, boss_list=lang_boss.ALL_BOSSES, boss_ch=0):
+    async def rm_entry_db_boss(self, boss_list=constants.boss.ALL_BOSSES, boss_ch=0):
         """
         :func:`rm_entry_db_boss` removes records based on
         the conditions supplied.
@@ -332,7 +334,7 @@ class Database:
         """
         records = []
         if not boss_list:
-            boss_list = lang_boss.ALL_BOSSES
+            boss_list = constants.boss.ALL_BOSSES
 
         async with aiosqlite.connect(self.db_name) as _db:
             _db.row_factory = aiosqlite.Row
@@ -341,21 +343,21 @@ class Database:
                 # channel is provided
                 if boss_ch:
                     sql_filters = await construct_filters(
-                                            lang_db.SQL_WHERE_NAME,
-                                            lang_db.SQL_WHERE_CHANNEL)
+                                            constants.db.SQL_WHERE_NAME,
+                                            constants.db.SQL_WHERE_CHANNEL)
                     sql_condition = (boss, boss_ch)
                 # only name                
                 else:
                     sql_filters = await construct_filters(
-                                            lang_db.SQL_WHERE_NAME)
+                                            constants.db.SQL_WHERE_NAME)
                     sql_condition = (boss,)
 
                 # process counting
-                sel_statement = await construct_SQL(lang_db.SQL_SELECT,
-                                                    lang_db.SQL_FROM_BOSS,
+                sel_statement = await construct_SQL(constants.db.SQL_SELECT,
+                                                    constants.db.SQL_FROM_BOSS,
                                                     sql_filters)
-                del_statement = await construct_SQL(lang_db.SQL_DELETE,
-                                                    lang_db.SQL_FROM_BOSS,
+                del_statement = await construct_SQL(constants.db.SQL_DELETE,
+                                                    constants.db.SQL_FROM_BOSS,
                                                     sql_filters)
 
                 cursor = await _db.execute(sel_statement, sql_condition)
@@ -392,7 +394,7 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                            await construct_SQL(lang_db.COL_SQL_FROM_ROLES
+                            await construct_SQL(constants.db.COL_SQL_FROM_ROLES
                                                 .format(kind)))
                 return [_row[0] for _row in await cursor.fetchall()]
             except Exception as e:
@@ -412,32 +414,32 @@ class Database:
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
-                cursor = await _db.execute(lang_db.SQL_GET_OLD_OWNER)
+                cursor = await _db.execute(constants.db.SQL_GET_OLD_OWNER)
                 old_owner = (await cursor.fetchone())[0]
                 if owner_id == old_owner:
                     return True # do not do anything if it's the same owner
-                await _db.execute(lang_db.SQL_DROP_OWNER)
-                await _db.execute(lang_db.SQL_DEL_OLD_OWNER
+                await _db.execute(constants.db.SQL_DROP_OWNER)
+                await _db.execute(constants.db.SQL_DEL_OLD_OWNER
                                   .format(old_owner))
             except: #Exception as e:
                 #print('Exception caught & ignored:', e)
                 pass
 
             try:
-                await _db.execute(lang_db.SQL_MAKE_OWNER)
+                await _db.execute(constants.db.SQL_MAKE_OWNER)
             except: #Exception as e:
                 # table owner might already exist
                 #print('Exception caught & ignored:', e)
                 pass
 
             try:
-                await _db.execute(lang_db.SQL_UPDATE_OWNER
+                await _db.execute(constants.db.SQL_UPDATE_OWNER
                                   .format(owner_id))
-                await _db.execute(lang_db.SQL_SAUTH_OWNER
-                                  .format(lang_settings.ROLE_AUTH,
+                await _db.execute(constants.db.SQL_SAUTH_OWNER
+                                  .format(constants.settings.ROLE_AUTH,
                                           owner_id))
-                await _db.execute(lang_db.SQL_SAUTH_OWNER
-                                  .format(lang_settings.ROLE_SUPER_AUTH,
+                await _db.execute(constants.db.SQL_SAUTH_OWNER
+                                  .format(constants.settings.ROLE_SUPER_AUTH,
                                           owner_id))
                 await _db.commit()
                 return True
@@ -450,11 +452,11 @@ class Database:
         :func:`clean_duplicates` gets rid of duplicates from all tables.
         """
         async with aiosqlite.connect(self.db_name) as _db:
-            for _table in lang_db.SQL_CLEAN_TABLES:
+            for _table in constants.db.SQL_CLEAN_TABLES:
                 try:
-                    await _db.execute(lang_db.SQL_CLEAN_DUPES
+                    await _db.execute(constants.db.SQL_CLEAN_DUPES
                                       .format(_table,
-                                              lang_db.SQL_CLEAN[_table]))
+                                              constants.db.SQL_CLEAN[_table]))
                 except Exception as e:
                     print(e)
                     continue
@@ -474,7 +476,7 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                            await construct_SQL(lang_db.COL_SQL_FROM_CHANS
+                            await construct_SQL(constants.db.COL_SQL_FROM_CHANS
                                                 .format(kind)))
                 return [_row[0] for _row in await cursor.fetchall()]
             except Exception as e:
@@ -496,7 +498,7 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 await _db.execute(
-                    await construct_SQL(lang_db.SQL_SET_CHANNEL
+                    await construct_SQL(constants.db.SQL_SET_CHANNEL
                                         .format(kind)))
                 return [_row[0] for _row in await cursor.fetchall()]
             except Exception as e:
