@@ -252,3 +252,5 @@ SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
 
 FAIL_NO_CHANNELS = 'No channels were found associated with the {} type.'
 FAIL_NOT_AUTH = 'You are not authorized to do this!'
+
+USAGE_SET_CHANNELS = '$settings set channel <type> <#channel> [<#channel> ...]'
