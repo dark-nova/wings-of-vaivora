@@ -4,8 +4,8 @@ from math import floor
 from datetime import datetime, timedelta
 
 import vaivora_modules.db
-from constants.boss import en_us as lang_boss
-from constants.db import en_us as lang_db
+import constants.boss
+import constants.db
 
 
 def help():
@@ -15,7 +15,7 @@ def help():
     Returns:
         a list of detailed help messages
     """
-    return lang_boss.HELP
+    return constants.boss.HELP
 
 
 async def what_status(entry):
@@ -30,12 +30,12 @@ async def what_status(entry):
         str: the correct "status" if successful
         None: if unsuccessful
     """
-    if lang_boss.REGEX_STATUS_DIED.match(entry):
-        return lang_boss.CMD_ARG_STATUS_DIED
-    elif lang_boss.REGEX_STATUS_ANCHORED.match(entry):
-        return lang_boss.CMD_ARG_STATUS_ANCHORED
-    #elif lang_boss.REGEX_STATUS_WARNED.match(entry):
-    #    return lang_boss.CMD_ARG_STATUS_WARNED
+    if constants.boss.REGEX_STATUS_DIED.match(entry):
+        return constants.boss.CMD_ARG_STATUS_DIED
+    elif constants.boss.REGEX_STATUS_ANCHORED.match(entry):
+        return constants.boss.CMD_ARG_STATUS_ANCHORED
+    #elif constants.boss.REGEX_STATUS_WARNED.match(entry):
+    #    return constants.boss.CMD_ARG_STATUS_WARNED
     else:
         return None
 
@@ -52,10 +52,10 @@ async def what_entry(entry):
         str: the correct "entry" if successful
         None: if unsuccessful
     """
-    if lang_boss.REGEX_ENTRY_LIST.search(entry):
-        return lang_boss.CMD_ARG_ENTRY_LIST
-    elif lang_boss.REGEX_ENTRY_ERASE.search(entry):
-        return lang_boss.CMD_ARG_ENTRY_ERASE
+    if constants.boss.REGEX_ENTRY_LIST.search(entry):
+        return constants.boss.CMD_ARG_ENTRY_LIST
+    elif constants.boss.REGEX_ENTRY_ERASE.search(entry):
+        return constants.boss.CMD_ARG_ENTRY_ERASE
     else:
         return None
 
@@ -72,10 +72,10 @@ async def what_query(entry):
         str: the correct "query" if successful
         None: if unsuccessful
     """
-    if lang_boss.REGEX_QUERY_MAPS.match(entry):
-        return lang_boss.CMD_ARG_QUERY_MAPS
-    elif lang_boss.REGEX_QUERY_ALIAS.match(entry):
-        return lang_boss.CMD_ARG_QUERY_ALIAS
+    if constants.boss.REGEX_QUERY_MAPS.match(entry):
+        return constants.boss.CMD_ARG_QUERY_MAPS
+    elif constants.boss.REGEX_QUERY_ALIAS.match(entry):
+        return constants.boss.CMD_ARG_QUERY_ALIAS
     else:
         return None
 
@@ -92,12 +92,12 @@ async def what_type(entry):
         str: the correct "type" if successful
         None: if unsuccessful
     """
-    if lang_boss.REGEX_TYPE_WORLD.search(entry):
-        return lang_boss.KW_WORLD
-    elif lang_boss.REGEX_TYPE_FIELD.search(entry):
-        return lang_boss.KW_FIELD
-    elif lang_boss.REGEX_TYPE_DEMON.search(entry):
-        return lang_boss.KW_DEMON
+    if constants.boss.REGEX_TYPE_WORLD.search(entry):
+        return constants.boss.KW_WORLD
+    elif constants.boss.REGEX_TYPE_FIELD.search(entry):
+        return constants.boss.KW_FIELD
+    elif constants.boss.REGEX_TYPE_DEMON.search(entry):
+        return constants.boss.KW_DEMON
     else:
         return None
 
@@ -114,12 +114,12 @@ async def check_boss(entry):
     """
     match = None
 
-    for boss in lang_boss.BOSS_SYNONYMS:
-        for boss_syn in lang_boss.BOSS_SYNONYMS[boss]:
+    for boss in constants.boss.BOSS_SYNONYMS:
+        for boss_syn in constants.boss.BOSS_SYNONYMS[boss]:
             if entry == boss_syn:
-                return lang_boss.ALL_BOSSES.index(boss) # synonyms are unique and exact match only
+                return constants.boss.ALL_BOSSES.index(boss) # synonyms are unique and exact match only
 
-    for boss in lang_boss.ALL_BOSSES:
+    for boss in constants.boss.ALL_BOSSES:
         if re.search(entry, boss, re.IGNORECASE):
             if not match:
                 match = boss
@@ -129,7 +129,7 @@ async def check_boss(entry):
     if not match:
         return -1
 
-    return lang_boss.ALL_BOSSES.index(match)
+    return constants.boss.ALL_BOSSES.index(match)
 
 
 async def check_maps(boss_idx, maps):
@@ -145,20 +145,20 @@ async def check_maps(boss_idx, maps):
     """
     map_idx = -1
     map_floor = re.search('.*([0-9]).*', maps)
-    boss = lang_boss.ALL_BOSSES[boss_idx]
+    boss = constants.boss.ALL_BOSSES[boss_idx]
 
     if map_floor:
         map_floor = map_floor.group(1)
         maps = re.sub(map_floor, '', maps).strip()
 
-    for boss_map in lang_boss.BOSS_MAPS[boss]:
+    for boss_map in constants.boss.BOSS_MAPS[boss]:
         if re.search(maps, boss_map, re.IGNORECASE):
             if map_floor and not re.search(map_floor, boss_map, re.IGNORECASE):
                 continue # similar name; wrong number
             elif map_idx != -1: 
                 return -1 # multiple matched; invalid
             else:
-                map_idx = lang_boss.BOSS_MAPS[boss].index(boss_map)
+                map_idx = constants.boss.BOSS_MAPS[boss].index(boss_map)
 
     return map_idx
 
@@ -174,7 +174,7 @@ async def get_syns(boss):
         str: a formatted markdown message with synonyms
     """
     return ("**{}** can be called using the following aliases:\n\n- {}"
-            .format(boss, '\n- '.join(lang_boss.BOSS_SYNONYMS[boss])))
+            .format(boss, '\n- '.join(constants.boss.BOSS_SYNONYMS[boss])))
 
 
 async def get_maps(boss):
@@ -187,34 +187,34 @@ async def get_maps(boss):
     Returns:
         str: a formatted markdown message with maps for a boss
     """
-    _maps = (lang_boss.GET_MAPS
-             .format(boss, ('\n{} '.format(lang_boss.EMOJI_LOC))
-                            .join(lang_boss.BOSS_MAPS[boss])))
+    _maps = (constants.boss.GET_MAPS
+             .format(boss, ('\n{} '.format(constants.boss.EMOJI_LOC))
+                            .join(constants.boss.BOSS_MAPS[boss])))
 
-    warps = lang_boss.NEAREST_WARPS[boss]
+    warps = constants.boss.NEAREST_WARPS[boss]
     _warps = []
     if type(warps[0]) is not str:
         for warp in warps:
             if warp[1] == 0:
-                away = lang_boss.SAME_MAP
+                away = constants.boss.SAME_MAP
             elif warp[1] > 1:
-                away = '{} {}'.format(str(warp[1]), lang_boss.MAPS_AWAY)
+                away = '{} {}'.format(str(warp[1]), constants.boss.MAPS_AWAY)
             else:
-                away = '{} {}'.format(str(warp[1]), lang_boss.MAP_AWAY)
-            _warps.append(lang_boss.MAP_DIST.format(warp[0], away))
-        return (lang_boss.MAPAWAY
-                .format(lang_boss.NEAREST_PLURAL.format(_maps),
+                away = '{} {}'.format(str(warp[1]), constants.boss.MAP_AWAY)
+            _warps.append(constants.boss.MAP_DIST.format(warp[0], away))
+        return (constants.boss.MAPAWAY
+                .format(constants.boss.NEAREST_PLURAL.format(_maps),
                         '\n'.join(_warps)))
     else:
         if warps[1] == 0:
-            away = lang_boss.SAME_MAP
+            away = constants.boss.SAME_MAP
         elif warps[1] > 1:
-            away = '{} {}'.format(str(warps[1]), lang_boss.MAPS_AWAY)
+            away = '{} {}'.format(str(warps[1]), constants.boss.MAPS_AWAY)
         else:
-            away = '{} {}'.format(str(warps[1]), lang_boss.MAP_AWAY)
-        return (lang_boss.MAPAWAY
-                .format(lang_boss.NEAREST_SINGLE.format(_maps),
-                        lang_boss.MAP_DIST.format(warps[0], away)))
+            away = '{} {}'.format(str(warps[1]), constants.boss.MAP_AWAY)
+        return (constants.boss.MAPAWAY
+                .format(constants.boss.NEAREST_SINGLE.format(_maps),
+                        constants.boss.MAP_DIST.format(warps[0], away)))
 
 
 async def get_bosses(boss_type):
@@ -227,8 +227,8 @@ async def get_bosses(boss_type):
     Returns:
         str: a formatted markdown message with bosses of the specified type
     """
-    return (lang_boss.GET_BOSSES
-            .format(boss_type, '\n- '.join(lang_boss.BOSSES[boss_type])))
+    return (constants.boss.GET_BOSSES
+            .format(boss_type, '\n- '.join(constants.boss.BOSSES[boss_type])))
 
 
 def get_offset(boss, status, coefficient=1):
@@ -244,16 +244,16 @@ def get_offset(boss, status, coefficient=1):
         timedelta: an appropriate timedelta
     """
     # ignore status for all bosses except world bosses
-    if boss in lang_boss.BOSSES[lang_boss.KW_DEMON]:
-        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_DEMON))
-    elif boss in lang_boss.BOSSES[lang_boss.KW_FIELD]:
-        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_FIELD))
-    elif boss == lang_boss.BOSS_W_ABOMINATION:
-        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_ABOM))
+    if boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
+        return timedelta(minutes=(coefficient * constants.boss.TIME_STATUS_DEMON))
+    elif boss in constants.boss.BOSSES[constants.boss.KW_FIELD]:
+        return timedelta(minutes=(coefficient * constants.boss.TIME_STATUS_FIELD))
+    elif boss == constants.boss.BOSS_W_ABOMINATION:
+        return timedelta(minutes=(coefficient * constants.boss.TIME_STATUS_ABOM))
     else:
-        return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_WB))
+        return timedelta(minutes=(coefficient * constants.boss.TIME_STATUS_WB))
     # else:
-    #     return timedelta(minutes=(coefficient * lang_boss.TIME_STATUS_ANCHORED))
+    #     return timedelta(minutes=(coefficient * constants.boss.TIME_STATUS_ANCHORED))
 
 
 async def validate_time(time):
@@ -266,35 +266,35 @@ async def validate_time(time):
     Returns:
         str: a standardized time unit, e.g. 0:00 (midnight) or 13:00 (1 PM); or None if invalid
     """
-    if not lang_boss.REGEX_TIME.match(time):
+    if not constants.boss.REGEX_TIME.match(time):
         return None
 
     offset = 0
 
     # e.g. 900 (or 9:00)
-    if lang_boss.REGEX_TIME_DIGITS.match(time):
-        minutes = lang_boss.REGEX_TIME_MINUTES.match(time).group(1)
+    if constants.boss.REGEX_TIME_DIGITS.match(time):
+        minutes = constants.boss.REGEX_TIME_MINUTES.match(time).group(1)
         hours = re.sub(minutes, '', time)
-        return lang_boss.TIME.format(hours, minutes)
+        return constants.boss.TIME.format(hours, minutes)
     # e.g. 12:00 am (or 0:00)
-    elif lang_boss.REGEX_TIME_AMPM.search(time):
-        if lang_boss.REGEX_TIME_PM.search(time):
-            if lang_boss.REGEX_TIME_NOON.match(time):
+    elif constants.boss.REGEX_TIME_AMPM.search(time):
+        if constants.boss.REGEX_TIME_PM.search(time):
+            if constants.boss.REGEX_TIME_NOON.match(time):
                 offset -= 12
             offset += 12
         else:
-            if lang_boss.REGEX_TIME_NOON.match(time):
+            if constants.boss.REGEX_TIME_NOON.match(time):
                 offset -= 12
-        time = lang_boss.REGEX_TIME_AMPM.sub('', time)
+        time = constants.boss.REGEX_TIME_AMPM.sub('', time)
 
-    delim = lang_boss.REGEX_TIME_DELIM.search(time)
+    delim = constants.boss.REGEX_TIME_DELIM.search(time)
     hours, minutes = [int(t) for t in time.split(delim.group(0))]
     hours += offset
 
     if hours >= 24 or hours < 0:
         return None
 
-    return lang_boss.TIME.format(str(hours).rjust(2, '0'),
+    return constants.boss.TIME.format(str(hours).rjust(2, '0'),
                                  str(minutes).rjust(2, '0'))
 
 
@@ -316,15 +316,15 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
     offset = 0
     target = {}
 
-    if (boss not in lang_boss.BOSSES[lang_boss.KW_WORLD] and
-        status == lang_boss.CMD_ARG_STATUS_ANCHORED):
-        return lang_boss.FAIL_TEMPLATE.format(lang_boss.FAIL_STATUS_NO_ANCHOR, lang_boss.MSG_HELP)
+    if (boss not in constants.boss.BOSSES[constants.boss.KW_WORLD] and
+        status == constants.boss.CMD_ARG_STATUS_ANCHORED):
+        return constants.boss.FAIL_TEMPLATE.format(constants.boss.FAIL_STATUS_NO_ANCHOR, constants.boss.MSG_HELP)
 
-    target[lang_db.COL_BOSS_NAME] = boss
-    target[lang_db.COL_BOSS_TXT_CHANNEL] = msg_channel
-    target[lang_db.COL_BOSS_CHANNEL] = options[lang_db.COL_BOSS_CHANNEL]
-    target[lang_db.COL_BOSS_MAP] = options[lang_db.COL_BOSS_MAP]
-    target[lang_db.COL_BOSS_STATUS] = status
+    target[constants.db.COL_BOSS_NAME] = boss
+    target[constants.db.COL_BOSS_TXT_CHANNEL] = msg_channel
+    target[constants.db.COL_BOSS_CHANNEL] = options[constants.db.COL_BOSS_CHANNEL]
+    target[constants.db.COL_BOSS_MAP] = options[constants.db.COL_BOSS_MAP]
+    target[constants.db.COL_BOSS_STATUS] = status
 
     time_offset = get_offset(boss, status)
 
@@ -332,41 +332,41 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
 
     record = {}
 
-    server_date = datetime.now() + timedelta(hours=lang_boss.TIME_H_LOCAL_TO_SERVER)
+    server_date = datetime.now() + timedelta(hours=constants.boss.TIME_H_LOCAL_TO_SERVER)
 
     if hours > int(server_date.hour):
         # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
         server_date += timedelta(days=-1)
 
     # dates handled like above example, e.g. record on 23:59, December 31st but recorded on New Years Day
-    record[lang_db.COL_TIME_YEAR] = int(server_date.year)
-    record[lang_db.COL_TIME_MONTH] = int(server_date.month)
-    record[lang_db.COL_TIME_DAY] = int(server_date.day)
-    record[lang_db.COL_TIME_HOUR] = hours
-    record[lang_db.COL_TIME_MINUTE] = minutes
+    record[constants.db.COL_TIME_YEAR] = int(server_date.year)
+    record[constants.db.COL_TIME_MONTH] = int(server_date.month)
+    record[constants.db.COL_TIME_DAY] = int(server_date.day)
+    record[constants.db.COL_TIME_HOUR] = hours
+    record[constants.db.COL_TIME_MINUTE] = minutes
 
     # reconstruct boss kill time
     record_date = datetime(*record.values())
     record_date += time_offset
 
     # reassign to target data
-    target[lang_db.COL_TIME_YEAR] = int(record_date.year)
-    target[lang_db.COL_TIME_MONTH] = int(record_date.month)
-    target[lang_db.COL_TIME_DAY] = int(record_date.day)
-    target[lang_db.COL_TIME_HOUR] = int(record_date.hour)
-    target[lang_db.COL_TIME_MINUTE] = int(record_date.minute)
+    target[constants.db.COL_TIME_YEAR] = int(record_date.year)
+    target[constants.db.COL_TIME_MONTH] = int(record_date.month)
+    target[constants.db.COL_TIME_DAY] = int(record_date.day)
+    target[constants.db.COL_TIME_HOUR] = int(record_date.hour)
+    target[constants.db.COL_TIME_MINUTE] = int(record_date.minute)
 
     vdb = vaivora_modules.db.Database(server_id)
-    await vdb.check_if_valid(lang_boss.MODULE_NAME)
+    await vdb.check_if_valid(constants.boss.MODULE_NAME)
 
     if await vdb.update_db_boss(target):
-        return (lang_boss.SUCCESS_STATUS.format(lang_boss.ACKNOWLEDGED,
+        return (constants.boss.SUCCESS_STATUS.format(constants.boss.ACKNOWLEDGED,
                                                 boss, status, time,
-                                                lang_boss.EMOJI_LOC,
-                                                options[lang_db.COL_BOSS_MAP],
-                                                options[lang_db.COL_BOSS_CHANNEL]))
+                                                constants.boss.EMOJI_LOC,
+                                                options[constants.db.COL_BOSS_MAP],
+                                                options[constants.db.COL_BOSS_CHANNEL]))
     else:
-        return lang_boss.FAIL_TEMPLATE.format(lang_boss.FAIL_STATUS, lang_boss.MSG_HELP)
+        return constants.boss.FAIL_TEMPLATE.format(constants.boss.FAIL_STATUS, constants.boss.MSG_HELP)
 
 
 async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=None):
@@ -390,26 +390,26 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
         bosses = [bosses]
 
     vdb = vaivora_modules.db.Database(server_id)
-    if not await vdb.check_if_valid(lang_boss.MODULE_NAME):
-        await vdb.create_db(lang_db.SQL_FROM_BOSS)
+    if not await vdb.check_if_valid(constants.boss.MODULE_NAME):
+        await vdb.create_db(constants.db.SQL_FROM_BOSS)
 
     # $boss <target> erase ...
-    if entry == lang_boss.CMD_ARG_ENTRY_ERASE:
-        if channel and bosses in lang_boss.BOSSES[lang_boss.KW_WORLD]:
+    if entry == constants.boss.CMD_ARG_ENTRY_ERASE:
+        if channel and bosses in constants.boss.BOSSES[constants.boss.KW_WORLD]:
             records = await vdb.rm_entry_db_boss(boss_list=bosses, boss_ch=channel)
         else:
             records = await vdb.rm_entry_db_boss(boss_list=bosses)
 
         if records:
-            if bosses != lang_boss.ALL_BOSSES:
-                erase_msg = lang_boss.SUCCESS_ENTRY_ERASE
+            if bosses != constants.boss.ALL_BOSSES:
+                erase_msg = constants.boss.SUCCESS_ENTRY_ERASE
             else:
-                erase_msg = lang_boss.SUCCESS_ENTRY_ERASE_ALL
+                erase_msg = constants.boss.SUCCESS_ENTRY_ERASE_ALL
             _records = '\n- '.join(['**{}**'.format(rec) for rec in records])
             return ['{}{}'.format(erase_msg.format(len(records)),
                                   '\n- {}'.format(_records)),]
         else:
-            return [lang_boss.FAIL_ENTRY_ERASE,]
+            return [constants.boss.FAIL_ENTRY_ERASE,]
     # $boss <target> list ...
     else:
         valid_boss_records = []
@@ -417,7 +417,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
         boss_records = await vdb.check_db_boss(bosses=bosses) # possible return
 
         if not boss_records: # empty
-            return [lang_boss.FAIL_ENTRY_LIST,]
+            return [constants.boss.FAIL_ENTRY_LIST,]
 
         for boss_record in boss_records:
             boss_name = boss_record[0]
@@ -429,23 +429,23 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
             record_date = datetime(*[int(rec) for rec in boss_record[5:10]])
             
             time_diff = (datetime.now()
-                         + timedelta(hours=lang_boss.TIME_H_LOCAL_TO_SERVER)
+                         + timedelta(hours=constants.boss.TIME_H_LOCAL_TO_SERVER)
                          - record_date)
 
-            if int(time_diff.days) >= 0 and boss_status != lang_boss.CMD_ARG_STATUS_ANCHORED:
-                spawn_msg = lang_boss.TIME_SPAWN_MISSED
+            if int(time_diff.days) >= 0 and boss_status != constants.boss.CMD_ARG_STATUS_ANCHORED:
+                spawn_msg = constants.boss.TIME_SPAWN_MISSED
                 minutes = floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
             # anchored
-            elif boss_status == lang_boss.CMD_ARG_STATUS_ANCHORED:
-                spawn_msg = lang_boss.TIME_SPAWN_EARLY
+            elif boss_status == constants.boss.CMD_ARG_STATUS_ANCHORED:
+                spawn_msg = constants.boss.TIME_SPAWN_EARLY
                 if int(time_diff.days) < 0:
                     minutes = floor((86400-int(time_diff.seconds))/60)
                 else:
                     minutes = floor(time_diff.seconds/60) + int(time_diff.days)*86400
 
-            else: #elif boss_status == lang_boss.CMD_ARG_STATUS_DIED:
-                spawn_msg = lang_boss.TIME_SPAWN_ONTIME
+            else: #elif boss_status == constants.boss.CMD_ARG_STATUS_DIED:
+                spawn_msg = constants.boss.TIME_SPAWN_ONTIME
                 minutes = floor((86400-int(time_diff.seconds))/60)
 
             # absolute date and time for spawn
@@ -487,10 +487,10 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
                 msg_time = '{}, {}, {} {}'.format(msg_days, msg_hours, msg_minutes, msg_when)
 
             # print extra anchored message conditionally
-            if boss_status == lang_boss.CMD_ARG_STATUS_ANCHORED:
+            if boss_status == constants.boss.CMD_ARG_STATUS_ANCHORED:
                 msg_time = '{} {}'.format(msg_time, 'and as late as one hour later')
 
-            last_map = 'last known map: {} {}'.format(lang_boss.EMOJI_LOC, boss_prev_map)
+            last_map = 'last known map: {} {}'.format(constants.boss.EMOJI_LOC, boss_prev_map)
 
             message = ('**{}**\n- {} **{}** ({})\n- {} CH {}'
                        .format(boss_name, spawn_msg, spawn_time,
@@ -514,7 +514,7 @@ async def process_cmd_query(boss, query):
         str: an appropriate message for success or fail of command, i.e. maps or aliases
     """
     # $boss <target> syns
-    if query == lang_boss.CMD_ARG_QUERY_ALIAS:
+    if query == constants.boss.CMD_ARG_QUERY_ALIAS:
         return await get_syns(boss)
     # $boss <target> maps
     else:
@@ -535,27 +535,27 @@ def process_cmd_opt(boss, option=None):
     target = {}
 
     # initialize to default values: channel = 1; map = 'N/A'
-    target[lang_db.COL_BOSS_CHANNEL] = 1
-    target[lang_db.COL_BOSS_MAP] = lang_boss.CMD_ARG_QUERY_MAPS_NOT
+    target[constants.db.COL_BOSS_CHANNEL] = 1
+    target[constants.db.COL_BOSS_MAP] = constants.boss.CMD_ARG_QUERY_MAPS_NOT
 
     if option is None:
-        if boss in (lang_boss.BOSSES[lang_boss.KW_WORLD]
-                    +lang_boss.BOSSES[lang_boss.KW_FIELD]):
-            target[lang_db.COL_BOSS_MAP] = lang_boss.BOSS_MAPS[boss][0]
+        if boss in (constants.boss.BOSSES[constants.boss.KW_WORLD]
+                    +constants.boss.BOSSES[constants.boss.KW_FIELD]):
+            target[constants.db.COL_BOSS_MAP] = constants.boss.BOSS_MAPS[boss][0]
         return target
 
-    channel = lang_boss.REGEX_OPT_CHANNEL.match(option)
+    channel = constants.boss.REGEX_OPT_CHANNEL.match(option)
 
     # world boss; discard map argument if found and return
-    if channel and boss in lang_boss.BOSSES[lang_boss.KW_WORLD]:
-        target[lang_db.COL_BOSS_CHANNEL] = int(channel.group(2))
-        target[lang_db.COL_BOSS_MAP] = lang_db.BOSS_MAPS[boss]
+    if channel and boss in constants.boss.BOSSES[constants.boss.KW_WORLD]:
+        target[constants.db.COL_BOSS_CHANNEL] = int(channel.group(2))
+        target[constants.db.COL_BOSS_MAP] = constants.db.BOSS_MAPS[boss]
     # field boss + Demon Lords; discard channel argument nonetheless
-    elif not channel and (boss in lang_boss.BOSSES[lang_boss.KW_FIELD] or
-                          boss in lang_boss.BOSSES[lang_boss.KW_DEMON]):
+    elif not channel and (boss in constants.boss.BOSSES[constants.boss.KW_FIELD] or
+                          boss in constants.boss.BOSSES[constants.boss.KW_DEMON]):
         map_idx = check_maps(boss, option)
-        if map_idx >= 0 and map_idx < len(lang_boss.BOSS_MAPS[boss]):
-            target[lang_db.COL_BOSS_MAP] = lang_boss.BOSS_MAPS[boss][map_idx]
+        if map_idx >= 0 and map_idx < len(constants.boss.BOSS_MAPS[boss]):
+            target[constants.db.COL_BOSS_MAP] = constants.boss.BOSS_MAPS[boss][map_idx]
 
     return target
 
@@ -576,29 +576,29 @@ def process_record(boss, status, time, boss_map, channel):
     """
     channel = str(floor(float(channel)))
 
-    if boss_map == lang_boss.CMD_ARG_QUERY_MAPS_NOT:
+    if boss_map == constants.boss.CMD_ARG_QUERY_MAPS_NOT:
         # use all maps for Demon Lord if not previously known
-        if boss in lang_boss.BOSSES[lang_boss.KW_DEMON]:
-            boss_map = '\n'.join([lang_boss.RECORD.format(lang_boss.EMOJI_LOC,
+        if boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
+            boss_map = '\n'.join([constants.boss.RECORD.format(constants.boss.EMOJI_LOC,
                                                           loc, channel)
-                                  for loc in lang_boss.BOSS_MAPS[boss]])
+                                  for loc in constants.boss.BOSS_MAPS[boss]])
         # this should technically not be possible
         else:
-            boss_map = lang_boss.RECORD.format(lang_boss.EMOJI_LOC, lang_boss.BOSS_MAPS[boss], channel)
+            boss_map = constants.boss.RECORD.format(constants.boss.EMOJI_LOC, constants.boss.BOSS_MAPS[boss], channel)
     # use all other maps for Demon Lord if already known
-    elif boss in lang_boss.BOSSES[lang_boss.KW_DEMON]:
-        boss_map = '\n'.join(['{} {}'.format(lang_boss.EMOJI_LOC, loc)
-                              for loc in lang_boss.BOSS_MAPS[boss] if loc != boss_map])
-    elif boss == lang_boss.BOSS_W_KUBAS:
+    elif boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
+        boss_map = '\n'.join(['{} {}'.format(constants.boss.EMOJI_LOC, loc)
+                              for loc in constants.boss.BOSS_MAPS[boss] if loc != boss_map])
+    elif boss == constants.boss.BOSS_W_KUBAS:
         # valid while Crystal Mine Lot 2 - 2F has 2 channels
         channel = str(int(channel) % 2 + 1)
-        boss_map = lang_boss.RECORD_KUBAS.format(lang_boss.EMOJI_LOC, boss_map, channel)
+        boss_map = constants.boss.RECORD_KUBAS.format(constants.boss.EMOJI_LOC, boss_map, channel)
     else:
-        boss_map = lang_boss.RECORD.format(lang_boss.EMOJI_LOC, boss_map, channel)
+        boss_map = constants.boss.RECORD.format(constants.boss.EMOJI_LOC, boss_map, channel)
         
 
     minutes = floor((time - (datetime.now() 
-                                  + timedelta(hours=lang_boss.TIME_H_LOCAL_TO_SERVER)))
+                                  + timedelta(hours=constants.boss.TIME_H_LOCAL_TO_SERVER)))
                         .seconds / 60)
     minutes = '{} minutes'.format(str(minutes))
 
@@ -608,7 +608,7 @@ def process_record(boss, status, time, boss_map, channel):
     # and add it back to get the reported time
     report_time = time + time_diff
 
-    if status == lang_boss.CMD_ARG_STATUS_ANCHORED:
+    if status == constants.boss.CMD_ARG_STATUS_ANCHORED:
         plus_one = time + timedelta(hours=1)
         time_fmt = '**{}** ({}) to {}'.format(time.strftime("%Y/%m/%d %H:%M"),
                                               minutes, plus_one.strftime("%Y/%m/%d %H:%M"))

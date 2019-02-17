@@ -9,7 +9,8 @@ from itertools import chain
 
 import vaivora_modules.db
 from vaivora_modules.secrets import discord_user_id
-from constants.settings import en_us as lang_settings
+import constants.settings
+#from constants.settings import en_us as lang_settings
 
 # BGN CONST
 
@@ -81,7 +82,7 @@ def help():
     Returns:
         a list of detailed help messages
     """
-    return lang_settings.HELP
+    return constants.settings.HELP
 
 
 def what_settings(entry):
@@ -96,14 +97,14 @@ def what_settings(entry):
         str: the correct "setting" if successful
         None: if unsuccessful
     """
-    if lang_settings.REGEX_SETTING_ADD.match(entry):
-        return lang_settings.SETTING_ADD
-    elif lang_settings.REGEX_SETTING_SET.match(entry):
-        return lang_settings.SETTING_SET
-    elif lang_settings.REGEX_SETTING_GET.match(entry):
-        return lang_settings.SETTING_GET
-    elif lang_settings.REGEX_SETTING_REMOVE.match(entry):
-        return lang_settings.SETTING_REMOVE
+    if constants.settings.REGEX_SETTING_ADD.match(entry):
+        return constants.settings.SETTING_ADD
+    elif constants.settings.REGEX_SETTING_SET.match(entry):
+        return constants.settings.SETTING_SET
+    elif constants.settings.REGEX_SETTING_GET.match(entry):
+        return constants.settings.SETTING_GET
+    elif constants.settings.REGEX_SETTING_REMOVE.match(entry):
+        return constants.settings.SETTING_REMOVE
     else:
         return None
 
@@ -120,11 +121,11 @@ def what_validation(entry):
         str: the correct "validation" if successful
         None: if unsuccessful
     """
-    if (lang_settings.REGEX_VALIDATION_VALIDATE.match(entry) and
-       lang_settings.REGEX_VALIDATION_INVALIDATE.match(entry)):
-        return lang_settings.VALIDATION_INVALIDATE
-    elif lang_settings.REGEX_VALIDATION_VALIDATE.match(entry):
-        return lang_settings.VALIDATION_VALIDATE
+    if (constants.settings.REGEX_VALIDATION_VALIDATE.match(entry) and
+       constants.settings.REGEX_VALIDATION_INVALIDATE.match(entry)):
+        return constants.settings.VALIDATION_INVALIDATE
+    elif constants.settings.REGEX_VALIDATION_VALIDATE.match(entry):
+        return constants.settings.VALIDATION_VALIDATE
     else:
         return None
 
@@ -141,10 +142,10 @@ def what_rolechange(entry):
         str: the correct "role change" if successful
         None: if unsuccessful
     """
-    if lang_settings.REGEX_ROLES_PROMOTE.match(entry):
-        return lang_settings.ROLES_PROMOTE
-    elif lang_settings.REGEX_ROLES_DEMOTE.match(entry):
-        return lang_settings.ROLES_DEMOTE
+    if constants.settings.REGEX_ROLES_PROMOTE.match(entry):
+        return constants.settings.ROLES_PROMOTE
+    elif constants.settings.REGEX_ROLES_DEMOTE.match(entry):
+        return constants.settings.ROLES_DEMOTE
     else:
         return None
 
@@ -161,12 +162,12 @@ def what_setting_target(entry):
         str: the correct target if successful
         None: if unsuccessful
     """
-    if lang_settings.REGEX_SETTING_TARGET_TALT.match(entry):
-        return lang_settings.TARGET_TALT
-    elif lang_settings.REGEX_SETTING_TARGET_ROLE.match(entry):
-        return lang_settings.TARGET_ROLE
-    elif lang_settings.REGEX_SETTING_TARGET_CHANNEL.match(entry):
-        return lang_settings.TARGET_CHANNEL
+    if constants.settings.REGEX_SETTING_TARGET_TALT.match(entry):
+        return constants.settings.TARGET_TALT
+    elif constants.settings.REGEX_SETTING_TARGET_ROLE.match(entry):
+        return constants.settings.TARGET_ROLE
+    elif constants.settings.REGEX_SETTING_TARGET_CHANNEL.match(entry):
+        return constants.settings.TARGET_CHANNEL
     else:
         return None
 
@@ -174,40 +175,40 @@ def what_setting_target(entry):
 # class Settings:
 
 #     settings = {}
-#     settings[lang_settings
+#     settings[constants.settings
 #              .WELCOMED] = False
 #     #settings['subscribed'] = True
-#     settings[lang_settings
+#     settings[constants.settings
 #              .VAIVORA_VER] = ''
-#     settings[lang_settings
-#              .TALT] = {lang_settings.TALT_GUILD: 0,
-#                        lang_settings.TALT_REMAINDER: 0}
-#     settings[lang_settings
+#     settings[constants.settings
+#              .TALT] = {constants.settings.TALT_GUILD: 0,
+#                        constants.settings.TALT_REMAINDER: 0}
+#     settings[constants.settings
 #              .TALT_QUOTA] = {} # will change from dict eventually; legacy only now
-#     settings[lang_settings
+#     settings[constants.settings
 #              .TALT_QUOTA_PERIODIC] = 0
-#     settings[lang_settings
+#     settings[constants.settings
 #              .GUILD_LEVEL] = 0
-#     settings[lang_settings
-#              .UTYPE_USERS] = {lang_settings.ROLE_AUTH: [],
-#                               lang_settings.ROLE_MEMBER: [],
-#                               lang_settings.ROLE_SUPER_AUTH: []}
-#     settings[lang_settings
-#              .UTYPE_GROUP] = {lang_settings.ROLE_AUTH: [],
-#                               lang_settings.ROLE_MEMBER: [],
-#                               lang_settings.ROLE_SUPER_AUTH: []}
-#     settings[lang_settings
+#     settings[constants.settings
+#              .UTYPE_USERS] = {constants.settings.ROLE_AUTH: [],
+#                               constants.settings.ROLE_MEMBER: [],
+#                               constants.settings.ROLE_SUPER_AUTH: []}
+#     settings[constants.settings
+#              .UTYPE_GROUP] = {constants.settings.ROLE_AUTH: [],
+#                               constants.settings.ROLE_MEMBER: [],
+#                               constants.settings.ROLE_SUPER_AUTH: []}
+#     settings[constants.settings
 #              .TABLE_PREFIX] = []
-#     settings[lang_settings
-#              .TABLE_CHANNEL] = {lang_settings.CHANNEL_BOSS: [],
-#                                           lang_settings.CHANNEL_MGMT: []}
-#     settings[lang_settings
-#              .TABLE_REGION] = {lang_settings.OPT_DEFAULT: ''}
-#     settings[lang_settings
-#              .TABLE_ROLE] = {lang_settings.ROLE_BOSS: []}
+#     settings[constants.settings
+#              .TABLE_CHANNEL] = {constants.settings.CHANNEL_BOSS: [],
+#                                           constants.settings.CHANNEL_MGMT: []}
+#     settings[constants.settings
+#              .TABLE_REGION] = {constants.settings.OPT_DEFAULT: ''}
+#     settings[constants.settings
+#              .TABLE_ROLE] = {constants.settings.ROLE_BOSS: []}
 #     talt_temporary = {}
 #     talt_temporary_actual = {}
-#     settings[lang_settings
+#     settings[constants.settings
 #              .DB_LOCK] = False
     # talt_level                          = []
     # talt_level.append(0)
@@ -247,19 +248,19 @@ def what_setting_target(entry):
 
     #     """
     #     self.server_id = srv_id
-    #     self.server_file = (lang_settings.FILE_PATH
-    #                         .format(lang_settings.SERVER_DIR, self.server_id))
+    #     self.server_file = (constants.settings.FILE_PATH
+    #                         .format(constants.settings.SERVER_DIR, self.server_id))
     #     self.check_file()
 
     #     if srv_admin and discord_user_id != srv_admin:
-    #         self.set_role(srv_admin, lang_settings.UTYPE_USERS,
-    #                       role=lang_settings.ROLE_SUPER_AUTH)
+    #         self.set_role(srv_admin, constants.settings.UTYPE_USERS,
+    #                       role=constants.settings.ROLE_SUPER_AUTH)
     #         self.set_role(discord_user_id,
-    #                       lang_settings.UTYPE_USERS,
-    #                       role=lang_settings.ROLE_SUPER_AUTH)
+    #                       constants.settings.UTYPE_USERS,
+    #                       role=constants.settings.ROLE_SUPER_AUTH)
     #     elif srv_admin:
-    #         self.set_role(srv_admin, lang_settings.UTYPE_USERS,
-    #                       role=lang_settings.ROLE_SUPER_AUTH)
+    #         self.set_role(srv_admin, constants.settings.UTYPE_USERS,
+    #                       role=constants.settings.ROLE_SUPER_AUTH)
 
     #     self.toggle_lock(False)
 
@@ -272,8 +273,8 @@ def check_file(self):
     :func:`check_file` sees whether the settings file is properly created.
     Also creates the directory and file if either (or both) are missing.
     """
-    if not os.path.isdir(lang_settings.SERVER_DIR):
-        os.mkdir(lang_settings.SERVER_DIR)
+    if not os.path.isdir(constants.settings.SERVER_DIR):
+        os.mkdir(constants.settings.SERVER_DIR)
     if not os.path.isfile(self.server_file):
         self.init_file()
     else:
@@ -321,10 +322,10 @@ def is_member(self, uuid: str):
     if self.is_authorized(uuid):
         return True
 
-    return (uuid in self.settings[lang_settings
-                                 .UTYPE_USERS][lang_settings.ROLE_MEMBER] or
-            uuid in self.settings[lang_settings
-                                 .UTYPE_GROUP][lang_settings.ROLE_MEMBER])
+    return (uuid in self.settings[constants.settings
+                                 .UTYPE_USERS][constants.settings.ROLE_MEMBER] or
+            uuid in self.settings[constants.settings
+                                 .UTYPE_GROUP][constants.settings.ROLE_MEMBER])
 
 
 def is_authorized(self, uuid: str):
@@ -339,14 +340,14 @@ def is_authorized(self, uuid: str):
     Returns:
         bool: True if so; False if not
     """
-    return (uuid in self.settings[lang_settings
-                                 .UTYPE_USERS][lang_settings.ROLE_SUPER_AUTH] or 
-            uuid in self.settings[lang_settings
-                                 .UTYPE_GROUP][lang_settings.ROLE_SUPER_AUTH] or
-            uuid in self.settings[lang_settings
-                                 .UTYPE_USERS][lang_settings.ROLE_AUTH] or
-            uuid in self.settings[lang_settings
-                                 .UTYPE_GROUP][lang_settings.ROLE_AUTH])
+    return (uuid in self.settings[constants.settings
+                                 .UTYPE_USERS][constants.settings.ROLE_SUPER_AUTH] or 
+            uuid in self.settings[constants.settings
+                                 .UTYPE_GROUP][constants.settings.ROLE_SUPER_AUTH] or
+            uuid in self.settings[constants.settings
+                                 .UTYPE_USERS][constants.settings.ROLE_AUTH] or
+            uuid in self.settings[constants.settings
+                                 .UTYPE_GROUP][constants.settings.ROLE_AUTH])
 
 
 def process_setting(self, setting, target, value: str, uid, uuid: str):
@@ -366,20 +367,20 @@ def process_setting(self, setting, target, value: str, uid, uuid: str):
         list: if records are available, a list is returned instead
     """
     if not self.is_member(uuid):
-        return lang_settings.FAIL_PERMS
+        return constants.settings.FAIL_PERMS
 
     resp = []
 
     # handle <talt>
-    if target == lang_settings.TARGET_TALT:
-        if setting == lang_settings.SETTING_ADD:
+    if target == constants.settings.TARGET_TALT:
+        if setting == constants.settings.SETTING_ADD:
             # handle permissions here before allowing access
             if self.is_authorized(uuid):
-                rec = self.settings[lang_settings.TALT]
-                _r = lang_settings.REC_PERMANENTLY
+                rec = self.settings[constants.settings.TALT]
+                _r = constants.settings.REC_PERMANENTLY
             else: #elif self.is_member(uuid):
                 rec = self.talt_temporary
-                _r = lang_settings.REC_TEMPORARILY
+                _r = constants.settings.REC_TEMPORARILY
 
             for _uid in uid:
                 try:
@@ -388,16 +389,16 @@ def process_setting(self, setting, target, value: str, uid, uuid: str):
                 except KeyError:
                     rec[_uid] = int(value)
                 except Exception as e:
-                    print(e, lang_settings.FMT_SETTING_FAIL
+                    print(e, constants.settings.FMT_SETTING_FAIL
                           .format('uuid', uuid, 'setting', setting,
                                   'value', value, 'uid', _uid))
-                    resp.append(lang_settings.FAIL_COULD_NOT
+                    resp.append(constants.settings.FAIL_COULD_NOT
                                 .format(setting, _uid, target))
-            return lang_settings.ACKNOWLEDGED
+            return constants.settings.ACKNOWLEDGED
 
-        elif setting == lang_settings.SETTING_SET:
+        elif setting == constants.settings.SETTING_SET:
             if self.is_authorized(uuid):
-                rec = self.settings[lang_settings.TALT]
+                rec = self.settings[constants.settings.TALT]
             else:
                 rec = self.talt_temporary
 
@@ -405,43 +406,43 @@ def process_setting(self, setting, target, value: str, uid, uuid: str):
                 try:
                     rec[_uid] = int(value)
                 except:
-                    print(e, lang_settings.FMT_SETTING_FAIL
+                    print(e, constants.settings.FMT_SETTING_FAIL
                           .format('uuid', uuid, 'setting', setting,
                                   'value', value, 'uid', _uid))
-                    return lang_settings.FAIL_NOT_PARSED
+                    return constants.settings.FAIL_NOT_PARSED
 
-        elif setting == lang_settings.SETTING_GET:
+        elif setting == constants.settings.SETTING_GET:
             # both member and auth can use 'get'
             pass
 
-        else: #elif setting == lang_settings.SETTING_REMOVE
+        else: #elif setting == constants.settings.SETTING_REMOVE
             pass
 
     # handle <channel>
-    elif target == lang_settings.TARGET_CHANNEL:
-        if setting == lang_settings.SETTING_SET:
+    elif target == constants.settings.TARGET_CHANNEL:
+        if setting == constants.settings.SETTING_SET:
             pass
 
-        elif setting == lang_settings.SETTING_GET:
+        elif setting == constants.settings.SETTING_GET:
             pass
 
-        else: #elif setting == lang_settings.SETTING_REMOVE
+        else: #elif setting == constants.settings.SETTING_REMOVE
             pass
 
 
     # handle <role>
-    else: #elif target == lang_settings.TARGET_ROLE
-        if setting == lang_settings.SETTING_SET:
+    else: #elif target == constants.settings.TARGET_ROLE
+        if setting == constants.settings.SETTING_SET:
             pass
 
-        elif setting == lang_settings.SETTING_GET:
+        elif setting == constants.settings.SETTING_GET:
             pass
 
-        else: #elif setting == lang_settings.SETTING_REMOVE
+        else: #elif setting == constants.settings.SETTING_REMOVE
             pass
 
 
-    #lang_settings.SETTING_ADD
+    #constants.settings.SETTING_ADD
     pass
 
 
@@ -506,17 +507,17 @@ def promote_demote(self, mode, users, groups):
     for utype, user in chain(users, groups):
         tg_role     =   self.get_role_user_id(user)
         # cannot promote (super) authorized or demote none
-        if tg_role <= 2 and mode == lang_settings.ROLES_PROMOTE or \
-           tg_role == 0 and mode == lang_settings.ROLES_DEMOTE:
+        if tg_role <= 2 and mode == constants.settings.ROLES_PROMOTE or \
+           tg_role == 0 and mode == constants.settings.ROLES_DEMOTE:
             failed.append((user, "of role " + self.role_level[tg_role] + ", cannot " + mode, "@" if utype == "users" else "&"))
         # member to authorized
-        elif tg_role == 2 and mode == lang_settings.ROLES_DEMOTE:
+        elif tg_role == 2 and mode == constants.settings.ROLES_DEMOTE:
             self.settings[utype][role_auth].remove(user)
-        elif tg_role == 1 and mode == lang_settings.ROLES_PROMOTE:
+        elif tg_role == 1 and mode == constants.settings.ROLES_PROMOTE:
             self.settings[utype][role_auth].append(user)
-        elif tg_role == 1 and mode == lang_settings.ROLES_DEMOTE:
+        elif tg_role == 1 and mode == constants.settings.ROLES_DEMOTE:
             self.settings[utype][role_member].remove(user)
-        elif tg_role == 0 and mode == lang_settings.ROLES_PROMOTE:
+        elif tg_role == 0 and mode == constants.settings.ROLES_PROMOTE:
             self.settings[utype][role_member].append(user)
     self.save_file()
     return failed
@@ -667,7 +668,7 @@ def validate_talt(self, auth_user, mode, user=None):
        not auth_user in self.settings['users']['s-authorized']:
         return False
     elif not user:
-        if mode == lang_settings.VALIDATION_VAL:
+        if mode == constants.settings.VALIDATION_VAL:
             for user, talt_pt in self.talt_temporary.items():
                 self.settings['talt'][user] += talt_pt
                 self.talt_temporary[user]   = 0
@@ -675,7 +676,7 @@ def validate_talt(self, auth_user, mode, user=None):
         else:
             self.talt_temporary = dict()
     else:
-        if mode == lang_settings.VALIDATION_VAL:
+        if mode == constants.settings.VALIDATION_VAL:
             self.settings['talt'][user] += self.talt_temporary[user]
             self.update_guild_talt(self.talt_temporary[user])
         talt_temporary[user] = 0
@@ -1018,19 +1019,19 @@ def process_command(self, msg_channel, settings_cmd, cmd_user, usr_roles, users,
     # promote
     elif rgx_rolechange.match(settings_cmd) and rgx_promote.search(settings_cmd):
         self.toggle_lock(True)
-        fail    =   self.promote_demote(lang_settings.ROLES_PROMOTE, users, groups, channels)
+        fail    =   self.promote_demote(constants.settings.ROLES_PROMOTE, users, groups, channels)
     # demote
     elif rgx_rolechange.match(settings_cmd):
         self.toggle_lock(True)
-        fail    =   self.promote_demote(lang_settings.ROLES_DEMOTE, users, groups, channels)
+        fail    =   self.promote_demote(constants.settings.ROLES_DEMOTE, users, groups, channels)
 
     # validation - handle after all commands are checked
     # invalidate
     elif rgx_validation.match(settings_cmd) and rgx_invalid.search(settings_cmd):
-        mode    =   lang_settings.VALIDATION_INV
+        mode    =   constants.settings.VALIDATION_INV
     # validate
     elif rgx_validation.match(settings_cmd):
-        mode    =   lang_settings.VALIDATION_VAL
+        mode    =   constants.settings.VALIDATION_VAL
 
     # did not match any settings or role change or validation
     else:
@@ -1160,7 +1161,7 @@ def process_setting(self, msg_channel, settings_cmd, cmd_user, user_role_id, use
             return ("You tried using `setting`:`unset` but it does not work for `settings`:`talt` module. Please re-check syntax.\n" + msg_help,)
         if groups:
             warning +=  "Warning: you can't use use `settings`:`talt` module with groups/roles. Ignoring.\n"
-        target  =   lang_settings.TARGET_TALT
+        target  =   constants.settings.TARGET_TALT
         unit    =   unit_talt
 
         # special case: get talt all
@@ -1207,13 +1208,13 @@ def process_setting(self, msg_channel, settings_cmd, cmd_user, user_role_id, use
         else:
             ch_list =   channels
 
-        target  =   lang_settings.TARGET_CHANNEL
+        target  =   constants.settings.TARGET_CHANNEL
 
     # $settings [setting] role [role] [@mention]
     elif rgx_set_role.match(xargs[0]):
         if not self.is_ch_type(msg_channel, channel_mgmt):
             return ("",) # silently deny changes (wrong channel)
-        target  =   lang_settings.TARGET_ROLE
+        target  =   constants.settings.TARGET_ROLE
 
     # any incorrect combination of arguments
     else:
@@ -1223,7 +1224,7 @@ def process_setting(self, msg_channel, settings_cmd, cmd_user, user_role_id, use
 
     # `talt`
     # actual `xargs` begin from index 1 on: index 0 is 'talt'
-    if target == lang_settings.TARGET_TALT:
+    if target == constants.settings.TARGET_TALT:
         if rgx_set_add.match(settings_cmd):
             f   =   self.add_talt
         elif rgx_set_get.match(settings_cmd):
@@ -1257,7 +1258,7 @@ def process_setting(self, msg_channel, settings_cmd, cmd_user, user_role_id, use
             return (acknowledge + "Your Talt contributions were successfully recorded.\n",)
 
     # `channel`
-    elif target == lang_settings.TARGET_CHANNEL:
+    elif target == constants.settings.TARGET_CHANNEL:
         if rgx_set_set.match(settings_cmd):
             f   =   self.set_channel
             kw  =   "set"

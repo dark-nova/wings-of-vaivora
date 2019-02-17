@@ -15,7 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `$settings` no longer has its own class. Instead, it will act as a middleman similar to how `$boss` works.
 - `db.py` consequently has become the backend of data manipulation.
 - Existing boss records will be dumped from this update. Fields now use `integer` instead of `real`. (No more decimal precision!) `convert_db.py` must be run to ensure this happens.
-- Likewise, `s-authorized` roles are removed.
+- Likewise, existing entries with `s-authorized` roles are removed.
+
+### Deprecated
+- Translation modules moved out of their respective directories. I don't think this project will ever be made to run in multiple languages simultaneously.
 
 ## [2.0] - 2019-02-11
 ### Added
