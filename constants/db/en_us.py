@@ -32,12 +32,26 @@ SQL_FROM_SETS = [
     SQL_FROM_OFFSET
     ]
 
+SQL_CLEAN_TABLES = [
+    'roles',
+    'channels',
+    'contribution'
+    ]
+
+SQL_CLEAN = {}
+SQL_CLEAN['roles'] = 'role, mention' # COL_SETS_ROLES
+SQL_CLEAN['channels'] = 'type, channel' # COL_SETS_CHANS
+SQL_CLEAN['contribution'] = 'userid, points' # COL_SETS_CONTR
+
 SQL_DROP_OWNER = 'drop table if exists owner'
 SQL_MAKE_OWNER = 'create table owner(id text)'
 SQL_UPDATE_OWNER = 'insert into owner values("{}")'
 SQL_SAUTH_OWNER = 'insert into roles values("{}", "{}")'
 SQL_GET_OLD_OWNER = 'select * from owner'
 SQL_DEL_OLD_OWNER = 'delete from owner where id = "{}"'
+
+SQL_CLEAN_DUPES = """delete from {0} where rowid not in
+(select min(rowid) from {0} group by {1})"""
 
 MOD_BOSS = 'boss'
 MOD_SETS = 'settings'

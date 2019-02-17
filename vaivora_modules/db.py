@@ -442,6 +442,19 @@ class Database:
                 print('Exception caught:', e)
                 return False
 
+    async def clean_duplicates(self):
+        """
+        :func:`clean_duplicates` gets rid of duplicates from all tables.
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            for _table in lang_db.SQL_CLEAN_TABLES:
+                try:
+                    await _db.execute(lang_db.SQL_CLEAN_DUPES
+                                      .format(_table,
+                                              lang_db.SQL_CLEAN[_table]))
+                except Exception as e:
+                    print(e)
+                    continue
 
     async def get_channels(self, ch_type):
         """
