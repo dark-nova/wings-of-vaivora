@@ -70,11 +70,13 @@ def check_channel(ch_type):
         chs = await (vaivora_modules.settings
                      .get_channel(ctx.guild.id, ch_type))
 
+        print(chs)
+
         if chs and ctx.channel.id not in chs:
             return False # silently ignore wrong channel
         else: # in the case of `None` chs, all channels are valid
             return True
-    return commands.check(check)
+    return check
 
 
 def check_role():
@@ -97,7 +99,7 @@ def check_role():
                             .format(ctx.author.mention,
                                     lang_settings.FAIL_NOT_AUTH))
             return False
-    return commands.check(check)
+    return check
 
 
 def only_in_guild():
@@ -113,7 +115,7 @@ def only_in_guild():
             await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
             return False
         return True
-    return commands.check(check)
+    return check
 
 
 @bot.event
@@ -189,7 +191,7 @@ async def boss(ctx, arg: str):
 # $boss <boss> <status> <time> [channel]
 @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
 @check_channel(lang.ROLE_BOSS)
-@only_in_guild()
+#@only_in_guild()
 async def status(ctx, time: str, map_or_channel = None):
     """
     :func:`status` is a subcommand for `boss`.

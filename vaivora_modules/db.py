@@ -387,15 +387,16 @@ class Database:
             list: a list of channels of `ch_type`
             None: if no such channels were configured
         """
+        print(ch_type)
         async with aiosqlite.connect(self.db_name) as _db:
-            _db.row_factory = aiosqlite.Row
+            #_db.row_factory = aiosqlite.Row
             try:
                 cursor = await _db.execute(
                                 await construct_SQL(lang_db.COL_SQL_FROM_CHANS
                                                     .format(ch_type)))
-                results = await cursor.fetchall()
-                return results
-            except:
+                return [_row[0] for _row in await cursor.fetchall()]
+            except Exception as e:
+                print(e)
                 return None
 
     async def set_channels(self, ch_id, ch_type):

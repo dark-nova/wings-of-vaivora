@@ -745,7 +745,7 @@ async def get_guild_level(self):
     return str(self.settings['guild_level'])
 
 
-async def get_channel(self, server_id: int, ch_type):
+async def get_channel(server_id: int, ch_type):
     """
     :func:`get_channel` gets a list of channels of an associated type.
 
@@ -758,7 +758,7 @@ async def get_channel(self, server_id: int, ch_type):
         None: if no channels were found
     """
     vdb = vaivora_modules.db.Database(server_id)
-    return await vdb.get_channels(server_id)
+    return await vdb.get_channels(ch_type)
 
 
 async def unset_channel(self, channel):
