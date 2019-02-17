@@ -6,11 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 ### Added
 - Custom checks were added, to streamline valid command usage.
+- Owners are now automatically added `s-authorized` on each boot. Old owners are removed to prevent loopholes.
 
 ### Changed
 - The `$settings` module has been rewritten from a class interface to a helper module for the `db` module.
 - `$settings` no longer has its own class. Instead, it will act as a middleman similar to how `$boss` works.
 - `db.py` consequently has become the backend of data manipulation.
+- Existing boss records will be dumped from this update. Fields now use `integer` instead of `real`. (No more decimal precision!) `convert_db.py` must be run to ensure this happens.
+- Likewise, `s-authorized` roles are removed.
 
 ## [2.0] - 2019-02-11
 ### Added

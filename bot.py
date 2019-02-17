@@ -70,8 +70,6 @@ def check_channel(ch_type):
         chs = await (vaivora_modules.settings
                      .get_channel(ctx.guild.id, ch_type))
 
-        print(chs)
-
         if chs and ctx.channel.id not in chs:
             return False # silently ignore wrong channel
         else: # in the case of `None` chs, all channels are valid
@@ -90,7 +88,7 @@ def check_role():
     @commands.check
     async def check(ctx):
         users = await (vaivora_modules.settings
-                       .get_authorized(ctx.guild.id))
+                       .get_users(ctx.guild.id, lang_settings.ROLE_AUTH))
 
         if users and ctx.author.id in users:
             return True
@@ -190,8 +188,8 @@ async def boss(ctx, arg: str):
 
 # $boss <boss> <status> <time> [channel]
 @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
+@only_in_guild()
 @check_channel(lang.ROLE_BOSS)
-#@only_in_guild()
 async def status(ctx, time: str, map_or_channel = None):
     """
     :func:`status` is a subcommand for `boss`.
@@ -239,8 +237,8 @@ async def status(ctx, time: str, map_or_channel = None):
 
 
 @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
-@check_channel(lang.ROLE_BOSS)
 @only_in_guild()
+@check_channel(lang.ROLE_BOSS)
 async def entry(ctx, channel=None):
     """
     :func:`_list` is a subcommand for `boss`.
@@ -392,8 +390,6 @@ async def boss_helper(boss, time, map_or_channel):
 
 
 @bot.group()
-@only_in_guild()
-@check_channel(lang.ROLE_SETTINGS)
 async def settings(ctx, arg=None):
     """
     :func:`boss` handles "$boss" commands.
@@ -418,9 +414,9 @@ async def settings(ctx, arg=None):
 
 # $settings set <target> <kind> <discord object>
 @settings.command()
+@only_in_guild()
 @check_channel(lang.ROLE_SETTINGS)
 @check_role()
-@only_in_guild()
 async def set(ctx, target, kind, something=None):
     """
     :func:`set` sets `target`s to `kind`s.
@@ -433,10 +429,12 @@ async def set(ctx, target, kind, something=None):
     Returns:
         True if run successfully, regardless of result
     """
+    print('hmm', target)
     if lang_settings.REGEX_SETTING_TARGET_CHANNEL.match(target):
         target = lang_settings.TARGET_CHANNEL
-        if not ctx.channel_mentions:
-            pass
+        if ctx.channel_mentions:
+            #if kind ==
+            print('set', ctx.channel_mentions)
 
 
 
@@ -534,8 +532,11 @@ async def check_databases():
             guild_id = str(guild.id)
             guild_owner_id = str(guild.owner.id)
             vdbs[guild.id] = vaivora_modules.db.Database(guild_id)
-            #vdst[guild.id] = vaivora_modules.settings.Settings(guild_id, guild_owner_id)
-            #await greet(guild.id, guild.owner)
+            try:
+                if not await vdbs[guild.id].update_owner_sauth(guild_owner_id):
+                    del vdbs[guild.id] # do not use corrupt/invalid db
+            except:
+                del vdbs[guild.id]
 
     results = {}
     minutes = {}
