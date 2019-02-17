@@ -57,6 +57,8 @@ def update_db(db_dir):
                 cursor.execute('drop table if exists talt')
                 cursor.execute('drop table if exists boss')
                 cursor.execute(
+                    'create table owner(id text)')
+                cursor.execute(
                     'create table offset(hours integer)')
                 cursor.execute(
                     'create table guild(level integer, points integer)')
@@ -120,6 +122,8 @@ def transfer_data(db_dir, ss_dir, skips=None):
 
             # add users back to their assigned roles
             for role, user in ssjson['users'].items():
+                if role == 's-authorized':
+                    continue
                 for _u in user:
                     cursor.execute('insert into roles values(?, ?)',
                                    (role, _u))
@@ -128,6 +132,8 @@ def transfer_data(db_dir, ss_dir, skips=None):
 
             # add groups back to their assigned roles
             for role, group in ssjson['group'].items():
+                if role == 's-authorized':
+                    continue
                 for _g in group:
                     cursor.execute('insert into roles values(?, ?)',
                                    (role, _g))
@@ -146,6 +152,8 @@ def transfer_data(db_dir, ss_dir, skips=None):
 
             # add channels
             for ch_type, channels in ssjson['channel'].items():
+                if ch_type == 'management':
+                    ch_type = 'settings'
                 for channel in channels:
                     cursor.execute('insert into channels values(?, ?)',
                                    (ch_type, channel))
