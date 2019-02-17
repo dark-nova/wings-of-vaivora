@@ -14,11 +14,16 @@ import vaivora_modules.db
 import vaivora_modules.disclaimer
 import vaivora_modules.secrets
 import vaivora_modules.settings
-from constants.errors import en_us as lang_err
-from constants.settings import en_us as lang_settings
-from constants.boss import en_us as lang_boss
-from constants.db import en_us as lang_db
-from constants.main import en_us as lang
+import constants.main
+import constants.boss
+import constants.db
+import constants.errors
+import constants.settings
+# from constants.errors import en_us as constants.main_err
+# from constants.settings import en_us as constants.main_settings
+# from constants.boss import en_us as constants.main_boss
+# from constants.db import en_us as constants.main_db
+# from constants.main import en_us as constants.main
 
 
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
@@ -89,21 +94,21 @@ def check_role():
     async def check(ctx):
         users = await (vaivora_modules.settings
                        .get_users(ctx.guild.id,
-                                  lang_settings.ROLE_SUPER_AUTH))
+                                  constants.settings.ROLE_SUPER_AUTH))
 
         if users and str(ctx.author.id) in users:
             return True
         else:
             users = await (vaivora_modules.settings
                            .get_users(ctx.guild.id,
-                                      lang_settings.ROLE_AUTH))
+                                      constants.settings.ROLE_AUTH))
 
         if users and str(ctx.author.id) in users:
             return True
         else:
             await ctx.send('{} {}'
                             .format(ctx.author.mention,
-                                    lang_settings.FAIL_NOT_AUTH))
+                                    constants.settings.FAIL_NOT_AUTH))
             return False
     return check
 
@@ -118,7 +123,7 @@ def only_in_guild():
     @commands.check
     async def check(ctx):
         if ctx.guild == None: # not a guild
-            await ctx.send(lang_err.CANT_DM.format(lang_boss.COMMAND))
+            await ctx.send(constants.errors.CANT_DM.format(constants.boss.COMMAND))
             return False
         return True
     return check
@@ -145,7 +150,7 @@ async def on_guild_join(guild):
     #vdst[guild.id] = vaivora_modules.settings.Settings(str(guild.id), str(owner.id))
 
     #await greet(guild.id, owner)
-    await owner.send(owner, lang.WELCOME)
+    await owner.send(owner, constants.main.WELCOME)
 
     return True
 
@@ -162,7 +167,7 @@ async def help(ctx):
         True if successful; False otherwise
     """
     try:
-        await ctx.author.send(lang.MSG_HELP)
+        await ctx.author.send(constants.main.MSG_HELP)
     except:
         return False
 
@@ -197,7 +202,7 @@ async def boss(ctx, arg: str):
 # $boss <boss> <status> <time> [channel]
 @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
 @only_in_guild()
-@check_channel(lang.ROLE_BOSS)
+@check_channel(constants.main.ROLE_BOSS)
 async def status(ctx, time: str, map_or_channel = None):
     """
     :func:`status` is a subcommand for `boss`.
@@ -213,10 +218,10 @@ async def status(ctx, time: str, map_or_channel = None):
     """
     subcmd = await vaivora_modules.boss.what_status(ctx.subcommand_passed)
 
-    if ctx.boss == lang_boss.CMD_ARG_TARGET_ALL:
-       await ctx.send(lang_err.IS_INVALID_3
+    if ctx.boss == constants.boss.CMD_ARG_TARGET_ALL:
+       await ctx.send(constants.errors.IS_INVALID_3
                       .format(ctx.author.mention, ctx.boss,
-                              lang_boss.CMD_ARG_TARGET, subcmd))
+                              constants.boss.CMD_ARG_TARGET, subcmd))
        return False
 
     try:
@@ -224,18 +229,18 @@ async def status(ctx, time: str, map_or_channel = None):
     except:
         which_fail = await boss_helper(ctx.boss, time, map_or_channel)
         if len(which_fail) == 1:
-            await ctx.send(lang_err.IS_INVALID_2
+            await ctx.send(constants.errors.IS_INVALID_2
                            .format(ctx.author.mention, ctx.boss,
-                                   lang_boss.CMD_ARG_TARGET))
+                                   constants.boss.CMD_ARG_TARGET))
         elif len(which_fail) == 2:
-            await ctx.send(lang_err.IS_INVALID_3
+            await ctx.send(constants.errors.IS_INVALID_3
                            .format(ctx.author.mention, time,
                                    ctx.subcommand_passed, 'time'))
         else:
             pass
         return False
 
-    opt = {lang_db.COL_BOSS_CHANNEL: _channel, lang_db.COL_BOSS_MAP: _map}
+    opt = {constants.db.COL_BOSS_CHANNEL: _channel, constants.db.COL_BOSS_MAP: _map}
     msg = await (vaivora_modules.boss
                  .process_cmd_status(ctx.guild.id, ctx.channel.id,
                                      _boss, subcmd, _time, opt))
@@ -246,7 +251,7 @@ async def status(ctx, time: str, map_or_channel = None):
 
 @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
 @only_in_guild()
-@check_channel(lang.ROLE_BOSS)
+@check_channel(constants.main.ROLE_BOSS)
 async def entry(ctx, channel=None):
     """
     :func:`_list` is a subcommand for `boss`.
@@ -259,19 +264,19 @@ async def entry(ctx, channel=None):
     Returns:
         True if run successfully, regardless of result 
     """
-    if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
+    if ctx.boss != constants.boss.CMD_ARG_TARGET_ALL:
         boss_idx = await vaivora_modules.boss.check_boss(ctx.boss)
         if boss_idx == -1:
-            await ctx.send(lang_err.IS_INVALID_2
+            await ctx.send(constants.errors.IS_INVALID_2
                            .format(ctx.author.mention, ctx.boss,
-                                   lang_boss.CMD_ARG_TARGET))
+                                   constants.boss.CMD_ARG_TARGET))
             return False
-        boss = lang_boss.ALL_BOSSES[boss_idx]
+        boss = constants.boss.ALL_BOSSES[boss_idx]
     else:
-        boss = lang_boss.ALL_BOSSES
+        boss = constants.boss.ALL_BOSSES
 
     if channel is not None:
-        channel = lang_boss.REGEX_OPT_CHANNEL.match(channel)
+        channel = constants.boss.REGEX_OPT_CHANNEL.match(channel)
         channel = int(channel.group(2))
 
     subcmd = await vaivora_modules.boss.what_entry(ctx.subcommand_passed)
@@ -307,19 +312,19 @@ async def query(ctx):
     """
     subcmd = await vaivora_modules.boss.what_query(ctx.subcommand_passed)
 
-    if ctx.boss == lang_boss.CMD_ARG_TARGET_ALL:
-       await ctx.send(lang_err.IS_INVALID_3
+    if ctx.boss == constants.boss.CMD_ARG_TARGET_ALL:
+       await ctx.send(constants.errors.IS_INVALID_3
                       .format(ctx.author.mention, ctx.boss,
-                              lang_boss.CMD_ARG_TARGET, subcmd))
+                              constants.boss.CMD_ARG_TARGET, subcmd))
        return False
     else:
         boss_idx = await vaivora_modules.boss.check_boss(ctx.boss)
         if boss_idx == -1:
-            await ctx.send(lang_err.IS_INVALID_2
+            await ctx.send(constants.errors.IS_INVALID_2
                            .format(ctx.author.mention, ctx.boss,
-                                   lang_boss.CMD_ARG_TARGET))
+                                   constants.boss.CMD_ARG_TARGET))
             return False
-        boss = lang_boss.ALL_BOSSES[boss_idx]
+        boss = constants.boss.ALL_BOSSES[boss_idx]
 
     msg = await vaivora_modules.boss.process_cmd_query(boss, subcmd)
 
@@ -340,10 +345,10 @@ async def _type(ctx):
     """
     subcmd = await vaivora_modules.boss.what_type(ctx.subcommand_passed)
 
-    if ctx.boss != lang_boss.CMD_ARG_TARGET_ALL:
-       await ctx.send(lang_err.IS_INVALID_3
+    if ctx.boss != constants.boss.CMD_ARG_TARGET_ALL:
+       await ctx.send(constants.errors.IS_INVALID_3
                       .format(ctx.author.mention, ctx.boss,
-                              lang_boss.CMD_ARG_TARGET, subcmd))
+                              constants.boss.CMD_ARG_TARGET, subcmd))
        return False
 
     msg = await vaivora_modules.boss.get_bosses(subcmd)
@@ -375,16 +380,16 @@ async def boss_helper(boss, time, map_or_channel):
     if not time: # invalid time
         return (None,None)
 
-    boss = lang_boss.ALL_BOSSES[boss_idx]
+    boss = constants.boss.ALL_BOSSES[boss_idx]
 
-    if len(lang_boss.BOSS_MAPS[boss]) == 1:
+    if len(constants.boss.BOSS_MAPS[boss]) == 1:
         map_idx = 0 # it just is
 
     if map_or_channel and type(map_or_channel) is int:
         if map_or_channel <= 4 or map_or_channel > 1:
             channel = map_or_channel # use user-input channel only if valid
-    elif map_or_channel and lang_boss.REGEX_OPT_CHANNEL.match(map_or_channel):
-        channel = lang_boss.REGEX_OPT_CHANNEL.match(map_or_channel)
+    elif map_or_channel and constants.boss.REGEX_OPT_CHANNEL.match(map_or_channel):
+        channel = constants.boss.REGEX_OPT_CHANNEL.match(map_or_channel)
         channel = int(channel.group(2)) # channel will always be 1 through 4 inclusive
     elif type(map_or_channel) is str and map_idx != 0: # possibly map
         map_idx = await vaivora_modules.boss.check_maps(boss_idx, map_or_channel)
@@ -392,7 +397,7 @@ async def boss_helper(boss, time, map_or_channel):
     if (not map_idx and map_idx != 0) or map_idx == -1:
         _map = ""
     else:
-        _map = lang_boss.BOSS_MAPS[boss][map_idx]
+        _map = constants.boss.BOSS_MAPS[boss][map_idx]
 
     return (boss, time, _map, channel)
 
@@ -432,7 +437,7 @@ async def s_help(ctx):
 # $settings set <target> <kind> <discord object>
 @settings.command()
 @only_in_guild()
-@check_channel(lang.ROLE_SETTINGS)
+@check_channel(constants.main.ROLE_SETTINGS)
 @check_role()
 async def set(ctx, target, kind, ids: commands.Greedy[int] = 0):
     """
@@ -447,13 +452,13 @@ async def set(ctx, target, kind, ids: commands.Greedy[int] = 0):
     Returns:
         True if run successfully, regardless of result
     """
-    if lang_settings.REGEX_SETTING_TARGET_CHANNEL.match(target):
-        target = lang_settings.TARGET_CHANNEL
+    if constants.settings.REGEX_SETTING_TARGET_CHANNEL.match(target):
+        target = constants.settings.TARGET_CHANNEL
 
-        if kind != lang.ROLE_BOSS and kind != lang.ROLE_SETTINGS:
-            await ctx.send(lang_err.IS_INVALID_3.format(
+        if kind != constants.main.ROLE_BOSS and kind != constants.main.ROLE_SETTINGS:
+            await ctx.send(constants.errors.IS_INVALID_3.format(
                 ctx.author.mention, kind,
-                lang.ROLE_SETTINGS, target))
+                constants.main.ROLE_SETTINGS, target))
 
 
 
@@ -463,9 +468,9 @@ async def set(ctx, target, kind, ids: commands.Greedy[int] = 0):
                 _ids.append(str(channel_mention.id))
             await vaivora_modules.settings
         else:
-            await ctx.send(lang_err.TOO_FEW_ARGS.format(
-                ctx.author.mention, lang.ROLE_SETTINGS,
-                lang_settings.USAGE_SET_CHANNELS))
+            await ctx.send(constants.errors.TOO_FEW_ARGS.format(
+                ctx.author.mention, constants.main.ROLE_SETTINGS,
+                constants.settings.USAGE_SET_CHANNELS))
             return False
 
 
@@ -491,23 +496,23 @@ async def set(ctx, target, kind, ids: commands.Greedy[int] = 0):
 
 
 #     if vaivora_modules.settings.what_setting(args[0]):
-#         arg_subcmd = lang_settings.CMD_ARG_SETTING
+#         arg_subcmd = constants.settings.CMD_ARG_SETTING
 #     elif vaivora_modules.settings.what_validation(args[0]):
-#         arg_subcmd = lang_settings.CMD_ARG_VALIDATION
+#         arg_subcmd = constants.settings.CMD_ARG_VALIDATION
 #     elif vaivora_modules.settings.what_rolechange(args[0]):
-#         arg_subcmd = lang_settings.CMD_ARG_ROLECHANGE
+#         arg_subcmd = constants.settings.CMD_ARG_ROLECHANGE
 #     else:
-#         await ctx.send(lang_err.IS_INVALID_2.format(ctx.author.mention, args[0],
-#                                                     lang_settings.CMD_ARG_SUBCMD))
+#         await ctx.send(constants.errors.IS_INVALID_2.format(ctx.author.mention, args[0],
+#                                                     constants.settings.CMD_ARG_SUBCMD))
 #         return False
 
-#     if arg_subcmd == lang_settings.CMD_ARG_SETTING:
+#     if arg_subcmd == constants.settings.CMD_ARG_SETTING:
 #         setting = vaivora_modules.settings.what_setting(args[0])
 #         target = vaivora_modules.settings.what_setting_target(args[1])
-#         if target is None or (target != lang_settings.TARGET_TALT and
-#                               setting == lang_settings.SETTING_ADD):
-#             await ctx.send(lang_err.IS_INVALID_3.format(ctx.author.mention, args[0],
-#                                                         lang_settings.CMD_ARG_SETTING, arg_subcmd))
+#         if target is None or (target != constants.settings.TARGET_TALT and
+#                               setting == constants.settings.SETTING_ADD):
+#             await ctx.send(constants.errors.IS_INVALID_3.format(ctx.author.mention, args[0],
+#                                                         constants.settings.CMD_ARG_SETTING, arg_subcmd))
 #             return False
 
 
@@ -615,7 +620,7 @@ async def check_databases():
             # check all timers
             message_to_send = []
             discord_channel = None
-            if not await valid_db.check_if_valid(lang.ROLE_BOSS):
+            if not await valid_db.check_if_valid(constants.main.ROLE_BOSS):
                 await valid_db.create_db()
                 continue
             results[vdb_id] = await valid_db.check_db_boss()
@@ -680,7 +685,7 @@ async def check_databases():
 
             # compare roles against server
             guild = bot.get_guild(vdb_id)
-            guild_boss_roles = await vdbs[vdb_id].get_role(lang.ROLE_BOSS)
+            guild_boss_roles = await vdbs[vdb_id].get_role(constants.main.ROLE_BOSS)
             for boss_role in guild_boss_roles:
                 try:
                     # group mention
@@ -714,7 +719,7 @@ async def check_databases():
                     discord_channel = int(message[-1])
 
                     # replace time_str with server setting warning, eventually
-                    discord_message = lang.BOSS_ALERT.format(role_str)
+                    discord_message = constants.main.BOSS_ALERT.format(role_str)
                 discord_message = '{} {}'.format(discord_message, message[0])
 
             try:
