@@ -34,8 +34,8 @@ SQL_FROM_SETS = [
 
 SQL_DROP_OWNER = 'drop table if exists owner'
 SQL_MAKE_OWNER = 'create table owner(id text)'
-SQL_UPDATE_OWNER = 'insert into owner values({})'
-SQL_SAUTH_OWNER = 'insert into roles values({}, {})'
+SQL_UPDATE_OWNER = 'insert into owner values("{}")'
+SQL_SAUTH_OWNER = 'insert into roles values("{}", "{}")'
 SQL_GET_OLD_OWNER = 'select * from owner'
 SQL_DEL_OLD_OWNER = 'delete from owner where id = "{}"'
 
