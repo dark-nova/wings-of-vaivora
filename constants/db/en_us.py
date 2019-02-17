@@ -14,8 +14,10 @@ SQL_ORDER = 'order by year desc, month desc, day desc, hour desc, minute desc'
 SQL_UPDATE = 'insert into boss values (?,?,?,?,?,?,?,?,?,?)'
 
 SQL_FROM_ROLES = 'from roles'
-SQL_FROM_ROLES_ROLE = 'from roles where role = "{}"'
+# role {} can be "member", "authorized", "s-authorized"
+COL_SQL_FROM_ROLES = 'select mention from roles where role = "{}"'
 SQL_FROM_CHANS = 'from channels'
+# type {} can be "boss" or "settings"
 COL_SQL_FROM_CHANS = 'select channel from channels where type = "{}"'
 SQL_FROM_GUILD = 'from guild'
 COL_SQL_FROM_GUILD = 'select {} from guild' # {} can be level or points
@@ -29,6 +31,13 @@ SQL_FROM_SETS = [
     SQL_FROM_CONTR,
     SQL_FROM_OFFSET
     ]
+
+SQL_DROP_OWNER = 'drop table if exists owner'
+SQL_MAKE_OWNER = 'create table owner(id text)'
+SQL_UPDATE_OWNER = 'insert into owner values({})'
+SQL_SAUTH_OWNER = 'insert into roles values({}, {})'
+SQL_GET_OLD_OWNER = 'select * from owner'
+SQL_DEL_OLD_OWNER = 'delete from owner where id = "{}"'
 
 MOD_BOSS = 'boss'
 MOD_SETS = 'settings'

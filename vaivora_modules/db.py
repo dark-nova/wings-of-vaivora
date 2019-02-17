@@ -375,6 +375,62 @@ class Database:
 
         return records # return an implicit bool for how many were deleted
 
+    async def get_users(self, kind):
+        """
+        :func:`get_users` gets users of a `kind`.
+        Users are defined to be either Discord Members or Roles,
+        hence not using "get_members" as the function name.
+
+        Args:
+            kind (str): the kind of user desired
+
+        Returns:
+            list: a list of users by id
+            None: if no such users were configured
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute(
+                                await construct_SQL(lang_db.COL_SQL_FROM_ROLES
+                                                    .format(ch_type)))
+                return [_row[0] for _row in await cursor.fetchall()]
+            except Exception as e:
+                print(e)
+                return None
+
+    async def update_owner_sauth(self, owner_id: str):
+        """
+        :func:`update_owner_sauth` updates owner to `s`uper `auth`orized
+        after each boot.
+
+        Args:
+            owner_id (str): the id of the owner
+
+        Returns:
+            True if successful; False otherwise
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute(SQL_GET_OLD_OWNER)
+                old_owner = (await cursor.fetchone())[0]
+                if owner_id == old_owner:
+                    return True # do not do anything if it's the same owner
+                await _db.execute(lang_db.SQL_DROP_OWNER)
+                await _db.execute(lang_db.SQL_DEL_OLD_OWNER
+                                  .format(old_owner))
+            except:
+                pass
+
+            try:
+                await _db.execute(lang_db.SQL_MAKE_OWNER)
+                await _db.execute(lang_db.SQL_UPDATE_OWNER)
+                await _db.execute(lang_db.SQL_SAUTH_OWNER)
+                return True
+            except Exception as e:
+                print('Exception caught:', e)
+                return False
+
+
     async def get_channels(self, ch_type):
         """
         :func:`get_channels` gets channels of a given `ch_type`.
@@ -387,7 +443,6 @@ class Database:
             list: a list of channels of `ch_type`
             None: if no such channels were configured
         """
-        print(ch_type)
         async with aiosqlite.connect(self.db_name) as _db:
             #_db.row_factory = aiosqlite.Row
             try:
