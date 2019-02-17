@@ -758,7 +758,7 @@ async def get_users(guild_id: int, kind: str):
         None: if no users were found
     """
     vdb = vaivora_modules.db.Database(guild_id)
-    return await vdb.get_users(lang_settings.)
+    return await vdb.get_users(kind)
 
 
 async def get_channel(guild_id: int, ch_type):

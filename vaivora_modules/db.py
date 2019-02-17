@@ -2,6 +2,7 @@ import asyncio
 import aiosqlite
 from operator import itemgetter
 
+from constants.settings import en_us as lang_settings
 from constants.boss import en_us as lang_boss
 from constants.db import en_us as lang_db
 
@@ -411,20 +412,31 @@ class Database:
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
-                cursor = await _db.execute(SQL_GET_OLD_OWNER)
+                cursor = await _db.execute(lang_db.SQL_GET_OLD_OWNER)
                 old_owner = (await cursor.fetchone())[0]
                 if owner_id == old_owner:
                     return True # do not do anything if it's the same owner
                 await _db.execute(lang_db.SQL_DROP_OWNER)
                 await _db.execute(lang_db.SQL_DEL_OLD_OWNER
                                   .format(old_owner))
-            except:
+            except: #Exception as e:
+                #print('Exception caught & ignored:', e)
                 pass
 
             try:
                 await _db.execute(lang_db.SQL_MAKE_OWNER)
-                await _db.execute(lang_db.SQL_UPDATE_OWNER)
-                await _db.execute(lang_db.SQL_SAUTH_OWNER)
+            except: #Exception as e:
+                # table owner might already exist
+                #print('Exception caught & ignored:', e)
+                pass
+
+            try:
+                await _db.execute(lang_db.SQL_UPDATE_OWNER
+                                  .format(owner_id))
+                await _db.execute(lang_db.SQL_SAUTH_OWNER
+                                  .format(lang_settings.ROLE_SUPER_AUTH,
+                                          owner_id))
+                await _db.commit()
                 return True
             except Exception as e:
                 print('Exception caught:', e)
