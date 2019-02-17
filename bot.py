@@ -534,9 +534,13 @@ async def check_databases():
             vdbs[guild.id] = vaivora_modules.db.Database(guild_id)
             try:
                 if not await vdbs[guild.id].update_owner_sauth(guild_owner_id):
-                    del vdbs[guild.id] # do not use corrupt/invalid db
+                    raise Exception
             except:
-                del vdbs[guild.id]
+                del vdbs[guild.id] # do not use corrupt/invalid db
+                print('Guild', guild.id, 'might be corrupt! Skipping...')
+
+            if await vdbs[guild.id].clean_duplicates():
+                print('Duplicates have been removed from tables!')
 
     results = {}
     minutes = {}

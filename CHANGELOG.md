@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - Custom checks were added, to streamline valid command usage.
 - Owners are now automatically added `s-authorized` on each boot. Old owners are removed to prevent loopholes.
+- File checks in `check_databases()` in `bot.py` will skip problematic databases.
+- Similarly, all duplicates in tables `roles`, `channels`, and `contributions` will be removed.
 
 ### Changed
 - The `$settings` module has been rewritten from a class interface to a helper module for the `db` module.
