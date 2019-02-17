@@ -745,19 +745,35 @@ async def get_guild_level(self):
     return str(self.settings['guild_level'])
 
 
-async def get_channel(server_id: int, ch_type):
+async def get_users(guild_id: int, kind: str):
+    """
+    :func:`get_authorized` returns a list of authorized users.
+
+    Args:
+        guild_id (int): the id of the guild to check
+        kind (str): the kind of user to get
+
+    Returns:
+        list: all users that are of `kind`
+        None: if no users were found
+    """
+    vdb = vaivora_modules.db.Database(guild_id)
+    return await vdb.get_users(lang_settings.)
+
+
+async def get_channel(guild_id: int, ch_type):
     """
     :func:`get_channel` gets a list of channels of an associated type.
 
     Args:
-        server_id (int): the server id of the guild to check
+        guild_id (int): the id of the guild to check
         ch_type (str): the type of channel to get
 
     Returns:
         list: all channel id's of `ch_type`
         None: if no channels were found
     """
-    vdb = vaivora_modules.db.Database(server_id)
+    vdb = vaivora_modules.db.Database(guild_id)
     return await vdb.get_channels(ch_type)
 
 
