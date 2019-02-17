@@ -4,6 +4,7 @@ import os.path
 import json
 import asyncio
 import aiosqlite
+import typing
 from itertools import chain
 
 import vaivora_modules.db
@@ -280,7 +281,7 @@ def check_file(self):
             self.read_file()
         except json.JSONDecodeError:
             self.init_file()
-    
+
 
 def init_file(self):
     """
@@ -379,7 +380,7 @@ def process_setting(self, setting, target, value: str, uid, uuid: str):
             else: #elif self.is_member(uuid):
                 rec = self.talt_temporary
                 _r = lang_settings.REC_TEMPORARILY
-            
+
             for _uid in uid:
                 try:
                     rec[_uid] += int(value)
@@ -761,20 +762,39 @@ async def get_users(guild_id: int, kind: str):
     return await vdb.get_users(kind)
 
 
-async def get_channel(guild_id: int, ch_type):
+async def get_channel(guild_id: int, kind):
     """
-    :func:`get_channel` gets a list of channels of an associated type.
+    :func:`get_channel` gets a list of channels
+    of an associated `kind`.
 
     Args:
         guild_id (int): the id of the guild to check
-        ch_type (str): the type of channel to get
+        kind (str): the kind of channel to get
 
     Returns:
-        list: all channel id's of `ch_type`
+        list: all channel id's of `kind`
         None: if no channels were found
     """
     vdb = vaivora_modules.db.Database(guild_id)
-    return await vdb.get_channels(ch_type)
+    return await vdb.get_channels(kind)
+
+
+async def set_channel(guild_id: int, kind,
+                      channels: typing.Optional[list] = [],
+                      channel: typing.Optional[str] = ''):
+    """
+    :func:`set_channel` sets channel(s) to a given `kind`.
+
+    Args:
+        guild_id (int): the id of the guild to check
+        kind
+        channels (list): (optional) the channels to set
+    """
+    vdb = vaivora_modules.db.Database(guild_id)
+    if channels:
+        for channel in channels:
+            #await
+            pass
 
 
 async def unset_channel(self, channel):
@@ -975,7 +995,7 @@ def process_command(self, msg_channel, settings_cmd, cmd_user, usr_roles, users,
     # failed due to role level: 0 or None
     if rgx_setting.match(settings_cmd) and user_role_id == 0:
         return [msg_perms + user_role + "`\n"]
-    
+
     # special case: set guild level
     elif len(xargs) == 3 and rgx_set_guild.match(xargs[0]) and rgx_set_set.match(settings_cmd) and \
          rgx_gd_levels.match(xargs[1]) and rgx_gd_points.match(xargs[2]):

@@ -88,9 +88,17 @@ def check_role():
     @commands.check
     async def check(ctx):
         users = await (vaivora_modules.settings
-                       .get_users(ctx.guild.id, lang_settings.ROLE_AUTH))
+                       .get_users(ctx.guild.id,
+                                  lang_settings.ROLE_SUPER_AUTH))
 
-        if users and ctx.author.id in users:
+        if users and str(ctx.author.id) in users:
+            return True
+        else:
+            users = await (vaivora_modules.settings
+                           .get_users(ctx.guild.id,
+                                      lang_settings.ROLE_AUTH))
+
+        if users and str(ctx.author.id) in users:
             return True
         else:
             await ctx.send('{} {}'
@@ -390,7 +398,7 @@ async def boss_helper(boss, time, map_or_channel):
 
 
 @bot.group()
-async def settings(ctx, arg=None):
+async def settings(ctx):
     """
     :func:`boss` handles "$boss" commands.
 
@@ -399,17 +407,26 @@ async def settings(ctx, arg=None):
         arg: (default: None) e.g. 'help'
 
     Returns:
-        True if successful; False otherwise
+        True
     """
-    arg = await sanitize(arg)
+    return True
 
-    if rgx_help.match(arg):
-        _help = vaivora_modules.settings.help()
-        for _h in _help:
-            await ctx.author.send(_h)
-        return True
-    else:
-        return False
+
+@settings.command(name='help')
+async def s_help(ctx):
+    """
+    :func:`_help` retrieves help pages for `$settings`.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+
+    Returns:
+        True
+    """
+    _help = vaivora_modules.settings.help()
+    for _h in _help:
+        await ctx.author.send(_h)
+    return True
 
 
 # $settings set <target> <kind> <discord object>
@@ -417,25 +434,44 @@ async def settings(ctx, arg=None):
 @only_in_guild()
 @check_channel(lang.ROLE_SETTINGS)
 @check_role()
-async def set(ctx, target, kind, something=None):
+async def set(ctx, target, kind, ids: commands.Greedy[int] = 0):
     """
     :func:`set` sets `target`s to `kind`s.
     e.g. sets a channel (target) to boss (kind)
 
     Args:
+        ctx (discord.ext.commands.Context): context of the message
         target (str): the object to set
         kind (str): the kind/type to use
 
     Returns:
         True if run successfully, regardless of result
     """
-    print('hmm', target)
     if lang_settings.REGEX_SETTING_TARGET_CHANNEL.match(target):
         target = lang_settings.TARGET_CHANNEL
-        if ctx.channel_mentions:
-            #if kind ==
-            print('set', ctx.channel_mentions)
 
+        if kind != lang.ROLE_BOSS and kind != lang.ROLE_SETTINGS:
+            await ctx.send(lang_err.IS_INVALID_3.format(
+                ctx.author.mention, kind,
+                lang.ROLE_SETTINGS, target))
+
+
+
+        if ctx.message.channel_mentions:
+            _ids = []
+            for channel_mention in ctx.message.channel_mentions:
+                _ids.append(str(channel_mention.id))
+            await vaivora_modules.settings
+        else:
+            await ctx.send(lang_err.TOO_FEW_ARGS.format(
+                ctx.author.mention, lang.ROLE_SETTINGS,
+                lang_settings.USAGE_SET_CHANNELS))
+            return False
+
+
+        if ids: # a list of id's as ints
+            for _id in ids:
+                pass
 
 
 # @bot.command()
@@ -540,7 +576,8 @@ async def check_databases():
                 print('Guild', guild.id, 'might be corrupt! Skipping...')
 
             if await vdbs[guild.id].clean_duplicates():
-                print('Duplicates have been removed from tables!')
+                print('Duplicates have been removed from tables from',
+                      guild.id)
 
     results = {}
     minutes = {}

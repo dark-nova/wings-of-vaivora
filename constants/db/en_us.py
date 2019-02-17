@@ -1,3 +1,5 @@
+from constants.settings import en_us as lang_settings
+
 ### DO NOT CHANGE/TRANSLATE THIS FILE ###
 
 SQL_SELECT = 'select *'
@@ -48,7 +50,11 @@ SQL_MAKE_OWNER = 'create table owner(id text)'
 SQL_UPDATE_OWNER = 'insert into owner values("{}")'
 SQL_SAUTH_OWNER = 'insert into roles values("{}", "{}")'
 SQL_GET_OLD_OWNER = 'select * from owner'
-SQL_DEL_OLD_OWNER = 'delete from owner where id = "{}"'
+SQL_DEL_OLD_OWNER = ("""delete from roles where type = '"""
+    + lang_settings.ROLE_SUPER_AUTH
+    + """' and id = '{}'""")
+
+SQL_SET_CHANNEL = 'insert into channels values("{}", "{}")'
 
 SQL_CLEAN_DUPES = """delete from {0} where rowid not in
 (select min(rowid) from {0} group by {1})"""

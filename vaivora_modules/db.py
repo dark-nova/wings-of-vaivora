@@ -166,8 +166,8 @@ class Database:
             for _s in select:
                 try:
                     cursor = await _db.execute(
-                                    await construct_SQL(lang_db.SQL_SELECT,
-                                                        _s))
+                                await construct_SQL(lang_db.SQL_SELECT,
+                                                    _s))
                 except:
                     return False
 
@@ -392,8 +392,8 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                                await construct_SQL(lang_db.COL_SQL_FROM_ROLES
-                                                    .format(ch_type)))
+                            await construct_SQL(lang_db.COL_SQL_FROM_ROLES
+                                                .format(kind)))
                 return [_row[0] for _row in await cursor.fetchall()]
             except Exception as e:
                 print(e)
@@ -434,6 +434,9 @@ class Database:
                 await _db.execute(lang_db.SQL_UPDATE_OWNER
                                   .format(owner_id))
                 await _db.execute(lang_db.SQL_SAUTH_OWNER
+                                  .format(lang_settings.ROLE_AUTH,
+                                          owner_id))
+                await _db.execute(lang_db.SQL_SAUTH_OWNER
                                   .format(lang_settings.ROLE_SUPER_AUTH,
                                           owner_id))
                 await _db.commit()
@@ -456,34 +459,46 @@ class Database:
                     print(e)
                     continue
 
-    async def get_channels(self, ch_type):
+    async def get_channels(self, kind):
         """
-        :func:`get_channels` gets channels of a given `ch_type`.
+        :func:`get_channels` gets channels of a given `kind`.
 
         Args:
-            ch_type (str): the channel type to filter
+            kind (str): the kind of channel to filter
                 e.g. 'boss', 'management'
 
         Returns:
-            list: a list of channels of `ch_type`
+            list: a list of channels of `kind`
             None: if no such channels were configured
         """
         async with aiosqlite.connect(self.db_name) as _db:
-            #_db.row_factory = aiosqlite.Row
             try:
                 cursor = await _db.execute(
-                                await construct_SQL(lang_db.COL_SQL_FROM_CHANS
-                                                    .format(ch_type)))
+                            await construct_SQL(lang_db.COL_SQL_FROM_CHANS
+                                                .format(kind)))
                 return [_row[0] for _row in await cursor.fetchall()]
             except Exception as e:
                 print(e)
                 return None
 
-    async def set_channels(self, ch_id, ch_type):
+    async def set_channels(self, ch_id, kind):
         """
-        :func:`set_channels` adds a channel as a `ch_type`
+        :func:`set_channels` adds a channel as a `kind`
 
         Args:
-            ch_id (str): the 
+            ch_id (str): the id of a channel to set
+            kind (str): the kind of channel to filter
+                e.g. 'boss', 'management'
+
+        Returns:
+            True if successful; False otherwise
         """
-        pass
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                await _db.execute(
+                    await construct_SQL(lang_db.SQL_SET_CHANNEL
+                                        .format(kind)))
+                return [_row[0] for _row in await cursor.fetchall()]
+            except Exception as e:
+                print(e)
+                return None
