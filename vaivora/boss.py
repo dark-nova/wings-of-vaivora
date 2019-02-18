@@ -3,7 +3,7 @@ import asyncio
 from math import floor
 from datetime import datetime, timedelta
 
-import vaivora_modules.db
+import vaivora.db
 import constants.boss
 import constants.db
 
@@ -356,7 +356,7 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
     target[constants.db.COL_TIME_HOUR] = int(record_date.hour)
     target[constants.db.COL_TIME_MINUTE] = int(record_date.minute)
 
-    vdb = vaivora_modules.db.Database(server_id)
+    vdb = vaivora.db.Database(server_id)
     await vdb.check_if_valid(constants.boss.MODULE_NAME)
 
     if await vdb.update_db_boss(target):
@@ -389,7 +389,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
     if type(bosses) is str:
         bosses = [bosses]
 
-    vdb = vaivora_modules.db.Database(server_id)
+    vdb = vaivora.db.Database(server_id)
     if not await vdb.check_if_valid(constants.boss.MODULE_NAME):
         await vdb.create_db(constants.db.SQL_FROM_BOSS)
 
