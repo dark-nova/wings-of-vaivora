@@ -735,14 +735,6 @@ def get_talt_for_nextlevel(self):
     return str(int(self.talt_level[self.settings['guild_level']+1] - self.settings['talt']['guild']))
 
 
-async def set_channel(self, ch_type, channel):
-    # await 
-    # self.settings['channel'][ch_type].append(channel)
-    # self.save_file()
-    # return True
-    pass
-
-
 async def get_guild_level(self):
     return str(self.settings['guild_level'])
 
@@ -777,7 +769,7 @@ async def get_channel(guild_id: int, kind):
         None: if no channels were found
     """
     vdb = vaivora_modules.db.Database(guild_id)
-    return await vdb.get_channels(kind)
+    return await vdb.get_channel(kind)
 
 
 async def set_channel(guild_id: int, kind,
@@ -790,12 +782,26 @@ async def set_channel(guild_id: int, kind,
         guild_id (int): the id of the guild to check
         kind
         channels (list): (optional) the channels to set
+
+    Returns:
+        list: of None if succesful; id's of failed entries otherwise
     """
     vdb = vaivora_modules.db.Database(guild_id)
+    errs = []
+
     if channels:
-        for channel in channels:
-            #await
-            pass
+        for _channel in channels:
+            try:
+                await vdb.set_channel(kind, _channel)
+            except:
+                errs.append(_channel)
+    else:
+        try:
+            await vdb.set_channel(kind, channel)
+        except:
+            return [channel]
+
+    return errs
 
 
 async def unset_channel(self, channel):
