@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Owners are now automatically added `s-authorized` on each boot. Old owners are removed to prevent loopholes.
 - File checks in `check_databases()` in `bot.py` will skip problematic databases.
 - Similarly, all duplicates in tables `roles`, `channels`, and `contributions` will be removed.
+- Add separate command groups for settings commands.
 
 ### Changed
 - The `$settings` module has been rewritten from a class interface to a helper module for the `db` module.
@@ -16,9 +17,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `db.py` consequently has become the backend of data manipulation.
 - Existing boss records will be dumped from this update. Fields now use `integer` instead of `real`. (No more decimal precision!) `convert_db.py` must be run to ensure this happens.
 - Likewise, existing entries with `s-authorized` roles are removed.
+- "Separate command groups for settings" means that all current and future `$settings` subcommands will literals, not regex. i.e. `$settings set channel boss #channel` instead of something like `$settings set ch boss #channel`.
 
 ### Deprecated
 - Translation modules moved out of their respective directories. I don't think this project will ever be made to run in multiple languages simultaneously.
+- `server_settings` directory to be deleted a month after this version releases.
 
 ## [2.0] - 2019-02-11
 ### Added

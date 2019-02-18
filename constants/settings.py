@@ -171,12 +171,18 @@ REGEX_SETTING_TARGET_TALT = re.compile(r'[ts]alt', re.IGNORECASE)
 REGEX_SETTING_TARGET_ROLE = re.compile(r'^rol.?', re.IGNORECASE)
 REGEX_SETTING_TARGET_CHANNEL = re.compile(r'ch(an(nel)?)*', re.IGNORECASE)
 
-#               Record modified: id : target
-SUCCESS_RECS = 'Record modified: {} : {} : {}'
+SUCCESS = 'Your {} records have been updated to `{}`.'
+SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
 
-FAIL_PERMS = 'You do not have the permission to do this.'
+PARTIAL_SUCCESS = 'Your {} records did not fully process. Errors:\n\n{}'
+
+FAIL_NO_CHANNELS = 'No channels were found associated with the {} type.'
+FAIL_NOT_AUTH = 'You are not authorized to do this!'
+
 FAIL_NOT_PARSED = 'Your command could not be parsed.'
 FAIL_COULD_NOT = FAIL_NOT_PARSED + '\nCould not {} {}\'s {} record.'
+
+USAGE_SET_CHANNELS = '$settings set channel <type> <#channel> [<#channel> ...]'
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
@@ -247,10 +253,3 @@ FILE_PATH = '{}/{}.json'
 FMT_SETTING_FAIL = '| {}: {}; {}: {}; {}: {}; {}: {}'
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION ABOVE ###
-
-SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
-
-FAIL_NO_CHANNELS = 'No channels were found associated with the {} type.'
-FAIL_NOT_AUTH = 'You are not authorized to do this!'
-
-USAGE_SET_CHANNELS = '$settings set channel <type> <#channel> [<#channel> ...]'
