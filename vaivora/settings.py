@@ -7,8 +7,8 @@ import aiosqlite
 import typing
 from itertools import chain
 
-import vaivora_modules.db
-from vaivora_modules.secrets import discord_user_id
+import vaivora.db
+from vaivora.secrets import discord_user_id
 import constants.settings
 #from constants.settings import en_us as lang_settings
 
@@ -35,7 +35,7 @@ async def get_users(guild_id: int, kind: str):
         list: all users that are of `kind`
         None: if no users were found
     """
-    vdb = vaivora_modules.db.Database(guild_id)
+    vdb = vaivora.db.Database(guild_id)
     return await vdb.get_users(kind)
 
 
@@ -50,7 +50,7 @@ async def purge(guild_id: int):
     Returns:
         True if successful; False otherwise
     """
-    vdb = vaivora_modules.db.Database(guild_id)
+    vdb = vaivora.db.Database(guild_id)
     return await vdb.purge()
 
 
@@ -67,7 +67,7 @@ async def get_channel(guild_id: int, kind):
         list: all channel id's of `kind`
         None: if no channels were found
     """
-    vdb = vaivora_modules.db.Database(guild_id)
+    vdb = vaivora.db.Database(guild_id)
     return await vdb.get_channel(kind)
 
 
@@ -85,7 +85,7 @@ async def set_channel(guild_id: int, kind,
     Returns:
         list: of None if succesful; id's of failed entries otherwise
     """
-    vdb = vaivora_modules.db.Database(guild_id)
+    vdb = vaivora.db.Database(guild_id)
     errs = []
 
     if channels:

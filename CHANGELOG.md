@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Existing boss records will be dumped from this update. Fields now use `integer` instead of `real`. (No more decimal precision!) `convert_db.py` must be run to ensure this happens.
 - Likewise, existing entries with `s-authorized` roles are removed.
 - "Separate command groups for settings" means that all current and future `$settings` subcommands will literals, not regex. i.e. `$settings set channel boss #channel` instead of something like `$settings set ch boss #channel`.
+- `vaivora_modules` changed to `vaivora`. Brevity is the soul of wit.
 
 ### Deprecated
 - Translation modules moved out of their respective directories. I don't think this project will ever be made to run in multiple languages simultaneously.
