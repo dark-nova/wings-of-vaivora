@@ -461,9 +461,9 @@ class Database:
                     print(e)
                     continue
 
-    async def get_channels(self, kind):
+    async def get_channel(self, kind):
         """
-        :func:`get_channels` gets channels of a given `kind`.
+        :func:`get_channel` gets channel(s) of a given `kind`.
 
         Args:
             kind (str): the kind of channel to filter
@@ -483,14 +483,14 @@ class Database:
                 print(e)
                 return None
 
-    async def set_channels(self, ch_id, kind):
+    async def set_channel(self, kind, ch_id):
         """
-        :func:`set_channels` adds a channel as a `kind`
+        :func:`set_channel` adds a channel as a `kind`
 
         Args:
-            ch_id (str): the id of a channel to set
             kind (str): the kind of channel to filter
                 e.g. 'boss', 'management'
+            ch_id (str): the id of a channel to set
 
         Returns:
             True if successful; False otherwise
@@ -499,8 +499,9 @@ class Database:
             try:
                 await _db.execute(
                     await construct_SQL(constants.db.SQL_SET_CHANNEL
-                                        .format(kind)))
-                return [_row[0] for _row in await cursor.fetchall()]
+                                        .format(kind, ch_id)))
+                await _db.commit()
+                return True
             except Exception as e:
                 print(e)
-                return None
+                return False

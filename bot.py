@@ -129,6 +129,24 @@ def only_in_guild():
     return check
 
 
+def has_channel_mentions():
+    """
+    :func:`only_in_guild` checks whether a command can run.
+
+    Returns:
+        True if guild; False otherwise
+    """
+    @commands.check
+    async def check(ctx):
+        if not ctx.message.channel_mentions: # not a guild
+            await ctx.send(constants.errors.TOO_FEW_ARGS.format(
+                ctx.author.mention, constants.main.ROLE_SETTINGS,
+                constants.settings.USAGE_SET_CHANNELS))
+            return False
+        return True
+    return check
+
+
 @bot.event
 async def on_guild_join(guild):
     """
@@ -435,11 +453,11 @@ async def s_help(ctx):
 
 
 # $settings set <target> <kind> <discord object>
-@settings.command()
+@settings.group(name='set')
 @only_in_guild()
 @check_channel(constants.main.ROLE_SETTINGS)
 @check_role()
-async def set(ctx, target, kind, ids: commands.Greedy[int] = 0):
+async def _set(ctx):
     """
     :func:`set` sets `target`s to `kind`s.
     e.g. sets a channel (target) to boss (kind)
@@ -450,33 +468,109 @@ async def set(ctx, target, kind, ids: commands.Greedy[int] = 0):
         kind (str): the kind/type to use
 
     Returns:
-        True if run successfully, regardless of result
+        True if successful; False otherwise
     """
-    if constants.settings.REGEX_SETTING_TARGET_CHANNEL.match(target):
-        target = constants.settings.TARGET_CHANNEL
+    # if constants.settings.REGEX_SETTING_TARGET_CHANNEL.match(target):
+    #     target = constants.settings.TARGET_CHANNEL
 
-        if kind != constants.main.ROLE_BOSS and kind != constants.main.ROLE_SETTINGS:
-            await ctx.send(constants.errors.IS_INVALID_3.format(
-                ctx.author.mention, kind,
-                constants.main.ROLE_SETTINGS, target))
-
-
-
-        if ctx.message.channel_mentions:
-            _ids = []
-            for channel_mention in ctx.message.channel_mentions:
-                _ids.append(str(channel_mention.id))
-            await vaivora_modules.settings
-        else:
-            await ctx.send(constants.errors.TOO_FEW_ARGS.format(
-                ctx.author.mention, constants.main.ROLE_SETTINGS,
-                constants.settings.USAGE_SET_CHANNELS))
-            return False
+    #     if (kind != constants.main.ROLE_BOSS
+    #             and kind != constants.main.ROLE_SETTINGS):
+    #         await ctx.send(constants.errors.IS_INVALID_3.format(
+    #             ctx.author.mention, kind,
+    #             constants.main.ROLE_SETTINGS, target))
+    #         return False
+    pass
 
 
-        if ids: # a list of id's as ints
-            for _id in ids:
-                pass
+@_set.group(name='channel')
+@only_in_guild()
+@check_channel(constants.main.ROLE_SETTINGS)
+@check_role()
+async def __channel(ctx):
+    """
+    :func:`set` sets `target`s to `kind`s.
+    e.g. sets a channel (target) to boss (kind)
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        target (str): the object to set
+        kind (str): the kind/type to use
+
+    Returns:
+        True if successful; False otherwise
+    """
+    ctx.channel_kind = ctx.invoked_subcommand.name
+    return True
+
+@__channel.command(name='settings')
+@only_in_guild()
+@check_channel(constants.main.ROLE_SETTINGS)
+@check_role()
+@has_channel_mentions()
+async def ___settings(ctx):
+    """
+    :func:`set` sets `target`s to `kind`s.
+    e.g. sets a channel (target) to boss (kind)
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        target (str): the object to set
+        kind (str): the kind/type to use
+
+    Returns:
+        True if successful; False otherwise
+    """
+    return await channel_setter(ctx, ctx.channel_kind)
+
+
+@__channel.command(name='boss')
+@only_in_guild()
+@check_channel(constants.main.ROLE_SETTINGS)
+@check_role()
+@has_channel_mentions()
+async def ___boss(ctx):
+    """
+    :func:`set` sets `target`s to `kind`s.
+    e.g. sets a channel (target) to boss (kind)
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        target (str): the object to set
+        kind (str): the kind/type to use
+        ids (int): (optional)
+
+    Returns:
+        True if successful; False otherwise
+    """
+    return await channel_setter(ctx, ctx.channel_kind)
+
+
+async def channel_setter(ctx, kind):
+    """
+    :func:`channel_setter` does the work
+    for :func:`___boss` and :func:`___settings`.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        kind (str): the kind/type to use, i.e. subcommand invoked
+
+    Returns:
+        True if successful; False otherwise
+    """   
+    _ids = []
+    for channel_mention in ctx.message.channel_mentions:
+        _ids.append(str(channel_mention.id))
+    errs = await (vaivora_modules.settings
+                  .set_channel(ctx.guild.id, kind, _ids))
+    if not errs:
+        await ctx.send(constants.settings.SUCCESS
+                       .format(constants.settings.TARGET_CHANNEL,
+                            kind))
+    else:
+        await ctx.send(constants.settings.PARTIAL_SUCCESS
+                       .format(constants.settings.TARGET_CHANNEL,
+                            '\n'.join(errs)))
+    return True
 
 
 # @bot.command()
