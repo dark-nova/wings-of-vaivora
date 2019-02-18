@@ -755,6 +755,21 @@ async def get_users(guild_id: int, kind: str):
     return await vdb.get_users(kind)
 
 
+async def purge(guild_id: int):
+    """
+    :func:`purge` is a last-resort subcommand that
+    resets the channels table.
+
+    Args:
+        guild_id (int): the id of the guild to purge tables
+
+    Returns:
+        True if successful; False otherwise
+    """
+    vdb = vaivora_modules.db.Database(guild_id)
+    return await vdb.purge()
+
+
 async def get_channel(guild_id: int, kind):
     """
     :func:`get_channel` gets a list of channels

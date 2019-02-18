@@ -47,7 +47,9 @@ SQL_CLEAN['channels'] = 'type, channel' # COL_SETS_CHANS
 SQL_CLEAN['contribution'] = 'userid, points' # COL_SETS_CONTR
 
 SQL_DROP_OWNER = 'drop table if exists owner'
+SQL_DROP_CHANS = 'drop table if exists channels'
 SQL_MAKE_OWNER = 'create table owner(id text)'
+SQL_MAKE_CHANS = 'create table channels(type text, channel integer)'
 SQL_UPDATE_OWNER = 'insert into owner values("{}")'
 SQL_SAUTH_OWNER = 'insert into roles values("{}", "{}")'
 SQL_GET_OLD_OWNER = 'select * from owner'

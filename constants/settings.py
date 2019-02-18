@@ -173,11 +173,13 @@ REGEX_SETTING_TARGET_CHANNEL = re.compile(r'ch(an(nel)?)*', re.IGNORECASE)
 
 SUCCESS = 'Your {} records have been updated to `{}`.'
 SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
+SUCCESS_PURGED = 'Your channel records were purged successfully.'
 
 PARTIAL_SUCCESS = 'Your {} records did not fully process. Errors:\n\n{}'
 
 FAIL_NO_CHANNELS = 'No channels were found associated with the {} type.'
 FAIL_NOT_AUTH = 'You are not authorized to do this!'
+FAIL_PURGED = 'Your channel records could not be purged.'
 
 FAIL_NOT_PARSED = 'Your command could not be parsed.'
 FAIL_COULD_NOT = FAIL_NOT_PARSED + '\nCould not {} {}\'s {} record.'

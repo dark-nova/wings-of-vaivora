@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - File checks in `check_databases()` in `bot.py` will skip problematic databases.
 - Similarly, all duplicates in tables `roles`, `channels`, and `contributions` will be removed.
 - Add separate command groups for settings commands.
+- Made a mistake with channels? You can now use `$settings purge` to erase them to redo.
 
 ### Changed
 - The `$settings` module has been rewritten from a class interface to a helper module for the `db` module.
