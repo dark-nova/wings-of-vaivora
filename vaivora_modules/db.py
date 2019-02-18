@@ -461,6 +461,28 @@ class Database:
                     print(e)
                     continue
 
+    async def purge(self):
+        """
+        :func:`purge` is a last-resort subcommand that
+        resets the channels table.
+
+        Args:
+            guild_id (int): the id of the guild to purge tables
+
+        Returns:
+            True if successful; False otherwise
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                await _db.execute(constants.db.SQL_DROP_CHANS)
+                await _db.commit()
+                await _db.execute(constants.db.SQL_MAKE_CHANS)
+                await _db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
+
     async def get_channel(self, kind):
         """
         :func:`get_channel` gets channel(s) of a given `kind`.

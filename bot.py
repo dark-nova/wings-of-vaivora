@@ -452,6 +452,27 @@ async def s_help(ctx):
     return True
 
 
+@settings.command()
+@only_in_guild
+@check_role()
+async def purge(ctx):
+    """
+    :func:`purge` is a last-resort subcommand that
+    resets the channels table.
+
+    Returns:
+        True if successful; False otherwise
+    """
+    if await vaivora_modules.settings.purge(ctx.guild.id):
+        await ctx.send('{} {}'.format(ctx.author.mention,
+                                      constants.settings.SUCCESS_PURGE))
+        return True
+    else:
+        await ctx.send('{} {}'.format(ctx.author.mention,
+                                      constants.settings.FAIL_PURGED))
+        return False
+
+
 # $settings set <target> <kind> <discord object>
 @settings.group(name='set')
 @only_in_guild()
@@ -556,7 +577,7 @@ async def channel_setter(ctx, kind):
 
     Returns:
         True if successful; False otherwise
-    """   
+    """
     _ids = []
     for channel_mention in ctx.message.channel_mentions:
         _ids.append(str(channel_mention.id))
@@ -564,11 +585,11 @@ async def channel_setter(ctx, kind):
                   .set_channel(ctx.guild.id, kind, _ids))
     if not errs:
         await ctx.send(constants.settings.SUCCESS
-                       .format(constants.settings.TARGET_CHANNEL,
+                       .format(constants.settings.TABLE_CHANNEL,
                             kind))
     else:
         await ctx.send(constants.settings.PARTIAL_SUCCESS
-                       .format(constants.settings.TARGET_CHANNEL,
+                       .format(constants.settings.TABLE_CHANNEL,
                             '\n'.join(errs)))
     return True
 
