@@ -131,10 +131,11 @@ def only_in_guild():
 
 def has_channel_mentions():
     """
-    :func:`only_in_guild` checks whether a command can run.
+    :func:`has_channel_mentions` checks whether
+    a command has channel mentions. How creative
 
     Returns:
-        True if guild; False otherwise
+        True if message has channel mentions; False otherwise
     """
     @commands.check
     async def check(ctx):
@@ -453,7 +454,7 @@ async def s_help(ctx):
 
 
 @settings.command()
-@only_in_guild
+@only_in_guild()
 @check_role()
 async def purge(ctx):
     """
@@ -465,7 +466,7 @@ async def purge(ctx):
     """
     if await vaivora.settings.purge(ctx.guild.id):
         await ctx.send('{} {}'.format(ctx.author.mention,
-                                      constants.settings.SUCCESS_PURGE))
+                                      constants.settings.SUCCESS_PURGED))
         return True
     else:
         await ctx.send('{} {}'.format(ctx.author.mention,
@@ -485,22 +486,11 @@ async def _set(ctx):
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        target (str): the object to set
-        kind (str): the kind/type to use
 
     Returns:
         True if successful; False otherwise
     """
-    # if constants.settings.REGEX_SETTING_TARGET_CHANNEL.match(target):
-    #     target = constants.settings.TARGET_CHANNEL
-
-    #     if (kind != constants.main.ROLE_BOSS
-    #             and kind != constants.main.ROLE_SETTINGS):
-    #         await ctx.send(constants.errors.IS_INVALID_3.format(
-    #             ctx.author.mention, kind,
-    #             constants.main.ROLE_SETTINGS, target))
-    #         return False
-    pass
+    return True
 
 
 @_set.group(name='channel')
@@ -509,19 +499,18 @@ async def _set(ctx):
 @check_role()
 async def __channel(ctx):
     """
-    :func:`set` sets `target`s to `kind`s.
+    :func:`__channel` sets channels to `kind`s.
     e.g. sets a channel (target) to boss (kind)
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        target (str): the object to set
-        kind (str): the kind/type to use
 
     Returns:
         True if successful; False otherwise
     """
     ctx.channel_kind = ctx.invoked_subcommand.name
     return True
+
 
 @__channel.command(name='settings')
 @only_in_guild()
@@ -530,13 +519,10 @@ async def __channel(ctx):
 @has_channel_mentions()
 async def ___settings(ctx):
     """
-    :func:`set` sets `target`s to `kind`s.
-    e.g. sets a channel (target) to boss (kind)
+    :func:`___settings` sets channels to `settings`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        target (str): the object to set
-        kind (str): the kind/type to use
 
     Returns:
         True if successful; False otherwise
@@ -551,20 +537,63 @@ async def ___settings(ctx):
 @has_channel_mentions()
 async def ___boss(ctx):
     """
-    :func:`set` sets `target`s to `kind`s.
-    e.g. sets a channel (target) to boss (kind)
+    :func:`___boss` sets channels to `boss`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        target (str): the object to set
-        kind (str): the kind/type to use
-        ids (int): (optional)
 
     Returns:
         True if successful; False otherwise
     """
     return await channel_setter(ctx, ctx.channel_kind)
 
+
+@_set.group(name='role')
+@only_in_guild()
+@check_channel(constants.main.ROLE_SETTINGS)
+@check_role()
+async def __role(ctx, kind: str, mentions: commands.Greedy[int]):
+    """
+    :func:`__role` sets `role`s to `kind`s.
+    e.g. sets a channel (target) to boss (kind)
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        target (str): the object to set
+        kind (str): the kind/type to use
+
+    Returns:
+        True if successful; False otherwise
+    """
+    if (kind != constants.settings.ROLE_BOSS
+            and kind != constants.settings.ROLE_MEMBER
+            and kind != constants.settings.ROLE_AUTH):
+        await ctx.send(constants.errors.IS_INVALID_3
+                       .format(ctx.author.mention, kind,
+                               constants.settings.MODULE_NAME,
+                               constants.settings.TARGET_ROLE))
+        return False
+
+    _mentions = []
+
+    if ctx.message.mentions:
+        for mention in ctx.message.mentions:
+            _mentions.append(mention)
+
+    if mentions:
+        gids = [member.id for member in (ctx.guild.members
+                                         + ctx.guild.roles)]
+        rids = [member.id for member in ctx.guild.role]
+        if kind == constants.settings.ROLE_BOSS:
+            for mention in mentions:
+                if mention in rids: # do not allow regular users for $boss
+                    _mention.append(mention)
+        else:
+            for mention in mentions:
+                if mention in gids:
+                    _mentions.append(mention)
+
+    pass
 
 async def channel_setter(ctx, kind):
     """
@@ -594,64 +623,23 @@ async def channel_setter(ctx, kind):
     return True
 
 
-# @bot.command()
-# async def settings(ctx, *args):
-#     """
-#     :func:`settings` handles "$settings" commands.
+@bot.command(aliases=['pls', 'plz', 'ples'])
+async def please(ctx):
+    """
+    :func:`please` is a meme
 
-#     Args:
-#         ctx (discord.ext.commands.Context): context of the message
-#         *args (tuple): arguments to be supplied for the command
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
 
-#     Returns:
-#         True if successful; False otherwise
-#     """
-#     args = await sanitize(args)
+    Returns:
+        True if successful; False otherwise
+    """
+    try:
+        await ctx.send('{} https://i.imgur.com/kW3o6eC.png'.format(ctx.author.mention))
+    except:
+        return False
 
-
-
-#     if vaivora.settings.what_setting(args[0]):
-#         arg_subcmd = constants.settings.CMD_ARG_SETTING
-#     elif vaivora.settings.what_validation(args[0]):
-#         arg_subcmd = constants.settings.CMD_ARG_VALIDATION
-#     elif vaivora.settings.what_rolechange(args[0]):
-#         arg_subcmd = constants.settings.CMD_ARG_ROLECHANGE
-#     else:
-#         await ctx.send(constants.errors.IS_INVALID_2.format(ctx.author.mention, args[0],
-#                                                     constants.settings.CMD_ARG_SUBCMD))
-#         return False
-
-#     if arg_subcmd == constants.settings.CMD_ARG_SETTING:
-#         setting = vaivora.settings.what_setting(args[0])
-#         target = vaivora.settings.what_setting_target(args[1])
-#         if target is None or (target != constants.settings.TARGET_TALT and
-#                               setting == constants.settings.SETTING_ADD):
-#             await ctx.send(constants.errors.IS_INVALID_3.format(ctx.author.mention, args[0],
-#                                                         constants.settings.CMD_ARG_SETTING, arg_subcmd))
-#             return False
-
-
-
-#     pass
-
-
-# @bot.command(aliases=['pls', 'plz', 'ples'])
-# async def please(ctx):
-#     """
-#     :func:`please` is a meme
-
-#     Args:
-#         ctx (discord.ext.commands.Context): context of the message
-
-#     Returns:
-#         True if successful; False otherwise
-#     """
-#     try:
-#         await ctx.send('{} https://i.imgur.com/kW3o6eC.png'.format(ctx.author.mention))
-#     except:
-#         return False
-
-#     return True
+    return True
 
 
 async def sanitize(arg):
