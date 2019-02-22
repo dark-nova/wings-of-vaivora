@@ -3,6 +3,9 @@ import asyncio
 from math import floor
 from datetime import datetime, timedelta
 
+import discord
+from discord.ext import commands
+
 import vaivora.db
 import constants.boss
 import constants.db
