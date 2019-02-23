@@ -24,7 +24,8 @@ import constants.settings
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
 bot.remove_command('help')
 
-# initial_extensions = ['cogs.settings']
+# initial_extensions = ['cogs.settings',
+#                       'cogs.meme']
 
 # snippet from https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be
 # if __name__ == '__main__':
@@ -417,25 +418,6 @@ async def boss_helper(boss, time, map_or_channel):
         _map = constants.boss.BOSS_MAPS[boss][map_idx]
 
     return (boss, time, _map, channel)
-
-
-@bot.command(aliases=['pls', 'plz', 'ples'])
-async def please(ctx):
-    """
-    :func:`please` is a meme
-
-    Args:
-        ctx (discord.ext.commands.Context): context of the message
-
-    Returns:
-        True if successful; False otherwise
-    """
-    try:
-        await ctx.send('{} https://i.imgur.com/kW3o6eC.png'.format(ctx.author.mention))
-    except:
-        return False
-
-    return True
 
 
 async def check_databases():
