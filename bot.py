@@ -19,25 +19,25 @@ import constants.boss
 import constants.db
 import constants.errors
 import constants.settings
-# from constants.errors import en_us as constants.main_err
-# from constants.settings import en_us as constants.main_settings
-# from constants.boss import en_us as constants.main_boss
-# from constants.db import en_us as constants.main_db
-# from constants.main import en_us as constants.main
 
 
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
 bot.remove_command('help')
 
-# vdbs & vdst will now use int for dict keys; previously str of int
-vdbs = {}
-#vdst = {}
+# initial_extensions = ['cogs.settings']
 
-rgx_help = re.compile(r'help', re.IGNORECASE)
+# snippet from https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be
+# if __name__ == '__main__':
+#     for extension in initial_extensions:
+#         try:
+#             bot.load_extension(extension)
+#         except Exception as e:
+#             print(f'Failed to load extension {extension}.', file=sys.stderr)
+#             traceback.print_exc()
+
+vdbs = {} # a dict containing db.py instances, with indices = server id's
+
 rgx_user = re.compile(r'@')
-to_sanitize = re.compile(r"""[^a-z0-9 .:$"',-]""", re.IGNORECASE)
-
-bosses = []
 
 
 @bot.event
@@ -205,9 +205,7 @@ async def boss(ctx, arg: str):
     Returns:
         True if successful; False otherwise
     """
-    arg = await sanitize(arg)
-
-    if rgx_help.match(arg):
+    if constants.main.HELP == arg:
         _help = vaivora.boss.help()
         for _h in _help:
             await ctx.author.send(_h)
@@ -424,7 +422,7 @@ async def boss_helper(boss, time, map_or_channel):
 @bot.group()
 async def settings(ctx):
     """
-    :func:`boss` handles "$boss" commands.
+    :func:`settings` handles `$settings` commands.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -437,7 +435,7 @@ async def settings(ctx):
 
 
 @settings.command(name='help')
-async def s_help(ctx):
+async def _help(ctx):
     """
     :func:`_help` retrieves help pages for `$settings`.
 
@@ -640,27 +638,6 @@ async def please(ctx):
         return False
 
     return True
-
-
-async def sanitize(arg):
-    """
-    :func:`sanitize` sanitizes command arguments of invalid characters, including setting to lowercase.
-
-    Args:
-        arg (str, iter): the argument (or arguments) to sanitize
-
-    Returns:
-        same type as arg, sanitized
-    """
-    if type(arg) is str:
-        return to_sanitize.sub('', arg).lower()
-    else:
-        sanitized = []
-        for arg in args:
-            arg = to_sanitize.sub('', arg).lower()
-            sanitized.append(arg)
-
-        return sanitized
 
 
 async def check_databases():
