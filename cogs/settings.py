@@ -71,37 +71,6 @@ async def get_channel(guild_id: int, kind):
     return await vdb.get_channel(kind)
 
 
-async def set_channel(guild_id: int, kind,
-                      channels: typing.Optional[list] = [],
-                      channel: typing.Optional[str] = ''):
-    """
-    :func:`set_channel` sets channel(s) to a given `kind`.
-
-    Args:
-        guild_id (int): the id of the guild to check
-        kind
-        channels (list): (optional) the channels to set
-
-    Returns:
-        list: of None if succesful; id's of failed entries otherwise
-    """
-    vdb = vaivora.db.Database(guild_id)
-    errs = []
-
-    if channels:
-        for _channel in channels:
-            try:
-                await vdb.set_channel(kind, _channel)
-            except:
-                errs.append(_channel)
-    else:
-        try:
-            await vdb.set_channel(kind, channel)
-        except:
-            return [channel]
-
-    return errs
-
 class SettingsCog:
 
     def __init__(self, bot):
@@ -278,11 +247,18 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        _ids = []
+        channels = []
         for channel_mention in ctx.message.channel_mentions:
-            _ids.append(str(channel_mention.id))
-        errs = await (vaivora.settings
-                      .set_channel(ctx.guild.id, kind, _ids))
+            channels.append(str(channel_mention.id))
+        vdb = vaivora.db.Database(ctx.guild.id)
+        errs = []
+
+        for _channel in channels:
+            try:
+                await vdb.set_channel(kind, _channel)
+            except:
+                errs.append(_channel)
+
         if not errs:
             await ctx.send(constants.settings.SUCCESS
                            .format(constants.settings.TABLE_CHANNEL,
@@ -292,9 +268,6 @@ class SettingsCog:
                            .format(constants.settings.TABLE_CHANNEL,
                                 '\n'.join(errs)))
         return True
-
-
-
 
 
 def setup(bot):
