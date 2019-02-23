@@ -92,7 +92,6 @@ class SettingsCog:
             await ctx.author.send(_h)
         return True
 
-
     @commands.command()
     @only_in_guild()
     @check_role()
@@ -113,11 +112,10 @@ class SettingsCog:
                                           constants.settings.FAIL_PURGED))
             return False
 
-
     # $settings set <target> <kind> <discord object>
     @commands.group(name='set')
     @only_in_guild()
-    @check_channel(constants.main.ROLE_SETTINGS)
+    @check_channel(constants.settings.MODULE_NAME)
     @check_role()
     async def _set(ctx):
         """
@@ -132,10 +130,9 @@ class SettingsCog:
         """
         return True
 
-
     @_set.group(name='channel')
     @only_in_guild()
-    @check_channel(constants.main.ROLE_SETTINGS)
+    @check_channel(constants.settings.MODULE_NAME)
     @check_role()
     async def __channel(ctx):
         """
@@ -151,10 +148,9 @@ class SettingsCog:
         ctx.channel_kind = ctx.invoked_subcommand.name
         return True
 
-
     @__channel.command(name='settings')
     @only_in_guild()
-    @check_channel(constants.main.ROLE_SETTINGS)
+    @check_channel(constants.settings.MODULE_NAME)
     @check_role()
     @has_channel_mentions()
     async def ___settings(ctx):
@@ -167,12 +163,11 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await channel_setter(ctx, ctx.channel_kind)
-
+        return await self.channel_setter(ctx, ctx.channel_kind)
 
     @__channel.command(name='boss')
     @only_in_guild()
-    @check_channel(constants.main.ROLE_SETTINGS)
+    @check_channel(constants.settings.MODULE_NAME)
     @check_role()
     @has_channel_mentions()
     async def ___boss(ctx):
@@ -185,12 +180,45 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await channel_setter(ctx, ctx.channel_kind)
+        return await self.channel_setter(ctx, ctx.channel_kind)
 
+    async def channel_setter(ctx, kind):
+        """
+        :func:`channel_setter` does the work
+        for :func:`___boss` and :func:`___settings`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            kind (str): the kind/type to use, i.e. subcommand invoked
+
+        Returns:
+            True if successful; False otherwise
+        """
+        channels = []
+        for channel_mention in ctx.message.channel_mentions:
+            channels.append(str(channel_mention.id))
+        vdb = vaivora.db.Database(ctx.guild.id)
+        errs = []
+
+        for _channel in channels:
+            try:
+                await vdb.set_channel(kind, _channel)
+            except:
+                errs.append(_channel)
+
+        if not errs:
+            await ctx.send(constants.settings.SUCCESS
+                           .format(constants.settings.TABLE_CHANNEL,
+                                kind))
+        else:
+            await ctx.send(constants.settings.PARTIAL_SUCCESS
+                           .format(constants.settings.TABLE_CHANNEL,
+                                '\n'.join(errs)))
+        return True
 
     @_set.group(name='role')
     @only_in_guild()
-    @check_channel(constants.main.ROLE_SETTINGS)
+    @check_channel(constants.settings.MODULE_NAME)
     @check_role()
     async def __role(ctx, kind: str, mentions: commands.Greedy[int]):
         """
@@ -234,40 +262,6 @@ class SettingsCog:
                         _mentions.append(mention)
 
         pass
-
-    async def channel_setter(ctx, kind):
-        """
-        :func:`channel_setter` does the work
-        for :func:`___boss` and :func:`___settings`.
-
-        Args:
-            ctx (discord.ext.commands.Context): context of the message
-            kind (str): the kind/type to use, i.e. subcommand invoked
-
-        Returns:
-            True if successful; False otherwise
-        """
-        channels = []
-        for channel_mention in ctx.message.channel_mentions:
-            channels.append(str(channel_mention.id))
-        vdb = vaivora.db.Database(ctx.guild.id)
-        errs = []
-
-        for _channel in channels:
-            try:
-                await vdb.set_channel(kind, _channel)
-            except:
-                errs.append(_channel)
-
-        if not errs:
-            await ctx.send(constants.settings.SUCCESS
-                           .format(constants.settings.TABLE_CHANNEL,
-                                kind))
-        else:
-            await ctx.send(constants.settings.PARTIAL_SUCCESS
-                           .format(constants.settings.TABLE_CHANNEL,
-                                '\n'.join(errs)))
-        return True
 
 
 def setup(bot):
