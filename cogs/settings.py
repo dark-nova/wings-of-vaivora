@@ -7,10 +7,12 @@ import aiosqlite
 import typing
 from itertools import chain
 
+import discord
+from discord.ext import commands
+
 import vaivora.db
 from vaivora.secrets import discord_user_id
 import constants.settings
-#from constants.settings import en_us as lang_settings
 
 
 def help():
