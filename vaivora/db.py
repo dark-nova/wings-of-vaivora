@@ -401,6 +401,33 @@ class Database:
                 print(e)
                 return None
 
+    async def set_users(self, kind, users):
+        """
+        :func:`set_users` sets users to a `kind` of role.
+        Users are defined to be either Discord Members or Roles,
+        hence not using "get_members" as the function name.
+
+        Args:
+            kind (str): the kind of user desired
+            users (list): the users to set
+
+        Returns:
+            list: a list of users not processed
+            list(None): if successful
+        """
+        errs = []
+        async with aiosqlite.connect(self.db_name) as _db:
+            for user in users:
+                try:
+                    cursor = await _db.execute(constants.db.SQL_ADD_ROLES
+                                               .format(user, kind))
+                except Exception as e:
+                    print(e)
+                    errs.append(user)
+                    continue
+            await _db.commit()
+        return errs
+
     async def update_owner_sauth(self, owner_id: str):
         """
         :func:`update_owner_sauth` updates owner to `s`uper `auth`orized
@@ -435,10 +462,10 @@ class Database:
             try:
                 await _db.execute(constants.db.SQL_UPDATE_OWNER
                                   .format(owner_id))
-                await _db.execute(constants.db.SQL_SAUTH_OWNER
+                await _db.execute(constants.db.SQL_ADD_ROLES
                                   .format(constants.settings.ROLE_AUTH,
                                           owner_id))
-                await _db.execute(constants.db.SQL_SAUTH_OWNER
+                await _db.execute(constants.db.SQL_ADD_ROLES
                                   .format(constants.settings.ROLE_SUPER_AUTH,
                                           owner_id))
                 await _db.commit()

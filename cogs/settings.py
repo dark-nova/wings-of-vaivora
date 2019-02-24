@@ -278,8 +278,25 @@ class SettingsCog:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
                                    constants.settings.FAIL_NO_MENTIONS))
+            return False
 
-        pass
+        vdb = vaivora.db.Database(ctx.guild.id)
+        errs = await vdb.set_users(ctx.role_kind, _mentions)
+
+        if errs:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings.PARTIAL_SUCCESS.format(
+                                        constants.settings.SETTING_SET,
+                                        '\n'.join(errs))))
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings.SUCCESS_ROLES.format(
+                                        ctx.role_kind)))
+
+        return True
+
 
 def setup(bot):
     bot.add_cog(SettingsCog(bot))

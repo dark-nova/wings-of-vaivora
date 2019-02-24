@@ -51,7 +51,7 @@ SQL_DROP_CHANS = 'drop table if exists channels'
 SQL_MAKE_OWNER = 'create table owner(id text)'
 SQL_MAKE_CHANS = 'create table channels(type text, channel integer)'
 SQL_UPDATE_OWNER = 'insert into owner values("{}")'
-SQL_SAUTH_OWNER = 'insert into roles values("{}", "{}")'
+SQL_ADD_ROLES = 'insert into roles values("{}", "{}")'
 SQL_GET_OLD_OWNER = 'select * from owner'
 SQL_DEL_OLD_OWNER = ("""delete from roles where role = '"""
     + constants.settings.ROLE_SUPER_AUTH

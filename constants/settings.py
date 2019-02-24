@@ -174,6 +174,7 @@ REGEX_SETTING_TARGET_CHANNEL = re.compile(r'ch(an(nel)?)*', re.IGNORECASE)
 SUCCESS = 'Your {} records have been updated to `{}`.'
 SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
 SUCCESS_PURGED = 'Your channel records were purged successfully.'
+SUCCESS_ROLES = 'Your {} roles have been successfully updated.'
 
 PARTIAL_SUCCESS = 'Your {} records did not fully process. Errors:\n\n{}'
 
