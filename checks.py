@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands
 
 import vaivora.db
+import constants.boss
+import constants.settings
 
 
 def check_channel(kind):
