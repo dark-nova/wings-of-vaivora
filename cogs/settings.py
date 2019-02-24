@@ -17,64 +17,6 @@ from secrets import discord_user_id
 import constants.settings
 
 
-def help():
-    """
-    :func:`help` returns help for this module.
-
-    Returns:
-        a list of detailed help messages
-    """
-    return constants.settings.HELP
-
-
-async def get_users(guild_id: int, kind: str):
-    """
-    :func:`get_authorized` returns a list of authorized users.
-
-    Args:
-        guild_id (int): the id of the guild to check
-        kind (str): the kind of role of user to get
-
-    Returns:
-        list: all users that are of `kind`
-        None: if no users were found
-    """
-    vdb = vaivora.db.Database(guild_id)
-    return await vdb.get_users(kind)
-
-
-async def purge(guild_id: int):
-    """
-    :func:`purge` is a last-resort subcommand that
-    resets the channels table.
-
-    Args:
-        guild_id (int): the id of the guild to purge tables
-
-    Returns:
-        True if successful; False otherwise
-    """
-    vdb = vaivora.db.Database(guild_id)
-    return await vdb.purge()
-
-
-async def get_channel(guild_id: int, kind):
-    """
-    :func:`get_channel` gets a list of channels
-    of an associated `kind`.
-
-    Args:
-        guild_id (int): the id of the guild to check
-        kind (str): the kind of channel to get
-
-    Returns:
-        list: all channel id's of `kind`
-        None: if no channels were found
-    """
-    vdb = vaivora.db.Database(guild_id)
-    return await vdb.get_channel(kind)
-
-
 class SettingsCog:
 
     def __init__(self, bot):
@@ -96,7 +38,7 @@ class SettingsCog:
         Returns:
             True
         """
-        _help = help()
+        _help = constants.settings.HELP
         for _h in _help:
             await ctx.author.send(_h)
         return True
@@ -112,12 +54,14 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        if await vaivora.settings.purge(self, ctx.guild.id):
-            await ctx.send('{} {}'.format(self, ctx.author.mention,
+        vdb = vaivora.db.Database(ctx.guild.id)
+        success = await vdb.purge()
+        if success:
+            await ctx.send('{} {}'.format(ctx.author.mention,
                                           constants.settings.SUCCESS_PURGED))
             return True
         else:
-            await ctx.send('{} {}'.format(self, ctx.author.mention,
+            await ctx.send('{} {}'.format(ctx.author.mention,
                                           constants.settings.FAIL_PURGED))
             return False
 
@@ -172,7 +116,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await self.channel_setter(self, ctx, ctx.channel_kind)
+        return await self.channel_setter(ctx, ctx.channel_kind)
 
     @s_channel.command(name='boss')
     @checks.only_in_guild()
@@ -189,7 +133,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await self.channel_setter(self, ctx, ctx.channel_kind)
+        return await self.channel_setter(ctx, ctx.channel_kind)
 
     async def channel_setter(self, ctx, kind):
         """
@@ -311,7 +255,7 @@ class SettingsCog:
 
         # uid mode; parse if they're actually id's and not nonsense
         if mentions:
-            gids = [member.id for member in (self, ctx.guild.members
+            gids = [member.id for member in (ctx.guild.members
                                              + ctx.guild.roles)]
             rids = [member.id for member in ctx.guild.role]
             if ctx.role_kind == constants.settings.ROLE_BOSS:
@@ -326,7 +270,7 @@ class SettingsCog:
 
         if not _mentions:
             await ctx.send('{} {}'
-                           .format(self, ctx.author.mention,
+                           .format(ctx.author.mention,
                                    constants.settings.FAIL_NO_MENTIONS))
 
         print(mentions)
