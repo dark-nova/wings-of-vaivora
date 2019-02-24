@@ -12,7 +12,6 @@ from discord.ext import commands
 
 import checks
 import secrets
-import vaivora.boss
 import vaivora.db
 import vaivora.disclaimer
 import constants.main
@@ -25,6 +24,7 @@ import constants.settings
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
 
 initial_extensions = ['cogs.settings',
+                      'cogs.boss',
                       'cogs.meme']
 
 # snippet from https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be
