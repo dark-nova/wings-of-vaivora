@@ -249,9 +249,15 @@ class SettingsCog:
         """
         _mentions = []
 
-        if ctx.message.mentions:
-            for mention in ctx.message.mentions:
+        if ctx.message.role_mentions:
+            for mention in ctx.message.role_mentions:
                 _mentions.append(mention)
+
+        # do not allow regular users for $boss
+        if ctx.role_kind != constants.settings.ROLE_BOSS:
+            if ctx.message.mentions:
+                for mention in ctx.message.mentions:
+                    _mentions.append(mention)
 
         # uid mode; parse if they're actually id's and not nonsense
         if mentions:
@@ -260,7 +266,7 @@ class SettingsCog:
             rids = [member.id for member in ctx.guild.role]
             if ctx.role_kind == constants.settings.ROLE_BOSS:
                 for mention in mentions:
-                     # do not allow regular users for $boss
+                    # do not allow regular users for $boss
                     if mention in rids:
                         _mention.append(mention)
             else:
@@ -273,7 +279,7 @@ class SettingsCog:
                            .format(ctx.author.mention,
                                    constants.settings.FAIL_NO_MENTIONS))
 
-        print(mentions)
+        pass
 
 def setup(bot):
     bot.add_cog(SettingsCog(bot))
