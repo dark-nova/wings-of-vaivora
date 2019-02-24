@@ -31,10 +31,13 @@ def check_channel(kind):
     return check
 
 
-def check_role():
+def check_role(lesser_role=None):
     """
     :func:`check_role` sees whether the user is authorized
     to run a settings command.
+
+    Args:
+        lesser_role: (default: None) an optional role to check
 
     Returns:
         True if the user is authorized; False otherwise
@@ -45,14 +48,39 @@ def check_role():
         users = await vdb.get_users(
                     constants.settings.ROLE_SUPER_AUTH)
 
-        if users and str(ctx.author.id) in users:
+        if users and ctx.author.id in users:
             return True
+        elif ctx.author.roles:
+            for role in ctx.author.roles:
+                if role in users:
+                    return True
         else:
             users = await vdbs[ctx.guild.id].get_users(
                         constants.settings.ROLE_AUTH)
 
-        if users and str(ctx.author.id) in users:
+        if users and ctx.author.id in users:
             return True
+        elif ctx.author.roles:
+            for role in ctx.author.roles:
+                if role in users:
+                    return True
+        else:
+            # for now, just use the default member role
+            if lesser_role:
+                users = await vdbs[ctx.guild.id].get_users(
+                            constants.settings.ROLE_MEMBER)
+            else:
+                await ctx.send('{} {}'
+                            .format(ctx.author.mention,
+                                    constants.settings.FAIL_NOT_AUTH))
+                return False
+
+        if users and ctx.author.id in users:
+            return True
+        elif ctx.author.roles:
+            for role in ctx.author.roles:
+                if role in users:
+                    return True
         else:
             await ctx.send('{} {}'
                             .format(ctx.author.mention,
