@@ -10,7 +10,7 @@ import constants.db
 # from constants.db import en_us as lang_db
 
 columns = {}
-columns[constants.db.SQL_FROM_BOSS] = (
+columns[constants.db.MOD_BOSS] = (
     constants.db.COL_BOSS_NAME,
     constants.db.COL_BOSS_CHANNEL,
     constants.db.COL_BOSS_MAP,
@@ -44,7 +44,7 @@ columns[constants.db.SQL_FROM_OFFSET] = (
     )
 
 types = {}
-types[constants.db.SQL_FROM_BOSS] = ((constants.db.SQL_TYPE_TEXT,
+types[constants.db.MOD_BOSS] = ((constants.db.SQL_TYPE_TEXT,
                                  constants.db.SQL_TYPE_INT,)
                                 + (constants.db.SQL_TYPE_TEXT,)*3
                                 + (constants.db.SQL_TYPE_INT,)*5)
@@ -136,14 +136,14 @@ class Database:
         Args:
             kind (str): see :func:`get_dbs`
         """
-        if kind == constants.db.SQL_FROM_BOSS:
+        if kind == constants.db.MOD_BOSS:
             module = constants.db.MOD_BOSS
         else:
             module = constants.db.MOD_SETS
         async with aiosqlite.connect(self.db_name) as _db:
             await _db.execute('drop table if exists {}'.format(module))
             await _db.execute('create table {}({})'
-                              .format(constants.db.MOD,
+                              .format(module,
                                       ','.join(await get_dbs(kind))))
             await _db.commit()
         return
@@ -378,7 +378,7 @@ class Database:
 
         return records # return an implicit bool for how many were deleted
 
-    async def get_users(self, kind):
+    async def get_users(self, kind, users=None):
         """
         :func:`get_users` gets users of a `kind`.
         Users are defined to be either Discord Members or Roles,
@@ -386,6 +386,7 @@ class Database:
 
         Args:
             kind (str): the kind of user desired
+            users: (default: None) a list of optional users to filter results
 
         Returns:
             list: a list of users by id
@@ -393,10 +394,17 @@ class Database:
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
+                print(kind)
                 cursor = await _db.execute(
                             await construct_SQL(constants.db.COL_SQL_FROM_ROLES
                                                 .format(kind)))
-                return [_row[0] for _row in await cursor.fetchall()]
+                results = [_row[0] for _row in await cursor.fetchall()]
+                print(results)
+
+                if users:
+                    results = [result for result in results if result in users]
+
+                return results
             except Exception as e:
                 print(e)
                 return None
@@ -420,7 +428,7 @@ class Database:
             for user in users:
                 try:
                     cursor = await _db.execute(constants.db.SQL_ADD_ROLES
-                                               .format(user, kind))
+                                               .format(kind, user))
                 except Exception as e:
                     print(e)
                     errs.append(user)
@@ -428,7 +436,7 @@ class Database:
             await _db.commit()
         return errs
 
-    async def update_owner_sauth(self, owner_id: str):
+    async def update_user_sauth(self, user_id: str, owner=True):
         """
         :func:`update_owner_sauth` updates owner to `s`uper `auth`orized
         after each boot.
@@ -440,34 +448,36 @@ class Database:
             True if successful; False otherwise
         """
         async with aiosqlite.connect(self.db_name) as _db:
-            try:
-                cursor = await _db.execute(constants.db.SQL_GET_OLD_OWNER)
-                old_owner = (await cursor.fetchone())[0]
-                if owner_id == old_owner:
-                    return True # do not do anything if it's the same owner
-                await _db.execute(constants.db.SQL_DROP_OWNER)
-                await _db.execute(constants.db.SQL_DEL_OLD_OWNER
-                                  .format(old_owner))
-            except: #Exception as e:
-                #print('Exception caught & ignored:', e)
-                pass
+            if owner:
+                try:
+                    cursor = await _db.execute(constants.db.SQL_GET_OLD_OWNER)
+                    old_owner = (await cursor.fetchone())[0]
+                    if user_id == old_owner:
+                        return True # do not do anything if it's the same owner
+                    await _db.execute(constants.db.SQL_DROP_OWNER)
+                    await _db.execute(constants.db.SQL_DEL_OLD_OWNER
+                                      .format(old_owner))
+                except: #Exception as e:
+                    #print('Exception caught & ignored:', e)
+                    pass
+
+                try:
+                    await _db.execute(constants.db.SQL_MAKE_OWNER)
+                except: #Exception as e:
+                    # table owner might already exist
+                    #print('Exception caught & ignored:', e)
+                    pass
 
             try:
-                await _db.execute(constants.db.SQL_MAKE_OWNER)
-            except: #Exception as e:
-                # table owner might already exist
-                #print('Exception caught & ignored:', e)
-                pass
-
-            try:
-                await _db.execute(constants.db.SQL_UPDATE_OWNER
-                                  .format(owner_id))
+                if owner:
+                    await _db.execute(constants.db.SQL_UPDATE_OWNER
+                                      .format(user_id))
                 await _db.execute(constants.db.SQL_ADD_ROLES
                                   .format(constants.settings.ROLE_AUTH,
-                                          owner_id))
+                                          user_id))
                 await _db.execute(constants.db.SQL_ADD_ROLES
                                   .format(constants.settings.ROLE_SUPER_AUTH,
-                                          owner_id))
+                                          user_id))
                 await _db.commit()
                 return True
             except Exception as e:

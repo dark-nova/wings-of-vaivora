@@ -175,25 +175,34 @@ async def check_databases():
     await bot.wait_until_ready()
     print('Startup completed; starting check_databases')
 
+    await asyncio.sleep(1)
+
+    print('Attempting to adjust user permissions...')
+
     for guild in bot.guilds:
         if not guild.unavailable:
             guild_id = str(guild.id)
-            guild_owner_id = str(guild.owner.id)
             vdbs[guild.id] = vaivora.db.Database(guild_id)
             try:
-                if not await vdbs[guild.id].update_owner_sauth(
-                        guild_owner_id):
+                if await vdbs[guild.id].clean_duplicates():
+                    print('Duplicates have been removed from tables from',
+                          guild.id)
+
+                if not await vdbs[guild.id].update_user_sauth(
+                        guild.owner.id, owner=True):
+                    print('...failed! in {} with owner {}'
+                          .format(guild.id, guild.owner.id))
                     raise Exception
-                if not await vdbs[guild.id].update_owner_sauth(
-                        secrets.discord_user_id):
-                    raise Exception
+
+                if guild.owner.id != secrets.discord_user_id:
+                    if not await vdbs[guild.id].update_owner_sauth(
+                            secrets.discord_user_id, owner=False):
+                        print('...failed! in {} with bot admin {}'
+                          .format(guild.id, guild.owner.id))
+                        raise Exception
             except:
                 del vdbs[guild.id] # do not use corrupt/invalid db
                 print('Guild', guild.id, 'might be corrupt! Skipping...')
-
-            if await vdbs[guild.id].clean_duplicates():
-                print('Duplicates have been removed from tables from',
-                      guild.id)
 
     results = {}
     minutes = {}
@@ -232,7 +241,7 @@ async def check_databases():
             message_to_send = []
             discord_channel = None
             if not await valid_db.check_if_valid(constants.main.ROLE_BOSS):
-                await valid_db.create_db()
+                await valid_db.create_db(constants.main.ROLE_BOSS)
                 continue
             results[vdb_id] = await valid_db.check_db_boss()
 
