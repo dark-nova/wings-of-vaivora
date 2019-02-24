@@ -1,6 +1,9 @@
 import discord
 from discord.ext import commands
 
+import vaivora.db
+
+
 def check_channel(kind):
     """
     :func:`check_channel` checks whether a channel is allowed
@@ -16,7 +19,8 @@ def check_channel(kind):
     """
     @commands.check
     async def check(ctx):
-        chs = await vdbs[ctx.guild.id].get_channel(kind)
+        vdb = vaivora.db.Database(str(ctx.guild.id))
+        chs = await vdb.get_channel(kind)
 
         if chs and ctx.channel.id not in chs:
             return False # silently ignore wrong channel
@@ -35,7 +39,8 @@ def check_role():
     """
     @commands.check
     async def check(ctx):
-        users = await vdbs[ctx.guild.id].get_users(
+        vdb = vaivora.db.Database(str(ctx.guild.id))
+        users = await vdb.get_users(
                     constants.settings.ROLE_SUPER_AUTH)
 
         if users and str(ctx.author.id) in users:

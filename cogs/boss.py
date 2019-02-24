@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import discord
 from discord.ext import commands
 
+import checks
 import vaivora.db
 import constants.boss
 import constants.db
@@ -572,7 +573,7 @@ async def process_cmd_query(boss, query):
 
 class BossCog:
 
-    def __init__(bot):
+    def __init__(self, bot):
         self.bot = bot
 
     @commands.group()
@@ -754,4 +755,4 @@ class BossCog:
 
 
 def setup(bot):
-    bot.add_cog(SettingsCog(bot))
+    bot.add_cog(BossCog(bot))
