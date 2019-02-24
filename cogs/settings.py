@@ -292,7 +292,7 @@ class SettingsCog:
         else:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
-                                   constants.settings.SUCCESS_ROLES.format(
+                                   constants.settings.SUCCESS_ROLES_UP.format(
                                         ctx.role_kind)))
 
         return True
@@ -483,10 +483,11 @@ class SettingsCog:
         users = await vdb.get_users(ctx.role_kind, _mentions)
 
         if users:
-            users = '\n'.join([ctx.guild.get_member(user) for user in users])
-            users = '\n```\n{}```'.format(users)
-            await ctx.send('{} {}'.format(
-                    ctx.author.id,
+            users = '\n'.join([str(ctx.guild.get_member(user)) for user in users])
+            users = '```\n{}```'.format(users)
+            print(users)
+            await ctx.send('{}\n\n{}'.format(
+                    ctx.author.mention,
                     constants.settings.SUCCESS_ROLES.format(
                         ctx.role_kind, users),
                     constants.settings.NOTICE_ROLE))

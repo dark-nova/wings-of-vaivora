@@ -175,7 +175,7 @@ SUCCESS = 'Your {} records have been updated to `{}`.'
 SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
 SUCCESS_ROLES = 'Here are users of {} role type:\n\n{}'
 SUCCESS_PURGED = 'Your channel records were purged successfully.'
-SUCCESS_ROLES = 'Your {} roles have been successfully updated.'
+SUCCESS_ROLES_UP = 'Your {} roles have been successfully updated.'
 
 PARTIAL_SUCCESS = 'Your {} records did not fully process. Errors:\n\n{}'
 
