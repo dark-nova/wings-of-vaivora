@@ -60,6 +60,15 @@ types[constants.db.SQL_FROM_CHANS] = types[constants.db.SQL_FROM_CONTR]
 
 types[constants.db.SQL_FROM_OFFSET] = (constants.db.SQL_TYPE_INT,)
 
+tables = [
+    constants.db.MOD_BOSS,
+    constants.db.SQL_FROM_ROLES,
+    constants.db.SQL_FROM_GUILD,
+    constants.db.SQL_FROM_CONTR,
+    constants.db.SQL_FROM_CHANS,
+    constants.db.SQL_FROM_OFFSET,
+]
+
 
 async def get_dbs(kind):
     """
@@ -127,6 +136,24 @@ class Database:
             str: this database id
         """
         return self.db_id
+
+    async def create_all(self):
+        """
+        :func:`create_all` restores the entire db structure if it's corrupt.
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            for table in tables:
+                if table == constants.db.MOD_BOSS:
+                    module = constants.db.MOD_BOSS
+                else:
+                    module = table[5:]
+
+                await _db.execute('drop table if exists {}'.format(module))
+                await _db.execute('create table {}({})'
+                                  .format(module,
+                                          ','.join(await get_dbs(table))))
+                await _db.commit()
+        return
 
     async def create_db(self, kind):
         """
@@ -487,7 +514,12 @@ class Database:
     async def clean_duplicates(self):
         """
         :func:`clean_duplicates` gets rid of duplicates from all tables.
+
+        Returns:
+            list: containing table names that could not be cleaned, or
+                None if all tables could be cleaned
         """
+        errs = []
         async with aiosqlite.connect(self.db_name) as _db:
             for _table in constants.db.SQL_CLEAN_TABLES:
                 try:
@@ -495,8 +527,11 @@ class Database:
                                       .format(_table,
                                               constants.db.SQL_CLEAN[_table]))
                 except Exception as e:
-                    print(e)
+                    errs.append(_table)
+                    print('clean_duplicates', e)
                     continue
+            await _db.commit()
+        return errs
 
     async def purge(self):
         """

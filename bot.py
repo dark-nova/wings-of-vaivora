@@ -184,10 +184,6 @@ async def check_databases():
             guild_id = str(guild.id)
             vdbs[guild.id] = vaivora.db.Database(guild_id)
             try:
-                if await vdbs[guild.id].clean_duplicates():
-                    print('Duplicates have been removed from tables from',
-                          guild.id)
-
                 if not await vdbs[guild.id].update_user_sauth(
                         guild.owner.id, owner=True):
                     print('...failed! in {} with owner {}'
@@ -200,9 +196,14 @@ async def check_databases():
                         print('...failed! in {} with bot admin {}'
                           .format(guild.id, guild.owner.id))
                         raise Exception
+
+                if await vdbs[guild.id].clean_duplicates():
+                    print('Duplicates have been removed from tables from',
+                          guild.id)
             except:
+                print('Guild', guild.id, 'might be corrupt! Rebuilding and skipping...')
+                await vdbs[guild.id].create_all()
                 del vdbs[guild.id] # do not use corrupt/invalid db
-                print('Guild', guild.id, 'might be corrupt! Skipping...')
 
     results = {}
     minutes = {}
