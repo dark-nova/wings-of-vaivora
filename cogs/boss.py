@@ -563,64 +563,235 @@ def process_cmd_opt(boss, option=None):
     return target
 
 
-def process_record(boss, status, time, boss_map, channel):
-    """
-    :func:`process_records` processes a record to print out
 
-    Args:
-        boss (str): the boss in question
-        status (str): the status of the boss
-        time (datetime): the `datetime` of the target set to its next approximate spawn
-        boss_map (str): the map containing the last recorded spawn
-        channel (str): the channel of the world boss if applicable; else, 1
 
-    Returns:
-        str: a formatted markdown message containing the records
-    """
-    channel = str(floor(float(channel)))
 
-    if boss_map == constants.boss.CMD_ARG_QUERY_MAPS_NOT:
-        # use all maps for Demon Lord if not previously known
-        if boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
-            boss_map = '\n'.join([constants.boss.RECORD.format(constants.boss.EMOJI_LOC,
-                                                          loc, channel)
-                                  for loc in constants.boss.BOSS_MAPS[boss]])
-        # this should technically not be possible
+class BossCog:
+
+    def __init__(self, bot):
+        self.bot = bot
+
+    @bot.group()
+    async def boss(ctx, arg: str):
+        """
+        :func:`boss` handles "$boss" commands.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            arg (str): the boss to check
+
+        Returns:
+            True if successful; False otherwise
+        """
+        if constants.main.HELP == arg:
+            _help = vaivora.boss.help()
+            for _h in _help:
+                await ctx.author.send(_h)
+            return True
+
+        ctx.boss = arg
+
+        return True
+
+
+    # $boss <boss> <status> <time> [channel]
+    @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.main.ROLE_BOSS)
+    async def status(ctx, time: str, map_or_channel = None):
+        """
+        :func:`status` is a subcommand for `boss`.
+        Essentially stores valid data into a database.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            time (str): time when the boss died
+            map_or_channel: (default: None) the map xor channel in which the boss died
+
+        Returns:
+            True if run successfully, regardless of result
+        """
+        subcmd = await vaivora.boss.what_status(ctx.subcommand_passed)
+
+        if ctx.boss == constants.boss.CMD_ARG_TARGET_ALL:
+           await ctx.send(constants.errors.IS_INVALID_3
+                          .format(ctx.author.mention, ctx.boss,
+                                  constants.boss.CMD_ARG_TARGET, subcmd))
+           return False
+
+        try:
+            _boss, _time, _map, _channel = await boss_helper(ctx.boss, time, map_or_channel)
+        except:
+            which_fail = await boss_helper(ctx.boss, time, map_or_channel)
+            if len(which_fail) == 1:
+                await ctx.send(constants.errors.IS_INVALID_2
+                               .format(ctx.author.mention, ctx.boss,
+                                       constants.boss.CMD_ARG_TARGET))
+            elif len(which_fail) == 2:
+                await ctx.send(constants.errors.IS_INVALID_3
+                               .format(ctx.author.mention, time,
+                                       ctx.subcommand_passed, 'time'))
+            else:
+                pass
+            return False
+
+        opt = {constants.db.COL_BOSS_CHANNEL: _channel, constants.db.COL_BOSS_MAP: _map}
+        msg = await (vaivora.boss
+                     .process_cmd_status(ctx.guild.id, ctx.channel.id,
+                                         _boss, subcmd, _time, opt))
+        await ctx.send('{} {}'.format(ctx.author.mention, msg))
+
+        return True
+
+
+    @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.main.ROLE_BOSS)
+    async def entry(ctx, channel=None):
+        """
+        :func:`_list` is a subcommand for `boss`.
+        Lists records for bosses given.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            channel: (default: None) the channel to show, if supplied
+
+        Returns:
+            True if run successfully, regardless of result 
+        """
+        if ctx.boss != constants.boss.CMD_ARG_TARGET_ALL:
+            boss_idx = await vaivora.boss.check_boss(ctx.boss)
+            if boss_idx == -1:
+                await ctx.send(constants.errors.IS_INVALID_2
+                               .format(ctx.author.mention, ctx.boss,
+                                       constants.boss.CMD_ARG_TARGET))
+                return False
+            boss = constants.boss.ALL_BOSSES[boss_idx]
         else:
-            boss_map = constants.boss.RECORD.format(constants.boss.EMOJI_LOC, constants.boss.BOSS_MAPS[boss], channel)
-    # use all other maps for Demon Lord if already known
-    elif boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
-        boss_map = '\n'.join(['{} {}'.format(constants.boss.EMOJI_LOC, loc)
-                              for loc in constants.boss.BOSS_MAPS[boss] if loc != boss_map])
-    elif boss == constants.boss.BOSS_W_KUBAS:
-        # valid while Crystal Mine Lot 2 - 2F has 2 channels
-        channel = str(int(channel) % 2 + 1)
-        boss_map = constants.boss.RECORD_KUBAS.format(constants.boss.EMOJI_LOC, boss_map, channel)
-    else:
-        boss_map = constants.boss.RECORD.format(constants.boss.EMOJI_LOC, boss_map, channel)
-        
+            boss = constants.boss.ALL_BOSSES
 
-    minutes = floor((time - (datetime.now() 
-                                  + timedelta(hours=constants.boss.TIME_H_LOCAL_TO_SERVER)))
-                        .seconds / 60)
-    minutes = '{} minutes'.format(str(minutes))
+        if channel is not None:
+            channel = constants.boss.REGEX_OPT_CHANNEL.match(channel)
+            channel = int(channel.group(2))
 
-    # set time difference based on status and type of boss
-    # takes the negative (additive complement) to get the original time
-    time_diff = get_offset(boss, status, coefficient=-1)
-    # and add it back to get the reported time
-    report_time = time + time_diff
+        subcmd = await vaivora.boss.what_entry(ctx.subcommand_passed)
 
-    if status == constants.boss.CMD_ARG_STATUS_ANCHORED:
-        plus_one = time + timedelta(hours=1)
-        time_fmt = '**{}** ({}) to {}'.format(time.strftime("%Y/%m/%d %H:%M"),
-                                              minutes, plus_one.strftime("%Y/%m/%d %H:%M"))
-    else:
-        time_fmt = '**{}** ({})'.format(time.strftime("%Y/%m/%d %H:%M"), minutes)
+        msg = await (vaivora.boss
+                     .process_cmd_entry(ctx.guild.id, ctx.channel.id,
+                                        boss, subcmd, channel))
 
-    return ('**{}**\n- {} at {}\n- should spawn at {} in:\n{}'
-            .format(boss, status, report_time.strftime("%Y/%m/%d %H:%M"), time_fmt, boss_map))
-    # boss, status at, dead time, timefmt, maps with newlines
+        await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg[0]))
+        combined_message = ''
+        for _msg, i in zip(msg[1:], range(len(msg)-1)):
+            combined_message = '{}\n\n{}'.format(combined_message, _msg)
+            if i % 5 == 4:
+                await ctx.send(combined_message)
+                combined_message = ''
+        if combined_message:
+            await ctx.send(combined_message)
 
-    return ret_message
+        return True
 
+
+    @boss.command(name='maps', aliases=['map', 'alias', 'aliases'])
+    async def query(ctx):
+        """
+        :func:`query` returns a user-usable list of maps and aliases for a given target.
+        Unlike other boss commands, :func:`query` and :func:`_type` can be used in DMs.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if run successfully, regardless of result
+        """
+        subcmd = await vaivora.boss.what_query(ctx.subcommand_passed)
+
+        if ctx.boss == constants.boss.CMD_ARG_TARGET_ALL:
+           await ctx.send(constants.errors.IS_INVALID_3
+                          .format(ctx.author.mention, ctx.boss,
+                                  constants.boss.CMD_ARG_TARGET, subcmd))
+           return False
+        else:
+            boss_idx = await vaivora.boss.check_boss(ctx.boss)
+            if boss_idx == -1:
+                await ctx.send(constants.errors.IS_INVALID_2
+                               .format(ctx.author.mention, ctx.boss,
+                                       constants.boss.CMD_ARG_TARGET))
+                return False
+            boss = constants.boss.ALL_BOSSES[boss_idx]
+
+        msg = await vaivora.boss.process_cmd_query(boss, subcmd)
+
+        await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg))
+
+
+    @boss.command(name='world', aliases=['w', 'field', 'f', 'demon', 'd', 'dl'])
+    async def _type(ctx):
+        """
+        :func:`_type` returns a user-usable list of types of bosses: World, Field, Demon.
+        Unlike other boss commands, :func:`query` and :func:`_type` can be used in DMs.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if run successfully, regardless of result
+        """
+        subcmd = await vaivora.boss.what_type(ctx.subcommand_passed)
+
+        if ctx.boss != constants.boss.CMD_ARG_TARGET_ALL:
+           await ctx.send(constants.errors.IS_INVALID_3
+                          .format(ctx.author.mention, ctx.boss,
+                                  constants.boss.CMD_ARG_TARGET, subcmd))
+           return False
+
+        msg = await vaivora.boss.get_bosses(subcmd)
+
+        await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg))
+
+
+    async def boss_helper(boss, time, map_or_channel):
+        """
+        :func:`boss_helper` processes for `died` and `anchored`.
+
+        Args:
+            time (str): time when the boss died
+            map_or_channel: (default: None) the map xor channel in which the boss died
+
+        Returns:
+            tuple: (boss_idx, channel, map)
+        """
+        channel = 1 # base case
+        map_idx = None # don't assume map
+
+        boss_idx = await vaivora.boss.check_boss(boss)
+
+        if boss_idx == -1: # invalid boss
+            return (None,)
+
+        time = await vaivora.boss.validate_time(time)
+
+        if not time: # invalid time
+            return (None,None)
+
+        boss = constants.boss.ALL_BOSSES[boss_idx]
+
+        if len(constants.boss.BOSS_MAPS[boss]) == 1:
+            map_idx = 0 # it just is
+
+        if map_or_channel and type(map_or_channel) is int:
+            if map_or_channel <= 4 or map_or_channel > 1:
+                channel = map_or_channel # use user-input channel only if valid
+        elif map_or_channel and constants.boss.REGEX_OPT_CHANNEL.match(map_or_channel):
+            channel = constants.boss.REGEX_OPT_CHANNEL.match(map_or_channel)
+            channel = int(channel.group(2)) # channel will always be 1 through 4 inclusive
+        elif type(map_or_channel) is str and map_idx != 0: # possibly map
+            map_idx = await vaivora.boss.check_maps(boss_idx, map_or_channel)
+
+        if (not map_idx and map_idx != 0) or map_idx == -1:
+            _map = ""
+        else:
+            _map = constants.boss.BOSS_MAPS[boss][map_idx]
+
+        return (boss, time, _map, channel)
