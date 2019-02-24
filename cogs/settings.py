@@ -10,8 +10,9 @@ from itertools import chain
 import discord
 from discord.ext import commands
 
+import checks
 import vaivora.db
-from vaivora.secrets import discord_user_id
+from secrets import discord_user_id
 import constants.settings
 
 
@@ -31,7 +32,7 @@ async def get_users(guild_id: int, kind: str):
 
     Args:
         guild_id (int): the id of the guild to check
-        kind (str): the kind of user to get
+        kind (str): the kind of role of user to get
 
     Returns:
         list: all users that are of `kind`
@@ -77,9 +78,14 @@ class SettingsCog:
 
     def __init__(self, bot):
         self.bot = bot
+        self.bot.remove_command('help')
 
-    @commands.command(name='help')
-    async def _help(ctx):
+    @commands.group()
+    async def settings(self, ctx):
+        pass
+
+    @settings.command(name='help')
+    async def _help(self, ctx):
         """
         :func:`_help` retrieves help pages for `$settings`.
 
@@ -89,15 +95,15 @@ class SettingsCog:
         Returns:
             True
         """
-        _help = vaivora.settings.help()
+        _help = help()
         for _h in _help:
             await ctx.author.send(_h)
         return True
 
-    @commands.command()
-    @only_in_guild()
-    @check_role()
-    async def purge(ctx):
+    @settings.command()
+    @checks.only_in_guild()
+    @checks.check_role()
+    async def purge(self, ctx):
         """
         :func:`purge` is a last-resort subcommand that
         resets the channels table.
@@ -105,21 +111,21 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        if await vaivora.settings.purge(ctx.guild.id):
-            await ctx.send('{} {}'.format(ctx.author.mention,
+        if await vaivora.settings.purge(self, ctx.guild.id):
+            await ctx.send('{} {}'.format(self, ctx.author.mention,
                                           constants.settings.SUCCESS_PURGED))
             return True
         else:
-            await ctx.send('{} {}'.format(ctx.author.mention,
+            await ctx.send('{} {}'.format(self, ctx.author.mention,
                                           constants.settings.FAIL_PURGED))
             return False
 
     # $settings set <target> <kind> <discord object>
-    @commands.group(name='set')
-    @only_in_guild()
-    @check_channel(constants.settings.MODULE_NAME)
-    @check_role()
-    async def _set(ctx):
+    @settings.group(name='set')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def _set(self, ctx):
         """
         :func:`set` sets `target`s to `kind`s.
         e.g. sets a channel (target) to boss (kind)
@@ -133,31 +139,31 @@ class SettingsCog:
         return True
 
     @_set.group(name='channel')
-    @only_in_guild()
-    @check_channel(constants.settings.MODULE_NAME)
-    @check_role()
-    async def __channel(ctx):
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def s_channel(self, ctx):
         """
-        :func:`__channel` sets channels to `kind`s.
+        :func:`s_channel` sets channels to `kind`s.
         e.g. sets a channel (target) to boss (kind)
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            True always
         """
         ctx.channel_kind = ctx.invoked_subcommand.name
         return True
 
-    @__channel.command(name='settings')
-    @only_in_guild()
-    @check_channel(constants.settings.MODULE_NAME)
-    @check_role()
-    @has_channel_mentions()
-    async def ___settings(ctx):
+    @s_channel.command(name='settings')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    @checks.has_channel_mentions()
+    async def sc_settings(self, ctx):
         """
-        :func:`___settings` sets channels to `settings`.
+        :func:`sc_settings` sets channels to `settings`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
@@ -165,16 +171,16 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await self.channel_setter(ctx, ctx.channel_kind)
+        return await self.channel_setter(self, ctx, ctx.channel_kind)
 
-    @__channel.command(name='boss')
-    @only_in_guild()
-    @check_channel(constants.settings.MODULE_NAME)
-    @check_role()
-    @has_channel_mentions()
-    async def ___boss(ctx):
+    @s_channel.command(name='boss')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    @checks.has_channel_mentions()
+    async def sc_boss(self, ctx):
         """
-        :func:`___boss` sets channels to `boss`.
+        :func:`sc_boss` sets channels to `boss`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
@@ -182,12 +188,12 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await self.channel_setter(ctx, ctx.channel_kind)
+        return await self.channel_setter(self, ctx, ctx.channel_kind)
 
-    async def channel_setter(ctx, kind):
+    async def channel_setter(self, ctx, kind):
         """
         :func:`channel_setter` does the work
-        for :func:`___boss` and :func:`___settings`.
+        for :func:`sc_boss` and :func:`sc_settings`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
@@ -199,7 +205,7 @@ class SettingsCog:
         channels = []
         for channel_mention in ctx.message.channel_mentions:
             channels.append(str(channel_mention.id))
-        vdb = vaivora.db.Database(ctx.guild.id)
+        vdb = vaivora.db.Database(self, ctx.guild.id)
         errs = []
 
         for _channel in channels:
@@ -219,52 +225,110 @@ class SettingsCog:
         return True
 
     @_set.group(name='role')
-    @only_in_guild()
-    @check_channel(constants.settings.MODULE_NAME)
-    @check_role()
-    async def __role(ctx, kind: str, mentions: commands.Greedy[int]):
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def s_role(self, ctx):
         """
-        :func:`__role` sets `role`s to `kind`s.
+        :func:`s_role` sets `role`s to `kind`s.
         e.g. sets a channel (target) to boss (kind)
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            target (str): the object to set
-            kind (str): the kind/type to use
+
+        Returns:
+            True always
+        """
+        ctx.role_kind = ctx.invoked_subcommand.name
+        return True
+
+    @s_role.group(name='member')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def sr_member(self, ctx, mentions: commands.Greedy[int]):
+        """
+        :func:`sr_member` sets roles of members.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise      
+        """
+        return await self.role_setter(self, ctx, mentions)
+
+    @s_role.group(name='authorized')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def sr_auth(self, ctx, mentions: commands.Greedy[int]):
+        """
+        :func:`sr_member` sets roles of members.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise      
+        """
+        return await self.role_setter(self, ctx, mentions)
+
+    @s_role.group(name='boss')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def sr_boss(self, ctx, mentions: commands.Greedy[int]):
+        """
+        :func:`sr_member` sets roles of members.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise      
+        """
+        return await self.role_setter(self, ctx, mentions)
+
+    async def role_setter(self, ctx, mentions=None):
+        """
+        :func:`role_setter` handles the backend for
+        :func:`sr_member`, :func:`sr_auth`, and :func:`sr_boss`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            mentions: (default: None) optional mentions that are only id's
 
         Returns:
             True if successful; False otherwise
         """
-        if (kind != constants.settings.ROLE_BOSS
-                and kind != constants.settings.ROLE_MEMBER
-                and kind != constants.settings.ROLE_AUTH):
-            await ctx.send(constants.errors.IS_INVALID_3
-                           .format(ctx.author.mention, kind,
-                                   constants.settings.MODULE_NAME,
-                                   constants.settings.TARGET_ROLE))
-            return False
-
         _mentions = []
 
         if ctx.message.mentions:
             for mention in ctx.message.mentions:
                 _mentions.append(mention)
 
+        # uid mode; parse if they're actually id's and not nonsense
         if mentions:
-            gids = [member.id for member in (ctx.guild.members
+            gids = [member.id for member in (self, ctx.guild.members
                                              + ctx.guild.roles)]
             rids = [member.id for member in ctx.guild.role]
-            if kind == constants.settings.ROLE_BOSS:
+            if ctx.role_kind == constants.settings.ROLE_BOSS:
                 for mention in mentions:
-                    if mention in rids: # do not allow regular users for $boss
+                     # do not allow regular users for $boss
+                    if mention in rids:
                         _mention.append(mention)
             else:
                 for mention in mentions:
                     if mention in gids:
                         _mentions.append(mention)
 
-        pass
+        if not _mentions:
+            await ctx.send('{} {}'
+                           .format(self, ctx.author.mention,
+                                   constants.settings.FAIL_NO_MENTIONS))
 
+        print(mentions)
 
 def setup(bot):
     bot.add_cog(SettingsCog(bot))
