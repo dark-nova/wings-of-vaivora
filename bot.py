@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import re
 import os
+import sys
 import asyncio
 from hashlib import blake2b
 from datetime import datetime, timedelta
@@ -9,11 +10,11 @@ from operator import itemgetter
 import discord
 from discord.ext import commands
 
+import checks
+import secrets
 import vaivora.boss
 import vaivora.db
 import vaivora.disclaimer
-import vaivora.secrets
-import vaivora.settings
 import constants.main
 import constants.boss
 import constants.db
@@ -22,19 +23,20 @@ import constants.settings
 
 
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
-bot.remove_command('help')
 
-# initial_extensions = ['cogs.settings',
-#                       'cogs.meme']
+initial_extensions = ['cogs.settings',
+                      'cogs.meme']
 
 # snippet from https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be
-# if __name__ == '__main__':
-#     for extension in initial_extensions:
-#         try:
-#             bot.load_extension(extension)
-#         except Exception as e:
-#             print(f'Failed to load extension {extension}.', file=sys.stderr)
-#             traceback.print_exc()
+if __name__ == '__main__':
+    for extension in initial_extensions:
+        try:
+            bot.load_extension(extension)
+        except Exception as e:
+            print(f'Failed to load extension {extension}.', file=sys.stderr)
+            traceback.print_exc()
+
+bot.remove_command('help')
 
 vdbs = {} # a dict containing db.py instances, with indices = server id's
 
@@ -58,95 +60,7 @@ async def on_ready():
     return True
 
 
-def check_channel(ch_type):
-    """
-    :func:`check_channel` checks whether a channel is allowed
-    to interact with Wings of Vaivora.
 
-    Args:
-        ch_type (str): the type (name) of the channel
-
-    Returns:
-        True if successful; False otherwise
-            Note that this means if no channels have registered,
-            *all* channels are valid.
-    """
-    @commands.check
-    async def check(ctx):
-        chs = await (vaivora.settings
-                     .get_channel(ctx.guild.id, ch_type))
-
-        if chs and ctx.channel.id not in chs:
-            return False # silently ignore wrong channel
-        else: # in the case of `None` chs, all channels are valid
-            return True
-    return check
-
-
-def check_role():
-    """
-    :func:`check_role` sees whether the user is authorized
-    to run a settings command.
-
-    Returns:
-        True if the user is authorized; False otherwise
-    """
-    @commands.check
-    async def check(ctx):
-        users = await (vaivora.settings
-                       .get_users(ctx.guild.id,
-                                  constants.settings.ROLE_SUPER_AUTH))
-
-        if users and str(ctx.author.id) in users:
-            return True
-        else:
-            users = await (vaivora.settings
-                           .get_users(ctx.guild.id,
-                                      constants.settings.ROLE_AUTH))
-
-        if users and str(ctx.author.id) in users:
-            return True
-        else:
-            await ctx.send('{} {}'
-                            .format(ctx.author.mention,
-                                    constants.settings.FAIL_NOT_AUTH))
-            return False
-    return check
-
-
-def only_in_guild():
-    """
-    :func:`only_in_guild` checks whether a command can run.
-
-    Returns:
-        True if guild; False otherwise
-    """
-    @commands.check
-    async def check(ctx):
-        if ctx.guild == None: # not a guild
-            await ctx.send(constants.errors.CANT_DM.format(constants.boss.COMMAND))
-            return False
-        return True
-    return check
-
-
-def has_channel_mentions():
-    """
-    :func:`has_channel_mentions` checks whether
-    a command has channel mentions. How creative
-
-    Returns:
-        True if message has channel mentions; False otherwise
-    """
-    @commands.check
-    async def check(ctx):
-        if not ctx.message.channel_mentions: # not a guild
-            await ctx.send(constants.errors.TOO_FEW_ARGS.format(
-                ctx.author.mention, constants.main.ROLE_SETTINGS,
-                constants.settings.USAGE_SET_CHANNELS))
-            return False
-        return True
-    return check
 
 
 @bot.event
@@ -219,8 +133,8 @@ async def boss(ctx, arg: str):
 
 # $boss <boss> <status> <time> [channel]
 @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
-@only_in_guild()
-@check_channel(constants.main.ROLE_BOSS)
+@checks.only_in_guild()
+@checks.check_channel(constants.main.ROLE_BOSS)
 async def status(ctx, time: str, map_or_channel = None):
     """
     :func:`status` is a subcommand for `boss`.
@@ -268,8 +182,8 @@ async def status(ctx, time: str, map_or_channel = None):
 
 
 @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
-@only_in_guild()
-@check_channel(constants.main.ROLE_BOSS)
+@checks.only_in_guild()
+@checks.check_channel(constants.main.ROLE_BOSS)
 async def entry(ctx, channel=None):
     """
     :func:`_list` is a subcommand for `boss`.
@@ -434,7 +348,11 @@ async def check_databases():
             guild_owner_id = str(guild.owner.id)
             vdbs[guild.id] = vaivora.db.Database(guild_id)
             try:
-                if not await vdbs[guild.id].update_owner_sauth(guild_owner_id):
+                if not await vdbs[guild.id].update_owner_sauth(
+                        guild_owner_id):
+                    raise Exception
+                if not await vdbs[guild.id].update_owner_sauth(
+                        secrets.discord_user_id):
                     raise Exception
             except:
                 del vdbs[guild.id] # do not use corrupt/invalid db
@@ -595,7 +513,7 @@ async def check_databases():
 
 
 # begin everything
-secret = vaivora.secrets.discord_token
+secret = secrets.discord_token
 
 bot.loop.create_task(check_databases())
 bot.run(secret)
