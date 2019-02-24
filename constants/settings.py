@@ -173,18 +173,22 @@ REGEX_SETTING_TARGET_CHANNEL = re.compile(r'ch(an(nel)?)*', re.IGNORECASE)
 
 SUCCESS = 'Your {} records have been updated to `{}`.'
 SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
+SUCCESS_ROLES = 'Here are users of {} role type:\n\n{}'
 SUCCESS_PURGED = 'Your channel records were purged successfully.'
 SUCCESS_ROLES = 'Your {} roles have been successfully updated.'
 
 PARTIAL_SUCCESS = 'Your {} records did not fully process. Errors:\n\n{}'
 
 FAIL_NO_CHANNELS = 'No channels were found associated with the {} type.'
+FAIL_NO_ROLES = 'No users were found associated with the {} role type.'
 FAIL_NOT_AUTH = 'You are not authorized to do this!'
 FAIL_PURGED = 'Your channel records could not be purged.'
 FAIL_NO_MENTIONS = 'No mentions were added.'
 
 FAIL_NOT_PARSED = 'Your command could not be parsed.'
 FAIL_COULD_NOT = FAIL_NOT_PARSED + '\nCould not {} {}\'s {} record.'
+
+NOTICE_ROLE = 'All users not mentioned here have not been assigned a Vaivora role.'
 
 USAGE_SET_CHANNELS = '$settings set channel <type> <#channel> [<#channel> ...]'
 

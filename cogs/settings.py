@@ -251,13 +251,13 @@ class SettingsCog:
 
         if ctx.message.role_mentions:
             for mention in ctx.message.role_mentions:
-                _mentions.append(mention)
+                _mentions.append(mention.id)
 
         # do not allow regular users for $boss
         if ctx.role_kind != constants.settings.ROLE_BOSS:
             if ctx.message.mentions:
                 for mention in ctx.message.mentions:
-                    _mentions.append(mention)
+                    _mentions.append(mention.id)
 
         # uid mode; parse if they're actually id's and not nonsense
         if mentions:
@@ -300,6 +300,7 @@ class SettingsCog:
     # $settings get <target> <kind> <discord object>
     @settings.group(name='get')
     @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
     async def _get(self, ctx):
         """
         :func:`_get` gets `target`s to `kind`s.
@@ -315,6 +316,7 @@ class SettingsCog:
 
     @_get.group(name='channel')
     @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_channel(self, ctx):
         """
         :func:`g_channel` gets channels of `kind`.
@@ -331,6 +333,7 @@ class SettingsCog:
 
     @g_channel.command(name='settings')
     @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gc_settings(self, ctx):
         """
         :func:`gc_settings` gets channels that are `settings`.
@@ -345,6 +348,7 @@ class SettingsCog:
 
     @g_channel.command(name='boss')
     @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gc_boss(self, ctx):
         """
         :func:`gc_boss` gets channels that are `boss`.
@@ -376,6 +380,7 @@ class SettingsCog:
 
     @_get.group(name='role')
     @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_role(self, ctx):
         """
         :func:`g_role` gets `role`s of `kind`.
@@ -392,6 +397,7 @@ class SettingsCog:
 
     @g_role.group(name='member')
     @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_member(self, ctx, mentions: Optional[int] = None):
         """
         :func:`gr_member` gets members of role `member`.
@@ -402,10 +408,11 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await self.role_setter(ctx, mentions)
+        return await self.role_getter(ctx, mentions)
 
     @g_role.group(name='authorized')
     @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_auth(self, ctx, mentions: Optional[int] = None):
         """
         :func:`gr_auth` gets members of role `authorized`.
@@ -416,10 +423,11 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await self.role_setter(ctx, mentions)
+        return await self.role_getter(ctx, mentions)
 
     @g_role.group(name='boss')
     @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_boss(self, ctx, mentions: Optional[int] = None):
         """
         :func:`gr_boss` gets members of role `boss`.
@@ -430,7 +438,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await self.role_setter(ctx, mentions)
+        return await self.role_getter(ctx, mentions)
 
     async def role_getter(self, ctx, mentions=None):
         """
@@ -471,7 +479,23 @@ class SettingsCog:
                     if mention in gids:
                         _mentions.append(mention)
 
-        pass
+        vdb = vaivora.db.Database(ctx.guild.id)
+        users = await vdb.get_users(ctx.role_kind, _mentions)
+
+        if users:
+            users = '\n'.join([ctx.guild.get_member(user) for user in users])
+            users = '\n```\n{}```'.format(users)
+            await ctx.send('{} {}'.format(
+                    ctx.author.id,
+                    constants.settings.SUCCESS_ROLES.format(
+                        ctx.role_kind, users),
+                    constants.settings.NOTICE_ROLE))
+            return True
+        else:
+            await ctx.send('{} {}'.format(
+                    constants.sttings.FAIL_NO_ROLES.format(
+                        ctx.role_kind)))
+            return False
 
 
 def setup(bot):
