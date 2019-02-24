@@ -176,7 +176,7 @@ class SettingsCog:
     async def s_role(self, ctx):
         """
         :func:`s_role` sets `role`s to `kind`s.
-        e.g. sets a channel (target) to boss (kind)
+        e.g. sets a member (target) to role boss (kind)
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
@@ -296,6 +296,182 @@ class SettingsCog:
                                         ctx.role_kind)))
 
         return True
+
+    # $settings get <target> <kind> <discord object>
+    @settings.group(name='get')
+    @checks.only_in_guild()
+    async def _get(self, ctx):
+        """
+        :func:`_get` gets `target`s to `kind`s.
+        e.g. sets a channel (target) to boss (kind)
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return True
+
+    @_get.group(name='channel')
+    @checks.only_in_guild()
+    async def g_channel(self, ctx):
+        """
+        :func:`g_channel` gets channels of `kind`.
+        e.g. gets a channel (target) of boss (kind)
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True always
+        """
+        ctx.channel_kind = ctx.invoked_subcommand.name
+        return True
+
+    @g_channel.command(name='settings')
+    @checks.only_in_guild()
+    async def gc_settings(self, ctx):
+        """
+        :func:`gc_settings` gets channels that are `settings`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await self.channel_getter(ctx, ctx.channel_kind)
+
+    @g_channel.command(name='boss')
+    @checks.only_in_guild()
+    async def gc_boss(self, ctx):
+        """
+        :func:`gc_boss` gets channels that are `boss`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await self.channel_getter(ctx, ctx.channel_kind)
+
+    async def channel_getter(self, ctx, kind):
+        """
+        :func:`channel_getter` does the work
+        for :func:`gc_boss` and :func:`gc_settings`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            kind (str): the kind/type to use, i.e. subcommand invoked
+
+        Returns:
+            True if successful; False otherwise
+        """
+        vdb = vaivora.db.Database(self, ctx.guild.id)
+        errs = []
+
+        pass
+
+    @_get.group(name='role')
+    @checks.only_in_guild()
+    async def g_role(self, ctx):
+        """
+        :func:`g_role` gets `role`s of `kind`.
+        e.g. gets a member (target) of role boss (kind)
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True always
+        """
+        ctx.role_kind = ctx.invoked_subcommand.name
+        return True
+
+    @g_role.group(name='member')
+    @checks.only_in_guild()
+    async def gr_member(self, ctx, mentions: Optional[int] = None):
+        """
+        :func:`gr_member` gets members of role `member`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await self.role_setter(ctx, mentions)
+
+    @g_role.group(name='authorized')
+    @checks.only_in_guild()
+    async def gr_auth(self, ctx, mentions: Optional[int] = None):
+        """
+        :func:`gr_auth` gets members of role `authorized`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await self.role_setter(ctx, mentions)
+
+    @g_role.group(name='boss')
+    @checks.only_in_guild()
+    async def gr_boss(self, ctx, mentions: Optional[int] = None):
+        """
+        :func:`gr_boss` gets members of role `boss`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await self.role_setter(ctx, mentions)
+
+    async def role_getter(self, ctx, mentions=None):
+        """
+        :func:`role_getter` handles the backend for
+        :func:`gr_member`, :func:`gr_auth`, and :func:`gr_boss`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            mentions: (default: None) optional mentions that are only id's
+
+        Returns:
+            True if successful; False otherwise
+        """
+        _mentions = []
+
+        if ctx.message.role_mentions:
+            for mention in ctx.message.role_mentions:
+                _mentions.append(mention)
+
+        # do not allow regular users for $boss
+        if ctx.role_kind != constants.settings.ROLE_BOSS:
+            if ctx.message.mentions:
+                for mention in ctx.message.mentions:
+                    _mentions.append(mention)
+
+        # uid mode; parse if they're actually id's and not nonsense
+        if mentions:
+            gids = [member.id for member in (ctx.guild.members
+                                             + ctx.guild.roles)]
+            rids = [member.id for member in ctx.guild.role]
+            if ctx.role_kind == constants.settings.ROLE_BOSS:
+                for mention in mentions:
+                    # do not allow regular users for $boss
+                    if mention in rids:
+                        _mention.append(mention)
+            else:
+                for mention in mentions:
+                    if mention in gids:
+                        _mentions.append(mention)
+
+        pass
 
 
 def setup(bot):
