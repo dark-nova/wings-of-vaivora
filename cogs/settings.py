@@ -257,7 +257,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise      
         """
-        return await self.role_setter(self, ctx, mentions)
+        return await self.role_setter(ctx, mentions)
 
     @s_role.group(name='authorized')
     @checks.only_in_guild()
@@ -273,7 +273,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise      
         """
-        return await self.role_setter(self, ctx, mentions)
+        return await self.role_setter(ctx, mentions)
 
     @s_role.group(name='boss')
     @checks.only_in_guild()
@@ -289,7 +289,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise      
         """
-        return await self.role_setter(self, ctx, mentions)
+        return await self.role_setter(ctx, mentions)
 
     async def role_setter(self, ctx, mentions=None):
         """
