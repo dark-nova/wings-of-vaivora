@@ -56,6 +56,7 @@ def update_db(db_dir):
                 cursor.execute('drop table if exists reminders')
                 cursor.execute('drop table if exists talt')
                 cursor.execute('drop table if exists boss')
+                cursor.execute('drop table if exists roles')
                 cursor.execute(
                     'create table owner(id text)')
                 cursor.execute(
@@ -63,7 +64,7 @@ def update_db(db_dir):
                 cursor.execute(
                     'create table guild(level integer, points integer)')
                 cursor.execute(
-                    'create table roles(role text, mention text)')
+                    'create table roles(role text, mention integer)')
                 cursor.execute(
                     'create table channels(type text, channel integer)')
                 cursor.execute(
