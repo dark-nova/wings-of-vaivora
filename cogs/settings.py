@@ -6,6 +6,7 @@ import asyncio
 import aiosqlite
 import typing
 from itertools import chain
+from typing import Optional
 
 import discord
 from discord.ext import commands
@@ -246,7 +247,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def sr_member(self, ctx, mentions: commands.Greedy[int]):
+    async def sr_member(self, ctx, mentions: Optional[int] = None):
         """
         :func:`sr_member` sets roles of members.
 
@@ -262,7 +263,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def sr_auth(self, ctx, mentions: commands.Greedy[int]):
+    async def sr_auth(self, ctx, mentions: Optional[int] = None):
         """
         :func:`sr_member` sets roles of members.
 
@@ -278,7 +279,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def sr_boss(self, ctx, mentions: commands.Greedy[int]):
+    async def sr_boss(self, ctx, mentions: Optional[int] = None):
         """
         :func:`sr_member` sets roles of members.
 
