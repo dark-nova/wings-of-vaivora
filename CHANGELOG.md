@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Similarly, all duplicates in tables `roles`, `channels`, and `contributions` will be removed.
 - Add separate command groups for settings commands.
 - Made a mistake with channels? You can now use `$settings purge` to erase them to redo.
-- Cogs. Unfortunately, `$boss` cannot be made into a cog due to argument positioning.
+- ~~Cogs. Unfortunately, `$boss` cannot be made into a cog due to argument positioning.~~ Nope.
 
 ### Changed
 - The `$settings` module has been rewritten from a class interface to a helper module for the `db` module.
@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - "Separate command groups for settings" means that all current and future `$settings` subcommands will literals, not regex. i.e. `$settings set channel boss #channel` instead of something like `$settings set ch boss #channel`.
 - `vaivora_modules` changed to `vaivora`. Brevity is the soul of wit.
 - `$settings` was moved to `cogs`.
+- `$boss` and `$meme` are now `cogs` too.
 
 ### Deprecated
 - Translation modules moved out of their respective directories. I don't think this project will ever be made to run in multiple languages simultaneously.

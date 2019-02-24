@@ -21,6 +21,52 @@ def help():
     return constants.boss.HELP
 
 
+async def boss_helper(boss, time, map_or_channel):
+        """
+        :func:`boss_helper` processes for `died` and `anchored`.
+
+        Args:
+            time (str): time when the boss died
+            map_or_channel: (default: None) the map xor channel in which the boss died
+
+        Returns:
+            tuple: (boss_idx, channel, map)
+        """
+        channel = 1 # base case
+        map_idx = None # don't assume map
+
+        boss_idx = await check_boss(boss)
+
+        if boss_idx == -1: # invalid boss
+            return (None,)
+
+        time = await validate_time(time)
+
+        if not time: # invalid time
+            return (None,None)
+
+        boss = constants.boss.ALL_BOSSES[boss_idx]
+
+        if len(constants.boss.BOSS_MAPS[boss]) == 1:
+            map_idx = 0 # it just is
+
+        if map_or_channel and type(map_or_channel) is int:
+            if map_or_channel <= 4 or map_or_channel > 1:
+                channel = map_or_channel # use user-input channel only if valid
+        elif map_or_channel and constants.boss.REGEX_OPT_CHANNEL.match(map_or_channel):
+            channel = constants.boss.REGEX_OPT_CHANNEL.match(map_or_channel)
+            channel = int(channel.group(2)) # channel will always be 1 through 4 inclusive
+        elif type(map_or_channel) is str and map_idx != 0: # possibly map
+            map_idx = await check_maps(boss_idx, map_or_channel)
+
+        if (not map_idx and map_idx != 0) or map_idx == -1:
+            _map = ""
+        else:
+            _map = constants.boss.BOSS_MAPS[boss][map_idx]
+
+        return (boss, time, _map, channel)
+
+
 async def what_status(entry):
     """
     :func:`what_status` checks what "status" the input may be.
@@ -524,55 +570,13 @@ async def process_cmd_query(boss, query):
         return await get_maps(boss)
 
 
-def process_cmd_opt(boss, option=None):
-    """
-    :func:`process_cmd_opt` processes optional arguments.
-
-    Args:
-        boss (str): the boss related to the option
-        option (str): (default: None) an optional argument to process
-
-    Returns:
-        dict: a k:v of 'map' and 'channel': 'map' is str; 'channel' is int
-    """
-    target = {}
-
-    # initialize to default values: channel = 1; map = 'N/A'
-    target[constants.db.COL_BOSS_CHANNEL] = 1
-    target[constants.db.COL_BOSS_MAP] = constants.boss.CMD_ARG_QUERY_MAPS_NOT
-
-    if option is None:
-        if boss in (constants.boss.BOSSES[constants.boss.KW_WORLD]
-                    +constants.boss.BOSSES[constants.boss.KW_FIELD]):
-            target[constants.db.COL_BOSS_MAP] = constants.boss.BOSS_MAPS[boss][0]
-        return target
-
-    channel = constants.boss.REGEX_OPT_CHANNEL.match(option)
-
-    # world boss; discard map argument if found and return
-    if channel and boss in constants.boss.BOSSES[constants.boss.KW_WORLD]:
-        target[constants.db.COL_BOSS_CHANNEL] = int(channel.group(2))
-        target[constants.db.COL_BOSS_MAP] = constants.db.BOSS_MAPS[boss]
-    # field boss + Demon Lords; discard channel argument nonetheless
-    elif not channel and (boss in constants.boss.BOSSES[constants.boss.KW_FIELD] or
-                          boss in constants.boss.BOSSES[constants.boss.KW_DEMON]):
-        map_idx = check_maps(boss, option)
-        if map_idx >= 0 and map_idx < len(constants.boss.BOSS_MAPS[boss]):
-            target[constants.db.COL_BOSS_MAP] = constants.boss.BOSS_MAPS[boss][map_idx]
-
-    return target
-
-
-
-
-
 class BossCog:
 
-    def __init__(self, bot):
+    def __init__(bot):
         self.bot = bot
 
-    @bot.group()
-    async def boss(ctx, arg: str):
+    @commands.group()
+    async def boss(self, ctx, arg: str):
         """
         :func:`boss` handles "$boss" commands.
 
@@ -584,7 +588,7 @@ class BossCog:
             True if successful; False otherwise
         """
         if constants.main.HELP == arg:
-            _help = vaivora.boss.help()
+            _help = help()
             for _h in _help:
                 await ctx.author.send(_h)
             return True
@@ -598,7 +602,7 @@ class BossCog:
     @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
     @checks.only_in_guild()
     @checks.check_channel(constants.main.ROLE_BOSS)
-    async def status(ctx, time: str, map_or_channel = None):
+    async def status(self, ctx, time: str, map_or_channel = None):
         """
         :func:`status` is a subcommand for `boss`.
         Essentially stores valid data into a database.
@@ -611,7 +615,7 @@ class BossCog:
         Returns:
             True if run successfully, regardless of result
         """
-        subcmd = await vaivora.boss.what_status(ctx.subcommand_passed)
+        subcmd = await what_status(ctx.subcommand_passed)
 
         if ctx.boss == constants.boss.CMD_ARG_TARGET_ALL:
            await ctx.send(constants.errors.IS_INVALID_3
@@ -636,9 +640,8 @@ class BossCog:
             return False
 
         opt = {constants.db.COL_BOSS_CHANNEL: _channel, constants.db.COL_BOSS_MAP: _map}
-        msg = await (vaivora.boss
-                     .process_cmd_status(ctx.guild.id, ctx.channel.id,
-                                         _boss, subcmd, _time, opt))
+        msg = await (process_cmd_status(ctx.guild.id, ctx.channel.id,
+                                        _boss, subcmd, _time, opt))
         await ctx.send('{} {}'.format(ctx.author.mention, msg))
 
         return True
@@ -647,7 +650,7 @@ class BossCog:
     @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
     @checks.only_in_guild()
     @checks.check_channel(constants.main.ROLE_BOSS)
-    async def entry(ctx, channel=None):
+    async def entry(self, ctx, channel=None):
         """
         :func:`_list` is a subcommand for `boss`.
         Lists records for bosses given.
@@ -660,7 +663,7 @@ class BossCog:
             True if run successfully, regardless of result 
         """
         if ctx.boss != constants.boss.CMD_ARG_TARGET_ALL:
-            boss_idx = await vaivora.boss.check_boss(ctx.boss)
+            boss_idx = await check_boss(ctx.boss)
             if boss_idx == -1:
                 await ctx.send(constants.errors.IS_INVALID_2
                                .format(ctx.author.mention, ctx.boss,
@@ -674,11 +677,10 @@ class BossCog:
             channel = constants.boss.REGEX_OPT_CHANNEL.match(channel)
             channel = int(channel.group(2))
 
-        subcmd = await vaivora.boss.what_entry(ctx.subcommand_passed)
+        subcmd = await what_entry(ctx.subcommand_passed)
 
-        msg = await (vaivora.boss
-                     .process_cmd_entry(ctx.guild.id, ctx.channel.id,
-                                        boss, subcmd, channel))
+        msg = await (process_cmd_entry(ctx.guild.id, ctx.channel.id,
+                                       boss, subcmd, channel))
 
         await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg[0]))
         combined_message = ''
@@ -705,7 +707,7 @@ class BossCog:
         Returns:
             True if run successfully, regardless of result
         """
-        subcmd = await vaivora.boss.what_query(ctx.subcommand_passed)
+        subcmd = await what_query(ctx.subcommand_passed)
 
         if ctx.boss == constants.boss.CMD_ARG_TARGET_ALL:
            await ctx.send(constants.errors.IS_INVALID_3
@@ -713,7 +715,7 @@ class BossCog:
                                   constants.boss.CMD_ARG_TARGET, subcmd))
            return False
         else:
-            boss_idx = await vaivora.boss.check_boss(ctx.boss)
+            boss_idx = await check_boss(ctx.boss)
             if boss_idx == -1:
                 await ctx.send(constants.errors.IS_INVALID_2
                                .format(ctx.author.mention, ctx.boss,
@@ -721,7 +723,7 @@ class BossCog:
                 return False
             boss = constants.boss.ALL_BOSSES[boss_idx]
 
-        msg = await vaivora.boss.process_cmd_query(boss, subcmd)
+        msg = await process_cmd_query(boss, subcmd)
 
         await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg))
 
@@ -738,7 +740,7 @@ class BossCog:
         Returns:
             True if run successfully, regardless of result
         """
-        subcmd = await vaivora.boss.what_type(ctx.subcommand_passed)
+        subcmd = await what_type(ctx.subcommand_passed)
 
         if ctx.boss != constants.boss.CMD_ARG_TARGET_ALL:
            await ctx.send(constants.errors.IS_INVALID_3
@@ -746,52 +748,10 @@ class BossCog:
                                   constants.boss.CMD_ARG_TARGET, subcmd))
            return False
 
-        msg = await vaivora.boss.get_bosses(subcmd)
+        msg = await get_bosses(subcmd)
 
         await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg))
 
 
-    async def boss_helper(boss, time, map_or_channel):
-        """
-        :func:`boss_helper` processes for `died` and `anchored`.
-
-        Args:
-            time (str): time when the boss died
-            map_or_channel: (default: None) the map xor channel in which the boss died
-
-        Returns:
-            tuple: (boss_idx, channel, map)
-        """
-        channel = 1 # base case
-        map_idx = None # don't assume map
-
-        boss_idx = await vaivora.boss.check_boss(boss)
-
-        if boss_idx == -1: # invalid boss
-            return (None,)
-
-        time = await vaivora.boss.validate_time(time)
-
-        if not time: # invalid time
-            return (None,None)
-
-        boss = constants.boss.ALL_BOSSES[boss_idx]
-
-        if len(constants.boss.BOSS_MAPS[boss]) == 1:
-            map_idx = 0 # it just is
-
-        if map_or_channel and type(map_or_channel) is int:
-            if map_or_channel <= 4 or map_or_channel > 1:
-                channel = map_or_channel # use user-input channel only if valid
-        elif map_or_channel and constants.boss.REGEX_OPT_CHANNEL.match(map_or_channel):
-            channel = constants.boss.REGEX_OPT_CHANNEL.match(map_or_channel)
-            channel = int(channel.group(2)) # channel will always be 1 through 4 inclusive
-        elif type(map_or_channel) is str and map_idx != 0: # possibly map
-            map_idx = await vaivora.boss.check_maps(boss_idx, map_or_channel)
-
-        if (not map_idx and map_idx != 0) or map_idx == -1:
-            _map = ""
-        else:
-            _map = constants.boss.BOSS_MAPS[boss][map_idx]
-
-        return (boss, time, _map, channel)
+def setup(bot):
+    bot.add_cog(SettingsCog(bot))
