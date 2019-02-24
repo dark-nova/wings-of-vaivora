@@ -60,9 +60,6 @@ async def on_ready():
     return True
 
 
-
-
-
 @bot.event
 async def on_guild_join(guild):
     """
