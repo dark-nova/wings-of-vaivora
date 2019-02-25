@@ -466,13 +466,13 @@ class Database:
             await _db.commit()
         return errs
 
-    async def update_user_sauth(self, user_id, owner=True):
+    async def update_user_sauth(self, user_id: int, owner=True):
         """
         :func:`update_user_sauth` updates owner to `s`uper `auth`orized
         after each boot.
 
         Args:
-            owner_id (int): the id of the owner
+            user_id (int): the id of the owner
             owner: (default: True) optional: True if owner
 
         Returns:
@@ -598,6 +598,58 @@ class Database:
                 await _db.execute(
                     await construct_SQL(constants.db.SQL_SET_CHANNEL
                                         .format(kind, ch_id)))
+                await _db.commit()
+                return True
+            except Exception as e:
+                print(e)
+                return False
+
+    async def get_contribution(self, users=None):
+        """
+        :func:`get_contribution` gets contribution.
+
+        Args:
+            users: (default: None) an optional list of users to retrieve
+
+        Returns:
+            list: of tuples, containing user id and contribution points
+        """
+        pass
+
+    async def set_contribution(self, user, points, append=False):
+        """
+        :func:`set_contribution` sets a user contribution.
+
+        Args:
+            user (int): the user to set contributions
+            points (int): the points of contribution
+            append (bool): (default: False) whether to add or not
+
+        Returns:
+            True if successful; False otherwise
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            if append:
+                try:
+                    cursor = await _db.execute(
+                                await construct_SQL(
+                                    constants.db.SQL_FROM_CONTR_USER
+                                    .format(user)))
+                    points += [_row[0] for _row in await cursor.fetchall()][0]
+                except:
+                    pass # the record may not exist; ignore if it doesn't
+
+            try:
+                await _db.execute(
+                    await construct_SQL(constants.db.SQL_DROP_CONTRIBS
+                                        .format(user)))
+            except:
+                pass # the record may not exist; ignore if it doesn't
+
+            try:
+                await _db.execute(
+                    await construct_SQL(constants.db.SQL_SET_CONTRIBS
+                                        .format(user, points)))
                 await _db.commit()
                 return True
             except Exception as e:

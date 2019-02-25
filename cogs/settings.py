@@ -261,18 +261,7 @@ class SettingsCog:
 
         # uid mode; parse if they're actually id's and not nonsense
         if mentions:
-            gids = [member.id for member in (ctx.guild.members
-                                             + ctx.guild.roles)]
-            rids = [member.id for member in ctx.guild.role]
-            if ctx.role_kind == constants.settings.ROLE_BOSS:
-                for mention in mentions:
-                    # do not allow regular users for $boss
-                    if mention in rids:
-                        _mention.append(mention)
-            else:
-                for mention in mentions:
-                    if mention in gids:
-                        _mentions.append(mention)
+            _mentions.append(await self.get_ids(ctx, mentions))
 
         if not _mentions:
             await ctx.send('{} {}'
@@ -297,12 +286,69 @@ class SettingsCog:
 
         return True
 
-    @_set.group(name='talt')
+    @_set.group(name='talt', aliases=['points', 'pt', 'pts',
+                                      'contrib', 'contribs',
+                                      'contribution'])
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def s_talt(self, ctx, points):
-        pass
+    async def s_talt(self, ctx, points: int,
+                     unit=constants.settings.CMD_ARG_SETTING_TALT_POINTS,
+                     member=None):
+        """
+        :func:`s_talt` sets contribution points.
+        Optionally, if a member is mentioned, then the member's record
+        will be modified instead.
+        If using the `member` variable, take care to fill in all arguments.
+        e.g. $settings set talt 20 talt @someone
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            points (int): the points to add; i.e. 1 talt = 20 points, etc
+            unit: (default: constants.settings.CMD_ARG_SETTING_TALT_UNIT)
+                unit to pick
+            member: (default: None) the optional member's record to modify
+
+        Returns:
+            True if successful; False otherwise
+        """
+        mention = 0
+        if (constants.settings
+            .REGEX_CONTRIBUTION_POINTS.search(unit)):
+            if points % 20 != 0:
+                await ctx.send('{} {}'
+                               .format(ctx.author.mention,
+                                       constants.settings
+                                       .FAIL_INVALID_POINTS))
+                return False
+        # just assume it's talt
+        else:
+            points *= 20
+
+        if ctx.message.mentions:
+            if len(ctx.message.mentions) > 1:
+                await ctx.send('{} {}'
+                               .format(ctx.author.mention,
+                                       constants.settings
+                                       .FAIL_TOO_MANY_MENTIONS))
+                return False
+            else:
+                mention = ctx.message.mentions[0]
+
+        if member and mention:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings
+                                   .FAIL_TOO_MANY_MENTIONS))
+            return False
+        elif member:
+            mention = (await self.get_ids(ctx, member))[0]
+
+        if not member:
+            member = ctx.author.id
+
+        vdb = vaivora.db.Database(ctx.guild.id)
+        return await vdb.set_contribution(member, points)
 
     # $settings get <target> <kind> <discord object>
     @settings.group(name='get')
@@ -480,18 +526,7 @@ class SettingsCog:
 
         # uid mode; parse if they're actually id's and not nonsense
         if mentions:
-            gids = [member.id for member in (ctx.guild.members
-                                             + ctx.guild.roles)]
-            rids = [member.id for member in ctx.guild.role]
-            if ctx.role_kind == constants.settings.ROLE_BOSS:
-                for mention in mentions:
-                    # do not allow regular users for $boss
-                    if mention in rids:
-                        _mention.append(mention)
-            else:
-                for mention in mentions:
-                    if mention in gids:
-                        _mentions.append(mention)
+            _mentions.append(await self.get_ids(ctx, mentions))
 
         vdb = vaivora.db.Database(ctx.guild.id)
         users = await vdb.get_users(ctx.role_kind, _mentions)
@@ -515,12 +550,45 @@ class SettingsCog:
                         ctx.role_kind)))
             return False
 
-    @_get.group(name='talt')
+    @_get.group(name='talt', aliases=['points', 'pt', 'pts',
+                                      'contrib', 'contribs',
+                                      'contribution'])
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def g_talt(self, ctx, points):
+    async def g_talt(self, ctx, mentions: Optional[int] = None):
         pass
+
+
+    async def get_ids(self, ctx, mentions):
+        """
+        :func:`get_ids` filters out nonsense ints with actual id's.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            mentions: mentions to test for id's.
+
+        Returns:
+            list: of valid discord id's
+        """
+        if type(mentions) is int:
+            mentions = [mentions]
+
+        _mention = []
+        gids = [member.id for member in (ctx.guild.members
+                                         + ctx.guild.roles)]
+        rids = [member.id for member in ctx.guild.role]
+        if ctx.role_kind == constants.settings.ROLE_BOSS:
+            for mention in mentions:
+                # do not allow regular users for $boss
+                if mention in rids:
+                    _mention.append(mention)
+        else:
+            for mention in mentions:
+                if mention in gids:
+                    _mentions.append(mention)
+
+        return _mention
 
 def setup(bot):
     bot.add_cog(SettingsCog(bot))

@@ -38,13 +38,6 @@ Examples:
         You must be "Authorized" to do this.
         Note: guild owners are considered "Super-Authorized" and must set this up first.
 
-    $settings promote @person
-        Means: Raises @person's authorization by one level.
-        Note: Maximum authorization is "Authorized".
-
-    $settings validate @person
-        Means: Validate any 'temporary' Talt records for @person.
-        You can omit mention; this is the same as validating everyone at once.
 ```
 """)
 
@@ -60,21 +53,6 @@ Options:
             "remove" can be used for all associated subcommands. Removes Talt contribution, Roles from users mentioned, etc.
             "get" can be used for all associated subcommands. Retrieves Talt contribution, highest Role from users mentioned, etc.
         Note: "Super-Authorized" will only be shown as "Authorized".
-
-    <validation>
-        Validates or invalidates records to save.
-        Options:
-            "validate" affirms temporary changes made by non-Authorized members.
-            "invalidate" removes temporary changes as if they never happened.
-
-    <role-change>
-        Changes a Discord role/member's Role*. Shortcut for <setting>.
-        Hierarchy: none < Member < Authorized (< Super-Authorized)
-        Options:
-            "promote": increases the mentioned Discord role/member's Role by 1
-            "demote": lowers the Role by 1
-        Cannot "promote" past "Authorized"; and cannot "demote" under none.
-        Note: Cannot set the "Boss" Role using this shortcut command.
 
 * Discord roles are different from Wings of Vaivora's Roles.
 ```
@@ -171,6 +149,8 @@ REGEX_SETTING_TARGET_TALT = re.compile(r'[ts]alt', re.IGNORECASE)
 REGEX_SETTING_TARGET_ROLE = re.compile(r'^rol.?', re.IGNORECASE)
 REGEX_SETTING_TARGET_CHANNEL = re.compile(r'ch(an(nel)?)*', re.IGNORECASE)
 
+REGEX_CONTRIBUTION_POINTS = re.compile(r'(pt|point)s?', re.IGNORECASE)
+
 SUCCESS = 'Your {} records have been updated to `{}`.'
 SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
 SUCCESS_ROLES = 'Here are users of {} role type:\n\n{}'
@@ -185,6 +165,8 @@ FAIL_NOT_AUTH = 'You are not authorized to do this!'
 FAIL_PURGED = 'Your channel records could not be purged.'
 FAIL_NO_MENTIONS = 'No mentions were added.'
 FAIL_NO_USER_BOSS = "Members can't be set as the boss role!"
+FAIL_TOO_MANY_MENTIONS = 'You mentioned too many users!'
+FAIL_INVALID_POINTS = 'You entered an invalid amount of points! Check unit or value (divisible by 20).'
 
 FAIL_NOT_PARSED = 'Your command could not be parsed.'
 FAIL_COULD_NOT = FAIL_NOT_PARSED + '\nCould not {} {}\'s {} record.'
