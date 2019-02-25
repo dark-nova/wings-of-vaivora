@@ -25,7 +25,7 @@ COL_SQL_FROM_CHANS = 'select channel from channels where type = "{}"'
 SQL_FROM_GUILD = 'from guild'
 COL_SQL_FROM_GUILD = 'select {} from guild' # {} can be level or points
 SQL_FROM_CONTR = 'from contribution'
-SQL_FROM_CONTR_USER = 'select points from contribution where userid = "{}"'
+SQL_FROM_CONTR_USER = 'select points from contribution where mention = "{}"'
 SQL_FROM_OFFSET = 'from offset'
 SQL_FROM_SETS = [
     SQL_FROM_ROLES,
@@ -44,7 +44,7 @@ SQL_CLEAN_TABLES = [
 SQL_CLEAN = {}
 SQL_CLEAN['roles'] = 'role, mention' # COL_SETS_ROLES
 SQL_CLEAN['channels'] = 'type, channel' # COL_SETS_CHANS
-SQL_CLEAN['contribution'] = 'userid, points' # COL_SETS_CONTR
+SQL_CLEAN['contribution'] = 'mention, points' # COL_SETS_CONTR
 
 SQL_DROP_OWNER = 'drop table if exists owner'
 SQL_DROP_CHANS = 'drop table if exists channels'
@@ -56,6 +56,8 @@ SQL_GET_OLD_OWNER = 'select * from owner'
 SQL_DEL_OLD_OWNER = ("""delete from roles where role = '"""
     + constants.settings.ROLE_SUPER_AUTH
     + """' and mention = '{}'""")
+SQL_SET_CONTRIBS = 'insert into contribution values("{}", "{}")'
+SQL_DROP_CONTRIBS = 'delete from contribution where mention = "{}"'
 
 SQL_SET_CHANNEL = 'insert into channels values("{}", "{}")'
 
@@ -84,7 +86,7 @@ COL_BOSS_TXT_CHANNEL = 'text_channel'
 COL_SETS_ROLES = ('role', 'mention')
 COL_SETS_CHANS = ('type', 'channel')
 COL_SETS_GUILD = ('level', 'points')
-COL_SETS_CONTR = ('userid', 'points')
+COL_SETS_CONTR = ('mention', 'points')
 COL_SETS_OFFSET = ('hours',)
 
 SQL_TYPE_INT = 'integer'
