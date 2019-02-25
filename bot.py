@@ -202,7 +202,7 @@ async def check_databases():
                           guild.id)
             except:
                 print('Guild', guild.id, 'might be corrupt! Rebuilding and skipping...')
-                await vdbs[guild.id].create_all()
+                await vdbs[guild.id].create_all(guild.owner.id)
                 del vdbs[guild.id] # do not use corrupt/invalid db
 
     results = {}

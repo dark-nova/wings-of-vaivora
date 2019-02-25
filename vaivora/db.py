@@ -137,9 +137,12 @@ class Database:
         """
         return self.db_id
 
-    async def create_all(self):
+    async def create_all(self, owner_id):
         """
         :func:`create_all` restores the entire db structure if it's corrupt.
+
+        Args:
+            owner_id (int): the guild owner's id
         """
         async with aiosqlite.connect(self.db_name) as _db:
             for table in tables:
@@ -153,6 +156,8 @@ class Database:
                                   .format(module,
                                           ','.join(await get_dbs(table))))
                 await _db.commit()
+        await self.update_user_sauth(owner_id)
+
         return
 
     async def create_db(self, kind):
@@ -421,12 +426,10 @@ class Database:
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
-                print(kind)
                 cursor = await _db.execute(
                             await construct_SQL(constants.db.COL_SQL_FROM_ROLES
                                                 .format(kind)))
                 results = [_row[0] for _row in await cursor.fetchall()]
-                print(results)
 
                 if users:
                     results = [result for result in results if result in users]
@@ -463,13 +466,14 @@ class Database:
             await _db.commit()
         return errs
 
-    async def update_user_sauth(self, user_id: str, owner=True):
+    async def update_user_sauth(self, user_id, owner=True):
         """
-        :func:`update_owner_sauth` updates owner to `s`uper `auth`orized
+        :func:`update_user_sauth` updates owner to `s`uper `auth`orized
         after each boot.
 
         Args:
-            owner_id (str): the id of the owner
+            owner_id (int): the id of the owner
+            owner: (default: True) optional: True if owner
 
         Returns:
             True if successful; False otherwise
