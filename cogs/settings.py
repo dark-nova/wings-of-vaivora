@@ -297,6 +297,13 @@ class SettingsCog:
 
         return True
 
+    @_set.group(name='talt')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def s_talt(self, ctx, points):
+        pass
+
     # $settings get <target> <kind> <discord object>
     @settings.group(name='get')
     @checks.only_in_guild()
@@ -508,6 +515,12 @@ class SettingsCog:
                         ctx.role_kind)))
             return False
 
+    @_get.group(name='talt')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def g_talt(self, ctx, points):
+        pass
 
 def setup(bot):
     bot.add_cog(SettingsCog(bot))
