@@ -57,8 +57,12 @@ def update_db(db_dir):
                 cursor.execute('drop table if exists talt')
                 cursor.execute('drop table if exists boss')
                 cursor.execute('drop table if exists roles')
+                cursor.execute('drop table if exists owner')
+                cursor.execute('drop table if exists contribution')
                 cursor.execute(
-                    'create table owner(id text)')
+                    'create table contribution(mention integer, points integer)')
+                cursor.execute(
+                    'create table owner(mention integer)')
                 cursor.execute(
                     'create table offset(hours integer)')
                 cursor.execute(
@@ -67,8 +71,6 @@ def update_db(db_dir):
                     'create table roles(role text, mention integer)')
                 cursor.execute(
                     'create table channels(type text, channel integer)')
-                cursor.execute(
-                    'create table contribution(userid text, points integer)')
                 cursor.execute(
                     """create table boss(name text,channel {0},
                                    map text,status text,text_channel text,
