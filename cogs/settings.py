@@ -456,13 +456,20 @@ class SettingsCog:
 
         if ctx.message.role_mentions:
             for mention in ctx.message.role_mentions:
-                _mentions.append(mention)
+                _mentions.append(mention.id)
 
         # do not allow regular users for $boss
         if ctx.role_kind != constants.settings.ROLE_BOSS:
             if ctx.message.mentions:
                 for mention in ctx.message.mentions:
-                    _mentions.append(mention)
+                    _mentions.append(mention.id)
+
+        else:
+            if not ctx.message.role_mentions and ctx.message.mentions:
+                await ctx.send('{} {}'
+                               .format(ctx.author.mention,
+                                       constants.settings.FAIL_NO_USER_BOSS))
+                return False
 
         # uid mode; parse if they're actually id's and not nonsense
         if mentions:
@@ -483,9 +490,11 @@ class SettingsCog:
         users = await vdb.get_users(ctx.role_kind, _mentions)
 
         if users:
-            users = '\n'.join([str(ctx.guild.get_member(user)) for user in users])
+            if _mentions:
+                users = [user for user in users if user in _mentions]
+            users = '\n'.join([str(ctx.guild.get_member(user))
+                               for user in users])
             users = '```\n{}```'.format(users)
-            print(users)
             await ctx.send('{}\n\n{}'.format(
                     ctx.author.mention,
                     constants.settings.SUCCESS_ROLES.format(
@@ -494,7 +503,8 @@ class SettingsCog:
             return True
         else:
             await ctx.send('{} {}'.format(
-                    constants.sttings.FAIL_NO_ROLES.format(
+                    ctx.author.mention,
+                    constants.settings.FAIL_NO_ROLES.format(
                         ctx.role_kind)))
             return False
 

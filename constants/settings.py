@@ -184,6 +184,7 @@ FAIL_NO_ROLES = 'No users were found associated with the {} role type.'
 FAIL_NOT_AUTH = 'You are not authorized to do this!'
 FAIL_PURGED = 'Your channel records could not be purged.'
 FAIL_NO_MENTIONS = 'No mentions were added.'
+FAIL_NO_USER_BOSS = "Members can't be set as the boss role!"
 
 FAIL_NOT_PARSED = 'Your command could not be parsed.'
 FAIL_COULD_NOT = FAIL_NOT_PARSED + '\nCould not {} {}\'s {} record.'
