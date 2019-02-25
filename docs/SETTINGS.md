@@ -33,13 +33,6 @@
     - You must be "Authorized" to do this.
     - Note: guild owners are considered "Super-Authorized" and must set this up first.
 
-+ $settings promote `@person`
-    - Means: Raises `@person`'s authorization by one level.
-    - Note: Maximum authorization is "Authorized".
-+ $settings validate `@person`
-    - Means: Validate any 'temporary' Talt records for `@person`.
-    - You can omit mention; this is the same as validating everyone at once.
-
 ### Options:
 + <setting>
     - This can be "add", "set", "remove", or "get". Manipulates records.
@@ -95,6 +88,6 @@
 + help
     - Prints this page.
 
-#### File last modified: 2018-05-27 12:23 (UTC-7)
+#### File last modified: 2019-02-24 17:03 (UTC-8)
 
 [role]: . "Discord roles are different from Wings of Vaivora's Roles."
