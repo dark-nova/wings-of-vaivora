@@ -3,6 +3,8 @@
 ## DB Module
 
 ### Description:
-This module is not to be used manually. It serves as the backend of the [`boss`](./BOSS.md) module.
+This module is not to be used manually.
 
-#### File last modified: 2018-05-15 18:47 (UTC-7)
+It serves as the backend of the [`boss`](./BOSS.md) and [`settings`](./SETTINGS.md) modules.
+
+#### File last modified: 2019-02-26 13:55 (UTC-8)

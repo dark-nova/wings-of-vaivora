@@ -66,9 +66,9 @@ def rebuild_dbs(db_dir):
                     'create table channels(type text, channel integer)')
                 cursor.execute(
                     """create table boss(name text,channel {0},
-                                   map text,status text,text_channel text,
-                                   year {0},month {0},day {0},
-                                   hour {0},minute {0})"""
+                    map text,status text,text_channel text,
+                    year {0},month {0},day {0},
+                    hour {0},minute {0})"""
                     .format('integer'))
                 conn.commit()
                 conn.close()
