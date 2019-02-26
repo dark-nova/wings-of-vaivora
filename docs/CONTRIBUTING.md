@@ -2,7 +2,7 @@
 
 ## Contributing
 
-### Translations:
+### Translation
 _Currently in progress. Translation implementation will be TBD._
 
 To contribute with translations, translate the strings in [`constants`](../constants). Each directory has files that correspond to a [_language tag_][tag]. Default is `en_us.py`; to translate, copy this and rename it using an appropriate _language tag_ and translate the words in between quotes only. Do **not** modify anything else.

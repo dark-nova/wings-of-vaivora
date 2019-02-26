@@ -2,12 +2,12 @@
 
 ## Boss Module
 
-### Usage:
+### Usage
 + $boss <target> <status> <time> [<channel>] [<map>]
 + $boss <target> (<entry> [<channel>] | <query> | <type>)
 + $boss help
 
-### Examples:
+### Examples
 + $boss cerb died 12:00pm mok
     - Means: "Violent Cerberus" died in "Mokusul Chamber" at 12:00PM server time.
     - Omit channels for field bosses.
@@ -34,7 +34,7 @@
 + $boss crab alias
     - Means: Show aliases for "Earth Canceril", of which "crab" is an alias
 
-### Options:
+### Options
 + <target>
     - This can be either "all" or part of (or entirely) the single boss's name. e.g. "cerb" for "Violent Cerberus"
     - Aliases may also be used for single boss names.

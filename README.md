@@ -30,32 +30,14 @@ $ pip install -r requirements.txt
 $ pynt
 ```
 
-## Migrating from "asyncio"?
-Make sure to run the utility below:
-
-```
-$ python utils/convert_db.py
-```
-
-If you are still getting errors regarding the db files,
-
-e.g.
-```
-'...failed! in 111 with owner 222'
-```
-
-consider running this utility as a last resort:
-
-```
-$ python utils/force_rebuild.py
-```
-**Note that it is a destructive file process and preserves nothing!**
+## Migrating from "asyncio"
+- Read [here](docs/MIGRATING.md)
 
 ## Contributing
-- Head [here](docs/CONTRIBUTING.md).
+- Read [here](docs/CONTRIBUTING.md)
 
 
-#### File last modified: 2019-02-26 14:04 (UTC-8)
+#### File last modified: 2019-02-26 15:45 (UTC-8)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/

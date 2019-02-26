@@ -2,17 +2,18 @@
 
 ## Settings Module
 
-### Usage:
-+ $settings <setting> <talt-value> [<talt-unit>] [`<@mention>`]
+### Usage
++ $settings <setting> <talt> <talt-value> [<talt-unit>] [`<@mention>`]
 + $settings <setting> (<role> [`<@mention>`] | <channel> [`<#channel>`])
 + $settings <validate>
 + $settings <role-change> `<@mention>`
 + $settings help
 
-### Examples:
-+ $settings add talt 12
+### Examples
++ $settings add talt 12 talt
     - Means: Add 12 Talt to your guild record.
     - Note: If not "Authorized" or "Member", this is only temporary. It must be validated.
+    - Default unit is "points".
 
 + $settings set talt 12
     - Means: Sets your guild record of Talt to 12. Not the same as adding.
@@ -33,7 +34,7 @@
     - You must be "Authorized" to do this.
     - Note: guild owners are considered "Super-Authorized" and must set this up first.
 
-### Options:
+### Options
 + <setting>
     - This can be "add", "set", "remove", or "get". Manipulates records.
     - Options:
@@ -58,17 +59,17 @@
     - Cannot "promote" past "Authorized"; and cannot "demote" under none.
     - Note: Cannot set the "Boss" [Role][role] using this shortcut command.
 
-+ talt
-    - This <subcommand> can only be "talt". Allows manipulation of Talt guild records.
++ <talt>
+    - This can be "talt" or "contribution". Allows manipulation of Talt guild records.
 
 + <talt-value>
     - A number. The amount to use for `talt`. 20 points = 1 talt
 
 + [<talt-unit>]
-    - (optional) Sets the unit to use. 20 points = 1 Talt. By default, Talt will be used if omitted.
+    - (optional) Sets the unit to use. 20 points = 1 Talt. By default, "points" will be used if omitted.
     - Options:
         * "points": shown in-game
-        * "talt": the default
+        * "talt": the Talt item
     - Note: the Guild UI in-game always uses points.
 
 + guild
@@ -88,6 +89,6 @@
 + help
     - Prints this page.
 
-#### File last modified: 2019-02-24 17:03 (UTC-8)
+#### File last modified: 2019-02-26 15:43 (UTC-8)
 
 [role]: . "Discord roles are different from Wings of Vaivora's Roles."
