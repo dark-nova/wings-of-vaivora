@@ -9,7 +9,6 @@ from discord.ext import commands
 import checks
 import vaivora.db
 import constants.boss
-import constants.db
 
 
 def help():
@@ -370,11 +369,11 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
         status == constants.boss.CMD_ARG_STATUS_ANCHORED):
         return constants.boss.FAIL_TEMPLATE.format(constants.boss.FAIL_STATUS_NO_ANCHOR, constants.boss.MSG_HELP)
 
-    target[constants.db.COL_BOSS_NAME] = boss
-    target[constants.db.COL_BOSS_TXT_CHANNEL] = msg_channel
-    target[constants.db.COL_BOSS_CHANNEL] = options[constants.db.COL_BOSS_CHANNEL]
-    target[constants.db.COL_BOSS_MAP] = options[constants.db.COL_BOSS_MAP]
-    target[constants.db.COL_BOSS_STATUS] = status
+    target['name'] = boss
+    target['text_channel'] = msg_channel
+    target['channel'] = options['channel']
+    target['map'] = options['map']
+    target['status'] = status
 
     time_offset = get_offset(boss, status)
 
@@ -389,22 +388,22 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
         server_date += timedelta(days=-1)
 
     # dates handled like above example, e.g. record on 23:59, December 31st but recorded on New Years Day
-    record[constants.db.COL_TIME_YEAR] = int(server_date.year)
-    record[constants.db.COL_TIME_MONTH] = int(server_date.month)
-    record[constants.db.COL_TIME_DAY] = int(server_date.day)
-    record[constants.db.COL_TIME_HOUR] = hours
-    record[constants.db.COL_TIME_MINUTE] = minutes
+    record['year'] = int(server_date.year)
+    record['month'] = int(server_date.month)
+    record['day'] = int(server_date.day)
+    record['hour'] = hours
+    record['minute'] = minutes
 
     # reconstruct boss kill time
     record_date = datetime(*record.values())
     record_date += time_offset
 
     # reassign to target data
-    target[constants.db.COL_TIME_YEAR] = int(record_date.year)
-    target[constants.db.COL_TIME_MONTH] = int(record_date.month)
-    target[constants.db.COL_TIME_DAY] = int(record_date.day)
-    target[constants.db.COL_TIME_HOUR] = int(record_date.hour)
-    target[constants.db.COL_TIME_MINUTE] = int(record_date.minute)
+    target['year'] = int(record_date.year)
+    target['month'] = int(record_date.month)
+    target['day'] = int(record_date.day)
+    target['hour'] = int(record_date.hour)
+    target['minute'] = int(record_date.minute)
 
     vdb = vaivora.db.Database(server_id)
     await vdb.check_if_valid(constants.boss.MODULE_NAME)
@@ -413,8 +412,8 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
         return (constants.boss.SUCCESS_STATUS.format(constants.boss.ACKNOWLEDGED,
                                                 boss, status, time,
                                                 constants.boss.EMOJI_LOC,
-                                                options[constants.db.COL_BOSS_MAP],
-                                                options[constants.db.COL_BOSS_CHANNEL]))
+                                                options['map'],
+                                                options['channel']))
     else:
         return constants.boss.FAIL_TEMPLATE.format(constants.boss.FAIL_STATUS, constants.boss.MSG_HELP)
 
@@ -441,7 +440,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
 
     vdb = vaivora.db.Database(server_id)
     if not await vdb.check_if_valid(constants.boss.MODULE_NAME):
-        await vdb.create_db(constants.db.SQL_FROM_BOSS)
+        await vdb.create_db('boss')
 
     # $boss <target> erase ...
     if entry == constants.boss.CMD_ARG_ENTRY_ERASE:
@@ -640,7 +639,7 @@ class BossCog:
                 pass
             return False
 
-        opt = {constants.db.COL_BOSS_CHANNEL: _channel, constants.db.COL_BOSS_MAP: _map}
+        opt = {'channel': _channel, 'map': _map}
         msg = await (process_cmd_status(ctx.guild.id, ctx.channel.id,
                                         _boss, subcmd, _time, opt))
         await ctx.send('{} {}'.format(ctx.author.mention, msg))

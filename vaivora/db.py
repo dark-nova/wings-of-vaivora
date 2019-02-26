@@ -4,70 +4,45 @@ from operator import itemgetter
 
 import constants.settings
 import constants.boss
-import constants.db
-# from constants.settings import en_us as lang_settings
-# from constants.boss import en_us as lang_boss
-# from constants.db import en_us as lang_db
 
 columns = {}
-columns[constants.db.MOD_BOSS] = (
-    constants.db.COL_BOSS_NAME,
-    constants.db.COL_BOSS_CHANNEL,
-    constants.db.COL_BOSS_MAP,
-    constants.db.COL_BOSS_STATUS,
-    constants.db.COL_BOSS_TXT_CHANNEL,
-    constants.db.COL_TIME_YEAR,
-    constants.db.COL_TIME_MONTH,
-    constants.db.COL_TIME_DAY,
-    constants.db.COL_TIME_HOUR,
-    constants.db.COL_TIME_MINUTE
-    )
+columns['boss'] = ('name', 'channel', 'map', 'status', 'text_channel',
+                    'year', 'month', 'day', 'hour', 'minute')
 
-columns[constants.db.SQL_FROM_ROLES] = (
-    constants.db.COL_SETS_ROLES
-    )
+columns['roles'] = ('role', 'mention')
 
-columns[constants.db.SQL_FROM_CHANS] = (
-    constants.db.COL_SETS_CHANS
-    )
+columns['channels'] = ('type', 'channel')
 
-columns[constants.db.SQL_FROM_GUILD] = (
-    constants.db.COL_SETS_GUILD
-    )
+columns['guild'] = ('level', 'points')
 
-columns[constants.db.SQL_FROM_CONTR] = (
-    constants.db.COL_SETS_CONTR
-    )
+columns['contribution'] = ('mention', 'points')
 
-columns[constants.db.SQL_FROM_OFFSET] = (
-    constants.db.COL_SETS_OFFSET
-    )
+columns['offset'] = ('hours',)
 
 types = {}
-types[constants.db.MOD_BOSS] = ((constants.db.SQL_TYPE_TEXT,
-                                 constants.db.SQL_TYPE_INT,)
-                                + (constants.db.SQL_TYPE_TEXT,)*3
-                                + (constants.db.SQL_TYPE_INT,)*5)
+types['boss'] = (('text', 'integer')
+                 + ('text',)*3
+                 + ('integer',)*5)
 
-types[constants.db.SQL_FROM_ROLES] = (constants.db.SQL_TYPE_TEXT,)*2
+types['roles'] = ('text',)*2
 
-types[constants.db.SQL_FROM_GUILD] = (constants.db.SQL_TYPE_INT,)*2
+types['guild'] = ('integer',)*2
 
-types[constants.db.SQL_FROM_CONTR] = (constants.db.SQL_TYPE_TEXT,
-                                 constants.db.SQL_TYPE_INT)
+types['contribution'] = ('text', 'integer')
 
-types[constants.db.SQL_FROM_CHANS] = types[constants.db.SQL_FROM_CONTR]
+types['channels'] = types['contribution']
 
-types[constants.db.SQL_FROM_OFFSET] = (constants.db.SQL_TYPE_INT,)
+types['offset'] = ('integer',)
 
-tables = [
-    constants.db.MOD_BOSS,
-    constants.db.SQL_FROM_ROLES,
-    constants.db.SQL_FROM_GUILD,
-    constants.db.SQL_FROM_CONTR,
-    constants.db.SQL_FROM_CHANS,
-    constants.db.SQL_FROM_OFFSET,
-]
+tables = ['boss', 'roles', 'guild', 'contribution', 
+          'channels', 'offset']
+
+tables_to_clean = ['roles', 'channels', 'contribution']
+
+spec = {}
+spec['roles'] = 'role, mention'
+spec['channels'] = 'type, channel'
+spec['contribution'] = 'mention, points'
 
 
 async def get_dbs(kind):
@@ -85,7 +60,7 @@ async def get_dbs(kind):
                  .format(*t) for t in zip(columns[kind], types[kind]))
 
 
-async def construct_SQL(*args):
+async def construct_SQL(*, args):
     """
     :func:`construct_SQL` creates a SQLite statement.
 
@@ -95,11 +70,10 @@ async def construct_SQL(*args):
     Returns:
         str: a full SQLite statement
     """
-    args = [str(arg) for arg in args]
     return ' '.join(args)
 
 
-async def construct_filters(*args):
+async def construct_filters(*, filters):
     """
     :func:`construct_filters` creates a compound SQLite filter
     in string form.
@@ -110,9 +84,7 @@ async def construct_filters(*args):
     Returns:
         str: a compound SQLite filter
     """
-    args = [str(arg) for arg in args]
-    return '{} {}'.format(constants.db.SQL_WHERE,
-                          ' {} '.format(constants.db.SQL_AND).join(args))
+    return 'where {}'.format(' {} '.format('and').join(filters))
 
 
 class Database:
@@ -126,7 +98,7 @@ class Database:
             db_id (str): the db id for the guild
         """
         self.db_id = db_id
-        self.db_name = '{}{}{}'.format(constants.db.DIR, self.db_id, constants.db.EXT)
+        self.db_name = '{}{}{}'.format('db/', self.db_id, '.db')
 
     def get_id(self):
         """
@@ -146,14 +118,9 @@ class Database:
         """
         async with aiosqlite.connect(self.db_name) as _db:
             for table in tables:
-                if table == constants.db.MOD_BOSS:
-                    module = constants.db.MOD_BOSS
-                else:
-                    module = table[5:]
-
-                await _db.execute('drop table if exists {}'.format(module))
+                await _db.execute('drop table if exists {}'.format(table))
                 await _db.execute('create table {}({})'
-                                  .format(module,
+                                  .format(table,
                                           ','.join(await get_dbs(table))))
                 await _db.commit()
         await self.update_user_sauth(owner_id)
@@ -168,14 +135,10 @@ class Database:
         Args:
             kind (str): see :func:`get_dbs`
         """
-        if kind == constants.db.MOD_BOSS:
-            module = constants.db.MOD_BOSS
-        else:
-            module = constants.db.MOD_SETS
         async with aiosqlite.connect(self.db_name) as _db:
-            await _db.execute('drop table if exists {}'.format(module))
+            await _db.execute('drop table if exists {}'.format(kind))
             await _db.execute('create table {}({})'
-                              .format(module,
+                              .format(kind,
                                       ','.join(await get_dbs(kind))))
             await _db.commit()
         return
@@ -190,18 +153,18 @@ class Database:
         Returns:
             bool: True if valid; False otherwise
         """
-        if module == constants.db.MOD_BOSS:
-            select = [constants.db.SQL_FROM_BOSS]
-        elif module == constants.db.MOD_SETS:
-            select = constants.db.SQL_FROM_SETS
+        if module == 'boss':
+            select = tables[0:1]
+        elif module == 'settings':
+            select = tables[1:]
 
         async with aiosqlite.connect(self.db_name) as _db:
             _db.row_factory = aiosqlite.Row
             for _s in select:
                 try:
-                    cursor = await _db.execute(
-                                await construct_SQL(constants.db.SQL_SELECT,
-                                                    _s))
+                    cursor = await _db.execute(args=(
+                                await construct_SQL('select * from',
+                                                    _s)))
                 except:
                     return False
 
@@ -234,19 +197,19 @@ class Database:
             for boss in bosses:
                 if channel:
                     cursor = await _db.execute(
-                                await construct_SQL(constants.db.SQL_SELECT,
-                                                    constants.db.SQL_FROM_BOSS,
-                                                    await construct_filters(
-                                                        constants.db.SQL_WHERE_NAME,
-                                                        constants.db.SQL_WHERE_CHANNEL)),
-                                                (boss, channel,))
+                                await construct_SQL(
+                                    args=('select * from boss',
+                                          await construct_filters(filters=
+                                                ('name=?',
+                                                 'channel=?')))),
+                                               (boss, channel,))
                 else:
                     cursor = await _db.execute(
-                                await construct_SQL(constants.db.SQL_SELECT,
-                                                    constants.db.SQL_FROM_BOSS,
-                                                    await construct_filters(
-                                                        constants.db.SQL_WHERE_NAME)),
-                                                (boss,))
+                                await construct_SQL(
+                                    args=('select * from boss',
+                                          await construct_filters(filters=(
+                                                'name=?',)))),
+                                               (boss,))
 
                 records = await cursor.fetchall()
                 for record in records:
@@ -281,23 +244,25 @@ class Database:
         """
         contents = []
 
-        boss_name = boss_dict[constants.db.COL_BOSS_NAME]
-        boss_channel = boss_dict[constants.db.COL_BOSS_CHANNEL]
+        boss_name = boss_dict['name']
+        boss_channel = boss_dict['channel']
 
         # handle channels
         if boss_channel:
-            sel_statement = await construct_SQL(constants.db.SQL_SELECT,
-                                                constants.db.SQL_FROM_BOSS,
-                                                await construct_filters(
-                                                    constants.db.SQL_WHERE_NAME,
-                                                    constants.db.SQL_WHERE_CHANNEL))
+            sel_statement = await construct_SQL(
+                                args=('select * from boss',
+                                      await construct_filters(
+                                            filters=(
+                                                'name=?',
+                                                'channel=?'))))
             sql_condition = (boss_name, boss_channel)
         # handle everything else
         else:
-            sel_statement = await construct_SQL(constants.db.SQL_SELECT,
-                                                constants.db.SQL_FROM_BOSS,
-                                                await construct_filters(
-                                                    constants.db.SQL_WHERE_NAME))
+            sel_statement = await construct_SQL(
+                                args=('select * from boss',
+                                      await construct_filters(
+                                            filters=(
+                                                'name=?',))))
             sql_condition = (boss_name,)
 
         async with aiosqlite.connect(self.db_name) as _db:
@@ -307,23 +272,23 @@ class Database:
             contents.extend(await cursor.fetchall())
 
             if contents and ((int(contents[0][5])
-                              == boss_dict[constants.db.COL_TIME_YEAR]) and
+                              == boss_dict['year']) and
                              (int(contents[0][6])
-                              == boss_dict[constants.db.COL_TIME_MONTH]) and
+                              == boss_dict['month']) and
                              (int(contents[0][7])
-                              == boss_dict[constants.db.COL_TIME_DAY])and
+                              == boss_dict['day'])and
                              (int(contents[0][8])
-                              > boss_dict[constants.db.COL_TIME_HOUR])):
+                              > boss_dict['hour'])):
                 await cursor.close()
                 return False
             elif contents and ((int(contents[0][5])
-                                <= boss_dict[constants.db.COL_TIME_YEAR]) or
+                                <= boss_dict['year']) or
                                (int(contents[0][6])
-                                <= boss_dict[constants.db.COL_TIME_MONTH]) or
+                                <= boss_dict['month']) or
                                (int(contents[0][7])
-                                <= boss_dict[constants.db.COL_TIME_DAY]) or
+                                <= boss_dict['day']) or
                                (int(contents[0][8])
-                                <= boss_dict[constants.db.COL_TIME_HOUR])):
+                                <= boss_dict['hour'])):
 
                 if boss_channel:
                     await self.rm_entry_db_boss(boss_list=[boss_name,],
@@ -334,17 +299,17 @@ class Database:
             try:
                 # boss database structure
                 await _db.execute(
-                    constants.db.SQL_UPDATE,
+                    'insert into boss values (?,?,?,?,?,?,?,?,?,?)'
                     (str(boss_name),
                      int(boss_channel),
-                     str(boss_dict[constants.db.COL_BOSS_MAP]),
-                     str(boss_dict[constants.db.COL_BOSS_STATUS]),
-                     str(boss_dict[constants.db.COL_BOSS_TXT_CHANNEL]),
-                     int(boss_dict[constants.db.COL_TIME_YEAR]),
-                     int(boss_dict[constants.db.COL_TIME_MONTH]),
-                     int(boss_dict[constants.db.COL_TIME_DAY]),
-                     int(boss_dict[constants.db.COL_TIME_HOUR]),
-                     int(boss_dict[constants.db.COL_TIME_MINUTE])))
+                     str(boss_dict['map']),
+                     str(boss_dict['status']),
+                     str(boss_dict['text_channel']),
+                     int(boss_dict['year']),
+                     int(boss_dict['month']),
+                     int(boss_dict['day']),
+                     int(boss_dict['hour']),
+                     int(boss_dict['minute'])))
                 await _db.commit()
                 return True
             except:
@@ -375,22 +340,24 @@ class Database:
                 # channel is provided
                 if boss_ch:
                     sql_filters = await construct_filters(
-                                            constants.db.SQL_WHERE_NAME,
-                                            constants.db.SQL_WHERE_CHANNEL)
+                                        filters=(
+                                            'name=?',
+                                            'channel=?'))
                     sql_condition = (boss, boss_ch)
                 # only name                
                 else:
                     sql_filters = await construct_filters(
-                                            constants.db.SQL_WHERE_NAME)
+                                        filters=(
+                                            'name=?'))
                     sql_condition = (boss,)
 
                 # process counting
-                sel_statement = await construct_SQL(constants.db.SQL_SELECT,
-                                                    constants.db.SQL_FROM_BOSS,
-                                                    sql_filters)
-                del_statement = await construct_SQL(constants.db.SQL_DELETE,
-                                                    constants.db.SQL_FROM_BOSS,
-                                                    sql_filters)
+                sel_statement = await construct_SQL(
+                                    args=('select * from boss',
+                                          sql_filters))
+                del_statement = await construct_SQL(
+                                    args=('delete from boss',
+                                          sql_filters))
 
                 cursor = await _db.execute(sel_statement, sql_condition)
                 results = await cursor.fetchall()
@@ -427,8 +394,8 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                            await construct_SQL(constants.db.COL_SQL_FROM_ROLES
-                                                .format(kind)))
+                            'select mention from roles where role = "{}"'
+                            .format(kind))
                 results = [_row[0] for _row in await cursor.fetchall()]
 
                 if users:
@@ -457,7 +424,7 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             for user in users:
                 try:
-                    cursor = await _db.execute(constants.db.SQL_ADD_ROLES
+                    cursor = await _db.execute('insert into roles values("{}", "{}")'
                                                .format(kind, user))
                 except Exception as e:
                     print(e)
@@ -481,19 +448,22 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             if owner:
                 try:
-                    cursor = await _db.execute(constants.db.SQL_GET_OLD_OWNER)
+                    cursor = await _db.execute('select * from owner')
                     old_owner = (await cursor.fetchone())[0]
                     if user_id == old_owner:
                         return True # do not do anything if it's the same owner
-                    await _db.execute(constants.db.SQL_DROP_OWNER)
-                    await _db.execute(constants.db.SQL_DEL_OLD_OWNER
-                                      .format(old_owner))
+                    await _db.execute('drop table if exists owner')
+                    await _db.execute("""delete from roles where 
+                                         role = '{}' and 
+                                         mention = '{}'"""
+                        .format(constants.settings.ROLE_SUPER_AUTH,
+                                old_owner))
                 except: #Exception as e:
                     #print('Exception caught & ignored:', e)
                     pass
 
                 try:
-                    await _db.execute(constants.db.SQL_MAKE_OWNER)
+                    await _db.execute('create table owner(id text)')
                 except: #Exception as e:
                     # table owner might already exist
                     #print('Exception caught & ignored:', e)
@@ -501,12 +471,12 @@ class Database:
 
             try:
                 if owner:
-                    await _db.execute(constants.db.SQL_UPDATE_OWNER
+                    await _db.execute('insert into owner values("{}")'
                                       .format(user_id))
-                await _db.execute(constants.db.SQL_ADD_ROLES
+                await _db.execute('insert into roles values("{}", "{}")'
                                   .format(constants.settings.ROLE_AUTH,
                                           user_id))
-                await _db.execute(constants.db.SQL_ADD_ROLES
+                await _db.execute('insert into roles values("{}", "{}")'
                                   .format(constants.settings.ROLE_SUPER_AUTH,
                                           user_id))
                 await _db.commit()
@@ -525,11 +495,11 @@ class Database:
         """
         errs = []
         async with aiosqlite.connect(self.db_name) as _db:
-            for _table in constants.db.SQL_CLEAN_TABLES:
+            for _table in tables_to_clean:
                 try:
-                    await _db.execute(constants.db.SQL_CLEAN_DUPES
-                                      .format(_table,
-                                              constants.db.SQL_CLEAN[_table]))
+                    await _db.execute("""delete from {0} where rowid not in
+                                         (select min(rowid) from {0} group by {1})"""
+                                      .format(_table, spec[_table]))
                 except Exception as e:
                     errs.append(_table)
                     print('clean_duplicates', e)
@@ -550,9 +520,10 @@ class Database:
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
-                await _db.execute(constants.db.SQL_DROP_CHANS)
+                await _db.execute('drop table if exists channels')
                 await _db.commit()
-                await _db.execute(constants.db.SQL_MAKE_CHANS)
+                await _db.execute(
+                    'create table channels(type text, channel integer)')
                 await _db.commit()
                 return True
             except Exception as e:
@@ -574,8 +545,10 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                            await construct_SQL(constants.db.COL_SQL_FROM_CHANS
-                                                .format(kind)))
+                            await construct_SQL(
+                                """select channel from channels 
+                                where type = '{}'"""
+                                .format(kind)))
                 return [_row[0] for _row in await cursor.fetchall()]
             except Exception as e:
                 print(e)
@@ -596,8 +569,9 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 await _db.execute(
-                    await construct_SQL(constants.db.SQL_SET_CHANNEL
-                                        .format(kind, ch_id)))
+                    await construct_SQL(
+                        'insert into channels values("{}", "{}")'
+                        .format(kind, ch_id)))
                 await _db.commit()
                 return True
             except Exception as e:
@@ -614,7 +588,25 @@ class Database:
         Returns:
             list: of tuples, containing user id and contribution points
         """
-        pass
+        results = []
+        async with aiosqlite.connect(self.db_name) as _db:
+            if not users:
+                try:
+                    cursor = await _db.execute(
+                                'select * from contribution')
+                except:
+                    pass
+            else:
+                for user in users:
+                    try:
+                        cursor = await _db.execute(
+                                    """select * from contribution 
+                                       where mention = '{}'"""
+                                    .format(user))
+                        results.append(
+                            [_row[0] for _row in await cursor.fetchall()][0])
+                    except:
+                        pass
 
     async def set_contribution(self, user, points, append=False):
         """
@@ -632,24 +624,24 @@ class Database:
             if append:
                 try:
                     cursor = await _db.execute(
-                                await construct_SQL(
-                                    constants.db.SQL_FROM_CONTR_USER
-                                    .format(user)))
+                                """select points from contribution 
+                                   where mention = '{}'"""
+                                .format(user))
                     points += [_row[0] for _row in await cursor.fetchall()][0]
                 except:
                     pass # the record may not exist; ignore if it doesn't
 
             try:
                 await _db.execute(
-                    await construct_SQL(constants.db.SQL_DROP_CONTRIBS
-                                        .format(user)))
+                    'delete from contribution where mention = "{}"'
+                    .format(user))
             except:
                 pass # the record may not exist; ignore if it doesn't
 
             try:
                 await _db.execute(
-                    await construct_SQL(constants.db.SQL_SET_CONTRIBS
-                                        .format(user, points)))
+                    'insert into contribution values("{}", "{}")'
+                    .format(user, points))
                 await _db.commit()
                 return True
             except Exception as e:

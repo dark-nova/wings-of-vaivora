@@ -191,11 +191,13 @@ async def check_databases():
                     raise Exception
 
                 if guild.owner.id != secrets.discord_user_id:
-                    if not await vdbs[guild.id].update_owner_sauth(
+                    if not await vdbs[guild.id].update_user_sauth(
                             secrets.discord_user_id, owner=False):
-                        print('...failed! in {} with bot admin {}'
+                        print('...failed! in {} with owner id {}'
                           .format(guild.id, guild.owner.id))
                         raise Exception
+
+                print('Guild', guild.id, 'looks OK!')
 
                 if await vdbs[guild.id].clean_duplicates():
                     print('Duplicates have been removed from tables from',
