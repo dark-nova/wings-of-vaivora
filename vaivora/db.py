@@ -24,11 +24,11 @@ types['boss'] = (('text', 'integer')
                  + ('text',)*3
                  + ('integer',)*5)
 
-types['roles'] = ('text',)*2
+types['roles'] = ('text', 'integer')
 
 types['guild'] = ('integer',)*2
 
-types['contribution'] = ('text', 'integer')
+types['contribution'] = ('integer', 'integer')
 
 types['channels'] = types['contribution']
 
@@ -569,9 +569,8 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 await _db.execute(
-                    await construct_SQL(
-                        'insert into channels values("{}", "{}")'
-                        .format(kind, ch_id)))
+                    'insert into channels values("{}", "{}")'
+                    .format(kind, ch_id))
                 await _db.commit()
                 return True
             except Exception as e:
