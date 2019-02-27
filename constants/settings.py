@@ -181,34 +181,13 @@ USAGE_SET_CHANNELS = '$settings set channel <type> <#channel> [<#channel> ...]'
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
 # Guild Levels     1        2        3        4        5
-TALT_LEVEL = [0,   0,       0,      50,     125,     250,
+G_LEVEL =    [0,   0,       0,      50,     125,     250,
 # Guild Levels     6        7        8        9       10
                  450,     886,    1598,    2907,    4786,
 # Guild Levels    11       12       13       14       15
                 7483,   11353,   16907,   24876,   52726,
 # Guild Levels    16       17       18       19       20
               160712,  345531,  742891, 1597216, 3434015]
-# TALT_LEVEL.append(0)
-# TALT_LEVEL.append(0)            # 1
-# TALT_LEVEL.append(50)           # 2
-# TALT_LEVEL.append(125)          # 3
-# TALT_LEVEL.append(250)          # 4
-# TALT_LEVEL.append(450)          # 5
-# TALT_LEVEL.append(886)          # 6
-# TALT_LEVEL.append(1598)         # 7
-# TALT_LEVEL.append(2907)         # 8
-# TALT_LEVEL.append(4786)         # 9
-# TALT_LEVEL.append(7483)         # 10
-# TALT_LEVEL.append(11353)        # 11
-# TALT_LEVEL.append(16907)        # 12
-# TALT_LEVEL.append(24876)        # 13
-# TALT_LEVEL.append(36313)        # 14
-# TALT_LEVEL.append(52726)        # 15
-# TALT_LEVEL.append(160712)       # 16
-# TALT_LEVEL.append(345531)       # 17
-# TALT_LEVEL.append(742891)       # 18
-# TALT_LEVEL.append(1597216)      # 19
-# TALT_LEVEL.append(3434015)      # 20
 
 TALT = 'talt'
 TALT_GUILD = 'guild'

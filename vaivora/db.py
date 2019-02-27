@@ -633,7 +633,7 @@ class Database:
                                        where mention = '{}'"""
                                     .format(user))
                         results.append(
-                            [_row[0] for _row in await cursor.fetchall()][0])
+                            await cursor.fetchone())
                     except:
                         pass
 
@@ -669,7 +669,7 @@ class Database:
                 cursor = await _db.execute('select * from guild')
                 g_level, g_points = await cursor.fetchone()
                 g_points -= old_points
-                while constants.settings.TALT_LEVEL[g_level] > g_points:
+                while constants.settings.G_LEVEL[g_level] > g_points:
                     g_level -= 1
                 await _db.execute('delete from guild')
             except:
@@ -689,12 +689,69 @@ class Database:
                 await _db.commit()
 
                 g_points += points
-                while constants.settings.TALT_LEVEL[g_level] < g_points:
+                while constants.settings.G_LEVEL[g_level] < g_points:
                     g_level += 1
                 
-                await _db.execute('insert into guild values("{}", "{}"'
+                await _db.execute('insert into guild values("{}", "{}")'
                                   .format(g_level, g_points))
+                await _db.commit()
                 return True
             except Exception as e:
                 print(e)
+                return False
+
+    async def get_guild_info(self):
+        """
+        :func:`get_guild_info` returns guild level and points.
+
+        Returns:
+            tuple: (guild level, guild points)
+            None: if unsuccessful
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute(
+                            'select * from guild')
+                return await cursor.fetchone()
+            except:
+                return None
+
+    async def set_guild_points(self, points):
+        """
+        :func:`set_guild_points` sets the guild info by rebasing points.
+        This should be used last, after inputting records.
+
+        Args:
+            points (int): the points of the guild
+
+        Returns:
+            True if successful; False otherwise
+        """
+        level = 1
+        while constants.settings.G_LEVEL[level] < points:
+            level += 1
+
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                # use sentinel value 0 for "remaining"
+                cursor = await _db.execute(
+                            """select points from contribution
+                               where mention != '0'""")
+                g_points = sum(await cursor.fetchall())
+                extra_points = points - g_points
+                await _db.execute(
+                    """delete from contribution
+                       where mention = '0'""")
+                await _db.execute('delete from guild')
+            except:
+                extra_points = points
+
+            try:
+                await _db.execute(
+                        """insert into contribution values
+                           ('{}', '{}')"""
+                        .format(0, extra_points))
+                await _db.commit()
+                return True
+            except:
                 return False
