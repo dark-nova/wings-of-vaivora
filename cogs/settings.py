@@ -274,8 +274,8 @@ async def contribution_setter(ctx, points, member=None):
 
     vdb = vaivora.db.Database(ctx.guild.id)
     if await vdb.set_contribution(member, points):
-        row = '```\n{}{:>20} points {:>10} Talt```'.format(
-                    ctx.guild.get_member(member),
+        row = '```\n{:<20}{:>10} points {:>10} Talt```'.format(
+                    str(ctx.guild.get_member(member)),
                     points,
                     int(points/20))
         await ctx.send('{} {}'
