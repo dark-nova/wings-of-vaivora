@@ -649,16 +649,31 @@ class Database:
         Returns:
             True if successful; False otherwise
         """
+        g_level = 0
+        g_points = 0
+
         async with aiosqlite.connect(self.db_name) as _db:
-            if append:
-                try:
-                    cursor = await _db.execute(
-                                """select points from contribution 
-                                   where mention = '{}'"""
-                                .format(user))
-                    points += [_row[0] for _row in await cursor.fetchall()][0]
-                except:
-                    pass # the record may not exist; ignore if it doesn't
+            try:
+                cursor = await _db.execute(
+                            """select points from contribution 
+                               where mention = '{}'"""
+                            .format(user))
+                old_points = (await cursor.fetchone())[0]
+
+                if append:
+                    points += old_points
+            except:
+                pass # the record may not exist; ignore if it doesn't
+
+            try:
+                cursor = await _db.execute('select * from guild')
+                g_level, g_points = await cursor.fetchone()
+                g_points -= old_points
+                while constants.settings.TALT_LEVEL[g_level] > g_points:
+                    g_level -= 1
+                await _db.execute('delete from guild')
+            except:
+                pass # the guild record may not exist
 
             try:
                 await _db.execute(
@@ -672,6 +687,13 @@ class Database:
                     'insert into contribution values("{}", "{}")'
                     .format(user, points))
                 await _db.commit()
+
+                g_points += points
+                while constants.settings.TALT_LEVEL[g_level] < g_points:
+                    g_level += 1
+                
+                await _db.execute('insert into guild values("{}", "{}"'
+                                  .format(g_level, g_points))
                 return True
             except Exception as e:
                 print(e)
