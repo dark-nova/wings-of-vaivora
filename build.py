@@ -27,7 +27,7 @@ def release(version = None):
     hash_ver = hash_ver.hexdigest()[-5:]
 
     tar_name = 'wings_of_vaivora-v.{}-{}.tar.gz'.format(version,
-                                                        hash_ver.hexdigest())
+                                                        hash_ver)
 
     tar = tarfile.open(tar_name, 'w:gz')
 
