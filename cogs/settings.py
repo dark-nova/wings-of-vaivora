@@ -17,7 +17,7 @@ from secrets import discord_user_id
 import constants.settings
 
 
-async def get_ids(self, ctx, mentions):
+async def get_ids(ctx, mentions):
         """
         :func:`get_ids` filters out nonsense ints with actual id's.
 
@@ -48,7 +48,7 @@ async def get_ids(self, ctx, mentions):
         return _mention
 
 
-async def channel_getter(self, ctx, kind):
+async def channel_getter(ctx, kind):
         """
         :func:`channel_getter` does the work
         for :func:`gc_boss` and :func:`gc_settings`.
@@ -79,7 +79,7 @@ async def channel_getter(self, ctx, kind):
         return True
 
 
-async def channel_setter(self, ctx, kind):
+async def channel_setter(ctx, kind):
         """
         :func:`channel_setter` does the work
         for :func:`sc_boss` and :func:`sc_settings`.
@@ -172,7 +172,7 @@ async def role_getter(ctx, mentions=None):
             return False
 
 
-async def role_setter(self, ctx, mentions=None):
+async def role_setter(ctx, mentions=None):
         """
         :func:`role_setter` handles the backend for
         :func:`sr_member`, :func:`sr_auth`, and :func:`sr_boss`.
