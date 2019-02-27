@@ -14,6 +14,10 @@ Similarly, any db use of `real` is now `integer`.
 "rewrite" uses `3.6` to `3.7`.
 - Previous blocking code (besides the server settings json)
 using `sqlite3` now use `aiosqlite`.
+- Existing records in the `boss` table of all databases
+***will be unconditionally purged***.
+If you want to preserve these records,
+ensure you copy them manually elsewhere first.
 
 ### Migrating files
 Make sure to run the utility below:

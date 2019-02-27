@@ -3,26 +3,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2.1] - 2019-02-26
 ### Added
 - Custom checks were added, to streamline valid command usage.
 - Add separate command groups for settings commands.
 - Made a mistake with channels? You can now use `$settings purge` to erase them to redo.
 - Cogs. ~~Unfortunately, `$boss` cannot be made into a cog due to argument positioning.~~
+- Releases are now available. Release archives can be made using [build.py](./build.py).
+- In case the database has issues (you'll notice in startup if it happens), run [force_rebuild.py](utils/force_rebuild.py). ***This is destructive.***
+- [Migrating document](docs/MIGRATING.md) added for info about migration to "rewrite".
 
 ### Changed
 - The `$settings` module has been rewritten from a class interface to a helper module for the `db` module.
 - `$settings` no longer has its own class. Instead, it will act as a middleman similar to how `$boss` works.
-- `db.py` consequently has become the backend of data manipulation.
-- Existing boss records will be dumped from this update. Fields now use `integer` instead of `real`. (No more decimal precision!) `convert_db.py` must be run to ensure this happens.
+- [db.py](vaivora/db.py) consequently has become the backend of data manipulation.
+- Existing boss records will be dumped from this update. Fields now use `integer` instead of `real`. (No more decimal precision!) [convert_db.py](utils/convert_db.py) must be run to ensure this happens.
 - Owners are now automatically added `s-authorized` on each boot. Old owners are removed to prevent loopholes.
-- File checks in `check_databases()` in `bot.py` will skip problematic databases.
+- File checks in `check_databases()` in [bot.py](./bot.py) will skip problematic databases.
 - Similarly, all duplicates in tables `roles`, `channels`, and `contributions` will be removed.
 - Likewise, existing entries with `s-authorized` roles are removed.
 - "Separate command groups for settings" means that all current and future `$settings` subcommands will literals, not regex. i.e. `$settings set channel boss #channel` instead of something like `$settings set ch boss #channel`.
 - `vaivora_modules` changed to `vaivora`. Brevity is the soul of wit.
-- `$settings` was moved to `cogs`.
-- `$boss` and `meme`s are now `cogs` too.
+- `$settings` was moved to [cogs](cogs).
+- `$boss` and `meme`s are now [cogs](cogs) too.
 
 ### Deprecated
 - Translation modules moved out of their respective directories. I don't think this project will ever be made to run in multiple languages simultaneously.
@@ -31,8 +34,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [2.0] - 2019-02-11
 ### Added
 - Documents for more info have been added to `docs`.
-- `utils`: utilities for managing/adjusting files
-- `convert_db.py` added to transfer data from legacy server settings json files to sqlite database.
+- [utils](utils): utilities for managing/adjusting files
+- [convert_db.py](utils/convert_db.py) added to transfer data from legacy server settings json files to sqlite database.
 
 ### Changed
 - Wings of Vaivora now uses the discord.py rewrite branch.
