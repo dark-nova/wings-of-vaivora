@@ -451,7 +451,7 @@ class Database:
         """
         errs = []
         async with aiosqlite.connect(self.db_name) as _db:
-            with user in users:
+            for user in users:
                 try:
                     cursor = await _db.execute(
                                 """delete from roles where role='{}'
