@@ -165,7 +165,7 @@ def transfer_data(db_dir, ss_dir, skips=None):
             # add contribution points to guild
             for user, points in ssjson['talt'].items():
                 if type(points) is not int:
-                    points = int(points)
+                    points = int(points)*20
                 if user == 'guild':
                     cursor.execute('insert into guild values(?, ?)',
                                    (ssjson['guild_level'], points))
