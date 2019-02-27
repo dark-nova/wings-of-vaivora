@@ -711,9 +711,9 @@ class SettingsCog:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
                                    constants.settings.SUCCESS_GET_CONTRIBS))
-            while(len(output) > 30):
+            while(len(output) > 25):
                 await ctx.send('```\n{}```'.format('\n'.join(output[0:30])))
-                output = output[30:]
+                output = output[25:]
 
             if len(output) > 0:
                 await ctx.send('```\n{}```'.format('\n'.join(output)))
