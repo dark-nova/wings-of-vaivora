@@ -159,7 +159,7 @@ async def role_getter(ctx, mentions=None):
         if _mentions:
             users = [user for user in users if user in _mentions]
         users = '\n'.join(['{}\t{}'.format(
-                            ctx.guild.get_member(user).id,
+                            user,
                             str(ctx.guild.get_member(user)))
                            for user in users])
         users = '```\n{}```'.format(users)
@@ -699,6 +699,7 @@ class SettingsCog:
 
         if users:
             output = []
+            users = sorted(users, key=lambda usr: usr[1], reverse=True)
             for user in users:
                 member = user[0]
                 points = user[1]
@@ -707,13 +708,12 @@ class SettingsCog:
                                     str(ctx.guild.get_member(member)),
                                     points,
                                     int(points/20)))
-            output = sorted(output, key=itemgetter(2), reverse=True)
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
                                    constants.settings.SUCCESS_GET_CONTRIBS))
-            while(len(output) > 25):
-                await ctx.send('```\n{}```'.format('\n'.join(output[0:30])))
-                output = output[25:]
+            while(len(output) > 15):
+                await ctx.send('```\n{}```'.format('\n'.join(output[0:15])))
+                output = output[15:]
 
             if len(output) > 0:
                 await ctx.send('```\n{}```'.format('\n'.join(output)))
