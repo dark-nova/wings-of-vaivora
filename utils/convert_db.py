@@ -169,6 +169,9 @@ def transfer_data(db_dir, ss_dir, skips=None):
                 if user == 'guild':
                     cursor.execute('insert into guild values(?, ?)',
                                    (ssjson['guild_level'], points))
+                elif user == 'remainder':
+                    cursor.execute('insert into contribution values(?, ?)',
+                                   '0', points)
                 else:
                     cursor.execute(
                         'insert into contribution values(?,?)',
