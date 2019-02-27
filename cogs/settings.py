@@ -6,6 +6,7 @@ import asyncio
 import aiosqlite
 import typing
 from itertools import chain
+from operator import itemgetter
 from typing import Optional
 
 import discord
@@ -157,7 +158,9 @@ async def role_getter(ctx, mentions=None):
     if users:
         if _mentions:
             users = [user for user in users if user in _mentions]
-        users = '\n'.join([str(ctx.guild.get_member(user))
+        users = '\n'.join(['{}\t{}'.format(
+                            ctx.guild.get_member(user).id,
+                            str(ctx.guild.get_member(user)))
                            for user in users])
         users = '```\n{}```'.format(users)
         await ctx.send('{}\n\n{}'.format(
@@ -274,7 +277,7 @@ async def contribution_setter(ctx, points, member=None):
 
     vdb = vaivora.db.Database(ctx.guild.id)
     if await vdb.set_contribution(member, points):
-        row = '```\n{:<35}{:>5} points {:>10} Talt```'.format(
+        row = '```\n{:<40}{:>5} points {:>10} Talt```'.format(
                     str(ctx.guild.get_member(member)),
                     points,
                     int(points/20))
@@ -699,11 +702,12 @@ class SettingsCog:
             for user in users:
                 member = user[0]
                 points = user[1]
-                output.append('\n{:<35}{:>5} points {:>10} Talt'
+                output.append('\n{:40}{:>5} points {:>10} Talt'
                               .format(
                                     str(ctx.guild.get_member(member)),
                                     points,
                                     int(points/20)))
+            output = sorted(output, key=itemgetter(2), reverse=True)
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
                                    constants.settings.SUCCESS_GET_CONTRIBS))
