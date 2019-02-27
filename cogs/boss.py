@@ -597,7 +597,6 @@ class BossCog:
 
         return True
 
-
     # $boss <boss> <status> <time> [channel]
     @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
     @checks.only_in_guild()
@@ -646,7 +645,6 @@ class BossCog:
 
         return True
 
-
     @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
     @checks.only_in_guild()
     @checks.check_channel(constants.main.ROLE_BOSS)
@@ -694,9 +692,8 @@ class BossCog:
 
         return True
 
-
     @boss.command(name='maps', aliases=['map', 'alias', 'aliases'])
-    async def query(ctx):
+    async def query(self, ctx):
         """
         :func:`query` returns a user-usable list of maps and aliases for a given target.
         Unlike other boss commands, :func:`query` and :func:`_type` can be used in DMs.
@@ -727,9 +724,8 @@ class BossCog:
 
         await ctx.send('{}\n\n{}'.format(ctx.author.mention, msg))
 
-
     @boss.command(name='world', aliases=['w', 'field', 'f', 'demon', 'd', 'dl'])
-    async def _type(ctx):
+    async def _type(self, ctx):
         """
         :func:`_type` returns a user-usable list of types of bosses: World, Field, Demon.
         Unlike other boss commands, :func:`query` and :func:`_type` can be used in DMs.
