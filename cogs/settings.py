@@ -69,9 +69,8 @@ async def channel_getter(ctx, kind):
                                    constants.settings.FAIL_NO_CHANNELS
                                    .format(kind)))
         else:
-            channels = '\n'.join([str(ctx.guild.get_channel(channel))
+            channels = '\n'.join([str(ctx.guild.get_channel(channel).mention)
                                   for channel in channels])
-            channels = [ctx.guildchannel for channel in channels]
             await ctx.send('{}\n\n{}'
                            .format(ctx.author.mention,
                                    constants.settings.SUCCESS_CHANNELS
