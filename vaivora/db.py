@@ -424,10 +424,41 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             for user in users:
                 try:
-                    cursor = await _db.execute('insert into roles values("{}", "{}")'
-                                               .format(kind, user))
+                    cursor = await _db.execute(
+                                """insert into roles values
+                                   ('{}', '{}'')"""
+                                .format(kind, user))
                 except Exception as e:
-                    print(e)
+                    print('set_users', e)
+                    errs.append(user)
+                    continue
+            await _db.commit()
+        return errs
+
+    async def remove_users(self, kind, users):
+        """
+        :func:`remove_users` removes users from a `kind` of role.
+        Users are defined to be either Discord Members or Roles,
+        hence not using "remove_members" as the function name.
+
+        Args:
+            kind (str): the kind of user desired
+            users (list): the users to set
+
+        Returns:
+            list: a list of users not processed
+            list(None): if successful
+        """
+        errs = []
+        async with aiosqlite.connect(self.db_name) as _db:
+            with user in users:
+                try:
+                    cursor = await _db.execute(
+                                """delete from roles where role='{}'
+                                   and mention='{}'"""
+                                .format(kind, user))
+                except Exception as e:
+                    print('remove_users', e)
                     errs.append(user)
                     continue
             await _db.commit()

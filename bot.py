@@ -307,7 +307,8 @@ async def check_databases():
 
             # compare roles against server
             guild = bot.get_guild(vdb_id)
-            guild_boss_roles = await vdbs[vdb_id].get_role(constants.main.ROLE_BOSS)
+            guild_boss_roles = await vdbs[vdb_id].get_role(
+                                    constants.main.ROLE_BOSS)
             for boss_role in guild_boss_roles:
                 try:
                     # group mention
@@ -323,7 +324,9 @@ async def check_databases():
                         roles.append(boss_user.mention)
                     except:
                         # user or group no longer exists
-                        await vdbs[vdb_id].rm_boss(boss_role)
+                        await vdbs[vdb_id].remove_users(
+                                constants.main.ROLE_BOSS,
+                                (boss_role,))
 
             role_str = ' '.join(roles)
 
