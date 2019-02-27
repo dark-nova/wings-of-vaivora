@@ -616,6 +616,7 @@ class Database:
 
         Returns:
             list: of tuples, containing user id and contribution points
+            None: if none exist
         """
         results = []
         async with aiosqlite.connect(self.db_name) as _db:
@@ -623,8 +624,9 @@ class Database:
                 try:
                     cursor = await _db.execute(
                                 'select * from contribution')
+                    return await cursor.fetchall()
                 except:
-                    pass
+                    return None
             else:
                 for user in users:
                     try:
@@ -636,6 +638,8 @@ class Database:
                             await cursor.fetchone())
                     except:
                         pass
+                        print('get_contribution', 'skipped', user)
+                return results
 
     async def set_contribution(self, user, points, append=False):
         """
@@ -691,7 +695,7 @@ class Database:
                 g_points += points
                 while constants.settings.G_LEVEL[g_level] < g_points:
                     g_level += 1
-                
+
                 await _db.execute('insert into guild values("{}", "{}")'
                                   .format(g_level, g_points))
                 await _db.commit()

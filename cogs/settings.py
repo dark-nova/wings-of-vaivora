@@ -149,7 +149,7 @@ async def role_getter(ctx, mentions=None):
 
     # uid mode; parse if they're actually id's and not nonsense
     if mentions:
-        _mentions.append(await get_ids(ctx, mentions))
+        _mentions.extend(await get_ids(ctx, mentions))
 
     vdb = vaivora.db.Database(ctx.guild.id)
     users = await vdb.get_users(ctx.role_kind, _mentions)
@@ -200,7 +200,7 @@ async def role_setter(ctx, mentions=None):
 
     # uid mode; parse if they're actually id's and not nonsense
     if mentions:
-        _mentions.append(await get_ids(ctx, mentions))
+        _mentions.extend(await get_ids(ctx, mentions))
 
     if not _mentions:
         await ctx.send('{} {}'
@@ -274,7 +274,7 @@ async def contribution_setter(ctx, points, member=None):
 
     vdb = vaivora.db.Database(ctx.guild.id)
     if await vdb.set_contribution(member, points):
-        row = '```\n{:<20}{:>10} points {:>10} Talt```'.format(
+        row = '```\n{:<35}{:>5} points {:>10} Talt```'.format(
                     str(ctx.guild.get_member(member)),
                     points,
                     int(points/20))
@@ -439,6 +439,7 @@ class SettingsCog:
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
+            mentions: an optional mention as a raw id
 
         Returns:
             True if successful; False otherwise      
@@ -455,6 +456,7 @@ class SettingsCog:
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
+            mentions: an optional mention as a raw id
 
         Returns:
             True if successful; False otherwise      
@@ -471,6 +473,7 @@ class SettingsCog:
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
+            mentions: an optional mention as a raw id
 
         Returns:
             True if successful; False otherwise      
@@ -623,6 +626,7 @@ class SettingsCog:
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
+            mentions: an optional mention as a raw id
 
         Returns:
             True if successful; False otherwise
@@ -638,6 +642,7 @@ class SettingsCog:
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
+            mentions: an optional mention as a raw id
 
         Returns:
             True if successful; False otherwise
@@ -653,6 +658,7 @@ class SettingsCog:
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
+            mentions: an optional mention as a raw id
 
         Returns:
             True if successful; False otherwise
@@ -666,9 +672,55 @@ class SettingsCog:
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_talt(self, ctx, mentions: Optional[int] = None):
-        pass
+        """
+        :func:`g_talt` gets contribution record.
+        Ignores the 'remainder' (uncreditable) amount.
 
-    
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            mentions: an optional mention as a raw id
+        """
+        _mentions = []
+
+        if ctx.message.mentions:
+            for mention in ctx.message.mentions:
+                _mentions.append(mention.id)
+
+        # uid mode; parse if they're actually id's and not nonsense
+        if mentions:
+            _mentions.extend(await get_ids(ctx, mentions))
+
+        vdb = vaivora.db.Database(ctx.guild.id)
+        users = await vdb.get_contribution(_mentions)
+        users = [user for user in users if user is not None]
+
+        if users:
+            output = []
+            for user in users:
+                member = user[0]
+                points = user[1]
+                output.append('\n{:<35}{:>5} points {:>10} Talt'
+                              .format(
+                                    str(ctx.guild.get_member(member)),
+                                    points,
+                                    int(points/20)))
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings.SUCCESS_GET_CONTRIBS))
+            while(len(output) > 30):
+                await ctx.send('```\n{}```'.format('\n'.join(output[0:30])))
+                output = output[30:]
+
+            if len(output) > 0:
+                await ctx.send('```\n{}```'.format('\n'.join(output)))
+
+            return True
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings.FAIL_NO_CONTRIBS))
+            return False
+
 
 def setup(bot):
     bot.add_cog(SettingsCog(bot))
