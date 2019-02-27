@@ -83,7 +83,8 @@ class SettingsCog:
         """
         return True
 
-    @_set.group(name='channel')
+    @_set.group(name='channel', aliases=['ch', 'chs', 'chan',
+                                         'chans', 'channels'])
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
@@ -150,7 +151,7 @@ class SettingsCog:
         channels = []
         for channel_mention in ctx.message.channel_mentions:
             channels.append(str(channel_mention.id))
-        vdb = vaivora.db.Database(self, ctx.guild.id)
+        vdb = vaivora.db.Database(ctx.guild.id)
         errs = []
 
         for _channel in channels:
@@ -169,7 +170,7 @@ class SettingsCog:
                                 '\n'.join(errs)))
         return True
 
-    @_set.group(name='role')
+    @_set.group(name='role', aliases=['roles', 'user', 'users'])
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
@@ -203,7 +204,7 @@ class SettingsCog:
         """
         return await self.role_setter(ctx, mentions)
 
-    @s_role.group(name='authorized')
+    @s_role.group(name='authorized', aliases=['auth'])
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
@@ -367,7 +368,8 @@ class SettingsCog:
         """
         return True
 
-    @_get.group(name='channel')
+    @_get.group(name='channel', aliases=['ch', 'chs', 'chan',
+                                         'chans', 'channels'])
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_channel(self, ctx):
@@ -395,7 +397,7 @@ class SettingsCog:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            True always
         """
         return await self.channel_getter(ctx, ctx.channel_kind)
 
@@ -410,7 +412,7 @@ class SettingsCog:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            True always
         """
         return await self.channel_getter(ctx, ctx.channel_kind)
 
@@ -424,14 +426,27 @@ class SettingsCog:
             kind (str): the kind/type to use, i.e. subcommand invoked
 
         Returns:
-            True if successful; False otherwise
+            True always
         """
-        vdb = vaivora.db.Database(self, ctx.guild.id)
-        errs = []
+        vdb = vaivora.db.Database(ctx.guild.id)
+        channels = await vdb.get_channel(kind)
 
-        pass
+        if not channels:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings.FAIL_NO_CHANNELS
+                                   .format(kind)))
+        else:
+            channels = '\n'.join([str(ctx.guild.get_channel(channel))
+                                  for channel in channels])
+            channels = [ctx.guildchannel for channel in channels]
+            await ctx.send('{}\n\n{}'
+                           .format(ctx.author.mention,
+                                   constants.settings.SUCCESS_CHANNELS
+                                   .format(kind, channels)))
+        return True
 
-    @_get.group(name='role')
+    @_get.group(name='role', aliases=['roles', 'user', 'users'])
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_role(self, ctx):
@@ -463,7 +478,7 @@ class SettingsCog:
         """
         return await self.role_getter(ctx, mentions)
 
-    @g_role.group(name='authorized')
+    @g_role.group(name='authorized', aliases=['auth'])
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_auth(self, ctx, mentions: Optional[int] = None):
@@ -558,7 +573,6 @@ class SettingsCog:
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_talt(self, ctx, mentions: Optional[int] = None):
         pass
-
 
     async def get_ids(self, ctx, mentions):
         """
