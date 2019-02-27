@@ -545,10 +545,9 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                            await construct_SQL(
-                                """select channel from channels 
-                                where type = '{}'"""
-                                .format(kind)))
+                            """select channel from channels
+                            where type = '{}'"""
+                            .format(kind))
                 return [_row[0] for _row in await cursor.fetchall()]
             except Exception as e:
                 print(e)
