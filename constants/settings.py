@@ -156,6 +156,7 @@ SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
 SUCCESS_ROLES = 'Here are users of {} role type:\n\n{}'
 SUCCESS_PURGED = 'Your channel records were purged successfully.'
 SUCCESS_ROLES_UP = 'Your {} roles have been successfully updated.'
+SUCCESS_CONTRIBUTIONS = 'Guild records have been successfully updated.\n{}'
 
 PARTIAL_SUCCESS = 'Your {} records did not fully process. Errors:\n\n{}'
 
@@ -166,7 +167,9 @@ FAIL_PURGED = 'Your channel records could not be purged.'
 FAIL_NO_MENTIONS = 'No mentions were added.'
 FAIL_NO_USER_BOSS = "Members can't be set as the boss role!"
 FAIL_TOO_MANY_MENTIONS = 'You mentioned too many users!'
+FAIL_INVALID_MENTION = 'You typed an invalid mention!'
 FAIL_INVALID_POINTS = 'You entered an invalid amount of points! Check unit or value (divisible by 20).'
+FAIL_CONTRIBUTIONS = 'Your contributions could not be recorded.'
 
 FAIL_NOT_PARSED = 'Your command could not be parsed.'
 FAIL_COULD_NOT = FAIL_NOT_PARSED + '\nCould not {} {}\'s {} record.'

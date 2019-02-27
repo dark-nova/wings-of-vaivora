@@ -18,209 +18,278 @@ import constants.settings
 
 
 async def get_ids(ctx, mentions):
-        """
-        :func:`get_ids` filters out nonsense ints with actual id's.
+    """
+    :func:`get_ids` filters out nonsense ints with actual id's.
 
-        Args:
-            ctx (discord.ext.commands.Context): context of the message
-            mentions: mentions to test for id's.
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        mentions: mentions to test for id's.
 
-        Returns:
-            list: of valid discord id's
-        """
-        if type(mentions) is int:
-            mentions = [mentions]
+    Returns:
+        list: of valid discord id's
+    """
+    if type(mentions) is int:
+        mentions = [mentions]
 
-        _mention = []
-        gids = [member.id for member in (ctx.guild.members
-                                         + ctx.guild.roles)]
-        rids = [member.id for member in ctx.guild.role]
+    _mention = []
+    gids = [member.id for member in (ctx.guild.members
+                                     + ctx.guild.roles)]
+    rids = [member.id for member in ctx.guild.roles]
+    try:
         if ctx.role_kind == constants.settings.ROLE_BOSS:
             for mention in mentions:
                 # do not allow regular users for $boss
                 if mention in rids:
                     _mention.append(mention)
-        else:
-            for mention in mentions:
-                if mention in gids:
-                    _mentions.append(mention)
+    except:
+        pass
 
-        return _mention
+    for mention in mentions:
+        if mention in gids:
+            _mention.append(mention)
+
+    return _mention
 
 
 async def channel_getter(ctx, kind):
-        """
-        :func:`channel_getter` does the work
-        for :func:`gc_boss` and :func:`gc_settings`.
+    """
+    :func:`channel_getter` does the work
+    for :func:`gc_boss` and :func:`gc_settings`.
 
-        Args:
-            ctx (discord.ext.commands.Context): context of the message
-            kind (str): the kind/type to use, i.e. subcommand invoked
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        kind (str): the kind/type to use, i.e. subcommand invoked
 
-        Returns:
-            True always
-        """
-        vdb = vaivora.db.Database(ctx.guild.id)
-        channels = await vdb.get_channel(kind)
+    Returns:
+        True always
+    """
+    vdb = vaivora.db.Database(ctx.guild.id)
+    channels = await vdb.get_channel(kind)
 
-        if not channels:
-            await ctx.send('{} {}'
-                           .format(ctx.author.mention,
-                                   constants.settings.FAIL_NO_CHANNELS
-                                   .format(kind)))
-        else:
-            channels = '\n'.join([str(ctx.guild.get_channel(channel).mention)
-                                  for channel in channels])
-            await ctx.send('{}\n\n{}'
-                           .format(ctx.author.mention,
-                                   constants.settings.SUCCESS_CHANNELS
-                                   .format(kind, channels)))
-        return True
+    if not channels:
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings.FAIL_NO_CHANNELS
+                               .format(kind)))
+    else:
+        channels = '\n'.join([str(ctx.guild.get_channel(channel).mention)
+                              for channel in channels])
+        await ctx.send('{}\n\n{}'
+                       .format(ctx.author.mention,
+                               constants.settings.SUCCESS_CHANNELS
+                               .format(kind, channels)))
+    return True
 
 
 async def channel_setter(ctx, kind):
-        """
-        :func:`channel_setter` does the work
-        for :func:`sc_boss` and :func:`sc_settings`.
+    """
+    :func:`channel_setter` does the work
+    for :func:`sc_boss` and :func:`sc_settings`.
 
-        Args:
-            ctx (discord.ext.commands.Context): context of the message
-            kind (str): the kind/type to use, i.e. subcommand invoked
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        kind (str): the kind/type to use, i.e. subcommand invoked
 
-        Returns:
-            True if successful; False otherwise
-        """
-        channels = []
-        for channel_mention in ctx.message.channel_mentions:
-            channels.append(str(channel_mention.id))
-        vdb = vaivora.db.Database(ctx.guild.id)
-        errs = []
+    Returns:
+        True if successful; False otherwise
+    """
+    channels = []
+    for channel_mention in ctx.message.channel_mentions:
+        channels.append(str(channel_mention.id))
+    vdb = vaivora.db.Database(ctx.guild.id)
+    errs = []
 
-        for _channel in channels:
-            try:
-                await vdb.set_channel(kind, _channel)
-            except:
-                errs.append(_channel)
+    for _channel in channels:
+        try:
+            await vdb.set_channel(kind, _channel)
+        except:
+            errs.append(_channel)
 
-        if not errs:
-            await ctx.send(constants.settings.SUCCESS
-                           .format(constants.settings.TABLE_CHANNEL,
-                                kind))
-        else:
-            await ctx.send(constants.settings.PARTIAL_SUCCESS
-                           .format(constants.settings.TABLE_CHANNEL,
-                                '\n'.join(errs)))
-        return True
+    if not errs:
+        await ctx.send(constants.settings.SUCCESS
+                       .format(constants.settings.TABLE_CHANNEL,
+                            kind))
+    else:
+        await ctx.send(constants.settings.PARTIAL_SUCCESS
+                       .format(constants.settings.TABLE_CHANNEL,
+                            '\n'.join(errs)))
+    return True
 
 
 async def role_getter(ctx, mentions=None):
-        """
-        :func:`role_getter` handles the backend for
-        :func:`gr_member`, :func:`gr_auth`, and :func:`gr_boss`.
+    """
+    :func:`role_getter` handles the backend for
+    :func:`gr_member`, :func:`gr_auth`, and :func:`gr_boss`.
 
-        Args:
-            ctx (discord.ext.commands.Context): context of the message
-            mentions: (default: None) optional mentions that are only id's
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        mentions: (default: None) optional mentions that are only id's
 
-        Returns:
-            True if successful; False otherwise
-        """
-        _mentions = []
+    Returns:
+        True if successful; False otherwise
+    """
+    _mentions = []
 
-        if ctx.message.role_mentions:
-            for mention in ctx.message.role_mentions:
+    if ctx.message.role_mentions:
+        for mention in ctx.message.role_mentions:
+            _mentions.append(mention.id)
+
+    # do not allow regular users for $boss
+    if ctx.role_kind != constants.settings.ROLE_BOSS:
+        if ctx.message.mentions:
+            for mention in ctx.message.mentions:
                 _mentions.append(mention.id)
 
-        # do not allow regular users for $boss
-        if ctx.role_kind != constants.settings.ROLE_BOSS:
-            if ctx.message.mentions:
-                for mention in ctx.message.mentions:
-                    _mentions.append(mention.id)
-
-        else:
-            if not ctx.message.role_mentions and ctx.message.mentions:
-                await ctx.send('{} {}'
-                               .format(ctx.author.mention,
-                                       constants.settings.FAIL_NO_USER_BOSS))
-                return False
-
-        # uid mode; parse if they're actually id's and not nonsense
-        if mentions:
-            _mentions.append(await get_ids(ctx, mentions))
-
-        vdb = vaivora.db.Database(ctx.guild.id)
-        users = await vdb.get_users(ctx.role_kind, _mentions)
-
-        if users:
-            if _mentions:
-                users = [user for user in users if user in _mentions]
-            users = '\n'.join([str(ctx.guild.get_member(user))
-                               for user in users])
-            users = '```\n{}```'.format(users)
-            await ctx.send('{}\n\n{}'.format(
-                    ctx.author.mention,
-                    constants.settings.SUCCESS_ROLES.format(
-                        ctx.role_kind, users),
-                    constants.settings.NOTICE_ROLE))
-            return True
-        else:
-            await ctx.send('{} {}'.format(
-                    ctx.author.mention,
-                    constants.settings.FAIL_NO_ROLES.format(
-                        ctx.role_kind)))
+    else:
+        if not ctx.message.role_mentions and ctx.message.mentions:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings.FAIL_NO_USER_BOSS))
             return False
+
+    # uid mode; parse if they're actually id's and not nonsense
+    if mentions:
+        _mentions.append(await get_ids(ctx, mentions))
+
+    vdb = vaivora.db.Database(ctx.guild.id)
+    users = await vdb.get_users(ctx.role_kind, _mentions)
+
+    if users:
+        if _mentions:
+            users = [user for user in users if user in _mentions]
+        users = '\n'.join([str(ctx.guild.get_member(user))
+                           for user in users])
+        users = '```\n{}```'.format(users)
+        await ctx.send('{}\n\n{}'.format(
+                ctx.author.mention,
+                constants.settings.SUCCESS_ROLES.format(
+                    ctx.role_kind, users),
+                constants.settings.NOTICE_ROLE))
+        return True
+    else:
+        await ctx.send('{} {}'.format(
+                ctx.author.mention,
+                constants.settings.FAIL_NO_ROLES.format(
+                    ctx.role_kind)))
+        return False
 
 
 async def role_setter(ctx, mentions=None):
-        """
-        :func:`role_setter` handles the backend for
-        :func:`sr_member`, :func:`sr_auth`, and :func:`sr_boss`.
+    """
+    :func:`role_setter` handles the backend for
+    :func:`sr_member`, :func:`sr_auth`, and :func:`sr_boss`.
 
-        Args:
-            ctx (discord.ext.commands.Context): context of the message
-            mentions: (default: None) optional mentions that are only id's
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        mentions: (default: None) optional mentions that are only id's
 
-        Returns:
-            True if successful; False otherwise
-        """
-        _mentions = []
+    Returns:
+        True if successful; False otherwise
+    """
+    _mentions = []
 
-        if ctx.message.role_mentions:
-            for mention in ctx.message.role_mentions:
+    if ctx.message.role_mentions:
+        for mention in ctx.message.role_mentions:
+            _mentions.append(mention.id)
+
+    # do not allow regular users for $boss
+    if ctx.role_kind != constants.settings.ROLE_BOSS:
+        if ctx.message.mentions:
+            for mention in ctx.message.mentions:
                 _mentions.append(mention.id)
 
-        # do not allow regular users for $boss
-        if ctx.role_kind != constants.settings.ROLE_BOSS:
-            if ctx.message.mentions:
-                for mention in ctx.message.mentions:
-                    _mentions.append(mention.id)
+    # uid mode; parse if they're actually id's and not nonsense
+    if mentions:
+        _mentions.append(await get_ids(ctx, mentions))
 
-        # uid mode; parse if they're actually id's and not nonsense
-        if mentions:
-            _mentions.append(await get_ids(ctx, mentions))
+    if not _mentions:
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings.FAIL_NO_MENTIONS))
+        return False
 
-        if not _mentions:
+    vdb = vaivora.db.Database(ctx.guild.id)
+    errs = await vdb.set_users(ctx.role_kind, _mentions)
+
+    if errs:
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings.PARTIAL_SUCCESS.format(
+                                    constants.settings.SETTING_SET,
+                                    '\n'.join(errs))))
+    else:
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings.SUCCESS_ROLES_UP.format(
+                                    ctx.role_kind)))
+
+    return True
+
+
+async def contribution_setter(ctx, points, member=None):
+    """
+    :func:`contribution_setter` handles the backend work for
+    :func:`s_talt` and :func:`s_point`.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        points (int): the points to set
+        member: (default: None) an optional member to modify
+
+    Returns:
+        True if sucessful; False otherwise
+    """
+    mention = 0
+
+    if ctx.message.mentions:
+        if len(ctx.message.mentions) > 1:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
-                                   constants.settings.FAIL_NO_MENTIONS))
+                                   constants.settings
+                                   .FAIL_TOO_MANY_MENTIONS))
             return False
-
-        vdb = vaivora.db.Database(ctx.guild.id)
-        errs = await vdb.set_users(ctx.role_kind, _mentions)
-
-        if errs:
-            await ctx.send('{} {}'
-                           .format(ctx.author.mention,
-                                   constants.settings.PARTIAL_SUCCESS.format(
-                                        constants.settings.SETTING_SET,
-                                        '\n'.join(errs))))
         else:
+            mention = ctx.message.mentions[0].id
+
+    if member and mention:
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings
+                               .FAIL_TOO_MANY_MENTIONS))
+        return False
+    elif member:
+        try:
+            mention = (await get_ids(ctx, member))[0]
+        except:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
-                                   constants.settings.SUCCESS_ROLES_UP.format(
-                                        ctx.role_kind)))
+                                   constants.settings
+                                   .FAIL_INVALID_MENTION))
+            return False
+    else:
+        member = mention
 
+    if not member:
+        member = ctx.author.id
+
+    vdb = vaivora.db.Database(ctx.guild.id)
+    if await vdb.set_contribution(member, points):
+        row = '```\n{}{:>20} points {:>10} Talt```'.format(
+                    ctx.guild.get_member(member),
+                    points,
+                    int(points/20))
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings
+                               .SUCCESS_CONTRIBUTIONS
+                               .format(row)))
         return True
+    else:
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings
+                               .FAIL_CONTRIBUTIONS))
+        return False
 
 
 class SettingsCog:
@@ -408,69 +477,60 @@ class SettingsCog:
         """
         return await role_setter(ctx, mentions)
 
-    @_set.group(name='talt', aliases=['points', 'pt', 'pts',
-                                      'contrib', 'contribs',
-                                      'contribution'])
+    @_set.group(name='talt')
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def s_talt(self, ctx, points: int,
-                     unit=constants.settings.CMD_ARG_SETTING_TALT_POINTS,
-                     member=None):
+    async def s_talt(self, ctx, points: int, member: Optional[int] = None):
         """
         :func:`s_talt` sets contribution points.
         Optionally, if a member is mentioned, then the member's record
         will be modified instead.
         If using the `member` variable, take care to fill in all arguments.
-        e.g. $settings set talt 20 talt @someone
+        e.g. $settings set talt 20 @someone
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
             points (int): the points to add; i.e. 1 talt = 20 points, etc
-            unit: (default: constants.settings.CMD_ARG_SETTING_TALT_UNIT)
-                unit to pick
             member: (default: None) the optional member's record to modify
 
         Returns:
             True if successful; False otherwise
         """
-        mention = 0
-        if (constants.settings
-            .REGEX_CONTRIBUTION_POINTS.search(unit)):
-            if points % 20 != 0:
-                await ctx.send('{} {}'
-                               .format(ctx.author.mention,
-                                       constants.settings
-                                       .FAIL_INVALID_POINTS))
-                return False
-        # just assume it's talt
-        else:
-            points *= 20
+        points *= 20
 
-        if ctx.message.mentions:
-            if len(ctx.message.mentions) > 1:
-                await ctx.send('{} {}'
-                               .format(ctx.author.mention,
-                                       constants.settings
-                                       .FAIL_TOO_MANY_MENTIONS))
-                return False
-            else:
-                mention = ctx.message.mentions[0]
+        return await contribution_setter(ctx, points, member)
 
-        if member and mention:
+    @_set.group(name='point', aliases=['points', 'pt', 'pts',
+                                       'contrib', 'contribs',
+                                       'contribution'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def s_point(self, ctx, points: int, member: Optional[int] = None):
+        """
+        :func:`s_point` sets contribution points.
+        Optionally, if a member is mentioned, then the member's record
+        will be modified instead.
+        If using the `member` variable, take care to fill in all arguments.
+        e.g. $settings set point 20 @someone
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            points (int): the points to add; i.e. 1 talt = 20 points, etc
+            member: (default: None) the optional member's record to modify
+
+        Returns:
+            True if successful; False otherwise
+        """
+        if points % 20 != 0:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
                                    constants.settings
-                                   .FAIL_TOO_MANY_MENTIONS))
+                                   .FAIL_INVALID_POINTS))
             return False
-        elif member:
-            mention = (await get_ids(ctx, member))[0]
 
-        if not member:
-            member = ctx.author.id
-
-        vdb = vaivora.db.Database(ctx.guild.id)
-        return await vdb.set_contribution(member, points)
+        return await contribution_setter(ctx, points, member)
 
     # $settings get <target> <kind> <discord object>
     @settings.group(name='get')
