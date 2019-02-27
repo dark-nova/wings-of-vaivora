@@ -67,14 +67,23 @@ async def channel_getter(ctx, kind):
     vdb = vaivora.db.Database(ctx.guild.id)
     channels = await vdb.get_channel(kind)
 
+    print(ctx.guild.get_channel(channels[0]))
+
     if not channels:
         await ctx.send('{} {}'
                        .format(ctx.author.mention,
                                constants.settings.FAIL_NO_CHANNELS
                                .format(kind)))
     else:
-        channels = '\n'.join([str(ctx.guild.get_channel(channel).mention)
-                              for channel in channels])
+        existing_channels = []
+        for channel in channels:
+            if not ctx.guild.get_channel(channel):
+                continue # in the future, delete channel
+            else:
+                existing_channels.append(
+                    str(ctx.guild.get_channel(channel).mention))
+
+        channels = '\n'.join(existing_channels)
         await ctx.send('{}\n\n{}'
                        .format(ctx.author.mention,
                                constants.settings.SUCCESS_CHANNELS
