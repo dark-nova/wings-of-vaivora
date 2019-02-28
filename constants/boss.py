@@ -464,6 +464,7 @@ GET_BOSSES= 'The following bosses are considered \"**{}**\" bosses:\n\n- {}'
 
 SAME_MAP = 'same map'
 
+FAIL_BAD_DB = "The boss database was corrupt and subsequently rebuilt."
 FAIL_STATUS = "Your command could not be processed. It appears this record overlaps too closely with another."
 FAIL_STATUS_NO_ANCHOR = "This boss cannot be anchored."
 

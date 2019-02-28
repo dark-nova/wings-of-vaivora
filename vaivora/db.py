@@ -162,10 +162,12 @@ class Database:
             _db.row_factory = aiosqlite.Row
             for _s in select:
                 try:
-                    cursor = await _db.execute(args=(
-                                await construct_SQL('select * from',
-                                                    _s)))
-                except:
+                    cursor = await _db.execute(
+                                await construct_SQL(
+                                    args=('select * from',
+                                          _s)))
+                except Exception as e:
+                    print('check_if_vaild', e)
                     return False
 
                 r = await cursor.fetchone()
@@ -175,6 +177,7 @@ class Database:
 
                 if sorted(tuple(r.keys())) != sorted(columns[_s]):
                     await cursor.close()
+                    print(r.keys(), sorted(columns[_s]))
                     return False
 
             await cursor.close()

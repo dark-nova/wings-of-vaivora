@@ -406,7 +406,8 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
     target['minute'] = int(record_date.minute)
 
     vdb = vaivora.db.Database(server_id)
-    await vdb.check_if_valid(constants.boss.MODULE_NAME)
+    if not await vdb.check_if_valid(constants.boss.MODULE_NAME):
+        await vdb.create_db('boss')
 
     if await vdb.update_db_boss(target):
         return (constants.boss.SUCCESS_STATUS.format(constants.boss.ACKNOWLEDGED,
@@ -432,7 +433,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
         channel: (default: None) the channel for the record
 
     Returns:
-        str: an appropriate message for success or fail of command,
+        list(str): an appropriate message for success or fail of command,
             e.g. confirmation or list of entries
     """
     if type(bosses) is str:
@@ -441,6 +442,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
     vdb = vaivora.db.Database(server_id)
     if not await vdb.check_if_valid(constants.boss.MODULE_NAME):
         await vdb.create_db('boss')
+        return [constants.boss.FAIL_BAD_DB,]
 
     # $boss <target> erase ...
     if entry == constants.boss.CMD_ARG_ENTRY_ERASE:
