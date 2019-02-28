@@ -299,7 +299,7 @@ class Database:
             try:
                 # boss database structure
                 await _db.execute(
-                    'insert into boss values (?,?,?,?,?,?,?,?,?,?)'
+                    'insert into boss values (?,?,?,?,?,?,?,?,?,?)',
                     (str(boss_name),
                      int(boss_channel),
                      str(boss_dict['map']),
@@ -312,7 +312,8 @@ class Database:
                      int(boss_dict['minute'])))
                 await _db.commit()
                 return True
-            except:
+            except Exception as e:
+                print('update_db_boss', e)
                 return False
 
     async def rm_entry_db_boss(self, boss_list=constants.boss.ALL_BOSSES, boss_ch=0):
