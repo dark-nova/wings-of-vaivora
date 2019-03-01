@@ -588,14 +588,14 @@ class Database:
                 print(e)
                 return None
 
-    async def set_channel(self, kind, ch_id):
+    async def set_channel(self, kind, channel):
         """
         :func:`set_channel` adds a channel as a `kind`
 
         Args:
             kind (str): the kind of channel to filter
                 e.g. 'boss', 'management'
-            ch_id (str): the id of a channel to set
+            channel (int): the id of a channel to set
 
         Returns:
             True if successful; False otherwise
@@ -604,11 +604,34 @@ class Database:
             try:
                 await _db.execute(
                     'insert into channels values("{}", "{}")'
-                    .format(kind, ch_id))
+                    .format(kind, channel))
                 await _db.commit()
                 return True
             except Exception as e:
-                print(e)
+                print('set_channel', e)
+                return False
+
+    async def remove_channel(self, kind, channel):
+        """
+        :func:`remove_channel` removes a channel from `kind`.
+
+        Args:
+            kind (str): the kind of channel to filter
+                e.g. 'boss', 'management'
+            channel (int): the id of a channel to remove
+
+        Returns:
+            True if successful; False otherwise
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                await _db.execute(
+                    'delete from channels where type="{}" and channel="{}"'
+                    .format(kind, channel))
+                await _db.commit()
+                return True
+            except Exception as e:
+                print('remove_channel', e)
                 return False
 
     async def get_contribution(self, users=None):

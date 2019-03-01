@@ -1,10 +1,7 @@
 import re
 import os
 import os.path
-import json
 import asyncio
-import aiosqlite
-import typing
 from itertools import chain
 from operator import itemgetter
 from typing import Optional
@@ -67,8 +64,6 @@ async def channel_getter(ctx, kind):
     vdb = vaivora.db.Database(ctx.guild.id)
     channels = await vdb.get_channel(kind)
 
-    print(ctx.guild.get_channel(channels[0]))
-
     if not channels:
         await ctx.send('{} {}'
                        .format(ctx.author.mention,
@@ -78,7 +73,7 @@ async def channel_getter(ctx, kind):
         existing_channels = []
         for channel in channels:
             if not ctx.guild.get_channel(channel):
-                continue # in the future, delete channel
+                await vdb.remove_channel(kind, channel)
             else:
                 existing_channels.append(
                     str(ctx.guild.get_channel(channel).mention))
@@ -172,12 +167,22 @@ async def role_getter(ctx, mentions=None):
         if _mentions:
             users = [user for user in users if user in _mentions]
         _users = []
+        to_remove = []
         for user in users:
             member = ctx.guild.get_member(user)
             # if "user" is actually a role
             if not member:
                 member = ctx.guild.get_roles(user)
+
+            # if "user" is still not defined, it's most likely invalid
+            if not member:
+                to_remove.append(user)
+                continue
+
             _users.append(member)
+
+        if to_remove:
+            await vdb.remove_users(ctx.role_kind, user)
 
         _users = '\n'.join(['{:<15}\t{:>10}'.format(
                              str(user.id),
@@ -750,6 +755,7 @@ class SettingsCog:
                                    constants.settings.FAIL_NO_CONTRIBS))
             return False
 
+    @settings.group(name='add')
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
