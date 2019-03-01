@@ -11,7 +11,6 @@ from discord.ext import commands
 
 import checks
 import vaivora.db
-from secrets import discord_user_id
 import constants.settings
 
 
