@@ -1,3 +1,5 @@
+from math import ceil
+
 import discord
 from discord.ext import commands
 
@@ -98,8 +100,40 @@ class GemsCog:
             level (int): the current gem level
             exp (int): the current gem experience
             final_level (int): the intended level
+
+        Returns:
+            True if successful; False otherwise
         """
-        pass
+        if level > 9 or final_level > 9 or level < 1 or final_level < 1:
+            await ctx.send('{} You have entered an invalid gem level!'
+                           .format(ctx.author.mention))
+            return False
+        if level >= final_level:
+            await ctx.send('{} Final level is below starting level!'
+                           .format(ctx.author.mention))
+            return False
+        if gems[level+1] < (gems[level] + exp) or exp < 0:
+            await ctx.send('{} {} experience is invalid for gem level {}!'
+                           .format(ctx.author.mention,
+                                   exp, level))
+
+        exp_diff = gems[final_level] - (gems[level] + exp)
+
+        _abrasives = []
+
+        a_level = 2 # abrasives below lv2 do not exist
+        while abrasives[a_level] < exp_diff and a_level < 10:
+            a_qty = ceil(exp_diff/abrasives[a_level])
+            _abrasives.append('Abrasive level {} quantity: {}'
+                              .format(a_level, a_qty))
+
+        await ctx.send("""{} You need {} experience for your gem.
+                          Additionally, the following table is provided
+                          as a reference:\n\n"""
+                       .format(ctx.author.mention,
+                               exp_diff))
+        await ctx.send('\n'.join(_abrasives))
+
 
 
 def setup(bot):
