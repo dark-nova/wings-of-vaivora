@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 
 import checks
+import constants.gems
 
 
 gems = [0,
@@ -62,7 +63,7 @@ class GemsCog:
                     a_qty, a_level = abrasive.split('.')
                 except ValueError:
                     errs.append(
-                        '{} has an invalid delimiter!'
+                        constants.gems.INVALID_DELIM
                         .format(abrasive))
                     continue
                 except:
@@ -75,7 +76,7 @@ class GemsCog:
                 gem_exp += a_qty * abrasives[a_level]
             except IndexError:
                 errs.append(
-                    '{} is an invalid abrasive level!'
+                    constants.gems.INVALID_ALEVEL
                     .format(a_level))
                 continue
             except:
@@ -89,13 +90,11 @@ class GemsCog:
 
         await ctx.send('{}\n\n{}'
                        .format(ctx.author.mention,
-                               """You can make a level {} gem,
-                                  with {} leftover experience.
-                                  \nTotal gem experience: {}"""
+                               constants.gems.SUCCESS_EXP
                                .format(level, leftover_exp,
                                        gem_exp)))
         if errs:
-            await ctx.send('\nAdditionally, errors were detected:')
+            await ctx.send(constants.gems.SOME_ERRORS)
 
             while len(errs) >= 20:
                 await ctx.send('\n'.join(errs[:20]))
@@ -122,15 +121,15 @@ class GemsCog:
             True if successful; False otherwise
         """
         if level > 9 or final_level > 9 or level < 1 or final_level < 1:
-            await ctx.send('{} You have entered an invalid gem level!'
+            await ctx.send(constants.gems.INVALID_GLEVEL
                            .format(ctx.author.mention))
             return False
         if level >= final_level:
-            await ctx.send('{} Final level is below starting level!'
+            await ctx.send(constants.gems.INVALID_FLEVEL
                            .format(ctx.author.mention))
             return False
         if gems[level+1] < (gems[level] + exp) or exp < 0:
-            await ctx.send('{} {} experience is invalid for gem level {}!'
+            await ctx.send(constants.gems.INVALID_GEXP
                            .format(ctx.author.mention,
                                    exp, level))
 
@@ -141,12 +140,10 @@ class GemsCog:
         a_level = 2 # abrasives below lv2 do not exist
         while abrasives[a_level] < exp_diff and a_level < 10:
             a_qty = ceil(exp_diff/abrasives[a_level])
-            _abrasives.append('Abrasive level {} quantity: {}'
+            _abrasives.append(constants.gems.ABRASIVE_TABLE
                               .format(a_level, a_qty))
 
-        await ctx.send("""{} You need {} experience for your gem.
-                          Additionally, the following table is provided
-                          as a reference:\n\n"""
+        await ctx.send(constants.gems.SUCCESS_GTL
                        .format(ctx.author.mention,
                                exp_diff))
         await ctx.send('\n'.join(_abrasives))
