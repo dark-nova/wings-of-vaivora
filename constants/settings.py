@@ -167,6 +167,8 @@ SUCCESS_PURGED = 'Your channel records were purged successfully.'
 SUCCESS_ROLES_UP = 'Your {} roles have been successfully updated.'
 SUCCESS_CONTRIBUTIONS = 'Guild records have been successfully updated.\n{}'
 SUCCESS_GET_CONTRIBS = 'Here are the guild\'s contribution records:\n'
+SUCCESS_SET_GUILD = 'Guild records have been successfully updated.'
+SUCCESS_GET_GUILD = 'This guild is currently level {} with {} points.\n```{} {}```'
 
 PARTIAL_SUCCESS = 'Your {} records did not fully process. Errors:\n\n{}'
 
@@ -181,6 +183,7 @@ FAIL_INVALID_MENTION = 'You typed an invalid mention!'
 FAIL_INVALID_POINTS = 'You entered an invalid amount of points! Check unit or value (divisible by 20).'
 FAIL_CONTRIBUTIONS = 'Your contributions could not be recorded.'
 FAIL_NO_CONTRIBS = 'No contributions were found.'
+FAIL_SET_GUILD = 'Something went wrong. Your guild points were not updated.'
 
 FAIL_NOT_PARSED = 'Your command could not be parsed.'
 FAIL_COULD_NOT = FAIL_NOT_PARSED + '\nCould not {} {}\'s {} record.'

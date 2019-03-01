@@ -5,6 +5,7 @@ import asyncio
 from itertools import chain
 from operator import itemgetter
 from typing import Optional
+from math import floor
 
 import discord
 from discord.ext import commands
@@ -567,6 +568,33 @@ class SettingsCog:
 
         return await contribution_setter(ctx, points, member)
 
+    @_set.command(name='guild')
+    @checks.only_in_guild()
+    @checks.check_role()
+    async def s_guild(self, ctx, points: int):
+        """
+        :func:`s_guild` sets guild to level and points.
+        Any extraneous points are allocated to a sentinel value.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            points (int): the current guild points
+
+        Returns:
+            True if successful; False otherwise
+        """
+        vdb = vaivora.db.Database(ctx.guild.id)
+        if not await vdb.set_guild_points(points):
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings.FAIL_SET_GUILD))
+            return False
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings.SUCCESS_SET_GUILD))
+            return True
+
     # $settings get <target> <kind> <discord object>
     @settings.group(name='get')
     @checks.only_in_guild()
@@ -697,9 +725,9 @@ class SettingsCog:
         """
         return await role_getter(ctx, mentions)
 
-    @_get.group(name='talt', aliases=['points', 'pt', 'pts',
-                                      'contrib', 'contribs',
-                                      'contribution'])
+    @_get.command(name='talt', aliases=['points', 'pt', 'pts',
+                                        'contrib', 'contribs',
+                                        'contribution'])
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
@@ -711,6 +739,9 @@ class SettingsCog:
         Args:
             ctx (discord.ext.commands.Context): context of the message
             mentions: an optional mention as a raw id
+
+        Returns:
+            True if successful; False otherwise
         """
         _mentions = []
 
@@ -753,6 +784,41 @@ class SettingsCog:
                            .format(ctx.author.mention,
                                    constants.settings.FAIL_NO_CONTRIBS))
             return False
+
+    @_get.command(name='guild')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def g_guild(self, ctx):
+        """
+        :func:`g_guild` gets guild level and points.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        vdb = vaivora.db.Database(ctx.guild.id)
+        try:
+            level, points = await vdb.get_guild_info()
+        except:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention)
+                            constants.settings.FAIL_NO_CONTRIBS)
+            return False
+
+        bars_level = '[{}{}]'.format('|'*level,
+                                     ' '*(20-level))
+        points_progress = floor(points*10/constants.settings.G_LEVEL[level+1])*4
+        bars_points = '[{}{}]'.format('|'*points_progress,
+                                      ' '*(40-points_progress))
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings.SUCCESS_GET_GUILD
+                               .format(level, points,
+                                       bars_level, bars_points)))
+        return True
 
     @settings.group(name='add')
     @checks.only_in_guild()
