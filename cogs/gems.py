@@ -4,7 +4,9 @@ from discord.ext import commands
 import checks
 
 
-gems = [0, 0, 300, 1200, 3900, 14700, 57900, 230700, 1094700, 5414700, 9734700]
+gems = [0,
+# Level 1    2     3     4      5      6       7        8        9       10
+        0, 300, 1200, 3900, 14700, 57900, 230700, 1094700, 5414700, 9734700]
 abrasives = [:-1]
 
 
@@ -84,6 +86,21 @@ class GemsCog:
                 await ctx.send('\n'.join(errs))
 
         return True
+
+    @gems.command(name='gem2lv', aliases=['gem2level'])
+    async def gem_to_level(self, ctx, level: int, exp: int, final_level: int):
+        """
+        :func:`gem_to_level` calculates experience needed
+        from a given gem level and experience to a `final_level`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            level (int): the current gem level
+            exp (int): the current gem experience
+            final_level (int): the intended level
+        """
+        pass
+
 
 def setup(bot):
     bot.add_cog(GemsCog(bot))
