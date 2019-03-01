@@ -104,8 +104,12 @@ async def channel_setter(ctx, kind):
         True if successful; False otherwise
     """
     channels = []
-    for channel_mention in ctx.message.channel_mentions:
-        channels.append(str(channel_mention.id))
+    if not ctx.message.channels_mentions:
+        channels.append(ctx.channel.id)
+    else:
+        for channel_mention in ctx.message.channel_mentions:
+            channels.append(str(channel_mention.id))
+
     vdb = vaivora.db.Database(ctx.guild.id)
     errs = []
 
@@ -813,6 +817,8 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
+        if points < 1:
+            return False
         if points % 20 != 0:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
@@ -821,7 +827,6 @@ class SettingsCog:
             return False
 
         return await contribution_setter(ctx, points, member, append=True)
-
 
 
 def setup(bot):
