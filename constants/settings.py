@@ -62,18 +62,16 @@ HELP.append(
 """
 ```
 Options (continued):
-    talt
-        This <subcommand> can only be "talt". Allows manipulation of Talt guild records.
-
-    <talt-value>
-        A number. The amount to use for `talt`. 20 points = 1 talt
-
-    [<talt-unit>]
-        (optional) Sets the unit to use. 20 points = 1 Talt. By default, Talt will be used if omitted.
+    <contribution>
+        This can be "points", "talt", or "contributions".
         Options:
-            "points": shown in-game
-            "talt": the default
-        Note: the Guild UI in-game always uses points.
+            "points": shown in the guild UI in-game
+            "talt": defined to be the item; 1 talt = 20 points
+            "contributions": the same as "points"
+        Allows manipulation of Talt guild records.
+
+    <contribution-value>
+        A number. The amount to use for `talt`. 20 points = 1 talt
 
     guild
         A special subcommand target for <setting> `talt`. Cannot use "add" or "remove".
@@ -82,10 +80,12 @@ Options (continued):
         Missing points (unlisted contributions) will be stored in a hidden variable, for consistency.
 
     <@mention>
-        (optional for <validate>) A Discord member. You must use the mention format for this.
+        A Discord member or role.
+        Preferably, you should use the mention format for this. You may use ID's if necessary.
 
     [<#channel>]
-        (optional) A Discord channel. You must use the channel link format for this.
+        (optional) A Discord channel.
+        You must use the channel link format for this.
         Both you and Wings of Vaivora must be able to see the channel.
         If omitted in the <setting> command, the current channel will be assumed.
 
