@@ -246,7 +246,7 @@ async def role_setter(ctx, mentions=None):
     return True
 
 
-async def contribution_setter(ctx, points, member=None):
+async def contribution_setter(ctx, points, member=None, append=False):
     """
     :func:`contribution_setter` handles the backend work for
     :func:`s_talt` and :func:`s_point`.
@@ -255,6 +255,7 @@ async def contribution_setter(ctx, points, member=None):
         ctx (discord.ext.commands.Context): context of the message
         points (int): the points to set
         member: (default: None) an optional member to modify
+        append (bool): (default: False) whether to add or not
 
     Returns:
         True if sucessful; False otherwise
@@ -293,7 +294,7 @@ async def contribution_setter(ctx, points, member=None):
         member = ctx.author.id
 
     vdb = vaivora.db.Database(ctx.guild.id)
-    if await vdb.set_contribution(member, points):
+    if await vdb.set_contribution(member, points, append):
         row = '```\n{:<40}{:>5} points {:>10} Talt```'.format(
                     str(ctx.guild.get_member(member)),
                     points,
@@ -519,6 +520,8 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
+        if points < 1:
+            return False
         points *= 20
 
         return await contribution_setter(ctx, points, member)
@@ -545,6 +548,8 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
+        if points < 1:
+            return False
         if points % 20 != 0:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
@@ -740,6 +745,83 @@ class SettingsCog:
                            .format(ctx.author.mention,
                                    constants.settings.FAIL_NO_CONTRIBS))
             return False
+
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def add(self, ctx):
+        """
+        :func:`add` is only to be used for contributions.
+        Instead of :func:`set` which directly sets the value,
+        :func:`add` increments.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True always
+        """
+        return True
+
+    @add.group(name='talt')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def a_talt(self, ctx, points: int, member: Optional[int] = None):
+        """
+        :func:`a_talt` adds contribution points,
+        appending to the existing record.
+        Optionally, if a member is mentioned, then the member's record
+        will be modified instead.
+        If using the `member` variable, take care to fill in all arguments.
+        e.g. $settings add talt 20 @someone
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            points (int): the points to add; i.e. 1 talt = 20 points, etc
+            member: (default: None) the optional member's record to modify
+
+        Returns:
+            True if successful; False otherwise
+        """
+        if points < 1:
+            return False
+        points *= 20
+
+        return await contribution_setter(ctx, points, member, append=True)
+
+    @add.group(name='point', aliases=['points', 'pt', 'pts',
+                                       'contrib', 'contribs',
+                                       'contribution'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def a_point(self, ctx, points: int, member: Optional[int] = None):
+        """
+        :func:`s_point` adds contribution points,
+        appending to the existing record.
+        Optionally, if a member is mentioned, then the member's record
+        will be modified instead.
+        If using the `member` variable, take care to fill in all arguments.
+        e.g. $settings set point 20 @someone
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            points (int): the points to add; i.e. 1 talt = 20 points, etc
+            member: (default: None) the optional member's record to modify
+
+        Returns:
+            True if successful; False otherwise
+        """
+        if points % 20 != 0:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings
+                                   .FAIL_INVALID_POINTS))
+            return False
+
+        return await contribution_setter(ctx, points, member, append=True)
+
 
 
 def setup(bot):
