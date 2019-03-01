@@ -9,15 +9,12 @@ HELP.append(
 ```
 Usage:
     $settings <setting> talt <talt-value> [<talt-unit>] ([<@mention>] | guild)
-    $settings <setting> (<role> [<@mention>] | <channel> [<#channel>])
-    $settings <validate> [<@mention>]
-    $settings <role-change> <@mention>
+    $settings <setting> <obj> (<role> [<@mention>] | <channel> [<#channel>])
     $settings help
 
 Examples:
     $settings add talt 12
         Means: Add 12 Talt to your guild record.
-        Note: If not "Authorized" or "Member", this is only temporary. It must be validated.
 
     $settings set talt 12
         Means: Sets your guild record of Talt to 12. Not the same as adding.
@@ -29,9 +26,9 @@ Examples:
         Means: Add 12 Talt to @person's guild record.
         You must be "Authorized" to do this.
 
-    $settings set channel management #management
-        Means: Sets this channel to "Management".
-        Note: this disables Management in all channels not marked as "Management".
+    $settings set channel settings #settings
+        Means: Sets this channel to "Settings".
+        Note: this disables Settings in all channels not marked as "Settings".
 
     $settings set role authorized @person
         Means: Sets @person to be "Authorized".
@@ -54,7 +51,15 @@ Options:
             "get" can be used for all associated subcommands. Retrieves Talt contribution, highest Role from users mentioned, etc.
         Note: "Super-Authorized" will only be shown as "Authorized".
 
-* Discord roles are different from Wings of Vaivora's Roles.
+    <obj>
+        This is the object to modify. For users, "roles". For channels, "channels".
+
+    <channel>
+        This can be "settings" or "boss". Sets channels (and restricts others).
+        Options:
+            "settings": Adds a channel to allow all settings commands. 'get'ters will still be unrestricted.
+            "boss": Adds a channel to accept boss record manipulation.
+        Once a channel is set (and none were, before), many commands are no longer read outside the allowed channels.
 ```
 """)
 
@@ -80,8 +85,9 @@ Options (continued):
         Missing points (unlisted contributions) will be stored in a hidden variable, for consistency.
 
     <@mention>
-        A Discord member or role.
+        (optional) A Discord member or role.
         Preferably, you should use the mention format for this. You may use ID's if necessary.
+        If omitted in the <setting> command, the command user will be assumed.
 
     [<#channel>]
         (optional) A Discord channel.
@@ -91,6 +97,9 @@ Options (continued):
 
     help
         Prints this page.
+
+
+* Discord roles are different from Wings of Vaivora's Roles.
 ```
 """)
 
