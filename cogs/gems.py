@@ -16,10 +16,27 @@ class GemsCog:
 
     def __init__(self, bot):
         self.bot = bot
+        self.bot.remove_command('help')
 
     @commands.group()
     async def gems(self, ctx)
         pass
+
+    @gems.command(name='help')
+    async def _help(self, ctx):
+        """
+        :func:`_help` retrieves help pages for `$settings`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True
+        """
+        _help = constants.gems.HELP
+        for _h in _help:
+            await ctx.author.send(_h)
+        return True
 
     @gems.command(aliases=['experience', 'abrasives', 'abrasive'])
     async def exp(self, ctx, abrasives: commands.Greedy[str]):
