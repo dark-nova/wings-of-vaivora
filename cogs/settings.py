@@ -457,7 +457,7 @@ class SettingsCog:
         ctx.role_kind = ctx.invoked_subcommand.name
         return True
 
-    @s_role.group(name='member')
+    @s_role.command(name='member')
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
@@ -474,7 +474,7 @@ class SettingsCog:
         """
         return await role_setter(ctx, mentions)
 
-    @s_role.group(name='authorized', aliases=['auth'])
+    @s_role.command(name='authorized', aliases=['auth'])
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
@@ -491,7 +491,7 @@ class SettingsCog:
         """
         return await role_setter(ctx, mentions)
 
-    @s_role.group(name='boss')
+    @s_role.command(name='boss')
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
@@ -649,7 +649,7 @@ class SettingsCog:
         ctx.role_kind = ctx.invoked_subcommand.name
         return True
 
-    @g_role.group(name='member')
+    @g_role.command(name='member')
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_member(self, ctx, mentions: Optional[int] = None):
@@ -665,7 +665,7 @@ class SettingsCog:
         """
         return await role_getter(ctx, mentions)
 
-    @g_role.group(name='authorized', aliases=['auth'])
+    @g_role.command(name='authorized', aliases=['auth'])
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_auth(self, ctx, mentions: Optional[int] = None):
@@ -681,7 +681,7 @@ class SettingsCog:
         """
         return await role_getter(ctx, mentions)
 
-    @g_role.group(name='boss')
+    @g_role.command(name='boss')
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_boss(self, ctx, mentions: Optional[int] = None):
