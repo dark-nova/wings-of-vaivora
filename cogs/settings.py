@@ -364,7 +364,6 @@ class SettingsCog:
     @settings.group(name='set')
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
-    @checks.check_role()
     async def _set(self, ctx):
         """
         :func:`set` sets `target`s to `kind`s.
