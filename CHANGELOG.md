@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `remove`, `unset` subcommands for `$settings`. You can now remove problematic Discord id's.
 - Similarly, commands that yield invalid parameters (e.g. deleted channels, roles) will automatically attempt to prune those invalid mentions.
 - `add` subcommand for contributions, so you don't have to set all the time.
+- `$gems` was added as a [cog](cogs/gems.py). Now you can calculate gem experience on the fly.
 
 ## [2.1] - 2019-02-26
 ### Added
@@ -30,8 +31,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Likewise, existing entries with `s-authorized` roles are removed.
 - "Separate command groups for settings" means that all current and future `$settings` subcommands will literals, not regex. i.e. `$settings set channel boss #channel` instead of something like `$settings set ch boss #channel`.
 - `vaivora_modules` changed to `vaivora`. Brevity is the soul of wit.
-- `$settings` was moved to [cogs](cogs).
-- `$boss` and `meme`s are now [cogs](cogs) too.
+- `$settings` was moved to [cogs](cogs/settings.py).
+- `$boss` and `meme`s are now [cogs](cogs/boss.py) [too](cogs/meme.py).
 - Some `$settings` commands now no longer require `authorized` to use. e.g. `member`s are able to set their own contribution record.
 
 ### Deprecated
