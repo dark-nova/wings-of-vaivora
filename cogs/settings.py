@@ -167,10 +167,18 @@ async def role_getter(ctx, mentions=None):
     if users:
         if _mentions:
             users = [user for user in users if user in _mentions]
-        users = '\n'.join(['{}\t{}'.format(
-                            user,
-                            str(ctx.guild.get_member(user)))
-                           for user in users])
+        _users = []
+        for user in users:
+            member = ctx.guild.get_member(user)
+            # if "user" is actually a role
+            if not member:
+                member = ctx.guild.get_roles(user)
+            _users.append(member)
+
+        _users = '\n'.join(['{:<15}\t{:>10}'.format(
+                             str(user.id),
+                             str(user))
+                            for user in _users])
         users = '```\n{}```'.format(users)
         await ctx.send('{}\n\n{}'.format(
                 ctx.author.mention,
