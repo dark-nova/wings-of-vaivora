@@ -262,6 +262,44 @@ async def role_setter(ctx, mentions=None):
     return True
 
 
+async def role_deleter(ctx, mentions=None):
+    """
+    :func:`role_deleter` handles the backend for
+    :func:`dr_member`, :func:`dr_auth`, and :func:`dr_boss`.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        mentions: (default: None) optional mentions that are only id's
+
+    Returns:
+        True if successful; False otherwise
+    """
+    _mentions = await combine_ids(ctx, mentions)
+
+    if not _mentions:
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings.FAIL_NO_MENTIONS))
+        return False
+
+    vdb = vaivora.db.Database(ctx.guild.id)
+    errs = await vdb.remove_users(ctx.role_kind, _mentions)
+
+    await ctx.send('{} {}'
+                   .format(ctx.author.mention,
+                           constants.settings.SUCCESS_ROLES_RM.format(
+                                ctx.role_kind)))
+
+    if errs:
+        await ctx.send('{} {}'
+                       .format(ctx.author.mention,
+                               constants.settings.PARTIAL_SUCCESS.format(
+                                    constants.settings.SETTING_SET,
+                                    '\n'.join(errs))))
+
+    return True
+
+
 async def contribution_setter(ctx, points, member=None, append=False):
     """
     :func:`contribution_setter` handles the backend work for
