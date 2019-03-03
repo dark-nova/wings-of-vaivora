@@ -49,6 +49,44 @@ async def get_ids(ctx, mentions):
     return _mention
 
 
+async def combine_ids(ctx, mentions=None):
+    """
+    :func:`combine_ids` combines all mentions and valid id's.
+    Used in :func:`role_setter`, :func:`role_getter`,
+    and :func:`role_deleter`.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        mentions: (default: None) optional mentions that are only id's
+        boss (bool): (default: False) whether to ignore user id's or not
+
+    Returns:
+        list: of mention id's
+    """
+    _mentions = []
+
+    if ctx.message.role_mentions:
+        for mention in ctx.message.role_mentions:
+            _mentions.append(mention.id)
+
+    # do not allow regular users for $boss
+    if ctx.role_kind != constants.settings.ROLE_BOSS:
+        if ctx.message.mentions:
+            for mention in ctx.message.mentions:
+                _mentions.append(mention.id)
+    elif ctx.role_kind == constants.settings.ROLE_BOSS:
+        if ctx.message.mentions:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.settings.FAIL_NO_USER_BOSS))
+
+    # uid mode; parse if they're actually id's and not nonsense
+    if mentions:
+        _mentions.extend(await get_ids(ctx, mentions))
+
+    return _mentions
+
+
 async def channel_getter(ctx, kind):
     """
     :func:`channel_getter` does the work
@@ -137,24 +175,7 @@ async def role_getter(ctx, mentions=None):
     Returns:
         True if successful; False otherwise
     """
-    _mentions = []
-
-    if ctx.message.role_mentions:
-        for mention in ctx.message.role_mentions:
-            _mentions.append(mention.id)
-
-    # do not allow regular users for $boss
-    if ctx.role_kind != constants.settings.ROLE_BOSS:
-        if ctx.message.mentions:
-            for mention in ctx.message.mentions:
-                _mentions.append(mention.id)
-
-    else:
-        if not ctx.message.role_mentions and ctx.message.mentions:
-            await ctx.send('{} {}'
-                           .format(ctx.author.mention,
-                                   constants.settings.FAIL_NO_USER_BOSS))
-            return False
+    _mentions = await combine_ids(ctx, mentions)
 
     # uid mode; parse if they're actually id's and not nonsense
     if mentions:
@@ -215,21 +236,7 @@ async def role_setter(ctx, mentions=None):
     Returns:
         True if successful; False otherwise
     """
-    _mentions = []
-
-    if ctx.message.role_mentions:
-        for mention in ctx.message.role_mentions:
-            _mentions.append(mention.id)
-
-    # do not allow regular users for $boss
-    if ctx.role_kind != constants.settings.ROLE_BOSS:
-        if ctx.message.mentions:
-            for mention in ctx.message.mentions:
-                _mentions.append(mention.id)
-
-    # uid mode; parse if they're actually id's and not nonsense
-    if mentions:
-        _mentions.extend(await get_ids(ctx, mentions))
+    _mentions = await combine_ids(ctx, mentions)
 
     if not _mentions:
         await ctx.send('{} {}'
@@ -240,17 +247,17 @@ async def role_setter(ctx, mentions=None):
     vdb = vaivora.db.Database(ctx.guild.id)
     errs = await vdb.set_users(ctx.role_kind, _mentions)
 
+    await ctx.send('{} {}'
+                   .format(ctx.author.mention,
+                           constants.settings.SUCCESS_ROLES_UP.format(
+                                ctx.role_kind)))
+
     if errs:
         await ctx.send('{} {}'
                        .format(ctx.author.mention,
                                constants.settings.PARTIAL_SUCCESS.format(
                                     constants.settings.SETTING_SET,
                                     '\n'.join(errs))))
-    else:
-        await ctx.send('{} {}'
-                       .format(ctx.author.mention,
-                               constants.settings.SUCCESS_ROLES_UP.format(
-                                    ctx.role_kind)))
 
     return True
 

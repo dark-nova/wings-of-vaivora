@@ -170,7 +170,7 @@ SUCCESS_GET_CONTRIBS = 'Here are the guild\'s contribution records:\n'
 SUCCESS_SET_GUILD = 'Guild records have been successfully updated.'
 SUCCESS_GET_GUILD = 'This guild is currently level {} with {} points.\n```{} {}```'
 
-PARTIAL_SUCCESS = 'Your {} records did not fully process. Errors:\n\n{}'
+PARTIAL_SUCCESS = '\nIn addition, some of your {} records did not fully process. Errors:\n\n{}'
 
 FAIL_NO_CHANNELS = 'No channels were found associated with the {} type.'
 FAIL_NO_ROLES = 'No users were found associated with the {} role type.'
