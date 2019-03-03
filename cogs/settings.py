@@ -763,7 +763,7 @@ class SettingsCog:
             for user in users:
                 member = user[0]
                 points = user[1]
-                output.append('\n{:40}{:>5} points {:>10} Talt'
+                output.append('\n{:<40}{:>5} points {:>10} Talt'
                               .format(
                                     str(ctx.guild.get_member(member)),
                                     points,
@@ -838,7 +838,7 @@ class SettingsCog:
         """
         return True
 
-    @add.group(name='talt')
+    @add.command(name='talt')
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
@@ -865,7 +865,7 @@ class SettingsCog:
 
         return await contribution_setter(ctx, points, member, append=True)
 
-    @add.group(name='point', aliases=['points', 'pt', 'pts',
+    @add.command(name='point', aliases=['points', 'pt', 'pts',
                                        'contrib', 'contribs',
                                        'contribution'])
     @checks.only_in_guild()
@@ -899,6 +899,61 @@ class SettingsCog:
 
         return await contribution_setter(ctx, points, member, append=True)
 
+    @settings.group(name='delete', aliases=['rm', 'remove', 'del'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def delete(self, ctx):
+        pass
+
+    @delete.group(name='role')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def d_role(self, ctx):
+        pass
+
+    @d_role.command(name='member')
+    @checks.only_in_guild()
+    @checks.check_channel()
+    @checks.check_role()
+    async def dr_member(self, ctx):
+        pass
+
+    @d_role.command(name='authorized', aliases=['auth'])
+    @checks.only_in_guild()
+    @checks.check_channel()
+    @checks.check_role()
+    async def dr_auth(self, ctx):
+        pass
+
+    @d_role.command(name='boss')
+    @checks.only_in_guild()
+    @checks.check_channel()
+    @checks.check_role()
+    async def dr_boss(self, ctx):
+        pass
+
+    @delete.group(name='channel')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def d_channel(self, ctx):
+        pass
+
+    @d_channel.command(name='settings')
+    @checks.only_in_guild()
+    @checks.check_channel()
+    @checks.check_role()
+    async def dc_settings(self, ctx);
+        pass
+
+    @d_channel.command(name='boss')
+    @checks.only_in_guild()
+    @checks.check_channel()
+    @checks.check_role()
+    async def dc_boss(self, ctx);
+        pass
 
 def setup(bot):
     bot.add_cog(SettingsCog(bot))
