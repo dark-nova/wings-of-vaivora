@@ -898,8 +898,8 @@ class SettingsCog:
             level, points = await vdb.get_guild_info()
         except:
             await ctx.send('{} {}'
-                           .format(ctx.author.mention)
-                            constants.settings.FAIL_NO_CONTRIBS)
+                           .format(ctx.author.mention,
+                                   constants.settings.FAIL_NO_CONTRIBS))
             return False
 
         bars_level = '[{}{}]'.format('|'*level,
