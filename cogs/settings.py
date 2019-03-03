@@ -904,6 +904,15 @@ class SettingsCog:
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def delete(self, ctx):
+        """
+        :func:`delete` is the prototype for deletion subcommands.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
         pass
 
     @delete.group(name='role')
@@ -911,27 +920,63 @@ class SettingsCog:
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def d_role(self, ctx):
+        """
+        :func:`d_role` deletes roles.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
         pass
 
     @d_role.command(name='member')
     @checks.only_in_guild()
-    @checks.check_channel()
+    @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def dr_member(self, ctx):
+    async def dr_member(self, ctx, mentions: Optional[int] = None):
+        """
+        :func:`dr_member` deletes members from `member`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
         pass
 
     @d_role.command(name='authorized', aliases=['auth'])
     @checks.only_in_guild()
-    @checks.check_channel()
+    @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def dr_auth(self, ctx):
+    async def dr_auth(self, ctx, mentions: Optional[int] = None):
+        """
+        :func:`dr_auth` deletes members from `authorized`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
         pass
 
     @d_role.command(name='boss')
     @checks.only_in_guild()
-    @checks.check_channel()
+    @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def dr_boss(self, ctx):
+    async def dr_boss(self, ctx, mentions: Optional[int] = None):
+        """
+        :func:`dr_boss` deletes members from `boss`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
         pass
 
     @delete.group(name='channel')
@@ -939,20 +984,47 @@ class SettingsCog:
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def d_channel(self, ctx):
+        """
+        :func:`d_channel` deletes channels.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
         pass
 
     @d_channel.command(name='settings')
     @checks.only_in_guild()
-    @checks.check_channel()
+    @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def dc_settings(self, ctx);
+    async def dc_settings(self, ctx):
+        """
+        :func:`dc_settings` deletes channels from `settings`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
         pass
 
     @d_channel.command(name='boss')
     @checks.only_in_guild()
-    @checks.check_channel()
+    @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def dc_boss(self, ctx);
+    async def dc_boss(self, ctx):
+        """
+        :func:`dc_boss` deletes channels from `boss`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
         pass
 
 def setup(bot):
