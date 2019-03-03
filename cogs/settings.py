@@ -15,9 +15,9 @@ import vaivora.db
 import constants.settings
 
 
-async def get_ids(ctx, mentions):
+async def get_mention_ids(ctx, mentions):
     """
-    :func:`get_ids` filters out nonsense ints with actual id's.
+    :func:`get_mention_ids` filters out nonsense ints with actual id's.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -49,9 +49,9 @@ async def get_ids(ctx, mentions):
     return _mention
 
 
-async def combine_ids(ctx, mentions=None):
+async def combine_mention_ids(ctx, mentions=None):
     """
-    :func:`combine_ids` combines all mentions and valid id's.
+    :func:`combine_mention_ids` combines all mentions and valid id's.
     Used in :func:`role_setter`, :func:`role_getter`,
     and :func:`role_deleter`.
 
@@ -82,9 +82,29 @@ async def combine_ids(ctx, mentions=None):
 
     # uid mode; parse if they're actually id's and not nonsense
     if mentions:
-        _mentions.extend(await get_ids(ctx, mentions))
+        _mentions.extend(await get_mention_ids(ctx, mentions))
 
     return _mentions
+
+
+async def combine_channel_ids(ctx):
+    """
+    :func:`combine_channel_ids` combines all channel id's.
+    Used in :func:`channel_setter` and :func:`channel_deleter`.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+
+    Returns:
+        list: of channel id's
+    """
+    channels = []
+    if not ctx.message.channels_mentions:
+        channels.append(ctx.channel.id)
+    else:
+        for channel_mention in ctx.message.channel_mentions:
+            channels.append(str(channel_mention.id))
+    return channels
 
 
 async def channel_getter(ctx, kind):
@@ -136,12 +156,7 @@ async def channel_setter(ctx, kind):
     Returns:
         True if successful; False otherwise
     """
-    channels = []
-    if not ctx.message.channels_mentions:
-        channels.append(ctx.channel.id)
-    else:
-        for channel_mention in ctx.message.channel_mentions:
-            channels.append(str(channel_mention.id))
+    channels = await combine_channel_ids(ctx)
 
     vdb = vaivora.db.Database(ctx.guild.id)
     errs = []
@@ -163,6 +178,40 @@ async def channel_setter(ctx, kind):
     return True
 
 
+async def channel_deleter(ctx, kind):
+    """
+    :func:`channel_setter` does the work
+    for :func:`sc_boss` and :func:`sc_settings`.
+
+    Args:
+        ctx (discord.ext.commands.Context): context of the message
+        kind (str): the kind/type to use, i.e. subcommand invoked
+
+    Returns:
+        True if successful; False otherwise
+    """
+    channels = await combine_channel_ids(ctx)
+
+    vdb = vaivora.db.Database(ctx.guild.id)
+    errs = []
+
+    for _channel in channels:
+        try:
+            await vdb.remove_channel(kind, _channel)
+        except:
+            errs.append(_channel)
+
+    await ctx.send(constants.settings.SUCCESS_CHANNELS_RM
+                   .format(constants.settings.TABLE_CHANNEL,
+                        kind))
+
+    if errs:
+        await ctx.send(constants.settings.PARTIAL_SUCCESS
+                       .format(constants.settings.TABLE_CHANNEL,
+                            '\n'.join(errs)))
+    return True
+
+
 async def role_getter(ctx, mentions=None):
     """
     :func:`role_getter` handles the backend for
@@ -175,11 +224,11 @@ async def role_getter(ctx, mentions=None):
     Returns:
         True if successful; False otherwise
     """
-    _mentions = await combine_ids(ctx, mentions)
+    _mentions = await combine_mention_ids(ctx, mentions)
 
     # uid mode; parse if they're actually id's and not nonsense
     if mentions:
-        _mentions.extend(await get_ids(ctx, mentions))
+        _mentions.extend(await get_mention_ids(ctx, mentions))
 
     vdb = vaivora.db.Database(ctx.guild.id)
     users = await vdb.get_users(ctx.role_kind, _mentions)
@@ -236,7 +285,7 @@ async def role_setter(ctx, mentions=None):
     Returns:
         True if successful; False otherwise
     """
-    _mentions = await combine_ids(ctx, mentions)
+    _mentions = await combine_mention_ids(ctx, mentions)
 
     if not _mentions:
         await ctx.send('{} {}'
@@ -274,7 +323,7 @@ async def role_deleter(ctx, mentions=None):
     Returns:
         True if successful; False otherwise
     """
-    _mentions = await combine_ids(ctx, mentions)
+    _mentions = await combine_mention_ids(ctx, mentions)
 
     if not _mentions:
         await ctx.send('{} {}'
@@ -334,7 +383,7 @@ async def contribution_setter(ctx, points, member=None, append=False):
         return False
     elif member:
         try:
-            mention = (await get_ids(ctx, member))[0]
+            mention = (await get_mention_ids(ctx, member))[0]
         except:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
@@ -796,7 +845,7 @@ class SettingsCog:
 
         # uid mode; parse if they're actually id's and not nonsense
         if mentions:
-            _mentions.extend(await get_ids(ctx, mentions))
+            _mentions.extend(await get_mention_ids(ctx, mentions))
 
         vdb = vaivora.db.Database(ctx.guild.id)
         users = await vdb.get_contribution(_mentions)
@@ -956,9 +1005,9 @@ class SettingsCog:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            True always
         """
-        pass
+        return True
 
     @delete.group(name='role')
     @checks.only_in_guild()
@@ -972,9 +1021,9 @@ class SettingsCog:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            True always
         """
-        pass
+        return True
 
     @d_role.command(name='member')
     @checks.only_in_guild()
@@ -990,7 +1039,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        pass
+        return await role_deleter(ctx, mentions)
 
     @d_role.command(name='authorized', aliases=['auth'])
     @checks.only_in_guild()
@@ -1006,7 +1055,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        pass
+        return await role_deleter(ctx, mentions)
 
     @d_role.command(name='boss')
     @checks.only_in_guild()
@@ -1022,7 +1071,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        pass
+        return await role_deleter(ctx, mentions)
 
     @delete.group(name='channel')
     @checks.only_in_guild()
@@ -1036,7 +1085,7 @@ class SettingsCog:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            True always
         """
         pass
 
@@ -1054,7 +1103,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        pass
+        return await channel_deleter(ctx)
 
     @d_channel.command(name='boss')
     @checks.only_in_guild()
@@ -1070,7 +1119,8 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        pass
+        return await channel_deleter(ctx)
+
 
 def setup(bot):
     bot.add_cog(SettingsCog(bot))

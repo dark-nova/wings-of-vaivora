@@ -165,10 +165,12 @@ SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
 SUCCESS_ROLES = 'Here are users of {} role type:\n\n{}'
 SUCCESS_PURGED = 'Your channel records were purged successfully.'
 SUCCESS_ROLES_UP = 'Your {} roles have been successfully updated.'
+SUCCESS_ROLES_RM = 'You have successfully removed mentions from the {} role.'
 SUCCESS_CONTRIBUTIONS = 'Guild records have been successfully updated.\n{}'
 SUCCESS_GET_CONTRIBS = 'Here are the guild\'s contribution records:\n'
 SUCCESS_SET_GUILD = 'Guild records have been successfully updated.'
 SUCCESS_GET_GUILD = 'This guild is currently level {} with {} points.\n```{} {}```'
+SUCCESS_CHANNELS_RM = 'You have successfully removed channels from the {} type.'
 
 PARTIAL_SUCCESS = '\nIn addition, some of your {} records did not fully process. Errors:\n\n{}'
 
