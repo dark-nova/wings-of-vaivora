@@ -54,11 +54,14 @@ INVALID_GLEVEL = '{} You have entered an invalid gem level!'
 INVALID_FLEVEL = '{} Final level is below starting level!'
 INVALID_GEXP = '{} {} experience is invalid for gem level {}!'
 
-SUCCESS_EXP = """You can make a level {} gem,
-                 with {} leftover experience.
-                 \nTotal gem experience: {}"""
-SUCCESS_GTL = """{} You need {} experience for your gem.
-                 Additionally, the following table is provided
-                 as a reference:\n\n"""
+SUCCESS_EXP = """
+You can make a level {} gem, with {} leftover experience.
+\nTotal gem experience: {}"""
+
+SUCCESS_GTL = """
+{} You need {} experience for your gem.
+\nAdditionally, the following table is provided as a reference:\n\n"""
 
 SOME_ERRORS = '\nAdditionally, errors were detected:'
+
+FAIL_NO_ABRS = '{} No abrasives were supplied!'

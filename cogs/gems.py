@@ -1,4 +1,5 @@
 from math import ceil
+from typing import Optional
 
 import discord
 from discord.ext import commands
@@ -10,7 +11,7 @@ import constants.gems
 gems = [0,
 # Level 1    2     3     4      5      6       7        8        9       10
         0, 300, 1200, 3900, 14700, 57900, 230700, 1094700, 5414700, 9734700]
-abrasives = [:-1]
+abrasives = gems[:-1]
 
 
 class GemsCog:
@@ -20,7 +21,7 @@ class GemsCog:
         self.bot.remove_command('help')
 
     @commands.group()
-    async def gems(self, ctx)
+    async def gems(self, ctx):
         pass
 
     @gems.command(name='help')
@@ -40,13 +41,13 @@ class GemsCog:
         return True
 
     @gems.command(aliases=['experience', 'abrasives', 'abrasive'])
-    async def exp(self, ctx, abrasives: commands.Greedy[str]):
+    async def exp(self, ctx, *abrs: str):
         """
         :func:`exp` calculates the exp obtained from abrasives.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            abrasives: a list of abrasivse to calculate, in the format
+            abrs: a list of abrasives to calculate, in the format
                 QTY.LVL, where . is a delimiter of either
                 'x' or '.'
 
@@ -55,7 +56,12 @@ class GemsCog:
         """
         gem_exp = 0
         errs = []
-        for abrasive in abrasives:
+        if not abrs:
+            await ctx.send(constants.gems.FAIL_NO_ABRS
+                           .format(ctx.author.mention))
+            return False
+
+        for abrasive in abrs:
             try:
                 a_qty, a_level = abrasive.split('x')
             except:
@@ -82,13 +88,13 @@ class GemsCog:
             except:
                 continue
 
-        level = 1
-        while gems[level] <= gem_exp and level < 10:
+        level = 0
+        while gems[level+1] <= gem_exp and level < 10:
             level += 1
 
         leftover_exp = gem_exp - gems[level]
 
-        await ctx.send('{}\n\n{}'
+        await ctx.send('{}\n{}'
                        .format(ctx.author.mention,
                                constants.gems.SUCCESS_EXP
                                .format(level, leftover_exp,
