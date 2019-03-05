@@ -144,14 +144,16 @@ class GemsCog:
         _abrasives = []
 
         a_level = 2 # abrasives below lv2 do not exist
-        while abrasives[a_level] < exp_diff and a_level < 10:
+        while abrasives[a_level] <= exp_diff and a_level < 10:
             a_qty = ceil(exp_diff/abrasives[a_level])
             _abrasives.append(constants.gems.ABRASIVE_TABLE
                               .format(a_level, a_qty))
+            a_level += 1
 
-        await ctx.send(constants.gems.SUCCESS_GTL
+        await ctx.send('{} {}'
                        .format(ctx.author.mention,
-                               exp_diff))
+                               constants.gems.SUCCESS_GTL
+                               .format(exp_diff)))
         await ctx.send('\n'.join(_abrasives))
 
 

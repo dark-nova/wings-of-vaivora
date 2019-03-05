@@ -59,7 +59,7 @@ You can make a level {} gem, with {} leftover experience.
 \nTotal gem experience: {}"""
 
 SUCCESS_GTL = """
-{} You need {} experience for your gem.
+You need {} experience for your gem.
 \nAdditionally, the following table is provided as a reference:\n\n"""
 
 SOME_ERRORS = '\nAdditionally, errors were detected:'
