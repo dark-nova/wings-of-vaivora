@@ -38,7 +38,7 @@ $ pynt
 - Read [here](docs/CONTRIBUTING.md)
 
 
-#### File last modified: 2019-02-26 15:45 (UTC-8)
+#### File last modified: 2019-03-05 16:15 (UTC-8)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
