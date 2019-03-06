@@ -6,7 +6,7 @@ MSG_HELP = """
 Here are commands. Valid prefixes are `$` (dollar sign) and `Vaivora,<space>`,
 e.g. `$boss` or `Vaivora, help`
 
-"$boss" commands
+`$boss` commands
 ```
 $boss [args ...]
 $boss help
@@ -22,7 +22,7 @@ Examples:
 ```
 More info: <https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/BOSS.md>
 
-"$settings" commands
+`$settings` commands
 ```
 $settings [args ...]
 $settings help
@@ -35,7 +35,7 @@ Examples:
 ```
 More info: <https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/SETTINGS.md>
 
-"$gems" commands
+`$gems` commands
 ```
 $settings [args ...]
 $settings help
