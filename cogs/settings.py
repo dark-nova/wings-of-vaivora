@@ -258,7 +258,7 @@ async def role_getter(ctx, mentions=None):
                              str(user.id),
                              str(user))
                             for user in _users])
-        users = '```\n{}```'.format(users)
+        users = '```\n{}```'.format(_users)
         await ctx.send('{}\n\n{}'.format(
                 ctx.author.mention,
                 constants.settings.SUCCESS_ROLES.format(
