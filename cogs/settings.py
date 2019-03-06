@@ -556,7 +556,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def sr_member(self, ctx, mentions: commands.Greedy[int]):
+    async def sr_member(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`sr_member` sets roles of members.
 
@@ -573,7 +573,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def sr_auth(self, ctx, mentions: commands.Greedy[int]):
+    async def sr_auth(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`sr_member` sets roles of members.
 
@@ -590,7 +590,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def sr_boss(self, ctx, mentions: commands.Greedy[int]):
+    async def sr_boss(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`sr_member` sets roles of members.
 
@@ -607,7 +607,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def s_talt(self, ctx, points: int, member: commands.Greedy[int]):
+    async def s_talt(self, ctx, points: int, member: commands.Greedy[int] = None):
         """
         :func:`s_talt` sets contribution points.
         Optionally, if a member is mentioned, then the member's record
@@ -635,7 +635,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def s_point(self, ctx, points: int, member: commands.Greedy[int]):
+    async def s_point(self, ctx, points: int, member: commands.Greedy[int] = None):
         """
         :func:`s_point` sets contribution points.
         Optionally, if a member is mentioned, then the member's record
@@ -774,7 +774,7 @@ class SettingsCog:
     @g_role.command(name='member')
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def gr_member(self, ctx, mentions: commands.Greedy[int]):
+    async def gr_member(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`gr_member` gets members of role `member`.
 
@@ -790,7 +790,7 @@ class SettingsCog:
     @g_role.command(name='authorized', aliases=['auth'])
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def gr_auth(self, ctx, mentions: commands.Greedy[int]):
+    async def gr_auth(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`gr_auth` gets members of role `authorized`.
 
@@ -806,7 +806,7 @@ class SettingsCog:
     @g_role.command(name='boss')
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def gr_boss(self, ctx, mentions: commands.Greedy[int]):
+    async def gr_boss(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`gr_boss` gets members of role `boss`.
 
@@ -825,7 +825,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def g_talt(self, ctx, mentions: commands.Greedy[int]):
+    async def g_talt(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`g_talt` gets contribution record.
         Ignores the 'remainder' (uncreditable) amount.
@@ -936,7 +936,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def a_talt(self, ctx, points: int, member: commands.Greedy[int]):
+    async def a_talt(self, ctx, points: int, member: commands.Greedy[int] = None):
         """
         :func:`a_talt` adds contribution points,
         appending to the existing record.
@@ -965,7 +965,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def a_point(self, ctx, points: int, member: commands.Greedy[int]):
+    async def a_point(self, ctx, points: int, member: commands.Greedy[int] = None):
         """
         :func:`s_point` adds contribution points,
         appending to the existing record.
@@ -1030,7 +1030,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def dr_member(self, ctx, mentions: commands.Greedy[int]):
+    async def dr_member(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`dr_member` deletes members from `member`.
 
@@ -1046,7 +1046,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def dr_auth(self, ctx, mentions: commands.Greedy[int]):
+    async def dr_auth(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`dr_auth` deletes members from `authorized`.
 
@@ -1062,7 +1062,7 @@ class SettingsCog:
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def dr_boss(self, ctx, mentions: commands.Greedy[int]):
+    async def dr_boss(self, ctx, mentions: commands.Greedy[int] = None):
         """
         :func:`dr_boss` deletes members from `boss`.
 
