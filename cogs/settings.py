@@ -242,7 +242,7 @@ async def role_getter(ctx, mentions=None):
             member = ctx.guild.get_member(user)
             # if "user" is actually a role
             if not member:
-                member = ctx.guild.get_roles(user)
+                member = ctx.guild.get_role(user)
 
             # if "user" is still not defined, it's most likely invalid
             if not member:
