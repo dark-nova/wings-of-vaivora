@@ -81,4 +81,47 @@
     - Can be the whole name (enclosed in quotation marks), e.g. "Inner Wall District 8", or part of the name, e.g. inner8
     - Always omit for all bosses except Demon Lords.
 
-#### File last modified: 2019-03-05 16:15 (UTC-8)
+### Bosses, by type
+Here are how I group bosses.
+
+**World bosses** are never announced, but most must be 'anchored' with a player in the map.
+Typically they spawn every 4 hours once the anchoring has started. Empty channels reset the timer.
+Kubas and Dullahan do not spawn by anchor, but rather a timed mechanism from last kill.
+They all can spawn in more than one channel.
+
+- Abomination
+- Earth Templeshooter
+- Earth Canceril
+- Earth Archon
+- Necroventer
+- Kubas Event
+- Marionette
+- Dullahan Event
+
+**Field bosses** are announced in the map they spawn ten minutes prior to spawn.
+They only spawn in channel 1, and they will continue to spawn per death,
+regardless of players in the map.
+
+- Bleak Chapparition
+- Rugged Glackuman
+- Alluring Succubus
+- Hungry Velnia Monkey
+- Blasphemous Deathweaver
+- Noisy Mineloader
+- Burning Fire Lord
+- Forest Keeper Ferret Marauder
+- Starving Ellaganos
+- Violent Cerberus
+- Wrathful Harpeia
+- Prison Manager Prison Cutter
+- Frantic Molich
+
+**Demon Lords** are announced globally in the server ten minutes prior to spawn.
+Beyond their spawn times and global reach, they function exactly the same as *field bosses*.
+After a kill in any specific map, the next spawn in the same Demon Lord group will not spawn in that same map.
+Note that typing any of the names in the groups, regardless of what spawned, will use that group.
+
+- [Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox]
+- [Demon Lords: Nuaele, Zaura, Blut]
+
+#### File last modified: 2019-03-05 16:24 (UTC-8)
