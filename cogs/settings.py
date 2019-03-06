@@ -252,7 +252,7 @@ async def role_getter(ctx, mentions=None):
             _users.append(member)
 
         if to_remove:
-            await vdb.remove_users(ctx.role_kind, user)
+            await vdb.remove_users(ctx.role_kind, to_remove)
 
         _users = '\n'.join(['{:<15}\t{:>10}'.format(
                              str(user.id),
