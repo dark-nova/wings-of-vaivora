@@ -117,7 +117,7 @@ def has_channel_mentions():
     async def check(ctx):
         if not ctx.message.channel_mentions: # not a guild
             await ctx.send(constants.errors.TOO_FEW_ARGS.format(
-                ctx.author.mention, constants.main.ROLE_SETTINGS,
+                ctx.author.mention, constants.settings.MODULE_NAME,
                 constants.settings.USAGE_SET_CHANNELS))
             return False
         return True

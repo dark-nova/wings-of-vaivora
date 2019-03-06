@@ -62,7 +62,6 @@ Please read the following before continuing.
 Anyone may contribute to this bot's development: https://github.com/dark-nova/wings-of-vaivora
 """
 
-ROLE_BOSS = "boss"
 ROLE_SETTINGS = "settings"
 
 HELP = 'help'

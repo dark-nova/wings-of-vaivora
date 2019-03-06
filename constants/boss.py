@@ -105,6 +105,8 @@ Options (continued):
 ```
 """)
 
+HELP = 'help'
+
 KW_WORLD = 'world'
 KW_EVENT = 'event'
 KW_FIELD = 'field'
@@ -423,7 +425,6 @@ CMD_ARG_TARGET_ALL = 'all'
 
 CMD_ARG_STATUS_DIED = 'died'
 CMD_ARG_STATUS_ANCHORED = 'anchored'
-#CMD_ARG_STATUS_WARNED = 'warned'
 
 CMD_ARG_ENTRY_LIST = 'list'
 CMD_ARG_ENTRY_ERASE = 'erase'
@@ -434,7 +435,6 @@ CMD_ARG_QUERY_ALIAS = 'alias'
 
 REGEX_STATUS_DIED = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
 REGEX_STATUS_ANCHORED = re.compile(r'anch(or(ed)?)?', re.IGNORECASE)
-#REGEX_STATUS_WARNED = re.compile(r'warn(ed)?', re.IGNORECASE)
 
 REGEX_ENTRY_LIST = re.compile(r'(show|li?st?)', re.IGNORECASE)
 REGEX_ENTRY_ERASE = re.compile(r'(erase|del(ete))?', re.IGNORECASE)
@@ -490,25 +490,16 @@ MAP_DIST = EMOJI_WARP + ' {} ({})' # map (dist)
 MAP_AWAY = 'map away'
 MAPS_AWAY = 'maps away'
 
+# Change this according to time difference from your server.
+TIME_H_LOCAL_TO_SERVER = 3
+TIME_H_SERVER_TO_LOCAL = -3
+
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
 TIME_STATUS_FIELD = 130
 TIME_STATUS_DEMON = 390
 TIME_STATUS_WB = 240
 TIME_STATUS_ABOM = 120
-#TIME_STATUS_ANCHORED = 180 #TIME_STATUS_WB-60
-#TIME_STATUS_ANCHORED_ABOM = 60 #TIME_STATUS_ABOM-60
-
-# only change these depending on your offset timezone from server
-TIME_H_LOCAL_TO_SERVER = 3
-TIME_H_SERVER_TO_LOCAL = -3
-# only change above
-
-ARG_MIN_STATUS = 3
-ARG_MAX_STATUS = 4
-
-ARG_MIN_ENTRY = 2
-ARG_MAX_ENTRY = 3
 
 REGEX_TIME = re.compile(r'[0-2]?[0-9][:.]?[0-5][0-9] ?([ap]m?)*', re.IGNORECASE)
 REGEX_TIME_NOON = re.compile(r'^12.*', re.IGNORECASE)

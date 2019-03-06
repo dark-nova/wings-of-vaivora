@@ -107,58 +107,9 @@ ACKNOWLEDGED = "Thank you! Your command has been acknowledged and recorded.\n"
 
 MSG_HELP = "Please run `" + COMMAND + " help` for syntax."
 
-CMD_ARG_SETTING = '<setting>'
-CMD_ARG_VALIDATION = '<validation>'
-CMD_ARG_ROLECHANGE = '<role-change>'
-CMD_ARG_SUBCMD = '<subcommand>'
-
-CMD_ARG_SETTING_TALT = '<talt>'
-CMD_ARG_SETTING_TALT_UNIT = 'Talt'
-CMD_ARG_SETTING_TALT_POINTS = 'Points'
-CMD_ARG_SETTING_PREFIX = '<prefix>' # to preserve consistency; not yet implemented
-CMD_ARG_SETTING_CHANNEL = '<channel>'
-CMD_ARG_SETTING_ROLE = '<role>'
-CMD_ARG_SETTING_REGION = '<region>' # not yet implemented
-
-TABLE_PREFIX = 'prefix' # to preserve consistency; not yet implemented
 TABLE_CHANNEL = 'channel'
-TABLE_ROLE = 'role'
-TABLE_REGION = 'region' # not yet implemented
 
-VALIDATION_VAL = 'validate'
-VALIDATION_INV = 'invalidate'
-
-ROLES_PROMOTE = 'promote'
-ROLES_DEMOTE = 'demote'
-
-SETTING_ADD = 'add'
 SETTING_SET = 'set'
-SETTING_GET = 'get'
-SETTING_REMOVE = 'remove'
-
-TARGET_TALT = '<talt>'
-TARGET_ROLE = '<role>'
-TARGET_CHANNEL = '<channel>'
-
-REC_PERMANENTLY = 'permanently'
-REC_TEMPORARILY = 'temporarily'
-
-REGEX_SETTING_ADD = re.compile(r'(add?|plus)', re.IGNORECASE)
-REGEX_SETTING_SET = re.compile(r'^set', re.IGNORECASE)
-REGEX_SETTING_GET = re.compile(r'(^get|retr(ieve)?)', re.IGNORECASE)
-REGEX_SETTING_REMOVE = re.compile(r'(re?m(ove)?|de?l(ete)?)', re.IGNORECASE)
-
-REGEX_VALIDATION_VALIDATE = re.compile(r'(valid.*|confirm)', re.IGNORECASE)
-REGEX_VALIDATION_INVALIDATE = re.compile(r'^in.+', re.IGNORECASE)
-
-REGEX_ROLES_PROMOTE = re.compile(r'^pro.*', re.IGNORECASE)
-REGEX_ROLES_DEMOTE = re.compile(r'^de.*', re.IGNORECASE)
-
-REGEX_SETTING_TARGET_TALT = re.compile(r'[ts]alt', re.IGNORECASE)
-REGEX_SETTING_TARGET_ROLE = re.compile(r'^rol.?', re.IGNORECASE)
-REGEX_SETTING_TARGET_CHANNEL = re.compile(r'ch(an(nel)?)*', re.IGNORECASE)
-
-REGEX_CONTRIBUTION_POINTS = re.compile(r'(pt|point)s?', re.IGNORECASE)
 
 SUCCESS = 'Your {} records have been updated to `{}`.'
 SUCCESS_CHANNELS = 'Here are channels of {} type:\n\n{}'
@@ -187,9 +138,6 @@ FAIL_CONTRIBUTIONS = 'Your contributions could not be recorded.'
 FAIL_NO_CONTRIBS = 'No contributions were found.'
 FAIL_SET_GUILD = 'Something went wrong. Your guild points were not updated.'
 
-FAIL_NOT_PARSED = 'Your command could not be parsed.'
-FAIL_COULD_NOT = FAIL_NOT_PARSED + '\nCould not {} {}\'s {} record.'
-
 NOTICE_ROLE = 'All users not mentioned here have not been assigned a Vaivora role.'
 
 USAGE_SET_CHANNELS = '$settings set channel <type> <#channel> [<#channel> ...]'
@@ -205,40 +153,10 @@ G_LEVEL =    [0,   0,       0,      50,     125,     250,
 # Guild Levels    16       17       18       19       20
               160712,  345531,  742891, 1597216, 3434015]
 
-TALT = 'talt'
-TALT_GUILD = 'guild'
-TALT_REMAINDER = 'remainder'
-
-TALT_QUOTA = 'quota'
-TALT_QUOTA_PERIODIC = 'periodic_quota'
-
-GUILD_LEVEL = 'guild_level'
-
 ROLE_BOSS = 'boss'
 ROLE_NONE = 'none'
 ROLE_MEMBER = 'member'
 ROLE_AUTH = 'authorized'
 ROLE_SUPER_AUTH = 's-authorized'
-
-# Roles by value      0            1          2                3
-ROLE_LEVEL = [ROLE_NONE, ROLE_MEMBER, ROLE_AUTH, ROLE_SUPER_AUTH]
-
-UTYPE_USERS = 'users'
-UTYPE_GROUP = 'group'
-
-CHANNEL_BOSS = 'boss'
-CHANNEL_MGMT = 'management'
-
-VAIVORA_VER = 'vaivora-version' # legacy
-WELCOMED = 'welcomed'
-
-DB_LOCK = 'lock'
-
-OPT_DEFAULT = 'default'
-
-SERVER_DIR = 'server_settings'
-FILE_PATH = '{}/{}.json'
-
-FMT_SETTING_FAIL = '| {}: {}; {}: {}; {}: {}; {}: {}'
 
 ### DO NOT CHANGE/TRANSLATE THIS SECTION ABOVE ###

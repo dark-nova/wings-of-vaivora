@@ -83,8 +83,6 @@ async def what_status(entry):
         return constants.boss.CMD_ARG_STATUS_DIED
     elif constants.boss.REGEX_STATUS_ANCHORED.match(entry):
         return constants.boss.CMD_ARG_STATUS_ANCHORED
-    #elif constants.boss.REGEX_STATUS_WARNED.match(entry):
-    #    return constants.boss.CMD_ARG_STATUS_WARNED
     else:
         return None
 
@@ -301,8 +299,6 @@ def get_offset(boss, status, coefficient=1):
         return timedelta(minutes=(coefficient * constants.boss.TIME_STATUS_ABOM))
     else:
         return timedelta(minutes=(coefficient * constants.boss.TIME_STATUS_WB))
-    # else:
-    #     return timedelta(minutes=(coefficient * constants.boss.TIME_STATUS_ANCHORED))
 
 
 async def validate_time(time):
@@ -364,10 +360,6 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
     """
     offset = 0
     target = {}
-
-    if (boss not in constants.boss.BOSSES[constants.boss.KW_WORLD] and
-        status == constants.boss.CMD_ARG_STATUS_ANCHORED):
-        return constants.boss.FAIL_TEMPLATE.format(constants.boss.FAIL_STATUS_NO_ANCHOR, constants.boss.MSG_HELP)
 
     target['name'] = boss
     target['text_channel'] = msg_channel
@@ -589,7 +581,7 @@ class BossCog:
         Returns:
             True if successful; False otherwise
         """
-        if constants.main.HELP == arg:
+        if constants.boss.HELP == arg:
             _help = help()
             for _h in _help:
                 await ctx.author.send(_h)
@@ -602,7 +594,7 @@ class BossCog:
     # $boss <boss> <status> <time> [channel]
     @boss.command(name='died', aliases=['die', 'dead', 'anch', 'anchor', 'anchored'])
     @checks.only_in_guild()
-    @checks.check_channel(constants.main.ROLE_BOSS)
+    @checks.check_channel(constants.settings.ROLE_BOSS)
     async def status(self, ctx, time: str, map_or_channel = None):
         """
         :func:`status` is a subcommand for `boss`.
@@ -649,7 +641,7 @@ class BossCog:
 
     @boss.command(name='list', aliases=['ls', 'erase', 'del', 'delete', 'rm'])
     @checks.only_in_guild()
-    @checks.check_channel(constants.main.ROLE_BOSS)
+    @checks.check_channel(constants.settings.ROLE_BOSS)
     async def entry(self, ctx, channel=None):
         """
         :func:`_list` is a subcommand for `boss`.

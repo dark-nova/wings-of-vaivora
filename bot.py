@@ -243,8 +243,8 @@ async def check_databases():
             # check all timers
             message_to_send = []
             discord_channel = None
-            if not await valid_db.check_if_valid(constants.main.ROLE_BOSS):
-                await valid_db.create_db(constants.main.ROLE_BOSS)
+            if not await valid_db.check_if_valid(constants.settings.ROLE_BOSS):
+                await valid_db.create_db(constants.settings.ROLE_BOSS)
                 continue
             results[vdb_id] = await valid_db.check_db_boss()
 
@@ -309,7 +309,7 @@ async def check_databases():
             # compare roles against server
             guild = bot.get_guild(vdb_id)
             guild_boss_roles = await vdbs[vdb_id].get_users(
-                                    constants.main.ROLE_BOSS)
+                                    constants.settings.ROLE_BOSS)
             for boss_role in guild_boss_roles:
                 try:
                     idx = [role.id for role in guild.roles].index(boss_role)
@@ -317,7 +317,7 @@ async def check_databases():
                 except:
                     # user or group no longer exists
                     await vdbs[vdb_id].remove_users(
-                            constants.main.ROLE_BOSS,
+                            constants.settings.ROLE_BOSS,
                             (boss_role,))
 
             role_str = ' '.join(roles)
