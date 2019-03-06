@@ -7,7 +7,7 @@ class MemeCog:
         self.bot = bot
 
     @commands.command(aliases=['pls', 'plz', 'ples'])
-    async def please(ctx):
+    async def please(self, ctx):
         """
         :func:`please` is a meme
 
