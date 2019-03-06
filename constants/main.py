@@ -20,7 +20,7 @@ Examples:
 
 * More examples in "$boss help"
 ```
-More info: https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/BOSS.md
+More info: <https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/BOSS.md>
 
 "$settings" commands
 ```
@@ -33,7 +33,7 @@ Examples:
     $settings set role auth @Leaders
     $settings set role member @Members
 ```
-More info: https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/SETTINGS.md
+More info: <https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/SETTINGS.md>
 
 "$gems" commands
 ```
@@ -46,7 +46,7 @@ Examples:
     $gems exp 1x1 1x2
     $gems gem2lv 1 0 2
 ```
-More info: https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/GEMS.md
+More info: <https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/GEMS.md>
 
 General
 ```
