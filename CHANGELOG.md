@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Similarly, commands that yield invalid parameters (e.g. deleted channels, roles) will automatically attempt to prune those invalid mentions.
 - `add` subcommand for contributions, so you don't have to set all the time.
 - `$gems` was added as a [cog](cogs/gems.py). Now you can calculate gem experience on the fly.
+- A new command `$offset` was added to [cogs](cogs/offset.py)
 
 ## [2.1] - 2019-02-26
 ### Added

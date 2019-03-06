@@ -9,6 +9,7 @@ from operator import itemgetter
 
 import discord
 from discord.ext import commands
+import pendulum
 
 import checks
 import secrets
@@ -19,6 +20,13 @@ import constants.boss
 import constants.errors
 import constants.settings
 
+
+# Retrieve difference in server time to local time (host),
+# to create an accurate time difference.
+local_time = pendulum.now()
+default_server = local_time.in_tz('America/New_York')
+diff_h = local_time.hour - default_server.hour
+diff_m = local_time.minute - default_server.minute
 
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
 
