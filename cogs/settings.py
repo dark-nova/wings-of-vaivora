@@ -80,6 +80,7 @@ async def combine_mention_ids(ctx, mentions=None):
                            .format(ctx.author.mention,
                                    constants.settings.FAIL_NO_USER_BOSS))
 
+    print(_mentions)
     # uid mode; parse if they're actually id's and not nonsense
     if mentions:
         _mentions.extend(await get_mention_ids(ctx, mentions))
@@ -172,6 +173,7 @@ async def channel_setter(ctx, kind):
                        .format(constants.settings.TABLE_CHANNEL,
                             kind))
     else:
+        errs = [str(err) for err in errs]
         await ctx.send(constants.settings.PARTIAL_SUCCESS
                        .format(constants.settings.TABLE_CHANNEL,
                             '\n'.join(errs)))
@@ -206,6 +208,7 @@ async def channel_deleter(ctx, kind):
                         kind))
 
     if errs:
+        errs = [str(err) for err in errs]
         await ctx.send(constants.settings.PARTIAL_SUCCESS
                        .format(constants.settings.TABLE_CHANNEL,
                             '\n'.join(errs)))
@@ -302,6 +305,7 @@ async def role_setter(ctx, mentions=None):
                                 ctx.role_kind)))
 
     if errs:
+        errs = [str(err) for err in errs]
         await ctx.send('{} {}'
                        .format(ctx.author.mention,
                                constants.settings.PARTIAL_SUCCESS.format(
@@ -340,6 +344,7 @@ async def role_deleter(ctx, mentions=None):
                                 ctx.role_kind)))
 
     if errs:
+        errs = [str(err) for err in errs]
         await ctx.send('{} {}'
                        .format(ctx.author.mention,
                                constants.settings.PARTIAL_SUCCESS.format(

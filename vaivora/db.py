@@ -430,7 +430,7 @@ class Database:
                 try:
                     cursor = await _db.execute(
                                 """insert into roles values
-                                   ('{}', '{}'')"""
+                                   ('{}', '{}')"""
                                 .format(kind, user))
                 except Exception as e:
                     print('set_users', e)
