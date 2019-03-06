@@ -1023,6 +1023,7 @@ class SettingsCog:
         Returns:
             True always
         """
+        ctx.role_kind = ctx.invoked_subcommand.name
         return True
 
     @d_role.command(name='member')
@@ -1087,6 +1088,7 @@ class SettingsCog:
         Returns:
             True always
         """
+        ctx.channel_kind = ctx.invoked_subcommand.name
         pass
 
     @d_channel.command(name='settings')
@@ -1103,7 +1105,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await channel_deleter(ctx)
+        return await channel_deleter(ctx, ctx.channel_kind)
 
     @d_channel.command(name='boss')
     @checks.only_in_guild()
@@ -1119,7 +1121,7 @@ class SettingsCog:
         Returns:
             True if successful; False otherwise
         """
-        return await channel_deleter(ctx)
+        return await channel_deleter(ctx, ctx.channel_kind)
 
 
 def setup(bot):
