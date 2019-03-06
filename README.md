@@ -7,8 +7,9 @@ _Wings of Vaivora_ runs on the [discord.py][discord.py] [API][api] ("rewrite").
 The previous version built on `discord.py` "asyncio" has been frozen in branch `asyncio_archive`.
 
 ## Usage
-- [Boss Tracking](docs/BOSS.md)
-- [Guild Settings](docs/SETTINGS.md)
+- [`$boss` for Boss Tracking](docs/BOSS.md)
+- [`$settings` for Guild Settings](docs/SETTINGS.md)
+- [`$gems` for Gem Calculations](docs/GEMS.md)
 
 ## Requirements
 _subject to change_

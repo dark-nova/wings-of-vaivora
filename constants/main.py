@@ -6,17 +6,10 @@ MSG_HELP = """
 Here are commands. Valid prefixes are `$` (dollar sign) and `Vaivora,<space>`,
 e.g. `$boss` or `Vaivora, help`
 
+"$boss" commands
 ```
-"Changelogs" commands
-    $unsubscribe
-    $subscribe
-
-* These functions are currently disabled.
-```
-```
-"Boss" commands
-    $boss [args ...]
-    $boss help
+$boss [args ...]
+$boss help
 
 * Use "$boss help" for more information.
 
@@ -27,10 +20,12 @@ Examples:
 
 * More examples in "$boss help"
 ```
+More info: https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/BOSS.md
+
+"$settings" commands
 ```
-"Settings" commands
-    $settings [args ...]
-    $settings help
+$settings [args ...]
+$settings help
 
 * Use "$settings help" for more information.
 
@@ -38,9 +33,24 @@ Examples:
     $settings set role auth @Leaders
     $settings set role member @Members
 ```
+More info: https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/SETTINGS.md
+
+"$gems" commands
 ```
+$settings [args ...]
+$settings help
+
+* Use "$gems help" for more information.
+
+Examples:
+    $gems exp 1x1 1x2
+    $gems gem2lv 1 0 2
+```
+More info: https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/GEMS.md
+
 General
-    $help: prints this page in Direct Message
+```
+$help: prints this page in Direct Message
 ```
 """
 
