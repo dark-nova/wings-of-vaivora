@@ -4,7 +4,7 @@ import os
 import sys
 import asyncio
 from hashlib import blake2b
-from datetime import datetime, timedelta
+from datetime import timedelta
 from operator import itemgetter
 from math import floor
 
@@ -18,14 +18,8 @@ import vaivora.db
 import constants.main
 import constants.boss
 import constants.settings
+from cogs.boss import get_offset
 
-
-# Retrieve difference in server time to local time (host),
-# to create an accurate time difference.
-local_time = pendulum.now()
-default_server = local_time.in_tz('America/New_York')
-diff_h = local_time.hour - default_server.hour
-diff_m = local_time.minute - default_server.minute
 
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
 
@@ -154,27 +148,10 @@ async def process_record(boss, status, time, boss_map, channel: int, guild_id):
     else:
         boss_map = (constants.boss.RECORD
                     .format(constants.boss.EMOJI_LOC, boss_map, channel))
-        
-    vdb = vaivora.db.Database(guild_id)
 
-    tz = await vdb.get_tz()
-    if not tz:
-        tz = constants.offset.DEFAULT
+    local = pendulum.now()
 
-    offset = await vdb.get_offset()
-    if not offset:
-        offset = 0
-
-    local = pendulum.now() + timedelta(hours=offset)
-    local = local.in_tz(tz)
-    server_date = pendulum.datetime(local.year,
-                                    local.month,
-                                    local.day,
-                                    local.hour,
-                                    local.minute,
-                                    tz=tz)
-
-    minutes = floor((time-server_date).seconds / 60)
+    minutes = floor((time-local).seconds / 60)
     minutes = '{} minutes'.format(str(minutes))
 
     # set time difference based on status and type of boss
@@ -190,7 +167,7 @@ async def process_record(boss, status, time, boss_map, channel: int, guild_id):
     else:
         time_fmt = '**{}** ({})'.format(time.strftime("%Y/%m/%d %H:%M"), minutes)
 
-    return ('**{}**\n- {} at {}\n- should spawn at {} in:\n{}'
+    return ('**{}**\n- {} at {}\n- should spawn at {} in:\n{}\n\n'
             .format(boss, status, report_time.strftime("%Y/%m/%d %H:%M"), time_fmt, boss_map))
     # boss, status at, dead time, timefmt, maps with newlines
 
@@ -233,26 +210,31 @@ async def check_databases():
                     print('Duplicates have been removed from tables from',
                           guild.id)
             except:
-                print('Guild', guild.id, 'might be corrupt! Rebuilding and skipping...')
+                print('Guild', guild.id,
+                    'might be corrupt! Rebuilding and skipping...')
                 await vdbs[guild.id].create_all(guild.owner.id)
                 del vdbs[guild.id] # do not use corrupt/invalid db
 
     results = {}
     minutes = {}
     records = []
-    today = datetime.today() # check on first launch
+    today = pendulum.today() # check on first launch
 
     while not bot.is_closed():
         await asyncio.sleep(59)
-        print(datetime.today().strftime("%Y/%m/%d %H:%M"), "- Valid DBs:", len(vdbs))
+        print(pendulum.today().strftime("%Y/%m/%d %H:%M"),
+              "- Valid DBs:", len(vdbs))
 
         # prune records once they're no longer alert-able
         purged = []
         if len(minutes) > 0:
             for rec_hash, rec_mins in minutes.items():
-                mins_now = datetime.now().minute
-                # e.g. 48 > 03 (if record was 1:03 and time now is 12:48), passes conds 1 & 2 but fails cond 3
-                if (rec_mins < mins_now) and ((mins_now-rec_mins) > 0) and ((mins_now-rec_mins+15+1) < 60):
+                mins_now = pendulum.now().minute
+                # e.g. 48 > 03 (if record was 1:03
+                # and time now is 12:48), passes conds 1 & 2 but fails cond 3
+                if ((rec_mins < mins_now) and
+                        ((mins_now-rec_mins) > 0) and
+                        ((mins_now-rec_mins+15+1) < 60)):
                     records.remove(rec_hash)
                     purged.append(rec_hash)
 
@@ -264,7 +246,7 @@ async def check_databases():
 
         # iterate through database results
         for vdb_id, valid_db in vdbs.items():
-            loop_time = datetime.today()
+            loop_time = pendulum.today()
             print(loop_time.strftime("%H:%M"), "- in DB:", vdb_id)
             results[vdb_id] = []
             if today.day != loop_time.day:
@@ -287,16 +269,6 @@ async def check_databases():
 
             # iterate through all results
             for result in results[vdb_id]:
-                vdb = vaivora.db.Database(guild_id)
-
-                tz = await vdb.get_tz()
-                if not tz:
-                    tz = constants.offset.DEFAULT
-
-                offset = await vdb.get_offset()
-                if not offset:
-                    offset = 0
-
                 discord_channel = result[4]
                 list_time = [ int(t) for t in result[5:10] ]
                 record_info = [ str(r) for r in result[0:4] ]
@@ -306,7 +278,9 @@ async def check_databases():
                 current_time = record_info[2]
                 current_status = record_info[3]
 
-                entry_time = pendulum.datetime(*list_time, tz=tz)
+                entry_time = pendulum.datetime(*list_time,
+                                               tz=pendulum.now()
+                                                  .timezone_name)
 
                 record =  await process_record(current_boss,
                                                current_status,
@@ -317,7 +291,9 @@ async def check_databases():
 
                 record2byte = "{}:{}:{}:{}".format(discord_channel,
                                                    current_boss,
-                                                   entry_time.strftime("%Y/%m/%d %H:%M"),
+                                                   entry_time
+                                                   .strftime(
+                                                        "%Y/%m/%d %H:%M"),
                                                    current_channel)
                 record2byte = bytearray(record2byte, 'utf-8')
                 hashedblake = blake2b(digest_size=48)
@@ -329,23 +305,15 @@ async def check_databases():
                     continue
 
                 # process time difference
-                local = pendulum.now() + timedelta(hours=offset)
-                local = local.in_tz(tz)
-                server_date = pendulum.datetime(local.year,
-                                                local.month,
-                                                local.day,
-                                                local.hour,
-                                                local.minute,
-                                                tz=tz)
-
-                time_diff = entry_time - server_date
+                local = pendulum.now()
+                time_diff = entry_time - local
 
                 # record is in the past
-                if time_diff.days < 0:
+                if time_diff.hours < 0:
                     continue
 
                 # record is within range of alert
-                if time_diff.seconds <= 900 and time_diff.days == 0:
+                if time_diff.seconds <= 900 and time_diff.seconds > 0:
                     records.append(hashed_record)
                     message_to_send.append([record, discord_channel,])
                     minutes[str(hashed_record)] = entry_time.minute
@@ -378,21 +346,23 @@ async def check_databases():
                 if discord_channel != int(message[-1]):
                     if discord_channel:
                         try:
-                            await guild.get_channel(discord_channel).send(discord_message)
+                            await (guild.get_channel(discord_channel)
+                                   .send(discord_message))
                         except:
                             pass
-
                         discord_message = None
-                    discord_channel = int(message[-1])
 
-                    # replace time_str with server setting warning, eventually
-                    discord_message = constants.main.BOSS_ALERT.format(role_str)
-                discord_message = '{} {}'.format(discord_message, message[0])
+                    discord_channel = int(message[-1])
+                    discord_message = (constants.main.BOSS_ALERT
+                                       .format(role_str))
+
+                discord_message = '{} {}'.format(discord_message,
+                                                 message[0])
 
             try:
                 await guild.get_channel(discord_channel).send(discord_message)
             except Exception as e:
-                print(e)
+                print('check_databases', e)
                 pass
 
         #await client.process_commands(message)

@@ -1,7 +1,7 @@
 import re
 import asyncio
 from math import floor
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import discord
 from discord.ext import commands
@@ -379,10 +379,12 @@ async def process_cmd_status(guild_id, msg_channel, boss, status, time, options)
     server_date = local.in_tz(tz)
 
     if hours > int(server_date.hour):
-        # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
+        # adjust to one day before,
+        # e.g. record on 23:59, July 31st but recorded on August 1st
         server_date += timedelta(days=-1)
 
-    # dates handled like above example, e.g. record on 23:59, December 31st but recorded on New Years Day
+    # dates handled like above example,
+    # e.g. record on 23:59, December 31st but recorded on New Years Day
     record['year'] = int(server_date.year)
     record['month'] = int(server_date.month)
     record['day'] = int(server_date.day)
@@ -390,7 +392,7 @@ async def process_cmd_status(guild_id, msg_channel, boss, status, time, options)
     record['minute'] = minutes
 
     # reconstruct boss kill time
-    record_date = datetime(*record.values())
+    record_date = pendulum.datetime(*record.values(), tz=tz)
     record_date += time_offset
 
     # reassign to target data
@@ -404,13 +406,15 @@ async def process_cmd_status(guild_id, msg_channel, boss, status, time, options)
         await vdb.create_db('boss')
 
     if await vdb.update_db_boss(target):
-        return (constants.boss.SUCCESS_STATUS.format(constants.boss.ACKNOWLEDGED,
-                                                boss, status, time,
-                                                constants.boss.EMOJI_LOC,
-                                                options['map'],
-                                                options['channel']))
+        return (constants.boss.SUCCESS_STATUS
+                .format(constants.boss.ACKNOWLEDGED,
+                        boss, status, time,
+                        constants.boss.EMOJI_LOC,
+                        options['map'],
+                        options['channel']))
     else:
-        return constants.boss.FAIL_TEMPLATE.format(constants.boss.FAIL_STATUS, constants.boss.MSG_HELP)
+        return (constants.boss.FAIL_TEMPLATE
+                .format(constants.boss.FAIL_STATUS, constants.boss.MSG_HELP))
 
 
 async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=None):
@@ -481,7 +485,9 @@ async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=N
             boss_status = boss_record[3]
 
             # year, month, day, hour, minutes
-            record_date = datetime(*[int(rec) for rec in boss_record[5:10]])
+            record_date = pendulum.datetime(
+                            *[int(rec) for rec
+                              in boss_record[5:10]], tz=tz)
 
             local = pendulum.now() + timedelta(hours=offset)
             local = local.in_tz(tz)
@@ -492,26 +498,15 @@ async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=N
                                             local.minute,
                                             tz=tz)
 
-            time_diff = server_date - record_date
+            time_diff = record_date - server_date
 
-            if (int(time_diff.days) >= 0 and
-                    boss_status != constants.boss.CMD_ARG_STATUS_ANCHORED):
+            if int(time_diff.hours) < 0:
                 spawn_msg = constants.boss.TIME_SPAWN_MISSED
                 minutes = (floor(time_diff.seconds/60)
                            + int(time_diff.days)*86400)
-
-            # anchored
-            elif boss_status == constants.boss.CMD_ARG_STATUS_ANCHORED:
-                spawn_msg = constants.boss.TIME_SPAWN_EARLY
-                if int(time_diff.days) < 0:
-                    minutes = floor((86400-int(time_diff.seconds))/60)
-                else:
-                    minutes = (floor(time_diff.seconds/60)
-                               + int(time_diff.days)*86400)
-
-            else: #elif boss_status == constants.boss.CMD_ARG_STATUS_DIED:
+            else:
                 spawn_msg = constants.boss.TIME_SPAWN_ONTIME
-                minutes = floor((86400-int(time_diff.seconds))/60)
+                minutes = time_diff.seconds/60 #floor((86400-int(time_diff.seconds))/60)
 
             # absolute date and time for spawn
             # e.g. 2017/07/06 "14:47"
@@ -524,7 +519,7 @@ async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=N
             msg_days = None
 
             if int(time_diff.days) > 1:
-                msg_days = '{} days'.format(str(time_diff.days))
+                msg_days = '{} days'.format(time_diff.days)
             elif int(time_diff.days) == 1:
                 msg_days = '1 day'
 
@@ -539,8 +534,8 @@ async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=N
             # print minutes unconditionally
             # e.g.              0 minutes from now
             # e.g.              59 minutes ago
-            msg_minutes = '{} minutes'.format(str(floor(minutes % 60)))
-            msg_when = 'from now' if int(time_diff.days) < 0 else "ago"
+            msg_minutes = '{} minutes'.format(floor(minutes % 60))
+            msg_when = 'from now' if int(time_diff.days) == 0 else "ago"
 
             if msg_days is None and msg_hours is None:
                 msg_time = '{} {}'.format(msg_minutes, msg_when)
@@ -550,10 +545,6 @@ async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=N
                 msg_time = '{}, {} {}'.format(msg_days, msg_minutes, msg_when)
             else:
                 msg_time = '{}, {}, {} {}'.format(msg_days, msg_hours, msg_minutes, msg_when)
-
-            # print extra anchored message conditionally
-            if boss_status == constants.boss.CMD_ARG_STATUS_ANCHORED:
-                msg_time = '{} {}'.format(msg_time, 'and as late as one hour later')
 
             last_map = 'last known map: {} {}'.format(constants.boss.EMOJI_LOC, boss_prev_map)
 
