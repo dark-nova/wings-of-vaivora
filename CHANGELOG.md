@@ -3,11 +3,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [2.3] - 2019-03-07
+## [3.2] - 2019-03-07
 ### Fixed
 - Wings of Vaivora now runs on the latest rewrite.
 
-## [2.2] - 2019-03-06
+## [3.1] - 2019-03-06
 ### Added
 - `remove`, `unset` subcommands for `$settings`. You can now remove problematic Discord id's.
 - Similarly, commands that yield invalid parameters (e.g. deleted channels, roles) will automatically attempt to prune those invalid mentions.
@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 - Feature request #1 has been completed.
 
-## [2.1] - 2019-02-26
+## [3.0] - 2019-02-26
 ### Added
 - Custom checks were added, to streamline valid command usage.
 - Add separate command groups for settings commands.
