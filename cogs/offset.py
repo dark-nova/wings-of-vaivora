@@ -5,6 +5,7 @@ import pendulum
 import checks
 import vaivora.db
 import constants.offset
+import constants.settings
 
 
 server_tz = [
@@ -31,6 +32,9 @@ class OffsetCog:
         pass
 
     @_set.command(name='tz', aliases=['timezone', 'timezones'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
     async def s_tz(self, ctx, tz):
         """
         :func:`s_tz` sets the time zone for the guild.
@@ -67,6 +71,9 @@ class OffsetCog:
             return False
 
     @_set.command(name='offset')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
     async def s_offset(self, ctx, offset: int):
         """
         :func:`s_offset` sets the offset for the guild.
@@ -105,6 +112,8 @@ class OffsetCog:
         pass
 
     @_get.command(name='tz', aliases=['timezone', 'timezones'])
+    @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_tz(self, ctx):
         """
         :func:`g_tz` gets the guild's time zone.
