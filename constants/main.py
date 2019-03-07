@@ -17,8 +17,6 @@ Examples:
     $boss all list
     $boss mineloader died 13:00 forest
     $boss ml died 1:00p "forest of prayer"
-
-* More examples in "$boss help"
 ```
 More info: <https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/BOSS.md>
 
@@ -47,6 +45,20 @@ Examples:
     $gems gem2lv 1 0 2
 ```
 More info: <https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/GEMS.md>
+
+`$offset` commands
+```
+$offset [args ...]
+$offset help
+
+* Use "$offset help" for more information.
+
+Examples:
+    $offset list
+    $offset set offset 1
+    $offset set tz 0
+```
+More info: <https://github.com/dark-nova/wings-of-vaivora/blob/master/docs/OFFSET.md>
 
 General
 ```
