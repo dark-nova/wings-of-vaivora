@@ -491,7 +491,7 @@ class Database:
                     old_owner = (await cursor.fetchone())[0]
                     if user_id == old_owner:
                         return True # do not do anything if it's the same owner
-                    await _db.execute('drop table if exists owner')
+                    await _db.execute('delete from owner')
                     await _db.execute("""delete from roles where 
                                          role = '{}' and 
                                          mention = '{}'"""
