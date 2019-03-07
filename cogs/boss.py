@@ -5,10 +5,12 @@ from datetime import datetime, timedelta
 
 import discord
 from discord.ext import commands
+import pendulum
 
 import checks
 import vaivora.db
 import constants.boss
+import constants.offset
 
 
 async def boss_helper(boss, time, map_or_channel):
@@ -192,7 +194,7 @@ async def check_maps(boss_idx, maps):
         if re.search(maps, boss_map, re.IGNORECASE):
             if map_floor and not re.search(map_floor, boss_map, re.IGNORECASE):
                 continue # similar name; wrong number
-            elif map_idx != -1: 
+            elif map_idx != -1:
                 return -1 # multiple matched; invalid
             else:
                 map_idx = constants.boss.BOSS_MAPS[boss].index(boss_map)
@@ -333,13 +335,13 @@ async def validate_time(time):
                                  str(minutes).rjust(2, '0'))
 
 
-async def process_cmd_status(server_id, msg_channel, boss, status, time, options):
+async def process_cmd_status(guild_id, msg_channel, boss, status, time, options):
     """
     :func:`process_cmd_status` processes a specific boss command: status related to recording.
 
     Args:
-        server_id (int): the id of the server of the originating message
-        msg_channel: the id of the channel of the originating message (belonging to server of `server_id`)
+        guild_id (int): the id of the server of the originating message
+        msg_channel: the id of the channel of the originating message (belonging to server of `guild_id`)
         boss (str): the boss in question
         status (str): the boss's status, or the status command
         time (str): time represented for the associated event
@@ -363,7 +365,18 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
 
     record = {}
 
-    server_date = datetime.now() + timedelta(hours=constants.boss.TIME_H_LOCAL_TO_SERVER)
+    vdb = vaivora.db.Database(guild_id)
+
+    tz = await vdb.get_tz()
+    if not tz:
+        tz = constants.offset.DEFAULT
+
+    offset = await vdb.get_offset()
+    if not offset:
+        offset = 0
+
+    local = pendulum.now() + timedelta(hours=offset)
+    server_date = local.in_tz(tz)
 
     if hours > int(server_date.hour):
         # adjust to one day before, e.g. record on 23:59, July 31st but recorded on August 1st
@@ -387,7 +400,6 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
     target['hour'] = int(record_date.hour)
     target['minute'] = int(record_date.minute)
 
-    vdb = vaivora.db.Database(server_id)
     if not await vdb.check_if_valid(constants.boss.MODULE_NAME):
         await vdb.create_db('boss')
 
@@ -401,15 +413,15 @@ async def process_cmd_status(server_id, msg_channel, boss, status, time, options
         return constants.boss.FAIL_TEMPLATE.format(constants.boss.FAIL_STATUS, constants.boss.MSG_HELP)
 
 
-async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=None):
+async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=None):
     """
     :func:`process_cmd_entry` processes a specific boss subcommand:
     entry to retrieve records.
 
     Args:
-        server_id (int): the id of the server of the originating message
+        guild_id (int): the id of the server of the originating message
         msg_channel: the id of the channel of the originating message
-            (belonging to server of `server_id`)
+            (belonging to server of `guild_id`)
         bosses (list): a list of bosses to check
         entry (str): the entry command (list, erase)
         channel: (default: None) the channel for the record
@@ -421,7 +433,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
     if type(bosses) is str:
         bosses = [bosses]
 
-    vdb = vaivora.db.Database(server_id)
+    vdb = vaivora.db.Database(guild_id)
     if not await vdb.check_if_valid(constants.boss.MODULE_NAME):
         await vdb.create_db('boss')
         return [constants.boss.FAIL_BAD_DB,]
@@ -452,6 +464,16 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
         if not boss_records: # empty
             return [constants.boss.FAIL_ENTRY_LIST,]
 
+        vdb = vaivora.db.Database(guild_id)
+
+        tz = await vdb.get_tz()
+        if not tz:
+            tz = constants.offset.DEFAULT
+
+        offset = await vdb.get_offset()
+        if not offset:
+            offset = 0
+
         for boss_record in boss_records:
             boss_name = boss_record[0]
             boss_channel = str(floor(boss_record[1]))
@@ -460,14 +482,23 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
 
             # year, month, day, hour, minutes
             record_date = datetime(*[int(rec) for rec in boss_record[5:10]])
-            
-            time_diff = (datetime.now()
-                         + timedelta(hours=constants.boss.TIME_H_LOCAL_TO_SERVER)
-                         - record_date)
 
-            if int(time_diff.days) >= 0 and boss_status != constants.boss.CMD_ARG_STATUS_ANCHORED:
+            local = pendulum.now() + timedelta(hours=offset)
+            local = local.in_tz(tz)
+            server_date = pendulum.datetime(local.year,
+                                            local.month,
+                                            local.day,
+                                            local.hour,
+                                            local.minute,
+                                            tz=tz)
+
+            time_diff = server_date - record_date
+
+            if (int(time_diff.days) >= 0 and
+                    boss_status != constants.boss.CMD_ARG_STATUS_ANCHORED):
                 spawn_msg = constants.boss.TIME_SPAWN_MISSED
-                minutes = floor(time_diff.seconds/60) + int(time_diff.days)*86400
+                minutes = (floor(time_diff.seconds/60)
+                           + int(time_diff.days)*86400)
 
             # anchored
             elif boss_status == constants.boss.CMD_ARG_STATUS_ANCHORED:
@@ -475,7 +506,8 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
                 if int(time_diff.days) < 0:
                     minutes = floor((86400-int(time_diff.seconds))/60)
                 else:
-                    minutes = floor(time_diff.seconds/60) + int(time_diff.days)*86400
+                    minutes = (floor(time_diff.seconds/60)
+                               + int(time_diff.days)*86400)
 
             else: #elif boss_status == constants.boss.CMD_ARG_STATUS_DIED:
                 spawn_msg = constants.boss.TIME_SPAWN_ONTIME
@@ -490,7 +522,7 @@ async def process_cmd_entry(server_id: int, msg_channel, bosses, entry, channel=
 
             # print day or days conditionally
             msg_days = None
-            
+
             if int(time_diff.days) > 1:
                 msg_days = '{} days'.format(str(time_diff.days))
             elif int(time_diff.days) == 1:
@@ -642,7 +674,7 @@ class BossCog:
             channel: (default: None) the channel to show, if supplied
 
         Returns:
-            True if run successfully, regardless of result 
+            True if run successfully, regardless of result
         """
         if ctx.boss != constants.boss.CMD_ARG_TARGET_ALL:
             boss_idx = await check_boss(ctx.boss)

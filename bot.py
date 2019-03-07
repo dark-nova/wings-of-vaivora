@@ -113,46 +113,68 @@ async def help(ctx):
     return True
 
 
-async def process_record(boss, status, time, boss_map, channel):
+async def process_record(boss, status, time, boss_map, channel: int, guild_id):
     """
     :func:`process_records` processes a record to print out
 
     Args:
         boss (str): the boss in question
         status (str): the status of the boss
-        time (datetime): the `datetime` of the target set to its next approximate spawn
+        time (datetime): the `datetime` of the target
+            set to its next approximate spawn
         boss_map (str): the map containing the last recorded spawn
-        channel (str): the channel of the world boss if applicable; else, 1
+        channel (int): the channel of the world boss if applicable; else, 1
+        guild_id (int): the guild's id
 
     Returns:
         str: a formatted markdown message containing the records
     """
-    channel = str(floor(float(channel)))
-
     if boss_map == constants.boss.CMD_ARG_QUERY_MAPS_NOT:
         # use all maps for Demon Lord if not previously known
         if boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
-            boss_map = '\n'.join([constants.boss.RECORD.format(constants.boss.EMOJI_LOC,
-                                                          loc, channel)
+            boss_map = '\n'.join([constants.boss.RECORD
+                                  .format(constants.boss.EMOJI_LOC,
+                                          loc, channel)
                                   for loc in constants.boss.BOSS_MAPS[boss]])
         # this should technically not be possible
         else:
-            boss_map = constants.boss.RECORD.format(constants.boss.EMOJI_LOC, constants.boss.BOSS_MAPS[boss], channel)
+            boss_map = (constants.boss.RECORD
+                        .format(constants.boss.EMOJI_LOC,
+                                constants.boss.BOSS_MAPS[boss], channel))
     # use all other maps for Demon Lord if already known
     elif boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
         boss_map = '\n'.join(['{} {}'.format(constants.boss.EMOJI_LOC, loc)
-                              for loc in constants.boss.BOSS_MAPS[boss] if loc != boss_map])
+                              for loc in constants.boss.BOSS_MAPS[boss]
+                              if loc != boss_map])
     elif boss == constants.boss.BOSS_W_KUBAS:
         # valid while Crystal Mine Lot 2 - 2F has 2 channels
         channel = str(int(channel) % 2 + 1)
-        boss_map = constants.boss.RECORD_KUBAS.format(constants.boss.EMOJI_LOC, boss_map, channel)
+        boss_map = (constants.boss.RECORD_KUBAS
+                    .format(constants.boss.EMOJI_LOC, boss_map, channel))
     else:
-        boss_map = constants.boss.RECORD.format(constants.boss.EMOJI_LOC, boss_map, channel)
+        boss_map = (constants.boss.RECORD
+                    .format(constants.boss.EMOJI_LOC, boss_map, channel))
         
+    vdb = vaivora.db.Database(guild_id)
 
-    minutes = floor((time - (datetime.now() 
-                                  + timedelta(hours=constants.boss.TIME_H_LOCAL_TO_SERVER)))
-                        .seconds / 60)
+    tz = await vdb.get_tz()
+    if not tz:
+        tz = constants.offset.DEFAULT
+
+    offset = await vdb.get_offset()
+    if not offset:
+        offset = 0
+
+    local = pendulum.now() + timedelta(hours=offset)
+    local = local.in_tz(tz)
+    server_date = pendulum.datetime(local.year,
+                                    local.month,
+                                    local.day,
+                                    local.hour,
+                                    local.minute,
+                                    tz=tz)
+
+    minutes = floor((time-server_date).seconds / 60)
     minutes = '{} minutes'.format(str(minutes))
 
     # set time difference based on status and type of boss
@@ -265,6 +287,16 @@ async def check_databases():
 
             # iterate through all results
             for result in results[vdb_id]:
+                vdb = vaivora.db.Database(guild_id)
+
+                tz = await vdb.get_tz()
+                if not tz:
+                    tz = constants.offset.DEFAULT
+
+                offset = await vdb.get_offset()
+                if not offset:
+                    offset = 0
+
                 discord_channel = result[4]
                 list_time = [ int(t) for t in result[5:10] ]
                 record_info = [ str(r) for r in result[0:4] ]
@@ -274,13 +306,14 @@ async def check_databases():
                 current_time = record_info[2]
                 current_status = record_info[3]
 
-                entry_time = datetime(*list_time)
+                entry_time = pendulum.datetime(*list_time, tz=tz)
 
                 record =  await process_record(current_boss,
                                                current_status,
                                                entry_time,
                                                current_time,
-                                               current_channel)
+                                               current_channel,
+                                               vdb_id)
 
                 record2byte = "{}:{}:{}:{}".format(discord_channel,
                                                    current_boss,
@@ -296,14 +329,23 @@ async def check_databases():
                     continue
 
                 # process time difference
-                time_diff = entry_time - datetime.now() + timedelta(hours=-3)
+                local = pendulum.now() + timedelta(hours=offset)
+                local = local.in_tz(tz)
+                server_date = pendulum.datetime(local.year,
+                                                local.month,
+                                                local.day,
+                                                local.hour,
+                                                local.minute,
+                                                tz=tz)
+
+                time_diff = entry_time - server_date
 
                 # record is in the past
                 if time_diff.days < 0:
                     continue
 
                 # record is within range of alert
-                if time_diff.seconds < 900 and time_diff.days == 0:
+                if time_diff.seconds <= 900 and time_diff.days == 0:
                     records.append(hashed_record)
                     message_to_send.append([record, discord_channel,])
                     minutes[str(hashed_record)] = entry_time.minute
@@ -323,7 +365,7 @@ async def check_databases():
                     idx = [role.id for role in guild.roles].index(boss_role)
                     roles.append[guild.roles[idx].mention]
                 except:
-                    # user or group no longer exists
+                    # Discord role no longer exists
                     await vdbs[vdb_id].remove_users(
                             constants.settings.ROLE_BOSS,
                             (boss_role,))
