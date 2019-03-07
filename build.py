@@ -41,6 +41,7 @@ def release(version = None):
     tar.add('build.py')
     tar.add('requirements.txt')
     tar.add('README.md')
+    tar.add('disclaimer.py')
     tar.add('docs')
     tar.add('LICENSE')
     tar.add('LICENSES')
@@ -97,7 +98,7 @@ def configure():
 
     print('Success! secrets.py has been set up.')
 
-    print('Configuration copmlete.')
+    print('Configuration complete.')
 
 
 __DEFAULT__ = configure
