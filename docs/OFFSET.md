@@ -3,15 +3,15 @@
 ## Offset Module
 
 ### Usage
-+ $offset set (server `<server>`|`<offset>`)
-+ $offset get (`<server>`|`<offset>`)
++ $offset set (tz `<tz>`|`<offset>`)
++ $offset get (`<tz>`|`<offset>`)
 + $offset list
 
 ### Examples
-+ $offset set server 1
++ $offset set tz 1
     - Means: Set the offset of this guild to 1.
-+ $offset get server
-    - Means: Shows list of servers.
++ $offset get tz
+    - Means: Shows list of tzs.
 
 ### Options
 + set
@@ -20,12 +20,12 @@
 + get
     - Gets the next parameter.
 
-+ server
-    - Not to be confused with `<server>`.
-    - The parameter name for server.
++ tz
+    - Not to be confused with `<tz>`.
+    - The parameter name for tz.
 
-+ `<server>`
-    - The server to use. Can be a given integer from the list, where:
++ `<tz>`
+    - The tz to use. Can be a given integer from the list, where:
     ```
         [0] America/New_York    [NA]    Klaipeda      default
         [1] America/Sao_Paulo   [SA]    Silute
@@ -33,7 +33,7 @@
         [3] Asia/Singapore      [SEA]   Telsiai
     ```
     - You are also allowed to enter your own time zone if desired. See below.
-    - Custom servers must be listed as *canonical* in the Wikipedia table.
+    - Custom tzs must be listed as *canonical* in the Wikipedia table.
 
 + offset
     - Not to be confused with `<offset>`.
@@ -43,6 +43,6 @@
     - The current gem experience listed in the gem's UI. Ranges from 0 to 1 below its current maximum.
 
 + list
-    - Lists the available `<server>`s to pick.
+    - Lists the available `<tz>`s to pick.
 
 Time zones: <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
