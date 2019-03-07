@@ -38,7 +38,7 @@ types['offset'] = ('integer',)
 
 types['tz'] = ('text',)
 
-tables = ['boss', 'roles', 'guild', 'contribution', 
+tables = ['boss', 'roles', 'guild', 'contribution',
           'channels', 'offset', 'tz']
 
 tables_to_clean = ['roles', 'channels', 'contribution']
@@ -345,29 +345,16 @@ class Database:
             _db.row_factory = aiosqlite.Row
 
             for boss in boss_list:
-                # channel is provided
+                conditions = ('boss where name = "{}"'
+                               .format(boss))
                 if boss_ch:
-                    sql_filters = await construct_filters(
-                                        filters=(
-                                            'name=?',
-                                            'channel=?'))
-                    sql_condition = (boss, boss_ch)
-                # only name                
-                else:
-                    sql_filters = await construct_filters(
-                                        filters=(
-                                            'name=?'))
-                    sql_condition = (boss,)
+                    conditions += (' and channel = "{}"'
+                                   .format(boss_ch))
 
-                # process counting
-                sel_statement = await construct_SQL(
-                                    args=('select * from boss',
-                                          sql_filters))
-                del_statement = await construct_SQL(
-                                    args=('delete from boss',
-                                          sql_filters))
+                select = 'select * from ' + conditions
+                delete = 'delete from ' + conditions
 
-                cursor = await _db.execute(sel_statement, sql_condition)
+                cursor = await _db.execute(select)
                 results = await cursor.fetchall()
 
                 # no records to delete
@@ -375,11 +362,11 @@ class Database:
                     continue
 
                 try:
-                    await cursor.execute(del_statement, sql_condition)
+                    await cursor.execute(delete)
                     await _db.commit()
                     records.append(boss) # guaranteed to be only one entry as per this loop
                 except Exception as e: # in case of sqlite3 exceptions
-                    print(self.db_id, e)
+                    print('rm_entry_db_boss', self.db_id, e)
                     continue
             await cursor.close()
 
@@ -492,8 +479,8 @@ class Database:
                     if user_id == old_owner:
                         return True # do not do anything if it's the same owner
                     await _db.execute('delete from owner')
-                    await _db.execute("""delete from roles where 
-                                         role = '{}' and 
+                    await _db.execute("""delete from roles where
+                                         role = '{}' and
                                          mention = '{}'"""
                         .format(constants.settings.ROLE_SUPER_AUTH,
                                 old_owner))
@@ -662,7 +649,7 @@ class Database:
                 for user in users:
                     try:
                         cursor = await _db.execute(
-                                    """select * from contribution 
+                                    """select * from contribution
                                        where mention = '{}'"""
                                     .format(user))
                         results.append(
@@ -690,7 +677,7 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                            """select points from contribution 
+                            """select points from contribution
                                where mention = '{}'"""
                             .format(user))
                 old_points = (await cursor.fetchone())[0]
