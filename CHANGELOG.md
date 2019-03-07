@@ -3,13 +3,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [2.2] - 2019-03-06
 ### Added
 - `remove`, `unset` subcommands for `$settings`. You can now remove problematic Discord id's.
 - Similarly, commands that yield invalid parameters (e.g. deleted channels, roles) will automatically attempt to prune those invalid mentions.
 - `add` subcommand for contributions, so you don't have to set all the time.
 - `$gems` was added as a [cog](cogs/gems.py). Now you can calculate gem experience on the fly.
-- A new command `$offset` was added to [cogs](cogs/offset.py)
+- A new command `$offset` was added to [cogs](cogs/offset.py).
+- `$offset` lets you assign time zone and offset, on a per-guild basis.
+
+### Changed
+- Time difference is no longer static. Depends now on local time for the host, and per-guild with `$offset`.
+- An unintended consequence of allowing custom time zones and offsets is that records are now recorded in respect to local time. That is to say, the boss spawn time is directly written to the database. No reverse manipulation is required.
+- Related to the time changes, `pendulum` behaves much more differently than the original `datetime`.
+
+### Fixed
+- Feature request #1 has been completed.
 
 ## [2.1] - 2019-02-26
 ### Added
