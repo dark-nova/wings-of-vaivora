@@ -791,9 +791,9 @@ class Database:
             except:
                 return False
 
-    async def get_gtz(self):
+    async def get_tz(self):
         """
-        :func:`get_gtz` gets the guild's time zone.
+        :func:`get_tz` gets the guild's time zone.
 
         Returns:
             str: the time zone e.g America/New_York
@@ -805,9 +805,9 @@ class Database:
             except:
                 return None
 
-    async def set_gtz(self, tz: str):
+    async def set_tz(self, tz: str):
         """
-        :func:`set_gtz` sets the guild's time zone to use for records.
+        :func:`set_tz` sets the guild's time zone to use for records.
 
         Args:
             tz (str): the time zone to use

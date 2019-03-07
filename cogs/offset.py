@@ -75,7 +75,7 @@ class OffsetCog:
                                        .format('time zone')))
 
         vdb = vaivora.db.Database(ctx.guild.id)
-        if await vdb.set_gtz(tz):
+        if await vdb.set_tz(tz):
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
                                    constants.offset.SUCCESS
@@ -142,7 +142,7 @@ class OffsetCog:
             True if successful; False otherwise
         """
         vdb = vaivora.db.Database(ctx.guild.id)
-        tz = await vdb.get_gtz()
+        tz = await vdb.get_tz()
 
         if tz:
             await ctx.send('{} {}'
