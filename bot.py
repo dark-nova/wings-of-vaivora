@@ -6,6 +6,7 @@ import asyncio
 from hashlib import blake2b
 from datetime import datetime, timedelta
 from operator import itemgetter
+from math import floor
 
 import discord
 from discord.ext import commands
@@ -16,7 +17,6 @@ import secrets
 import vaivora.db
 import constants.main
 import constants.boss
-import constants.errors
 import constants.settings
 
 
@@ -32,7 +32,8 @@ bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
 initial_extensions = ['cogs.settings',
                       'cogs.boss',
                       'cogs.meme',
-                      'cogs.gems']
+                      'cogs.gems',
+                      'cogs.offset']
 
 # snippet from https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be
 if __name__ == '__main__':
