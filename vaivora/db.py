@@ -801,7 +801,7 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute('select * from tz')
-                return await cursor.fetchone()
+                return (await cursor.fetchone())[0]
             except:
                 return None
 
@@ -828,6 +828,7 @@ class Database:
             try:
                 await _db.execute('insert into tz values("{}")'
                                   .format(tz))
+                await _db.commit()
                 return True
             except:
                 return False
@@ -842,7 +843,7 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute('select * from offset')
-                return await cursor.fetchone()
+                return (await cursor.fetchone())[0]
             except:
                 return None
 
@@ -870,6 +871,7 @@ class Database:
             try:
                 await _db.execute('insert into offset values("{}")'
                                   .format(offset))
+                await _db.commit()
                 return True
             except:
                 return False

@@ -24,7 +24,7 @@ class OffsetCog:
         self.bot = bot
 
     @commands.group()
-    async def offset(self, ctx, hour):
+    async def offset(self, ctx):
         pass
 
     @offset.group(name='set')
