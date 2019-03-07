@@ -187,7 +187,7 @@ class OffsetCog:
                                    .format('offset')))
             return False
 
-    @commands.command(name='list')
+    @offset.command(name='list')
     async def _list(self, ctx):
         """
         :func:`_list` lists the available time zones for servers.
