@@ -59,10 +59,12 @@ class OffsetCog:
                            .format(ctx.author.mention,
                                    constants.offset.SUCCESS
                                    .format('time zone')))
+            return True
         else:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
                                    constants.offset.FAIL_DB))
+            return False
 
     @commands.group(name='get')
     async def _get(self, ctx):
@@ -72,6 +74,12 @@ class OffsetCog:
     async def g_tz(self, ctx):
         """
         :func:`g_tz` gets the guild's time zone.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
         """
         vdb = vaivora.db.Database(ctx.guild.id)
         tz = await vdb.get_gtz()
@@ -81,10 +89,12 @@ class OffsetCog:
                            .format(ctx.author.mention,
                                    constants.offset.SUCCESS_GET_TZ
                                    .format(tz)))
+            return True
         else:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
                                    constants.offset.FAIL_NO_TZ))
+            return False
 
     @commands.command(name='list')
     async def _list(self, ctx):
