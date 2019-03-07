@@ -831,3 +831,45 @@ class Database:
                 return True
             except:
                 return False
+
+    async def get_offset(self):
+        """
+        :func:`get_offset` gets the guild's offset from the time zone.
+
+        Returns:
+            str: the time zone e.g America/New_York
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute('select * from offset')
+                return await cursor.fetchone()
+            except:
+                return None
+
+    async def set_offset(self, offset: int):
+        """
+        :func:`set_offset` sets the guild's offset from time zone
+        to use for records.
+
+        Args:
+            offset (int): the offset to use
+
+        Returns:
+            True if successful; False otherwise
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute('select * from offset')
+                existing = await cursor.fetchone()
+                if existing:
+                    await _db.execute('delete from offset')
+            except:
+                await _db.execute('drop table if exists offset')
+                await self.create_db('offset')
+
+            try:
+                await _db.execute('insert into offset values("{}")'
+                                  .format(offset))
+                return True
+            except:
+                return False

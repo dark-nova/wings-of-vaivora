@@ -66,6 +66,40 @@ class OffsetCog:
                                    constants.offset.FAIL_DB))
             return False
 
+    @_set.command(name='offset')
+    async def s_offset(self, ctx, offset: int):
+        """
+        :func:`s_offset` sets the offset for the guild.
+        Note that offset is not the same as time zone; rather,
+        offset is the actual offset from the guild time zone.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            offset (int): the offset to use; -23 <= offset <= 23
+
+        Returns:
+            True if successful; False otherwise
+        """
+        if offset > 23 or offset < -23:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                               constants.offset.FAIL
+                               .format('offset')))
+            return False
+
+        vdb = vaivora.db.Database(ctx.guild.id)
+        if await vdb.set_offset(offset):
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.offset.SUCCESS
+                                   .format('offset')))
+            return True
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.offset.FAIL_DB))
+            return False
+
     @commands.group(name='get')
     async def _get(self, ctx):
         pass
