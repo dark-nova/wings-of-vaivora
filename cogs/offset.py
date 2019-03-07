@@ -32,6 +32,16 @@ class OffsetCog:
 
     @_set.command(name='tz', aliases=['timezone', 'timezones'])
     async def s_tz(self, ctx, tz):
+        """
+        :func:`s_tz` sets the time zone for the guild.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            tz: a timezone; could be an index of `server_tz`, or a tzstr
+
+        Returns:
+            True if successful; False otherwise
+        """
         try:
             tz = server_tz[int(tz)]
         except:
@@ -57,6 +67,24 @@ class OffsetCog:
     @commands.group(name='get')
     async def _get(self, ctx):
         pass
+
+    @_get.command(name='tz', aliases=['timezone', 'timezones'])
+    async def g_tz(self, ctx):
+        """
+        :func:`g_tz` gets the guild's time zone.
+        """
+        vdb = vaivora.db.Database(ctx.guild.id)
+        tz = await vdb.get_gtz()
+
+        if tz:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.offset.SUCCESS_GET_TZ
+                                   .format(tz)))
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.offset.FAIL_NO_TZ))
 
     @commands.command(name='list')
     async def _list(self, ctx):
