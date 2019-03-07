@@ -19,6 +19,8 @@ columns['contribution'] = ('mention', 'points')
 
 columns['offset'] = ('hours',)
 
+columns['tz'] = ('time_zone',)
+
 types = {}
 types['boss'] = (('text', 'integer')
                  + ('text',)*3
@@ -34,8 +36,10 @@ types['channels'] = types['contribution']
 
 types['offset'] = ('integer',)
 
+types['tz'] = ('text',)
+
 tables = ['boss', 'roles', 'guild', 'contribution', 
-          'channels', 'offset']
+          'channels', 'offset', 'tz']
 
 tables_to_clean = ['roles', 'channels', 'contribution']
 
@@ -783,6 +787,47 @@ class Database:
                            ('{}', '{}')"""
                         .format(0, extra_points))
                 await _db.commit()
+                return True
+            except:
+                return False
+
+    async def get_gtz(self):
+        """
+        :func:`get_gtz` gets the guild's time zone.
+
+        Returns:
+            str: the time zone e.g America/New_York
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute('select * from tz')
+                return await cursor.fetchone()
+            except:
+                return None
+
+    async def set_gtz(self, tz: str):
+        """
+        :func:`set_gtz` sets the guild's time zone to use for records.
+
+        Args:
+            tz (str): the time zone to use
+
+        Returns:
+            True if successful; False otherwise
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute('select * from tz')
+                existing = await cursor.fetchone()
+                if existing:
+                    await _db.execute('delete from tz')
+            except:
+                await _db.execute('drop table if exists tz')
+                await self.create_db('tz')
+
+            try:
+                await _db.execute('insert into tz values("{}")'
+                                  .format(tz))
                 return True
             except:
                 return False

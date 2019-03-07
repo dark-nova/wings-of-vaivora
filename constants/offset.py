@@ -57,3 +57,5 @@ LIST = """
 Here are the server time zones available:
 
 {}"""
+
+FAIL = 'You have entered an invalid {} value!'

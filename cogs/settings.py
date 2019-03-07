@@ -366,7 +366,7 @@ async def contribution_setter(ctx, points, member=None, append=False):
         append (bool): (default: False) whether to add or not
 
     Returns:
-        True if sucessful; False otherwise
+        True if successful; False otherwise
     """
     mention = 0
 
