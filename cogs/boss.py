@@ -611,7 +611,7 @@ class BossCog:
         subcmd = await what_status(ctx.subcommand_passed)
 
         if ctx.boss == constants.boss.CMD_ARG_TARGET_ALL:
-           await ctx.send(constants.errors.IS_INVALID_3
+           await ctx.send(constants.boss.FAIL_INVALID_3
                           .format(ctx.author.mention, ctx.boss,
                                   constants.boss.CMD_ARG_TARGET, subcmd))
            return False
@@ -621,11 +621,11 @@ class BossCog:
         except:
             which_fail = await boss_helper(ctx.boss, time, map_or_channel)
             if len(which_fail) == 1:
-                await ctx.send(constants.errors.IS_INVALID_2
+                await ctx.send(constants.boss.FAIL_INVALID_2
                                .format(ctx.author.mention, ctx.boss,
                                        constants.boss.CMD_ARG_TARGET))
             elif len(which_fail) == 2:
-                await ctx.send(constants.errors.IS_INVALID_3
+                await ctx.send(constants.boss.FAIL_INVALID_3
                                .format(ctx.author.mention, time,
                                        ctx.subcommand_passed, 'time'))
             else:
@@ -657,7 +657,7 @@ class BossCog:
         if ctx.boss != constants.boss.CMD_ARG_TARGET_ALL:
             boss_idx = await check_boss(ctx.boss)
             if boss_idx == -1:
-                await ctx.send(constants.errors.IS_INVALID_2
+                await ctx.send(constants.boss.FAIL_INVALID_2
                                .format(ctx.author.mention, ctx.boss,
                                        constants.boss.CMD_ARG_TARGET))
                 return False
@@ -701,14 +701,14 @@ class BossCog:
         subcmd = await what_query(ctx.subcommand_passed)
 
         if ctx.boss == constants.boss.CMD_ARG_TARGET_ALL:
-           await ctx.send(constants.errors.IS_INVALID_3
+           await ctx.send(constants.boss.FAIL_INVALID_3
                           .format(ctx.author.mention, ctx.boss,
                                   constants.boss.CMD_ARG_TARGET, subcmd))
            return False
         else:
             boss_idx = await check_boss(ctx.boss)
             if boss_idx == -1:
-                await ctx.send(constants.errors.IS_INVALID_2
+                await ctx.send(constants.boss.FAIL_INVALID_2
                                .format(ctx.author.mention, ctx.boss,
                                        constants.boss.CMD_ARG_TARGET))
                 return False
@@ -733,7 +733,7 @@ class BossCog:
         subcmd = await what_type(ctx.subcommand_passed)
 
         if ctx.boss != constants.boss.CMD_ARG_TARGET_ALL:
-           await ctx.send(constants.errors.IS_INVALID_3
+           await ctx.send(constants.boss.FAIL_INVALID_3
                           .format(ctx.author.mention, ctx.boss,
                                   constants.boss.CMD_ARG_TARGET, subcmd))
            return False

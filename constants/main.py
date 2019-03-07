@@ -65,3 +65,6 @@ Anyone may contribute to this bot's development: https://github.com/dark-nova/wi
 ROLE_SETTINGS = "settings"
 
 HELP = 'help'
+
+FAIL_CANT_DM = '**{}** is not available in Direct Messages.'
+FAIL_TOO_FEW_ARGS = '{} Too few or many arguments for `{}`.\n\nUsage: `{}`'

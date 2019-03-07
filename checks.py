@@ -99,7 +99,7 @@ def only_in_guild():
     @commands.check
     async def check(ctx):
         if ctx.guild == None: # not a guild
-            await ctx.send(constants.errors.CANT_DM.format(constants.boss.COMMAND))
+            await ctx.send(constants.main.FAIL_CANT_DM.format(constants.boss.COMMAND))
             return False
         return True
     return check
@@ -116,7 +116,7 @@ def has_channel_mentions():
     @commands.check
     async def check(ctx):
         if not ctx.message.channel_mentions: # not a guild
-            await ctx.send(constants.errors.TOO_FEW_ARGS.format(
+            await ctx.send(constants.main.FAIL_TOO_FEW_ARGS.format(
                 ctx.author.mention, constants.settings.MODULE_NAME,
                 constants.settings.USAGE_SET_CHANNELS))
             return False

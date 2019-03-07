@@ -471,6 +471,9 @@ FAIL_STATUS_NO_ANCHOR = "This boss cannot be anchored."
 FAIL_ENTRY_ERASE = '*(But **nothing** happened...)*\n'
 FAIL_ENTRY_LIST = 'No results found! Try a different boss.\n'
 
+FAIL_INVALID_2 = '{} {} is invalid for `{}`.'
+FAIL_INVALID_3 = '{} {} is invalid for `{}` `{}`.'
+
 FAIL_TEMPLATE = "{}\n{}"
 
 TIME_SPAWN_MISSED = 'should have spawned at'
