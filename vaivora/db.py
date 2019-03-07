@@ -803,6 +803,8 @@ class Database:
                 cursor = await _db.execute('select * from tz')
                 return (await cursor.fetchone())[0]
             except:
+                await _db.execute('drop table if exists tz')
+                await self.create_db('tz')
                 return None
 
     async def set_tz(self, tz: str):
