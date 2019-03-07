@@ -14,7 +14,6 @@ import pendulum
 import checks
 import secrets
 import vaivora.db
-import vaivora.disclaimer
 import constants.main
 import constants.boss
 import constants.errors

@@ -1,4 +1,4 @@
-from vaivora.disclaimer import disclaimer
+from disclaimer import disclaimer
 
 BOSS_ALERT = '{} The following bosses will spawn within 15 minutes:\n\n'
 
