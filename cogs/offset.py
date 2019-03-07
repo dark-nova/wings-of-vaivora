@@ -30,20 +30,29 @@ class OffsetCog:
     async def _set(self, ctx):
         pass
 
-    @_set.command(name='server')
-    async def s_server(self, ctx, server):
+    @_set.command(name='tz', aliases=['timezone', 'timezones'])
+    async def s_tz(self, ctx, tz):
         try:
-            server = server_tz[int(server)]
+            tz = server_tz[int(tz)]
         except:
             try:
-                server = pendulum.timezone(server)
+                tz = pendulum.timezone(tz)
             except:
                 await ctx.send('{} {}'
                                .format(ctx.author.mention,
                                        constants.offset.FAIL
-                                       .format('server')))
+                                       .format('time zone')))
+
         vdb = vaivora.db.Database(ctx.guild.id)
-        channels = await vdb.set_gtz(kind)
+        if await vdb.set_gtz(tz):
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.offset.SUCCESS
+                                   .format('time zone')))
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.offset.FAIL_DB))
 
     @commands.group(name='get')
     async def _get(self, ctx):

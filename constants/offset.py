@@ -58,4 +58,7 @@ Here are the server time zones available:
 
 {}"""
 
+SUCCESS = 'You have successfully modified the guild {}.'
+
 FAIL = 'You have entered an invalid {} value!'
+FAIL_DB = 'Couldn\'t save to database. Check file permissions.'
