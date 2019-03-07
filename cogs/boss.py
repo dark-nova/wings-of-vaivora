@@ -11,16 +11,6 @@ import vaivora.db
 import constants.boss
 
 
-def help():
-    """
-    :func:`help` returns help for this module.
-
-    Returns:
-        a list of detailed help messages
-    """
-    return constants.boss.HELP
-
-
 async def boss_helper(boss, time, map_or_channel):
         """
         :func:`boss_helper` processes for `died` and `anchored`.
@@ -582,7 +572,7 @@ class BossCog:
             True if successful; False otherwise
         """
         if constants.boss.HELP == arg:
-            _help = help()
+            _help = constants.boss.HELP
             for _h in _help:
                 await ctx.author.send(_h)
             return True
