@@ -23,11 +23,11 @@ class OffsetCog:
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.group()
     async def offset(self, ctx, hour):
         pass
 
-    @commands.group(name='set')
+    @offset.group(name='set')
     async def _set(self, ctx):
         pass
 
@@ -107,7 +107,7 @@ class OffsetCog:
                                    constants.offset.FAIL_DB))
             return False
 
-    @commands.group(name='get')
+    @offset.group(name='get')
     async def _get(self, ctx):
         pass
 
