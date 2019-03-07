@@ -76,7 +76,7 @@ class OffsetCog:
     @checks.check_role()
     async def s_offset(self, ctx, offset: int):
         """
-        :func:`s_offset` sets the offset for the guild.
+        :func:`s_offset` sets the offset from the time zone for the guild.
         Note that offset is not the same as time zone; rather,
         offset is the actual offset from the guild time zone.
 
@@ -130,13 +130,44 @@ class OffsetCog:
         if tz:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
-                                   constants.offset.SUCCESS_GET_TZ
-                                   .format(tz)))
+                                   constants.offset.SUCCESS_GET
+                                   .format('time zone', tz)))
             return True
         else:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
-                                   constants.offset.FAIL_NO_TZ))
+                                   constants.offset.FAIL_NONE
+                                   .format('time zone')))
+            return False
+
+    @_get.command(name='offset')
+    @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def g_offset(self, ctx):
+        """
+        :func:`g_offset` gets the guild's offset from the time zone
+        for the guild.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        vdb = vaivora.db.Database(ctx.guild.id)
+        offset = await vdb.get_offset()
+
+        if offset:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.offset.SUCCESS_GET
+                                   .format('offset', offset)))
+            return True
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.offset.FAIL_NONE
+                                   .format('offset')))
             return False
 
     @commands.command(name='list')

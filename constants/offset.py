@@ -59,8 +59,8 @@ Here are the server time zones available:
 {}"""
 
 SUCCESS = 'You have successfully modified the guild {}.'
-SUCCESS_GET_TZ = 'Your guild\'s time zone is {}.'
+SUCCESS_GET = 'Your guild\'s {} is {}.'
 
 FAIL = 'You have entered an invalid {} value!'
 FAIL_DB = 'Couldn\'t save to database. Check file permissions.'
-FAIL_NO_TZ = 'Your guild doesn\'t appear to have a time zone set.'
+FAIL_NONE = 'Your guild doesn\'t appear to have a(n) {} set.'
