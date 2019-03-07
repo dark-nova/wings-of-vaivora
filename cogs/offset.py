@@ -22,10 +22,27 @@ class OffsetCog:
 
     def __init__(self, bot):
         self.bot = bot
+        self.bot.remove_command('help')
 
     @commands.group()
     async def offset(self, ctx):
         pass
+
+    @offset.command(name='help')
+    async def _help(self, ctx):
+        """
+        :func:`_help` retrieves help pages for `$offset`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True
+        """
+        _help = constants.offset.HELP
+        for _h in _help:
+            await ctx.author.send(_h)
+        return True
 
     @offset.group(name='set')
     async def _set(self, ctx):
