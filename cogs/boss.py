@@ -489,45 +489,34 @@ async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=N
                             *[int(rec) for rec
                               in boss_record[5:10]], tz=tz)
 
-            local = pendulum.now() + timedelta(hours=offset)
-            local = local.in_tz(tz)
-            server_date = pendulum.datetime(local.year,
-                                            local.month,
-                                            local.day,
-                                            local.hour,
-                                            local.minute,
-                                            tz=tz)
-
-            time_diff = record_date - server_date
+            time_diff = record_date - pendulum.now()
 
             if int(time_diff.hours) < 0:
                 spawn_msg = constants.boss.TIME_SPAWN_MISSED
-                minutes = (floor(time_diff.seconds/60)
-                           + int(time_diff.days)*86400)
             else:
                 spawn_msg = constants.boss.TIME_SPAWN_ONTIME
-                minutes = time_diff.seconds/60 #floor((86400-int(time_diff.seconds))/60)
+
+            minutes = abs(floor(time_diff.seconds/60))
 
             # absolute date and time for spawn
             # e.g. 2017/07/06 "14:47"
             spawn_time = record_date.strftime("%Y/%m/%d %H:%M")
 
-            if minutes < 0:
-                minutes = abs(int(time_diff.days))*86400 + minutes
-
             # print day or days conditionally
             msg_days = None
 
-            if int(time_diff.days) > 1:
-                msg_days = '{} days'.format(time_diff.days)
-            elif int(time_diff.days) == 1:
+            days = abs(time_diff.days)
+
+            if days == 1:
                 msg_days = '1 day'
+            else:
+                msg_days = '{} days'.format(days)
 
             # print hour or hours conditionally
             msg_hours = None
 
             if minutes > 119:
-                msg_hours = '{} hours'.format(str(floor((minutes % 86400)/60)))
+                msg_hours = '{} hours'.format(floor((minutes % 86400)/60))
             elif minutes > 59:
                 msg_hours = '1 hour'
 
