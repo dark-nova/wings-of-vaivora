@@ -10,6 +10,7 @@ The previous version built on `discord.py` "asyncio" has been frozen in branch `
 - [`$boss` for Boss Tracking](docs/BOSS.md)
 - [`$settings` for Guild Settings](docs/SETTINGS.md)
 - [`$gems` for Gem Calculations](docs/GEMS.md)
+- [`$offset` for Time Zones and Offsets](docs/OFFSET.md)
 
 ## Requirements
 _subject to change_

@@ -46,3 +46,7 @@
     - Lists the available `<tz>`s to pick.
 
 Time zones: <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
+
+### Important Note
+
+`$offset` can be considered an optional plugin to `$settings`. Therefore, it can only be used only in channels marked as `settings`.
