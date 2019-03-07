@@ -218,11 +218,11 @@ async def check_databases():
     results = {}
     minutes = {}
     records = []
-    today = pendulum.today() # check on first launch
+    today = pendulum.now() # check on first launch
 
     while not bot.is_closed():
         await asyncio.sleep(59)
-        print(pendulum.today().strftime("%Y/%m/%d %H:%M"),
+        print(pendulum.now().strftime("%Y/%m/%d %H:%M"),
               "- Valid DBs:", len(vdbs))
 
         # prune records once they're no longer alert-able
@@ -246,7 +246,7 @@ async def check_databases():
 
         # iterate through database results
         for vdb_id, valid_db in vdbs.items():
-            loop_time = pendulum.today()
+            loop_time = pendulum.now()
             print(loop_time.strftime("%H:%M"), "- in DB:", vdb_id)
             results[vdb_id] = []
             if today.day != loop_time.day:

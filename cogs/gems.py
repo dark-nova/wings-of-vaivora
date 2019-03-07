@@ -14,7 +14,7 @@ gems = [0,
 abrasives = gems[:-1]
 
 
-class GemsCog:
+class GemsCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot

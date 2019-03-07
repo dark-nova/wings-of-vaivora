@@ -566,7 +566,7 @@ async def process_cmd_query(boss, query):
         return await get_maps(boss)
 
 
-class BossCog:
+class BossCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot

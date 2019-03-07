@@ -421,7 +421,7 @@ async def contribution_setter(ctx, points, member=None, append=False):
         return False
 
 
-class SettingsCog:
+class SettingsCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot

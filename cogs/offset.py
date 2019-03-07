@@ -18,7 +18,7 @@ server_tz = [
 numbered_tz = [('[{}] {}'.format(x,y)) for (x, y)
                in zip(range(len(server_tz)), server_tz)]
 
-class OffsetCog:
+class OffsetCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
