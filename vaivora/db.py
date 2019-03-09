@@ -757,7 +757,7 @@ class Database:
             True if successful; False otherwise
         """
         level = 1
-        while constants.settings.G_LEVEL[level] < points:
+        while constants.settings.G_LEVEL[level+1] <= points:
             level += 1
 
         async with aiosqlite.connect(self.db_name) as _db:
@@ -768,19 +768,33 @@ class Database:
                                where mention != '0'""")
                 g_points = sum(await cursor.fetchall())
                 extra_points = points - g_points
+            except:
+                extra_points = points
+
+            if extra_points < 0:
+                return False
+
+            try:
                 await _db.execute(
                     """delete from contribution
                        where mention = '0'""")
+            except:
+                pass
+
+            try:
                 await _db.execute('delete from guild')
             except:
                 await _db.execute('ROLLBACK')
-                extra_points = points
 
             try:
                 await _db.execute(
                         """insert into contribution values
                            ('{}', '{}')"""
                         .format(0, extra_points))
+                await _db.execute(
+                        """insert into guild values
+                           ('{}', '{}')"""
+                        .format(level, points))
                 await _db.commit()
                 return True
             except:
