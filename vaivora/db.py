@@ -647,7 +647,8 @@ class Database:
             if not users:
                 try:
                     cursor = await _db.execute(
-                                'select * from contribution')
+                                """select * from contribution
+                                   where mention != '0'""")
                     return await cursor.fetchall()
                 except:
                     return None

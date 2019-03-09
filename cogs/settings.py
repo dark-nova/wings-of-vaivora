@@ -828,7 +828,8 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def g_talt(self, ctx, mentions: commands.Greedy[int] = None):
+    async def g_talt(self, ctx, mentions: commands.Greedy[int] = None,
+                     _range = None):
         """
         :func:`g_talt` gets contribution record.
         Ignores the 'remainder' (uncreditable) amount.
@@ -840,6 +841,18 @@ class SettingsCog(commands.Cog):
         Returns:
             True if successful; False otherwise
         """
+        first = 0
+        last = 0
+        if _range:
+            try:
+                first, last = _range.split('-')
+                first = int(first)
+                last = int(last)
+                if first >= last:
+                    raise Exception
+            except:
+                pass
+
         _mentions = []
 
         if ctx.message.mentions:
@@ -857,6 +870,8 @@ class SettingsCog(commands.Cog):
         if users:
             output = []
             users = sorted(users, key=lambda usr: usr[1], reverse=True)
+            if first and last:
+                users = users[first-1:last]
             for user in users:
                 member = user[0]
                 points = user[1]
