@@ -758,7 +758,7 @@ class Database:
             True if successful; False otherwise
         """
         level = 1
-        while constants.settings.G_LEVEL[level+1] <= points:
+        while constants.settings.G_LEVEL[level] < points:
             level += 1
 
         async with aiosqlite.connect(self.db_name) as _db:
