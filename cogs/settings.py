@@ -380,7 +380,7 @@ async def contribution_setter(ctx, points, member=None, append=False):
         else:
             mention = ctx.message.mentions[0].id
 
-    if member and mention:
+    if (member and mention) or len(member) > 1:
         await ctx.send('{} {}'
                        .format(ctx.author.mention,
                                constants.settings
@@ -395,16 +395,14 @@ async def contribution_setter(ctx, points, member=None, append=False):
                                    constants.settings
                                    .FAIL_INVALID_MENTION))
             return False
-    else:
-        member = mention
 
-    if not member:
-        member = ctx.author.id
+    if not mention:
+        mention = ctx.author.id
 
     vdb = vaivora.db.Database(ctx.guild.id)
-    if await vdb.set_contribution(member, points, append):
+    if await vdb.set_contribution(mention, points, append):
         row = '```\n{:<40}{:>5} points {:>10} Talt```'.format(
-                    str(ctx.guild.get_member(member)),
+                    str(ctx.guild.get_member(mention)),
                     points,
                     int(points/20))
         await ctx.send('{} {}'
