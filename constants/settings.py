@@ -145,13 +145,13 @@ USAGE_SET_CHANNELS = '$settings set channel <type> <#channel> [<#channel> ...]'
 ### DO NOT CHANGE/TRANSLATE THIS SECTION BELOW ###
 
 # Guild Levels     1        2        3        4        5
-G_LEVEL =    [0,   0,       0,      50,     125,     250,
+G_LEVEL =    [0,   0,    1000,    2500,    5000,    9000,
 # Guild Levels     6        7        8        9       10
-                 450,     886,    1598,    2907,    4786,
+               17720,   31960,   58140,   95720,  149660,
 # Guild Levels    11       12       13       14       15
-                7483,   11353,   16907,   24876,   52726,
+              227060,  338140,  497540,  726280, 1054520,
 # Guild Levels    16       17       18       19       20
-              160712,  345531,  742891, 1597216, 3434015]
+             2109040, 4218080, 8436160,16872320,33744640]
 
 ROLE_BOSS = 'boss'
 ROLE_NONE = 'none'
