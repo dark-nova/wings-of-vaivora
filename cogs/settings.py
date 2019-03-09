@@ -380,7 +380,7 @@ async def contribution_setter(ctx, points, member=None, append=False):
         else:
             mention = ctx.message.mentions[0].id
 
-    if (member and mention) or len(member) > 1:
+    if (member and mention) or (member and len(member) > 1):
         await ctx.send('{} {}'
                        .format(ctx.author.mention,
                                constants.settings
