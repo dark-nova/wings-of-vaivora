@@ -922,9 +922,11 @@ class SettingsCog(commands.Cog):
 
         bars_level = '[{}{}]'.format('|'*level,
                                      ' '*(20-level))
-        points_progress = floor(points*10/constants.settings.G_LEVEL[level+1])*4
-        bars_points = '[{}{}]'.format('|'*points_progress,
-                                      ' '*(40-points_progress))
+        percent = floor(points*10/constants.settings.G_TNL[level+1])
+        points_progress = percent*4
+        bars_points = '[{}{}{}]'.format('{}%'.format(percent),
+                                        '|'*(points_progress-3),
+                                        ' '*(40-points_progress))
         await ctx.send('{} {}'
                        .format(ctx.author.mention,
                                constants.settings.SUCCESS_GET_GUILD
