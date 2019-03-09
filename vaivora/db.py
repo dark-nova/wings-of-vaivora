@@ -424,6 +424,7 @@ class Database:
                                    ('{}', '{}')"""
                                 .format(kind, user))
                 except Exception as e:
+                    await _db.execute('ROLLBACK')
                     print('set_users', e)
                     errs.append(user)
                     continue
@@ -453,6 +454,7 @@ class Database:
                                    and mention='{}'"""
                                 .format(kind, user))
                 except Exception as e:
+                    await _db.execute('ROLLBACK')
                     print('remove_users', e)
                     errs.append(user)
                     continue
@@ -508,6 +510,7 @@ class Database:
                 await _db.commit()
                 return True
             except Exception as e:
+                await _db.execute('ROLLBACK')
                 print('Exception caught:', e)
                 return False
 
@@ -553,6 +556,7 @@ class Database:
                 await _db.commit()
                 return True
             except Exception as e:
+                await _db.execute('ROLLBACK')
                 print(e)
                 return False
 
@@ -599,6 +603,7 @@ class Database:
                 await _db.commit()
                 return True
             except Exception as e:
+                await _db.execute('ROLLBACK')
                 print('set_channel', e)
                 return False
 
@@ -622,6 +627,7 @@ class Database:
                 await _db.commit()
                 return True
             except Exception as e:
+                await _db.execute('ROLLBACK')
                 print('remove_channel', e)
                 return False
 
@@ -719,6 +725,7 @@ class Database:
                 await _db.commit()
                 return True
             except Exception as e:
+                await _db.execute('ROLLBACK')
                 print(e)
                 return False
 
