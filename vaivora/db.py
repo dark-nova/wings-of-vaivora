@@ -773,6 +773,7 @@ class Database:
                        where mention = '0'""")
                 await _db.execute('delete from guild')
             except:
+                await _db.execute('ROLLBACK')
                 extra_points = points
 
             try:
@@ -783,6 +784,7 @@ class Database:
                 await _db.commit()
                 return True
             except:
+                await _db.execute('ROLLBACK')
                 return False
 
     async def get_tz(self):
