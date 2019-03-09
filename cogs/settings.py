@@ -80,7 +80,6 @@ async def combine_mention_ids(ctx, mentions=None):
                            .format(ctx.author.mention,
                                    constants.settings.FAIL_NO_USER_BOSS))
 
-    print(_mentions)
     # uid mode; parse if they're actually id's and not nonsense
     if mentions:
         _mentions.extend(await get_mention_ids(ctx, mentions))
@@ -922,10 +921,10 @@ class SettingsCog(commands.Cog):
 
         bars_level = '[{}{}]'.format('|'*level,
                                      ' '*(20-level))
-        percent = floor(points*10/constants.settings.G_TNL[level+1])
-        points_progress = percent*4
-        bars_points = '[{}{}{}]'.format('{}%'.format(percent),
-                                        '|'*(points_progress-3),
+        percent = floor(points*100/constants.settings.G_TNL[level+1])
+        points_progress = floor(percent*0.4)
+        bars_points = '[{}{}{}]'.format(' {:02}% '.format(percent),
+                                        '|'*(points_progress-5),
                                         ' '*(40-points_progress))
         await ctx.send('{} {}'
                        .format(ctx.author.mention,
