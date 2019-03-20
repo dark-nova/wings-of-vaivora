@@ -845,9 +845,17 @@ class SettingsCog(commands.Cog):
         if _range:
             try:
                 first, last = _range.split('-')
-                first = int(first)
-                last = int(last)
-                if first >= last:
+                if not (first and last):
+                    raise Exception
+                if first:
+                    first = int(first)
+                else:
+                    first = 1
+                if last:
+                    last = int(last)
+                else:
+                    last = None
+                if (first and last) and first >= last:
                     raise Exception
             except:
                 pass
