@@ -126,7 +126,7 @@ class GemsCog(commands.Cog):
         Returns:
             True if successful; False otherwise
         """
-        if level > 9 or final_level > 9 or level < 1 or final_level < 1:
+        if level > 9 or final_level > 10 or level < 1 or final_level < 1:
             await ctx.send(constants.gems.INVALID_GLEVEL
                            .format(ctx.author.mention))
             return False
