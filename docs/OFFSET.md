@@ -33,7 +33,7 @@
         [3] Asia/Singapore      [SEA]   Telsiai
     ```
     - You are also allowed to enter your own time zone if desired. See below.
-    - Custom tzs must be listed as *canonical* in the Wikipedia table.
+    - Custom `<tz>`s must be listed as *canonical* in the Wikipedia table.
 
 + offset
     - Not to be confused with `<offset>`.
@@ -51,3 +51,5 @@ Time zones: <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
 ### Important Note
 
 `$offset` can be considered an optional plugin to `$settings`. Therefore, it can only be used only in channels marked as `settings`.
+
+#### File last modified: 2019-03-19 20:20 (UTC-7)
