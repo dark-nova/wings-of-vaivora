@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.3] - 2019-03-19
+### Added
+- Additional range slices for `$settings get points`. You can now choose from `a-b`, `-b`, or `a-`. (#6)
+
+### Fixed
+- `$gems gem2lv` now no longer breaks when final levels exceed 8. (#5)
+- Boss record checks should now play nicely with `$offset` related changes. (#7)
+
 ## [3.2] - 2019-03-07
 ### Fixed
 - Wings of Vaivora now runs on the latest rewrite.
