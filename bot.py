@@ -107,7 +107,7 @@ async def help(ctx):
     return True
 
 
-async def process_record(boss, status, time, boss_map, channel: int, guild_id):
+async def process_record(boss, status, time, diff, boss_map, channel, guild_id):
     """
     :func:`process_records` processes a record to print out
 
@@ -116,6 +116,7 @@ async def process_record(boss, status, time, boss_map, channel: int, guild_id):
         status (str): the status of the boss
         time (datetime): the `datetime` of the target
             set to its next approximate spawn
+        diff (timedelta): the difference in time from server to local
         boss_map (str): the map containing the last recorded spawn
         channel (int): the channel of the world boss if applicable; else, 1
         guild_id (int): the guild's id
@@ -151,7 +152,7 @@ async def process_record(boss, status, time, boss_map, channel: int, guild_id):
 
     local = pendulum.now()
 
-    minutes = floor((time-local).seconds / 60)
+    minutes = floor(diff.seconds / 60)
     minutes = '{} minutes'.format(str(minutes))
 
     # set time difference based on status and type of boss
@@ -172,6 +173,27 @@ async def process_record(boss, status, time, boss_map, channel: int, guild_id):
     # boss, status at, dead time, timefmt, maps with newlines
 
     return ret_message
+
+
+async def get_time_diff(server_tz):
+    """
+    :func:`get_time_diff` retrieves the time difference between local
+    and `server_tz`, to process the time difference.
+
+    Args:
+        server_tz (str): the time zone representing the in-game server
+
+    Returns:
+        tuple: (hours, minutes) where both are ints
+    """
+    try:
+        server_time = pendulum.now(tz=server_tz)
+        local_time = pendulum.now()
+        hours = server_time.hour - local_time.hour
+        minutes = server_time.minute - local_time.minute
+        return (hours, minutes)
+    except:
+        return (0, 0)
 
 
 async def check_databases():
@@ -264,6 +286,17 @@ async def check_databases():
             if not results[vdb_id]:
                 continue
 
+            tz = await valid_db.get_tz()
+            if not tz:
+                tz = constants.offset.DEFAULT
+
+            offset = await valid_db.get_offset()
+            if not offset:
+                offset = 0
+
+            diff_h, diff_m = await get_time_diff(tz)
+            full_diff = timedelta(hours=(diff_h + offset), minutes=diff_m)
+
             # sort by time - yyyy, mm, dd, hh, mm
             results[vdb_id].sort(key=itemgetter(5,6,7,8,9))
 
@@ -282,9 +315,17 @@ async def check_databases():
                                                tz=pendulum.now()
                                                   .timezone_name)
 
+                # process time difference
+                time_diff = entry_time - (loop_time + full_diff)
+
+                # record is in the past
+                if time_diff.hours < 0 or time_diff.minutes < 0:
+                    continue
+
                 record =  await process_record(current_boss,
                                                current_status,
                                                entry_time,
+                                               time_diff,
                                                current_time,
                                                current_channel,
                                                vdb_id)
@@ -302,14 +343,6 @@ async def check_databases():
 
                 # don't add a record that is already stored
                 if hashed_record in records:
-                    continue
-
-                # process time difference
-                local = pendulum.now()
-                time_diff = entry_time - local
-
-                # record is in the past
-                if time_diff.hours < 0:
                     continue
 
                 # record is within range of alert

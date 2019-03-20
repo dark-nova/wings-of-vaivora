@@ -509,7 +509,7 @@ async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=N
 
             if days == 1:
                 msg_days = '1 day'
-            else:
+            elif days > 1:
                 msg_days = '{} days'.format(days)
 
             # print hour or hours conditionally
@@ -524,7 +524,7 @@ async def process_cmd_entry(guild_id: int, msg_channel, bosses, entry, channel=N
             # e.g.              0 minutes from now
             # e.g.              59 minutes ago
             msg_minutes = '{} minutes'.format(floor(minutes % 60))
-            msg_when = 'from now' if int(time_diff.days) == 0 else "ago"
+            msg_when = 'from now' if int(time_diff.seconds) >= 0 else "ago"
 
             if msg_days is None and msg_hours is None:
                 msg_time = '{} {}'.format(msg_minutes, msg_when)
