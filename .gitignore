@@ -1,29 +1,13 @@
-##### FILES #####
+# Sublime Text
+*.sublime-*
 
-# private files
+# see secrets.py.example
 *secrets.py
-wings*
-server.txt
 
-# files by extension
-*~
-*.db*
-*.pyc
-*.old
-*.bak
-server_settings/*.json
-*.log
-*.sublime*
+db/*
+*.db
 
-
-
-##### DIRECTORIES #####
-
-# venv suggested for virtual env
+# Python files
 venv
 *__pycache__/*
-
-
-
-##### WHITELIST #####
-!vaivora_modules/version.json
+*.pyc
