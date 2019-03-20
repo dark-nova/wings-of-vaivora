@@ -40,7 +40,8 @@
     - The parameter name for offset.
 
 + `<offset>`
-    - The current gem experience listed in the gem's UI. Ranges from 0 to 1 below its current maximum.
+    - The offset from server time.
+    - For instance, if you are 1 hour behind your chosen server, use offset `-1`.
 
 + list
     - Lists the available `<tz>`s to pick.
