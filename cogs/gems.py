@@ -144,7 +144,7 @@ class GemsCog(commands.Cog):
         _abrasives = []
 
         a_level = 2 # abrasives below lv2 do not exist
-        while abrasives[a_level] <= exp_diff and a_level < 10:
+        while a_level < 10 and abrasives[a_level] <= exp_diff:
             a_qty = ceil(exp_diff/abrasives[a_level])
             _abrasives.append(constants.gems.ABRASIVE_TABLE
                               .format(a_level, a_qty))
