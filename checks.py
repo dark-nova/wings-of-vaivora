@@ -48,47 +48,56 @@ def check_role(lesser_role=None):
         users = await vdb.get_users(
                     constants.settings.ROLE_SUPER_AUTH)
 
-        if users and ctx.author.id in users:
+        if await iterate_roles(ctx.author, users):
             return True
-        elif ctx.author.roles:
-            for role in ctx.author.roles:
-                if role in users:
-                    return True
-        else:
+
+        users = await vdbs[ctx.guild.id].get_users(
+                    constants.settings.ROLE_AUTH)
+
+        if await iterate_roles(ctx.author, users):
+            return True
+
+        # for now, just use the default member role
+        if lesser_role:
             users = await vdbs[ctx.guild.id].get_users(
-                        constants.settings.ROLE_AUTH)
-
-        if users and ctx.author.id in users:
-            return True
-        elif ctx.author.roles:
-            for role in ctx.author.roles:
-                if role in users:
-                    return True
+                        constants.settings.ROLE_MEMBER)
         else:
-            # for now, just use the default member role
-            if lesser_role:
-                users = await vdbs[ctx.guild.id].get_users(
-                            constants.settings.ROLE_MEMBER)
-            else:
-                await ctx.send('{} {}'
-                            .format(ctx.author.mention,
-                                    constants.settings.FAIL_NOT_AUTH))
-                return False
+            await ctx.send('{} {}'
+                        .format(ctx.author.mention,
+                                constants.settings.FAIL_NOT_AUTH))
+            return False
 
-        if users and ctx.author.id in users:
+        if await iterate_roles(ctx.author, users):
             return True
-        elif ctx.author.roles:
-            for role in ctx.author.roles:
-                try:
-                    if role.id in users:
-                        return True
-                except:
-                    pass
+
         await ctx.send('{} {}'
                         .format(ctx.author.mention,
                                 constants.settings.FAIL_NOT_AUTH))
         return False
     return check
+
+
+async def iterate_roles(author, users):
+    """
+    :func:`iterate_roles` is a helper function for :func:`check_roles`.
+
+    Args:
+        author (discord.Member): the command user
+        users (list): users to iterate through
+
+    Returns:
+        True if author is authorized; False otherwise
+    """
+    if users and author.id in users:
+        return True
+    elif author.roles:
+        for role in author.roles:
+            try:
+                if role.id in users:
+                    return True
+            except:
+                pass
+    return False
 
 
 def only_in_guild():
