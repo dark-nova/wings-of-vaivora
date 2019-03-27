@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.3.1] - 2019-03-27
+### Changed
+- `server_settings` has been deleted, as they're no longer used.
+
+### Fixed
+- Vaivora member role users can now use some `$settings` commands as intended, if their role was based on Discord roles. (#8)
+
 ## [3.3] - 2019-03-19
 ### Added
 - Additional range slices for `$settings get points`. You can now choose from `a-b`, `-b`, or `a-`. (#6)
