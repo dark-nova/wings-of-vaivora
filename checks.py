@@ -79,13 +79,15 @@ def check_role(lesser_role=None):
             return True
         elif ctx.author.roles:
             for role in ctx.author.roles:
-                if role in users:
-                    return True
-        else:
-            await ctx.send('{} {}'
-                            .format(ctx.author.mention,
-                                    constants.settings.FAIL_NOT_AUTH))
-            return False
+                try:
+                    if role.id in users:
+                        return True
+                except:
+                    pass
+        await ctx.send('{} {}'
+                        .format(ctx.author.mention,
+                                constants.settings.FAIL_NOT_AUTH))
+        return False
     return check
 
 
