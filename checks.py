@@ -51,7 +51,7 @@ def check_role(lesser_role=None):
         if await iterate_roles(ctx.author, users):
             return True
 
-        users = await vdbs[ctx.guild.id].get_users(
+        users = await vdb.get_users(
                     constants.settings.ROLE_AUTH)
 
         if await iterate_roles(ctx.author, users):
@@ -59,7 +59,7 @@ def check_role(lesser_role=None):
 
         # for now, just use the default member role
         if lesser_role:
-            users = await vdbs[ctx.guild.id].get_users(
+            users = await vdb.get_users(
                         constants.settings.ROLE_MEMBER)
         else:
             await ctx.send('{} {}'
