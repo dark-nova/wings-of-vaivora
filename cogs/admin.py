@@ -21,11 +21,11 @@ class AdminCog(commands.Cog):
         pass
 
     @admin.command()
-    async def reload(ctx):
+    async def reload(self, ctx):
         failed = []
         for _cog in _cogs:
             try:
-                bot.load_extension(_cog)
+                self.bot.load_extension(_cog)
             except Exception as e:
                 failed.append(_cog)
         if not failed:
@@ -38,7 +38,7 @@ class AdminCog(commands.Cog):
             return False
 
     @admin.command(aliases=['getIDs', 'getID', 'get_id'])
-    async def get_ids(ctx):
+    async def get_ids(self, ctx):
         try:
             members = ['{}\t\t{}'.format(member, member.id)
                        for member in ctx.guild.members]
@@ -55,7 +55,7 @@ class AdminCog(commands.Cog):
             return False
 
     async def cog_check(self, ctx):
-        return ctx.author == (await bot.application_info()).owner
+        return ctx.author == (await self.bot.application_info()).owner
 
 
 def setup(bot):
