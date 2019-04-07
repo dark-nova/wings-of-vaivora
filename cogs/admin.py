@@ -25,6 +25,7 @@ class AdminCog(commands.Cog):
         failed = []
         for _cog in _cogs:
             try:
+                self.bot.unload_extension(_cog)
                 self.bot.load_extension(_cog)
             except Exception as e:
                 failed.append(_cog)
@@ -43,7 +44,8 @@ class AdminCog(commands.Cog):
             members = ['{}\t\t{}'.format(member, member.id)
                        for member in ctx.guild.members]
             while len(members) > 20:
-                await ctx.author.send('\n'.join(members[0:20]))
+                await ctx.author.send('```{}```'.format(
+                    '\n'.join(members[0:20])))
                 members = members[20:]
             if len(members) > 0:
                 await ctx.author.send('\n'.join(members))
