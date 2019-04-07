@@ -23,7 +23,8 @@ from cogs.boss import get_offset
 
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
 
-initial_extensions = ['cogs.settings',
+initial_extensions = ['cogs.admin',
+                      'cogs.settings',
                       'cogs.boss',
                       'cogs.meme',
                       'cogs.gems',
