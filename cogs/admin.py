@@ -18,15 +18,15 @@ class AdminCog(commands.Cog):
 
     @commands.group()
     async def admin(self, ctx):
-    	pass
+        pass
 
     @admin.command()
-	async def reload(ctx):
+    async def reload(ctx):
         failed = []
-		for _cog in _cogs:
-		    try:
-		        bot.load_extension(_cog)
-		    except Exception as e:
+        for _cog in _cogs:
+            try:
+                bot.load_extension(_cog)
+            except Exception as e:
                 failed.append(_cog)
         if not failed:
             await ctx.message.add_reaction('✅')
