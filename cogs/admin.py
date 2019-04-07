@@ -41,14 +41,15 @@ class AdminCog(commands.Cog):
     @admin.command(aliases=['getIDs', 'getID', 'get_id'])
     async def get_ids(self, ctx):
         try:
-            members = ['{}\t\t{}'.format(member, member.id)
+            members = ['{}\t\t\t{}'.format(member, member.id)
                        for member in ctx.guild.members]
             while len(members) > 20:
                 await ctx.author.send('```{}```'.format(
                     '\n'.join(members[0:20])))
                 members = members[20:]
             if len(members) > 0:
-                await ctx.author.send('\n'.join(members))
+                await ctx.author.send('```{}```'.format(
+                    '\n'.join(members)))
             await ctx.message.add_reaction('✅')
             return True
         except Exception as e:
