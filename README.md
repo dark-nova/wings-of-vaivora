@@ -11,6 +11,7 @@ The previous version built on `discord.py` "asyncio" has been frozen in branch `
 - [`$settings` for Guild Settings](docs/SETTINGS.md)
 - [`$gems` for Gem Calculations](docs/GEMS.md)
 - [`$offset` for Time Zones and Offsets](docs/OFFSET.md)
+- [`$admin` for (limited) administration commands](docs/ADMIN.md)
 
 ## Requirements
 _subject to change_
@@ -31,6 +32,7 @@ $ . venv/bin/activate
 $ pip install -r requirements.txt
 $ pynt
 ```
+Note: this setup has only been tested on Debian-like distros.
 
 ## Migrating from "asyncio"
 - Read [here](docs/MIGRATING.md)
@@ -39,10 +41,10 @@ $ pynt
 - Read [here](docs/CONTRIBUTING.md)
 
 
-#### File last modified: 2019-03-05 16:15 (UTC-8)
+#### File last modified: 2019-04-09 10:41 (UTC-7)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
-[discord.py]: https://github.com/Rapptz/discord.py/tree/rewrite
-[api]: http://discordpy.readthedocs.io/en/rewrite/api.html
+[discord.py]: https://github.com/Rapptz/discord.py
+[api]: http://discordpy.readthedocs.io/en/latest/api.html
 [dev]: https://discordapp.com/developers/applications/me
