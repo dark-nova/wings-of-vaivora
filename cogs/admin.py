@@ -21,21 +21,35 @@ class AdminCog(commands.Cog):
         pass
 
     @admin.command()
-    async def reload(self, ctx):
+    async def reload(self, ctx, *cogs):
+        return await self.reloader(ctx, cogs)
+
+    @admin.command(aliases=['reloadAll', 'reloadall'])
+    async def reload_all(self, ctx):
+        return await self.reloader(ctx, _cogs)
+        
+    async def reloader(self, ctx, cogs):
         failed = []
-        for _cog in _cogs:
+        for cog in cogs:
             try:
-                self.bot.unload_extension(_cog)
-                self.bot.load_extension(_cog)
+                if cog == 'cogs.admin':
+                    raise Exception
+                self.bot.unload_extension(cog)
+                self.bot.load_extension(cog)
             except Exception as e:
-                failed.append(_cog)
+                failed.append('{}: {}'.format(cog, e))
         if not failed:
             await ctx.message.add_reaction('✅')
             return True
         else:
             await ctx.message.add_reaction('❌')
-            await ctx.author.send('Could not reload the following cogs:\n\n- {}'
-                                  .format('\n- '.join(failed)))
+            try:
+                await ctx.author.send(
+                    'Could not reload the following cogs:\n\n- {}'
+                    .format('\n- '.join(failed)))
+            except Exception as e:
+                await ctx.author.send(
+                    'Exception: {}'.format(e))
             return False
 
     @admin.command(aliases=['getIDs', 'getID', 'get_id'])

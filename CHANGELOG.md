@@ -3,25 +3,33 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [3.3.3] - 2019-04-09
+## [3.5] - 2019-04-09
+### Changed
+- Adjusted the versioning to be slightly more sensible.
+- `$admin reload` was broken into 3 composite parts:
+    - `$admin reload_all` now achieves what `$admin reload` formerly did
+    - `$admin reload <cog> ...` now lets the user reload individual cogs
+    - `reloader` was added as a middleman between both Discord commands and the commandline
+
+## [3.4.1] - 2019-04-09
 ### Added
 - New document was added for [`$admin`](docs/ADMIN.md)
 
 ### Changed
 - `discord.py` was added back to [requirements.txt](./requirements.txt) as "rewrite" is now stable.
 
-## [3.3.2] - 2019-04-06
+## [3.4] - 2019-04-06
 ### Added
 - New [cog](cogs/admin.py) for administration - `$admin`
 
-## [3.3.1] - 2019-03-27
+## [3.3] - 2019-03-27
 ### Changed
 - `server_settings` has been deleted, as they're no longer used.
 
 ### Fixed
 - Vaivora member role users can now use some `$settings` commands as intended, if their role was based on Discord roles. (#8)
 
-## [3.3] - 2019-03-19
+## [3.2.1] - 2019-03-19
 ### Added
 - Additional range slices for `$settings get points`. You can now choose from `a-b`, `-b`, or `a-`. (#6)
 
