@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.3.3] - 2019-04-09
+### Added
+- New document was added for [`$admin`](docs/ADMIN.md)
+
+### Changed
+- `discord.py` was added back to [requirements.txt](./requirements.txt) as "rewrite" is now stable.
+
 ## [3.3.2] - 2019-04-06
 ### Added
 - New [cog](cogs/admin.py) for administration - `$admin`
