@@ -109,8 +109,10 @@ async def combine_channel_ids(ctx):
 
 async def channel_getter(ctx, kind):
     """
-    :func:`channel_getter` does the work
-    for :func:`gc_boss` and :func:`gc_settings`.
+    :func:`channel_getter` does the work for:
+        :func:`gc_settings`
+        :func:`gc_boss`
+        :func:`gc_events`
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -146,8 +148,10 @@ async def channel_getter(ctx, kind):
 
 async def channel_setter(ctx, kind):
     """
-    :func:`channel_setter` does the work
-    for :func:`sc_boss` and :func:`sc_settings`.
+    :func:`channel_setter` does the work for:
+        :func:`sc_settings`
+        :func:`sc_boss`
+        :func:`sc_events`
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -181,8 +185,10 @@ async def channel_setter(ctx, kind):
 
 async def channel_deleter(ctx, kind):
     """
-    :func:`channel_setter` does the work
-    for :func:`sc_boss` and :func:`sc_settings`.
+    :func:`channel_setter` does the work for:
+        :func:`dc_settings`
+        :func:`dc_boss`
+        :func:`dc_events`
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -216,8 +222,11 @@ async def channel_deleter(ctx, kind):
 
 async def role_getter(ctx, mentions=None):
     """
-    :func:`role_getter` handles the backend for
-    :func:`gr_member`, :func:`gr_auth`, and :func:`gr_boss`.
+    :func:`role_getter` handles the backend for:
+        :func:`gr_member`
+        :func:`gr_auth`
+        :func:`gr_boss`
+        :func:`gr_events`
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -277,8 +286,11 @@ async def role_getter(ctx, mentions=None):
 
 async def role_setter(ctx, mentions=None):
     """
-    :func:`role_setter` handles the backend for
-    :func:`sr_member`, :func:`sr_auth`, and :func:`sr_boss`.
+    :func:`role_setter` handles the backend for:
+        :func:`sr_member`
+        :func:`sr_auth`
+        :func:`sr_boss`
+        :func:`sr_events`
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -316,8 +328,11 @@ async def role_setter(ctx, mentions=None):
 
 async def role_deleter(ctx, mentions=None):
     """
-    :func:`role_deleter` handles the backend for
-    :func:`dr_member`, :func:`dr_auth`, and :func:`dr_boss`.
+    :func:`role_deleter` handles the backend for:
+        :func:`dr_member`
+        :func:`dr_auth`
+        :func:`dr_boss`
+        :func:`dr_events`
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
@@ -536,6 +551,23 @@ class SettingsCog(commands.Cog):
         """
         return await channel_setter(ctx, ctx.channel_kind)
 
+    @s_channel.command(name='events')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    @checks.has_channel_mentions()
+    async def sc_events(self, ctx):
+        """
+        :func:`sc_events` sets channels to `events`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await channel_setter(ctx, ctx.channel_kind)
+
     @_set.group(name='role', aliases=['roles', 'user', 'users'])
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
@@ -577,7 +609,7 @@ class SettingsCog(commands.Cog):
     @checks.check_role()
     async def sr_auth(self, ctx, mentions: commands.Greedy[int] = None):
         """
-        :func:`sr_member` sets roles of members.
+        :func:`sr_auth` sets roles of members.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
@@ -594,7 +626,24 @@ class SettingsCog(commands.Cog):
     @checks.check_role()
     async def sr_boss(self, ctx, mentions: commands.Greedy[int] = None):
         """
-        :func:`sr_member` sets roles of members.
+        :func:`sr_boss` sets roles of members.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            mentions: an optional mention as a raw id
+
+        Returns:
+            True if successful; False otherwise      
+        """
+        return await role_setter(ctx, mentions)
+
+    @s_role.command(name='events')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def sr_events(self, ctx, mentions: commands.Greedy[int] = None):
+        """
+        :func:`sr_events` sets roles of members.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
@@ -1101,6 +1150,22 @@ class SettingsCog(commands.Cog):
         """
         return await role_deleter(ctx, mentions)
 
+    @d_role.command(name='events')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def dr_events(self, ctx, mentions: commands.Greedy[int] = None):
+        """
+        :func:`dr_boss` deletes members from `boss`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await role_deleter(ctx, mentions)
+
     @delete.group(name='channel')
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
@@ -1141,6 +1206,22 @@ class SettingsCog(commands.Cog):
     async def dc_boss(self, ctx):
         """
         :func:`dc_boss` deletes channels from `boss`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await channel_deleter(ctx, ctx.channel_kind)
+
+    @d_channel.command(name='events')
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def dc_events(self, ctx):
+        """
+        :func:`dc_events` deletes channels from `events`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
