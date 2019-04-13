@@ -40,16 +40,16 @@
     - Format: `HH:MMAP` where `AP` is an optional `AM` or `PM`. `HH` can be 24-hour.
 
 + enable
-    - Enables a <`permanent-event`>.
+    - Enables a `<permanent-event>`.
     - Enabled alerts will:
         - send messages to the first channel marked as `events`.
         - also ping roles designated as `events`.
         - Use `$settings` to do modify channels/users/roles.
 
 + disable
-    - Disables a <`permanent-event`>.
+    - Disables a `<permanent-event>`.
 
-+ <`permanent-event`>
++ `<permanent-event>`
     - Permanent events in-game.
     - Options:
         - Boruta - a weekly message on Monday at 7PM
@@ -67,4 +67,4 @@
 
 `$events` can be called by aliases `$event`, `$alert`, and `$alerts`.
 
-#### File last modified: 2019-04-12 20:44 (UTC-7)
+#### File last modified: 2019-04-12 20:48 (UTC-7)
