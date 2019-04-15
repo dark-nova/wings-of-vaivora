@@ -6,42 +6,105 @@ import constants.settings
 import constants.boss
 
 columns = {}
-columns['boss'] = ('name', 'channel', 'map', 'status', 'text_channel',
-                    'year', 'month', 'day', 'hour', 'minute')
+columns['boss'] = (
+    'name',
+    'channel',
+    'map',
+    'status',
+    'text_channel',
+    'year',
+    'month',
+    'day',
+    'hour',
+    'minute'
+    )
 
-columns['roles'] = ('role', 'mention')
+columns['roles'] = (
+    'role',
+    'mention'
+    )
 
-columns['channels'] = ('type', 'channel')
+columns['channels'] = (
+    'type',
+    'channel'
+    )
 
-columns['guild'] = ('level', 'points')
+columns['guild'] = (
+    'level',
+    'points'
+    )
 
-columns['contribution'] = ('mention', 'points')
+columns['contribution'] = (
+    'mention',
+    'points'
+    )
 
-columns['offset'] = ('hours',)
+columns['offset'] = (
+    'hours',
+    )
 
-columns['tz'] = ('time_zone',)
+columns['tz'] = (
+    'time_zone',
+    )
 
 types = {}
-types['boss'] = (('text', 'integer')
-                 + ('text',)*3
-                 + ('integer',)*5)
+types['boss'] = (
+    # ('text', 'integer')
+    # + ('text',)*3
+    # + ('integer',)*5
+    'text',
+    'integer',
+    'text',
+    'text',
+    'text',
+    'integer',
+    'integer',
+    'integer',
+    'integer',
+    'integer',
+    )
 
-types['roles'] = ('text', 'integer')
+types['roles'] = (
+    'text',
+    'integer'
+    )
 
-types['guild'] = ('integer',)*2
+types['guild'] = (
+    # ('integer',)*2
+    'integer',
+    'integer'
+    )
 
-types['contribution'] = ('integer', 'integer')
+types['contribution'] = (
+    'integer',
+    'integer'
+    )
 
 types['channels'] = types['contribution']
 
-types['offset'] = ('integer',)
+types['offset'] = (
+    'integer',
+    )
 
-types['tz'] = ('text',)
+types['tz'] = (
+    'text',
+    )
 
-tables = ['boss', 'roles', 'guild', 'contribution',
-          'channels', 'offset', 'tz']
+tables = [
+    'boss',
+    'roles',
+    'guild',
+    'contribution',
+    'channels',
+    'offset',
+    'tz'
+    ]
 
-tables_to_clean = ['roles', 'channels', 'contribution']
+tables_to_clean = [
+    'roles',
+    'channels',
+    'contribution'
+    ]
 
 spec = {}
 spec['roles'] = 'role, mention'
