@@ -1,6 +1,8 @@
 import asyncio
 import re
 
+import pendulum
+
 import constants.boss
 
 async def validate_time(time):
@@ -45,3 +47,34 @@ async def validate_time(time):
 
     return constants.boss.TIME.format(str(hours).rjust(2, '0'),
                                       str(minutes).rjust(2, '0'))
+
+async def validate_date(date):
+    """
+    :func:`validate_date` validates whether a string representing date is valid
+    or not, returning a standardized one.
+
+    Args:
+        date (str): the date str to check
+
+    Returns:
+        list: of ints (year, month, day); or
+        None if invalid
+    """
+    delims = ['.', '/', '-']
+    for delim in delims:
+        split_date = date.split(delim)
+        if len(split_date) != 3:
+            continue
+        else:
+            date_list = [int(_d) for _d in split_date]
+            end = pendulum.datetime(*date_list)
+            now = pendulum.now()
+            time_diff = now - end
+            # reject events that have already ended
+            if time_diff.seconds <= 0:
+                return None
+            else:
+                return date_list
+
+    # nothing was validated
+    return None
