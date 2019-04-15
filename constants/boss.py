@@ -401,8 +401,9 @@ NEAREST_WARPS = {BOSS_W_ABOMINATION: ['**Guards\' Graveyard**', 0],
                  DEMON_LORDS_A: [('**Inner Wall District 8**', 0),
                                  ('**Lanko 26 Waters**', 1)],
 
-                 DEMON_LORDS_B: [('**Izoliacjia Plateau**', 1),
-                                 ('**Pystis Forest**', 0)],
+                 DEMON_LORDS_B: ['**Pystis Forest**', 0]
+                 # DEMON_LORDS_B: [('**Izoliacjia Plateau**', 1),
+                 #                 ('**Pystis Forest**', 0)],
                 }
 
 ACKNOWLEDGED = "Thank you! Your command has been acknowledged and recorded.\n"
