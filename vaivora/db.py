@@ -1,3 +1,5 @@
+import sqlite3
+
 import asyncio
 import aiosqlite
 from operator import itemgetter
@@ -47,6 +49,16 @@ columns['tz'] = (
     'time_zone',
     )
 
+columns['events'] = (
+    'name',
+    'year',
+    'month',
+    'day',
+    'hour',
+    'minutes',
+    'enabled'
+    )
+
 types = {}
 types['boss'] = (
     # ('text', 'integer')
@@ -90,6 +102,16 @@ types['tz'] = (
     'text',
     )
 
+types['events'] = (
+    'text',
+    'integer',
+    'integer',
+    'integer',
+    'integer',
+    'integer',
+    'integer'
+    )
+
 tables = [
     'boss',
     'roles',
@@ -97,7 +119,8 @@ tables = [
     'contribution',
     'channels',
     'offset',
-    'tz'
+    'tz',
+    'events'
     ]
 
 tables_to_clean = [
@@ -110,6 +133,19 @@ spec = {}
 spec['roles'] = 'role, mention'
 spec['channels'] = 'type, channel'
 spec['contribution'] = 'mention, points'
+
+permanent_events = [
+    'Boruta',
+    'Guild Territory War',
+    'Irredian Shelter'
+    ]
+
+event_times = {}
+event_times[permanent_events[0]] = (19, 0)
+event_times[permanent_events[1]] = (20, 0)
+event_times[permanent_events[2]] = (0, 0)
+
+dummy_dates = (0, 0, 0)
 
 
 async def get_dbs(kind):
@@ -950,4 +986,176 @@ class Database:
                 await _db.commit()
                 return True
             except:
+                return False
+
+    async def add_custom_event(self, name: str, date: dict, time: dict):
+        """
+        :func:`add_custom_event` adds a custom event to timers.
+        If an event already exists, the command fails.
+
+        Args:
+            name (str): the name of the event to add
+            date (dict): with year, month, day; the ending date
+            time (dict): with hour, minutes; the ending time
+
+        Returns:
+            True if successful; False otherwise
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute(
+                    'select * from events where name = "{}"'
+                    .format(name)
+                    )
+                existing = await cursor.fetchone()
+                if existing:
+                    return False
+
+                cursor = await _db.execute(
+                    'select count(name) from events'
+                    )
+                event_count = (await cursor.fetchone())[0]
+                if event_count >= 15:
+                    return False
+            except sqlite3.OperationalError as e:
+                await self.create_db('events')
+                print('add_custom_event', e)
+                return False
+            except Exception as e:
+                print('add_custom_event', 'unknown exception:', e)
+                return False
+
+    async def verify_existing_custom_event(self, name: str):
+        """
+        :func:`verify_existing_custom_event` is called prior to updating
+        a custom event.
+        If the event did not exist already, the command fails.
+        Otherwise, the existing event is destroyed and the command proceeds.
+
+        Args:
+            name (str): the name of the event to check
+
+        Returns:
+            True if successful; False otherwise
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute(
+                    'select * from events where name = "{}"'
+                    .format(name)
+                    )
+                existing = await cursor.fetchone()
+                if existing:
+                    await _db.execute(
+                        'delete from events where name = "{}"'
+                        .format(name)
+                        )
+                    await _db.commit()
+                    return True
+                else:
+                    return False
+            except sqlite3.OperationalError:
+                await self.create_db('events')
+                return False
+            except:
+                return False
+
+    async def del_custom_event(self, name: str):
+        """
+        :func:`del_custom_event` deletes a custom event from timers.
+        Note that the command will successfully run even if
+        nothing was deleted.
+
+        Args:
+            name (str): the name of the event to delete; MUST MATCH EXISTING
+
+        Returns:
+            True if successful; False otherwise
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                await _db.execute(
+                    'delete from events where name = "{}"'
+                    .format(name)
+                    )
+                return True
+            except Exception as e:
+                print('del_custom_event', e)
+                return False
+
+    async def toggle_event(self, name: str, toggle: int):
+        """
+        :func:`toggle_event` handles the logic for:
+            :func:`enable_event`
+            :func:`disable_event`
+
+        Args:
+            name (str): the name of the permanent event to use
+            toggle (int): the toggle state, 1 being enabled; 0 disabled
+
+        Returns:
+            True if successful; False otherwise
+        """
+        toggle_name = 'enable_event' if toggle != 0 else 'disable_event'
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                await _db.execute(
+                    'delete from events where name = "{}"'
+                    .format(name)
+                    )
+                await _db.commit(
+                    'insert into events({} {} {} {} {} {} {})'
+                    .format(name, *dummy_dates, *event_times[name], toggle))
+                await _db.commit()
+                return True
+            except Exception as e:
+                print(toggle_name, e)
+                return False
+
+    async def enable_event(self, name: str):
+        """
+        :func:`enable_event` enables a permanent in-game event timer.
+        Note that this function makes no attempt to check the previous state
+        of the event.
+        Permanent event dates will use dummy values.
+
+        Args:
+            name (str): the name of the permanent event to use
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await self.toggle_event(name, 1)
+
+    async def disable_event(self, name: str):
+        """
+        :func:`disable_event` disables a permanent in-game event timer.
+        Note that this function makes no attempt to check the previous state
+        of the event.
+
+        Args:
+            name (str): the name of the permanent event to use
+
+        Returns:
+            True if successful; False otherwise
+        """
+        return await self.toggle_event(name, 0)
+
+    async def list_all_events(self):
+        """
+        :func:`list_all_events` prints all events custom or permanent.
+        Custom event timers will show time remaining.
+        Permanent events may do the same, if they are enabled.
+        The state of all permanent event timers will be listed as well.
+
+        Returns:
+            list: of tuples (event name, date and time, enabled/disabled)
+            False if unsuccessful
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute('select * from events')
+                return await cursor.fetchall()
+            except Exception as e:
+                print('list_all_events', e)
                 return False
