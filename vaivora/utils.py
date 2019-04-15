@@ -5,6 +5,10 @@ import pendulum
 
 import constants.boss
 
+
+nonalnum = re.compile('[^A-Za-z0-9 ]')
+
+
 async def validate_time(time):
     """
     :func:`validate_time` validates whether a string representing time is valid
@@ -48,6 +52,7 @@ async def validate_time(time):
     return constants.boss.TIME.format(str(hours).rjust(2, '0'),
                                       str(minutes).rjust(2, '0'))
 
+
 async def validate_date(date):
     """
     :func:`validate_date` validates whether a string representing date is valid
@@ -78,3 +83,17 @@ async def validate_date(date):
 
     # nothing was validated
     return None
+
+
+async def sanitize_nonalmum(text: str):
+    """
+    :func:`sanitize_nonalnum` removes all non-alphanumeric characters.
+    Spaces are valid.
+
+    Args:
+        text (str): the text to sanitize
+
+    Returns:
+        str: a sanitized string
+    """
+    return nonalnum.sub('', text)
