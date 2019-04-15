@@ -62,7 +62,7 @@ async def validate_date(date):
         date (str): the date str to check
 
     Returns:
-        list: of ints (year, month, day); or
+        dict: of ints (year, month, day); or
         None if invalid
     """
     delims = ['.', '/', '-']
@@ -79,7 +79,11 @@ async def validate_date(date):
             if time_diff.seconds <= 0:
                 return None
             else:
-                return date_list
+                return {
+                    'year': date_list[0],
+                    'month': date_list[1],
+                    'day': date_list[2]
+                    }
 
     # nothing was validated
     return None
