@@ -21,7 +21,7 @@ def check_channel(kind):
     """
     @commands.check
     async def check(ctx):
-        vdb = vaivora.db.Database(str(ctx.guild.id))
+        vdb = vaivora.db.Database(ctx.guild.id)
         chs = await vdb.get_channel(kind)
 
         if chs and ctx.channel.id not in chs:
@@ -44,7 +44,7 @@ def check_role(lesser_role=None):
     """
     @commands.check
     async def check(ctx):
-        vdb = vaivora.db.Database(str(ctx.guild.id))
+        vdb = vaivora.db.Database(ctx.guild.id)
         users = await vdb.get_users(
                     constants.settings.ROLE_SUPER_AUTH)
 

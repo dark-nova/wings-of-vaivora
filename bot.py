@@ -210,8 +210,7 @@ async def check_databases():
 
     for guild in bot.guilds:
         if not guild.unavailable:
-            guild_id = str(guild.id)
-            vdbs[guild.id] = vaivora.db.Database(guild_id)
+            vdbs[guild.id] = vaivora.db.Database(guild.id)
             try:
                 if not await vdbs[guild.id].update_user_sauth(
                         guild.owner.id, owner=True):
