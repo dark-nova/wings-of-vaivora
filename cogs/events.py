@@ -51,7 +51,26 @@ class EventsCog(commands.Cog):
         if time is None:
             time = '0:00'
 
-        pass
+        hour, minutes = [int(x) for x in time.split(':')]
+        time = {
+            'hour': hour,
+            'minutes': minutes
+        }
+
+        vdb = vaivora.db.Database(ctx.guild.id)
+        if not await vdb.add_custom_event(name, date, time):
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.FAIL_EVENT_ADD))
+            return False
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.SUCCESS_EVENT_ADD
+                                   .format(name,
+                                           '/'.join(str(v) for v in
+                                                    date.values()))))
+            return True
 
 
 def setup(bot):
