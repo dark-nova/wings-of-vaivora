@@ -3,6 +3,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Unreleased]
+### Added
+- New command [`$events`](cogs/events.py) and [doc](docs/EVENTS.md)
+
+### Changed
+- Boss constants were cleaned up to be more readable.
+
 ## [3.5] - 2019-04-09
 ### Changed
 - Adjusted the versioning to be slightly more sensible.
