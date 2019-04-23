@@ -2,6 +2,7 @@ import asyncio
 import re
 from datetime import timedelta
 from math import floor
+from hashlib import blake2b
 
 import pendulum
 
@@ -201,7 +202,7 @@ async def sanitize_nonalmum(text: str):
     return nonalnum.sub('', text)
 
 
-async def get_boss_offset(boss, status, coefficient=1):
+async def get_boss_offset(boss: str, status: str, coefficient: int=1):
     """
     :func:`get_boss_offset` returns the timedelta offset
     for a given boss.
@@ -225,3 +226,32 @@ async def get_boss_offset(boss, status, coefficient=1):
         multiplier = constants.boss.TIME_STATUS_WB
 
     return timedelta(minutes=(coefficient * multiplier))
+
+
+async def hash_object(channel_id: str, obj: str, time: str,
+    etc: str=None):
+    """Hashes an object to use in the background loop of
+    `bot.py`.
+
+    Args:
+        channel_id (str): the Discord channel id, as a str
+        object (str): the object to hash
+        time (str): the time associated with the object
+        etc (str, optional): any extra characteristics to use;
+            defaults to None
+
+    Returns:
+        str: a hashed string representing the unique record
+
+    """
+    record = "{}:{}:{}:{}".format(
+        channel_id,
+        obj,
+        time,
+        etc
+        )
+
+    record = bytearray(record, 'utf-8')
+    hashedblake = blake2b(digest_size=48)
+    hashedblake.update(record2byte)
+    return hashedblake.hexdigest()

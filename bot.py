@@ -3,7 +3,6 @@ import re
 import os
 import sys
 import asyncio
-from hashlib import blake2b
 from datetime import timedelta
 from operator import itemgetter
 from math import floor
@@ -260,19 +259,12 @@ async def check_databases():
                     vdb_id
                     )
 
-                record2byte = "{}:{}:{}:{}".format(discord_channel,
+                hashed_record = await vaivora.utils.hash_object(
+                    discord_channel,
                     current_boss,
-                    entry_time
-                    .strftime(
-                        "%Y/%m/%d %H:%M"
-                        ),
+                    entry_time,
                     current_channel
                     )
-
-                record2byte = bytearray(record2byte, 'utf-8')
-                hashedblake = blake2b(digest_size=48)
-                hashedblake.update(record2byte)
-                hashed_record = hashedblake.hexdigest()
 
                 # don't add a record that is already stored
                 if hashed_record in records:
