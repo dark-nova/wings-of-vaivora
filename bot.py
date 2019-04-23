@@ -172,7 +172,7 @@ async def check_databases():
     today = pendulum.now() # check on first launch
 
     while not bot.is_closed():
-        await asyncio.sleep(5)
+        await asyncio.sleep(59)
         print(pendulum.now().strftime("%Y/%m/%d %H:%M"),
               "- Valid DBs:", len(vdbs))
 
