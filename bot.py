@@ -19,7 +19,6 @@ import vaivora.utils
 import constants.main
 import constants.boss
 import constants.settings
-from cogs.boss import get_offset
 
 
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
@@ -112,37 +111,55 @@ async def check_databases():
     Records are output to the relevant Discord channels.
 
     """
+    # list of guild id's to skip for event checking
+    skip_events = []
+
     await bot.wait_until_ready()
     print('Startup completed; starting check_databases')
 
     await asyncio.sleep(1)
 
-    print('Attempting to adjust user permissions...')
+    print('Attempting to check user permissions and event config...')
 
     for guild in bot.guilds:
         if not guild.unavailable:
+            print('Checking guild {}...'.format(guild.id))
             vdbs[guild.id] = vaivora.db.Database(guild.id)
-            # try:
-            #     await vdbs[guild.id].init_events()
+
+            if not await vdbs[guild.id].init_events():
+                print(
+                    '...event check failed! Removing guild {} from loop'
+                    .format(guild.id)
+                    )
+                skip_events.append(guild.id)
+            else:
+                print('Guild', guild.id, 'event table looks OK!')
+
             try:
                 if not await vdbs[guild.id].update_user_sauth(
                         guild.owner.id, owner=True):
-                    print('...failed! in {} with owner {}'
-                          .format(guild.id, guild.owner.id))
+                    print(
+                        '...permission check failed! in {} with owner {}'
+                        .format(guild.id, guild.owner.id)
+                        )
                     raise Exception
 
                 if guild.owner.id != secrets.discord_user_id:
                     if not await vdbs[guild.id].update_user_sauth(
                             secrets.discord_user_id, owner=False):
-                        print('...failed! in {} with owner id {}'
-                          .format(guild.id, guild.owner.id))
+                        print(
+                            '...permission check failed! in {} with owner id {}'
+                            .format(guild.id, guild.owner.id)
+                            )
                         raise Exception
 
-                print('Guild', guild.id, 'looks OK!')
+                print('Guild', guild.id, 'permissions look OK!')
 
                 if await vdbs[guild.id].clean_duplicates():
-                    print('Duplicates have been removed from tables from',
-                          guild.id)
+                    print(
+                        'Duplicates have been removed from tables from guild',
+                        guild.id
+                        )
             except:
                 print('Guild', guild.id,
                     'might be corrupt! Rebuilding and skipping...')
@@ -155,7 +172,7 @@ async def check_databases():
     today = pendulum.now() # check on first launch
 
     while not bot.is_closed():
-        await asyncio.sleep(59)
+        await asyncio.sleep(5)
         print(pendulum.now().strftime("%Y/%m/%d %H:%M"),
               "- Valid DBs:", len(vdbs))
 
@@ -280,9 +297,10 @@ async def check_databases():
             for boss_role in guild_boss_roles:
                 try:
                     idx = [role.id for role in guild.roles].index(boss_role)
-                    roles.append[guild.roles[idx].mention]
-                except:
+                    roles.append(guild.roles[idx].mention)
+                except Exception as e:
                     # Discord role no longer exists
+                    print(e)
                     await vdbs[vdb_id].remove_users(
                             constants.settings.ROLE_BOSS,
                             (boss_role,))
