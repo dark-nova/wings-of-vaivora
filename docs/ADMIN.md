@@ -7,7 +7,7 @@
 
 ### Examples
 + $admin reload
-    - Means: Reloads all [cogs](cogs) except itself and main.
+    - Means: Reloads all [cogs](../cogs) except itself and main.
 
 + $admin get_ids
     - Means: Gets id's of all members of a guild.
@@ -15,7 +15,7 @@
 ### Options
 + reload
     - Reloads all cogs except itself and main.
-    - Note that this is intended **only** to reload updates to the following [cogs](cogs):
+    - Note that this is intended **only** to reload updates to the following [cogs](../cogs):
         * [settings.py](../cogs/settings.py)
         * [boss.py](../cogs/boss.py)
         * [gems.py](../cogs/gems.py)
@@ -28,6 +28,4 @@
     - Gets id's of all members of a guild.
     - Sends a DM with the id's, with the member (as a string) and id per line.
 
-#### File last modified: 2019-04-22 23:35 (UTC-7)
-
-[cogs]: (../cogs)
+#### File last modified: 2019-04-22 23:37 (UTC-7)
