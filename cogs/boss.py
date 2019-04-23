@@ -453,7 +453,7 @@ async def process_cmd_entry(guild_id: int, txt_channel: str, bosses: list,
 
             time_diff = record_date - pendulum.now() - timedelta(hours=offset)
 
-            if int(time_diff.hours) < 0:
+            if int(time_diff.minutes) < 0:
                 spawn_msg = constants.boss.TIME_SPAWN_MISSED
             else:
                 spawn_msg = constants.boss.TIME_SPAWN_ONTIME
