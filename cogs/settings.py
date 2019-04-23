@@ -434,7 +434,11 @@ async def contribution_setter(ctx, points: int, member=None, append=False):
 
 
 class SettingsCog(commands.Cog):
-    """Interface for the `$settings` commands."""
+    """Interface for the `$settings` commands.
+
+    This cog interacts with the `vaivora.db` backend.
+
+    """
 
     def __init__(self, bot):
         self.bot = bot

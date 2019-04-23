@@ -10,7 +10,13 @@ import constants.events
 
 
 class EventsCog(commands.Cog):
-    """Interface for `$event` commands."""
+    """Interface for `$events` commands.
+
+    `$events` is an extension to `$settings`.
+
+    This cog interacts with the `vaivora.db` backend.
+
+    """
 
     def __init__(self, bot):
         self.bot = bot

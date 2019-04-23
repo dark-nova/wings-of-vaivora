@@ -26,6 +26,8 @@ class OffsetCog(commands.Cog):
 
     `$offset` is an extension to `$settings`.
 
+    This cog interacts with the `vaivora.db` backend.
+
     """
 
     def __init__(self, bot):

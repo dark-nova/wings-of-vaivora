@@ -530,7 +530,11 @@ async def process_cmd_query(boss: str, query: str):
 
 
 class BossCog(commands.Cog):
-    """Interface for the `$boss` commands."""
+    """Interface for the `$boss` commands.
+
+    This cog interacts with the `vaivora.db` backend.
+
+    """
 
     def __init__(self, bot):
         self.bot = bot
