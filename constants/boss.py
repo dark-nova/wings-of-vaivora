@@ -145,7 +145,7 @@ BOSS_F_MOLICH = 'Frantic Molich'
 DEMON_LORDS_A = '[Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox]'
 DEMON_LORDS_B = '[Demon Lords: Nuaele, Zaura, Blut]'
 
-BOSSES = dict()
+BOSSES = {}
 
 BOSSES[KW_WORLD] = [
     BOSS_W_ABOMINATION,
