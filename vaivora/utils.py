@@ -62,7 +62,7 @@ async def process_record(boss: str, status: str, time, diff: timedelta,
 
     # set time difference based on status and type of boss
     # takes the negative (additive complement) to get the original time
-    time_diff = get_offset(boss, status, coefficient=-1)
+    time_diff = await get_boss_offset(boss, status, coefficient=-1)
     # and add it back to get the reported time
     report_time = time + time_diff
 
@@ -199,3 +199,29 @@ async def sanitize_nonalmum(text: str):
 
     """
     return nonalnum.sub('', text)
+
+
+async def get_boss_offset(boss, status, coefficient=1):
+    """
+    :func:`get_boss_offset` returns the timedelta offset
+    for a given boss.
+
+    Args:
+        boss (str): the name of the boss
+        status (str): the status code for the boss
+        coefficient (int): either 1 or -1 to use for calculating offset
+
+    Returns:
+        datetime.timedelta: an appropriate timedelta
+
+    """
+    if boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
+        multiplier = constants.boss.TIME_STATUS_DEMON
+    elif boss in constants.boss.BOSSES[constants.boss.KW_FIELD]:
+        multiplier = constants.boss.TIME_STATUS_FIELD
+    elif boss == constants.boss.BOSS_W_ABOMINATION:
+        multiplier = constants.boss.TIME_STATUS_ABOM
+    else:
+        multiplier = constants.boss.TIME_STATUS_WB
+
+    return timedelta(minutes=(coefficient * multiplier))

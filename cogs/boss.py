@@ -11,7 +11,7 @@ import checks
 import vaivora.db
 import constants.boss
 import constants.offset
-from vaivora.utils import validate_time
+import vaivora.utils
 
 
 async def boss_helper(boss: str, time: str, map_or_channel):
@@ -36,7 +36,7 @@ async def boss_helper(boss: str, time: str, map_or_channel):
     if boss_idx == -1: # invalid boss
         return (None,)
 
-    time = await validate_time(time)
+    time = await vaivora.utils.validate_time(time)
 
     if not time: # invalid time
         return (None,None)
@@ -290,31 +290,6 @@ async def get_bosses(kind):
             .format(kind, '\n- '.join(constants.boss.BOSSES[kind])))
 
 
-def get_offset(boss, status, coefficient=1):
-    """
-    :func:`get_offset` returns the timedelta offset for a given boss.
-
-    Args:
-        boss (str): the name of the boss
-        status (str): the status code for the boss
-        coefficient (int): either 1 or -1 to use for calculating offset
-
-    Returns:
-        datetime.timedelta: an appropriate timedelta
-
-    """
-    if boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
-        multiplier = constants.boss.TIME_STATUS_DEMON
-    elif boss in constants.boss.BOSSES[constants.boss.KW_FIELD]:
-        multiplier = constants.boss.TIME_STATUS_FIELD
-    elif boss == constants.boss.BOSS_W_ABOMINATION:
-        multiplier = constants.boss.TIME_STATUS_ABOM
-    else:
-        multiplier = constants.boss.TIME_STATUS_WB
-
-    return timedelta(minutes=(coefficient * multiplier))
-
-
 async def process_cmd_status(guild_id: int, txt_channel: str, boss: str,
     status: str, time: str, options: dict):
     """Processes boss `status` subcommand.
@@ -343,7 +318,7 @@ async def process_cmd_status(guild_id: int, txt_channel: str, boss: str,
     target['map'] = options['map']
     target['status'] = status
 
-    time_offset = get_offset(boss, status)
+    time_offset = await vaivora.utils.get_boss_offset(boss, status)
 
     hours, minutes = [int(t) for t in time.split(':')]
 
