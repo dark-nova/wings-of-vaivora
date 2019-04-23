@@ -538,8 +538,9 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                            'select mention from roles where role = "{}"'
-                            .format(role))
+                    'select mention from roles where role = "{}"'
+                    .format(role)
+                    )
                 results = [_row[0] for _row in await cursor.fetchall()]
 
                 if users:
@@ -574,9 +575,9 @@ class Database:
             for user in users:
                 try:
                     cursor = await _db.execute(
-                                """insert into roles values
-                                   ('{}', '{}')"""
-                                .format(role, user))
+                        'insert into roles values("{}", "{}")'
+                        .format(role, user)
+                        )
                 except Exception as e:
                     await _db.execute('ROLLBACK')
                     print('set_users', self.db_id, '\n', e)
@@ -607,9 +608,9 @@ class Database:
             for user in users:
                 try:
                     cursor = await _db.execute(
-                                """delete from roles where role='{}'
-                                   and mention='{}'"""
-                                .format(role, user))
+                        'delete from roles where role="{}" and mention="{}"'
+                        .format(role, user)
+                        )
                 except Exception as e:
                     await _db.execute('ROLLBACK')
                     print('remove_users', self.db_id, '\n', e)
@@ -640,11 +641,10 @@ class Database:
                     if user_id == old_owner:
                         return True # do not do anything if it's the same owner
                     await _db.execute('delete from owner')
-                    await _db.execute("""delete from roles where
-                                         role = '{}' and
-                                         mention = '{}'"""
-                        .format(constants.settings.ROLE_SUPER_AUTH,
-                                old_owner))
+                    await _db.execute(
+                        'delete from roles where role = "{}" and mention = "{}"'
+                        .format(constants.settings.ROLE_SUPER_AUTH, old_owner)
+                        )
                 except: #Exception as e:
                     #print('Exception caught & ignored:', self.db_id, '\n', e)
                     pass
@@ -660,12 +660,14 @@ class Database:
                 if owner:
                     await _db.execute('insert into owner values("{}")'
                                       .format(user_id))
-                await _db.execute('insert into roles values("{}", "{}")'
-                                  .format(constants.settings.ROLE_AUTH,
-                                          user_id))
-                await _db.execute('insert into roles values("{}", "{}")'
-                                  .format(constants.settings.ROLE_SUPER_AUTH,
-                                          user_id))
+                await _db.execute(
+                    'insert into roles values("{}", "{}")'
+                    .format(constants.settings.ROLE_AUTH, user_id)
+                    )
+                await _db.execute(
+                    'insert into roles values("{}", "{}")'
+                    .format(constants.settings.ROLE_SUPER_AUTH, user_id)
+                    )
                 await _db.commit()
                 return True
             except Exception as e:
@@ -687,9 +689,10 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             for _table in tables_to_clean:
                 try:
-                    await _db.execute("""delete from {0} where rowid not in
-                                         (select min(rowid) from {0} group by {1})"""
-                                      .format(_table, spec[_table]))
+                    await _db.execute(
+                        """delete from {0} where rowid not in
+                           (select min(rowid) from {0} group by {1})"""
+                        .format(_table, spec[_table]))
                 except Exception as e:
                     errs.append(_table)
                     print('clean_duplicates', self.db_id, '\n', e)
@@ -735,9 +738,9 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                            """select channel from channels
-                            where type = '{}'"""
-                            .format(kind))
+                    'select channel from channels where type = "{}"'
+                    .format(kind)
+                    )
                 return [_row[0] for _row in await cursor.fetchall()]
             except Exception as e:
                 print(e)
@@ -760,7 +763,8 @@ class Database:
             try:
                 await _db.execute(
                     'insert into channels values("{}", "{}")'
-                    .format(kind, channel))
+                    .format(kind, channel)
+                    )
                 await _db.commit()
                 return True
             except Exception as e:
@@ -784,7 +788,8 @@ class Database:
             try:
                 await _db.execute(
                     'delete from channels where type="{}" and channel="{}"'
-                    .format(kind, channel))
+                    .format(kind, channel)
+                    )
                 await _db.commit()
                 return True
             except Exception as e:
@@ -865,9 +870,9 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                            """select points from contribution
-                               where mention = '{}'"""
-                            .format(user))
+                    'select points from contribution where mention = "{}"'
+                    .format(user)
+                    )
                 old_points = (await cursor.fetchone())[0]
 
                 if append:
@@ -888,22 +893,26 @@ class Database:
             try:
                 await _db.execute(
                     'delete from contribution where mention = "{}"'
-                    .format(user))
+                    .format(user)
+                    )
             except:
                 pass # the record may not exist; ignore if it doesn't
 
             try:
                 await _db.execute(
                     'insert into contribution values("{}", "{}")'
-                    .format(user, points))
+                    .format(user, points)
+                    )
                 await _db.commit()
 
                 g_points += points
                 while constants.settings.G_LEVEL[g_level] < g_points:
                     g_level += 1
 
-                await _db.execute('insert into guild values("{}", "{}")'
-                                  .format(g_level, g_points))
+                await _db.execute(
+                    'insert into guild values("{}", "{}")'
+                    .format(g_level, g_points)
+                    )
                 await _db.commit()
                 return True
             except Exception as e:
@@ -921,8 +930,7 @@ class Database:
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
-                cursor = await _db.execute(
-                            'select * from guild')
+                cursor = await _db.execute('select * from guild')
                 return await cursor.fetchone()
             except:
                 return None
@@ -948,8 +956,8 @@ class Database:
                 # use sentinel value 0 for "remaining",
                 # unattributable points
                 cursor = await _db.execute(
-                            """select points from contribution
-                               where mention != '0'""")
+                    'select points from contribution where mention != "0"'
+                    )
                 g_points = sum(await cursor.fetchall())
                 extra_points = points - g_points
             except:
@@ -960,8 +968,8 @@ class Database:
 
             try:
                 await _db.execute(
-                    """delete from contribution
-                       where mention = '0'""")
+                    'delete from contribution where mention = "0"'
+                    )
             except:
                 pass
 
@@ -972,13 +980,13 @@ class Database:
 
             try:
                 await _db.execute(
-                        """insert into contribution values
-                           ('{}', '{}')"""
-                        .format(0, extra_points))
+                    'insert into contribution values("{}", "{}")'
+                    .format(0, extra_points)
+                    )
                 await _db.execute(
-                        """insert into guild values
-                           ('{}', '{}')"""
-                        .format(level, points))
+                    'insert into guild values("{}", "{}")'
+                    .format(level, points)
+                    )
                 await _db.commit()
                 return True
             except Exception as e:
