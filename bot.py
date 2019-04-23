@@ -42,8 +42,6 @@ bot.remove_command('help')
 
 vdbs = {} # a dict containing db.py instances, with indices = server id's
 
-rgx_user = re.compile(r'@')
-
 
 @bot.event
 async def on_ready():
@@ -188,10 +186,18 @@ async def get_time_diff(server_tz):
 
     """
     try:
-        server_time = pendulum.now(tz=server_tz)
-        local_time = pendulum.now()
+        local_time = pendulum.today()
+        server_time = local_time.in_timezone(tz=server_tz)
+        day_diff = server_time.day - local_time.day
         hours = server_time.hour - local_time.hour
         minutes = server_time.minute - local_time.minute
+        # The greatest day difference will always be 2:
+        # e.g. compare the time difference between
+        # 'Pacific/Kiritimati' (UTC+14) and 'Pacific/Pago_Pago' (UTC-11)
+        # A new day starting in the former will be 2 calendar days ahead.
+        if abs(day_diff) > 2 or day_diff >= 1:
+            hours += days_diff * 24
+
         return (hours, minutes)
     except:
         return (0, 0)
