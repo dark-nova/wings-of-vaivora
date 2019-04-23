@@ -2,20 +2,21 @@ import discord
 from discord.ext import commands
 
 class MemeCog(commands.Cog):
+    """Sends memes."""
 
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command(aliases=['pls', 'plz', 'ples'])
     async def please(self, ctx):
-        """
-        :func:`please` is a meme
+        """Sends a meme image.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         try:
             await ctx.send('{} https://i.imgur.com/kW3o6eC.png'

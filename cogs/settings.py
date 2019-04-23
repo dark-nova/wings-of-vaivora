@@ -16,15 +16,15 @@ import constants.settings
 
 
 async def get_mention_ids(ctx, mentions):
-    """
-    :func:`get_mention_ids` filters out nonsense ints with actual id's.
+    """Converts meaningful int input/arguments to mentions.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        mentions: mentions to test for id's.
+        mentions: mentions to test for id's
 
     Returns:
-        list: of valid discord id's
+        list: of valid Discord id's
+
     """
     if type(mentions) is int:
         mentions = [mentions]
@@ -34,9 +34,9 @@ async def get_mention_ids(ctx, mentions):
                                      + ctx.guild.roles)]
     rids = [member.id for member in ctx.guild.roles]
     try:
-        if ctx.role_kind == constants.settings.ROLE_BOSS:
+        if ctx.role_type == constants.settings.ROLE_BOSS:
             for mention in mentions:
-                # do not allow regular users for $boss
+                # do not allow regular users for `$boss`
                 if mention in rids:
                     _mention.append(mention)
     except:
@@ -50,18 +50,18 @@ async def get_mention_ids(ctx, mentions):
 
 
 async def combine_mention_ids(ctx, mentions=None):
-    """
-    :func:`combine_mention_ids` combines all mentions and valid id's.
-    Used in :func:`role_setter`, :func:`role_getter`,
-    and :func:`role_deleter`.
+    """Combines all mentions and valid id's.
+
+    Called by `role_setter`, `role_getter`, and `role_deleter`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        mentions: (default: None) optional mentions that are only id's
-        boss (bool): (default: False) whether to ignore user id's or not
+        mentions (optional): optional mentions that are only id's;
+            defaults to None
 
     Returns:
-        list: of mention id's
+        list of str: of mention id's
+
     """
     _mentions = []
 
@@ -70,11 +70,11 @@ async def combine_mention_ids(ctx, mentions=None):
             _mentions.append(mention.id)
 
     # do not allow regular users for $boss
-    if ctx.role_kind != constants.settings.ROLE_BOSS:
+    if ctx.role_type != constants.settings.ROLE_BOSS:
         if ctx.message.mentions:
             for mention in ctx.message.mentions:
                 _mentions.append(mention.id)
-    elif ctx.role_kind == constants.settings.ROLE_BOSS:
+    elif ctx.role_type == constants.settings.ROLE_BOSS:
         if ctx.message.mentions:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
@@ -88,15 +88,16 @@ async def combine_mention_ids(ctx, mentions=None):
 
 
 async def combine_channel_ids(ctx):
-    """
-    :func:`combine_channel_ids` combines all channel id's.
-    Used in :func:`channel_setter` and :func:`channel_deleter`.
+    """Combines all channel id's.
+
+    Called by `channel_setter` and `channel_deleter`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
 
     Returns:
-        list: of channel id's
+        list of int: of Discord channel id's
+
     """
     channels = []
     if not ctx.message.channels_mentions:
@@ -108,18 +109,17 @@ async def combine_channel_ids(ctx):
 
 
 async def channel_getter(ctx, kind):
-    """
-    :func:`channel_getter` does the work for:
-        :func:`gc_settings`
-        :func:`gc_boss`
-        :func:`gc_events`
+    """Gets channels of a given `kind`.
+
+    Called by `gc_settings`, `gc_boss`, and `gc_events`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
         kind (str): the kind/type to use, i.e. subcommand invoked
 
     Returns:
-        True always
+        bool: True always
+
     """
     vdb = vaivora.db.Database(ctx.guild.id)
     channels = await vdb.get_channel(kind)
@@ -147,18 +147,17 @@ async def channel_getter(ctx, kind):
 
 
 async def channel_setter(ctx, kind):
-    """
-    :func:`channel_setter` does the work for:
-        :func:`sc_settings`
-        :func:`sc_boss`
-        :func:`sc_events`
+    """Sets a channel to a given `kind`.
+
+    Called by `sc_settings`, `sc_boss`, and `sc_events`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
         kind (str): the kind/type to use, i.e. subcommand invoked
 
     Returns:
-        True if successful; False otherwise
+        bool: True if successful; False otherwise
+
     """
     channels = await combine_channel_ids(ctx)
 
@@ -184,18 +183,17 @@ async def channel_setter(ctx, kind):
 
 
 async def channel_deleter(ctx, kind):
-    """
-    :func:`channel_setter` does the work for:
-        :func:`dc_settings`
-        :func:`dc_boss`
-        :func:`dc_events`
+    """Deletes a channel from `kind`.
+
+    Called by `dc_settings`, `dc_boss`, and `dc_events`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
         kind (str): the kind/type to use, i.e. subcommand invoked
 
     Returns:
-        True if successful; False otherwise
+        bool: True if successful; False otherwise
+
     """
     channels = await combine_channel_ids(ctx)
 
@@ -221,19 +219,18 @@ async def channel_deleter(ctx, kind):
 
 
 async def role_getter(ctx, mentions=None):
-    """
-    :func:`role_getter` handles the backend for:
-        :func:`gr_member`
-        :func:`gr_auth`
-        :func:`gr_boss`
-        :func:`gr_events`
+    """Gets Discord members/roles of a given Vaivora role.
+
+    Called by `gr_member`, `gr_auth`, `gr_boss`, and `gr_events`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        mentions: (default: None) optional mentions that are only id's
+        mentions (optional): optional mentions that are only id's;
+            defaults to None
 
     Returns:
-        True if successful; False otherwise
+        bool: True if successful; False otherwise
+
     """
     _mentions = await combine_mention_ids(ctx, mentions)
 
@@ -242,7 +239,7 @@ async def role_getter(ctx, mentions=None):
         _mentions.extend(await get_mention_ids(ctx, mentions))
 
     vdb = vaivora.db.Database(ctx.guild.id)
-    users = await vdb.get_users(ctx.role_kind, _mentions)
+    users = await vdb.get_users(ctx.role_type, _mentions)
 
     if users:
         if _mentions:
@@ -263,7 +260,7 @@ async def role_getter(ctx, mentions=None):
             _users.append(member)
 
         if to_remove:
-            await vdb.remove_users(ctx.role_kind, to_remove)
+            await vdb.remove_users(ctx.role_type, to_remove)
 
         _users = '\n'.join(['{:<15}\t{:>10}'.format(
                              str(user.id),
@@ -273,31 +270,30 @@ async def role_getter(ctx, mentions=None):
         await ctx.send('{}\n\n{}'.format(
                 ctx.author.mention,
                 constants.settings.SUCCESS_ROLES.format(
-                    ctx.role_kind, users),
+                    ctx.role_type, users),
                 constants.settings.NOTICE_ROLE))
         return True
     else:
         await ctx.send('{} {}'.format(
                 ctx.author.mention,
                 constants.settings.FAIL_NO_ROLES.format(
-                    ctx.role_kind)))
+                    ctx.role_type)))
         return False
 
 
 async def role_setter(ctx, mentions=None):
-    """
-    :func:`role_setter` handles the backend for:
-        :func:`sr_member`
-        :func:`sr_auth`
-        :func:`sr_boss`
-        :func:`sr_events`
+    """Sets Discord members/roles with a given Vaivora role.
+
+    Called by `sr_member`, `sr_auth`, `sr_boss`, and `sr_events`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        mentions: (default: None) optional mentions that are only id's
+        mentions (optional): optional mentions that are only id's;
+            defaults to None
 
     Returns:
-        True if successful; False otherwise
+        bool: True if successful; False otherwise
+
     """
     _mentions = await combine_mention_ids(ctx, mentions)
 
@@ -308,12 +304,12 @@ async def role_setter(ctx, mentions=None):
         return False
 
     vdb = vaivora.db.Database(ctx.guild.id)
-    errs = await vdb.set_users(ctx.role_kind, _mentions)
+    errs = await vdb.set_users(ctx.role_type, _mentions)
 
     await ctx.send('{} {}'
                    .format(ctx.author.mention,
                            constants.settings.SUCCESS_ROLES_UP.format(
-                                ctx.role_kind)))
+                                ctx.role_type)))
 
     if errs:
         errs = [str(err) for err in errs]
@@ -327,19 +323,18 @@ async def role_setter(ctx, mentions=None):
 
 
 async def role_deleter(ctx, mentions=None):
-    """
-    :func:`role_deleter` handles the backend for:
-        :func:`dr_member`
-        :func:`dr_auth`
-        :func:`dr_boss`
-        :func:`dr_events`
+    """Deletes Discord members/roles from a given Vaivora role.
+
+    Called by `dr_member`, `dr_auth`, `dr_boss`, and `dr_events`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
-        mentions: (default: None) optional mentions that are only id's
+        mentions: optional mentions that are only id's;
+            defaults to None
 
     Returns:
-        True if successful; False otherwise
+        bool: True if successful; False otherwise
+
     """
     _mentions = await combine_mention_ids(ctx, mentions)
 
@@ -350,12 +345,12 @@ async def role_deleter(ctx, mentions=None):
         return False
 
     vdb = vaivora.db.Database(ctx.guild.id)
-    errs = await vdb.remove_users(ctx.role_kind, _mentions)
+    errs = await vdb.remove_users(ctx.role_type, _mentions)
 
     await ctx.send('{} {}'
                    .format(ctx.author.mention,
                            constants.settings.SUCCESS_ROLES_RM.format(
-                                ctx.role_kind)))
+                                ctx.role_type)))
 
     if errs:
         errs = [str(err) for err in errs]
@@ -368,19 +363,24 @@ async def role_deleter(ctx, mentions=None):
     return True
 
 
-async def contribution_setter(ctx, points, member=None, append=False):
-    """
-    :func:`contribution_setter` handles the backend work for
-    :func:`s_talt` and :func:`s_point`.
+async def contribution_setter(ctx, points: int, member=None, append=False):
+    """Sets contribution for a Discord member.
+
+    Cannot be used on Discord roles.
+
+    Called by `s_talt` and `s_point`.
 
     Args:
         ctx (discord.ext.commands.Context): context of the message
         points (int): the points to set
-        member: (default: None) an optional member to modify
-        append (bool): (default: False) whether to add or not
+        member (optional): an optional member to modify;
+            defaults to None
+        append (bool, optional): whether to add instead of set;
+            defaults to False
 
     Returns:
-        True if successful; False otherwise
+        bool: True if successful; False otherwise
+
     """
     mention = 0
 
@@ -434,6 +434,7 @@ async def contribution_setter(ctx, points, member=None, append=False):
 
 
 class SettingsCog(commands.Cog):
+    """Interface for the `$settings` commands."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -445,14 +446,14 @@ class SettingsCog(commands.Cog):
 
     @settings.command(name='help')
     async def _help(self, ctx):
-        """
-        :func:`_help` retrieves help pages for `$settings`.
+        """Retrieves help pages for `$settings`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True
+            bool: True
+
         """
         _help = constants.settings.HELP
         for _h in _help:
@@ -463,12 +464,11 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role()
     async def purge(self, ctx):
-        """
-        :func:`purge` is a last-resort subcommand that
-        resets the channels table.
+        """Resets the channels table as a last resort.
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         vdb = vaivora.db.Database(ctx.guild.id)
         success = await vdb.purge()
@@ -486,15 +486,14 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     async def _set(self, ctx):
-        """
-        :func:`set` sets `target`s to `kind`s.
-        e.g. sets a channel (target) to boss (kind)
+        """Sets configuration, for  `set` subcommands.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return True
 
@@ -504,15 +503,16 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def s_channel(self, ctx):
-        """
-        :func:`s_channel` sets channels to `kind`s.
+        """Sets Discord channels to a given kind/type.
+
         e.g. sets a channel (target) to boss (kind)
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
         ctx.channel_kind = ctx.invoked_subcommand.name
         return True
@@ -523,8 +523,7 @@ class SettingsCog(commands.Cog):
     @checks.check_role()
     @checks.has_channel_mentions()
     async def sc_settings(self, ctx):
-        """
-        :func:`sc_settings` sets channels to `settings`.
+        """Sets Discord channels to `settings`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
@@ -540,14 +539,14 @@ class SettingsCog(commands.Cog):
     @checks.check_role()
     @checks.has_channel_mentions()
     async def sc_boss(self, ctx):
-        """
-        :func:`sc_boss` sets channels to `boss`.
+        """Sets Discord channels to `boss`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await channel_setter(ctx, ctx.channel_kind)
 
@@ -557,14 +556,14 @@ class SettingsCog(commands.Cog):
     @checks.check_role()
     @checks.has_channel_mentions()
     async def sc_events(self, ctx):
-        """
-        :func:`sc_events` sets channels to `events`.
+        """Sets Discord channels to `events`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await channel_setter(ctx, ctx.channel_kind)
 
@@ -573,17 +572,17 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def s_role(self, ctx):
-        """
-        :func:`s_role` sets `role`s to `kind`s.
-        e.g. sets a member (target) to role boss (kind)
+        """Sets Discord members/roles to a given Vaivora role.
+
+        e.g. sets a member (target) to role boss (Vaivora role)
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
         """
-        ctx.role_kind = ctx.invoked_subcommand.name
+        ctx.role_type = ctx.invoked_subcommand.name
         return True
 
     @s_role.command(name='member')
@@ -591,15 +590,16 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def sr_member(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`sr_member` sets roles of members.
+        """Sets Discord members/roles to `member`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            mentions: an optional mention as a raw id
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise      
+            bool: True if successful; False otherwise    
+
         """
         return await role_setter(ctx, mentions)
 
@@ -608,15 +608,15 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def sr_auth(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`sr_auth` sets roles of members.
+        """Sets Discord members/roles to `authorized`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            mentions: an optional mention as a raw id
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise      
+            bool: True if successful; False otherwise      
         """
         return await role_setter(ctx, mentions)
 
@@ -625,12 +625,12 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def sr_boss(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`sr_boss` sets roles of members.
+        """Sets Discord members/roles to `boss`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            mentions: an optional mention as a raw id
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
             True if successful; False otherwise      
@@ -642,15 +642,16 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def sr_events(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`sr_events` sets roles of members.
+        """Sets Discord members/roles to `events`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            mentions: an optional mention as a raw id
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise      
+            bool: True if successful; False otherwise
+
         """
         return await role_setter(ctx, mentions)
 
@@ -658,21 +659,24 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def s_talt(self, ctx, points: int, member: commands.Greedy[int] = None):
-        """
-        :func:`s_talt` sets contribution points.
+    async def s_talt(self, ctx, points: int,
+        member: commands.Greedy[int] = None):
+        """Sets contribution points, using Talt as the unit.
+
         Optionally, if a member is mentioned, then the member's record
         will be modified instead.
-        If using the `member` variable, take care to fill in all arguments.
+
         e.g. $settings set talt 20 @someone
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
             points (int): the points to add; i.e. 1 talt = 20 points, etc
-            member: (default: None) the optional member's record to modify
+            member (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         if points < 1:
             return False
@@ -686,21 +690,24 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def s_point(self, ctx, points: int, member: commands.Greedy[int] = None):
-        """
-        :func:`s_point` sets contribution points.
+    async def s_point(self, ctx, points: int,
+        member: commands.Greedy[int] = None):
+        """Sets contribution points.
+
         Optionally, if a member is mentioned, then the member's record
         will be modified instead.
-        If using the `member` variable, take care to fill in all arguments.
+
         e.g. $settings set point 20 @someone
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
             points (int): the points to add; i.e. 1 talt = 20 points, etc
-            member: (default: None) the optional member's record to modify
+            member (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         if points < 1:
             return False
@@ -717,8 +724,12 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role()
     async def s_guild(self, ctx, points: int):
-        """
-        :func:`s_guild` sets guild to level and points.
+        """Sets guild points.
+
+        Also increments guild level to correct amount based on `points`.
+
+        Used only after setting all users first.
+
         Any extraneous points are allocated to a sentinel value.
 
         Args:
@@ -726,7 +737,8 @@ class SettingsCog(commands.Cog):
             points (int): the current guild points
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         vdb = vaivora.db.Database(ctx.guild.id)
         if not await vdb.set_guild_points(points):
@@ -745,15 +757,16 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def _get(self, ctx):
-        """
-        :func:`_get` gets `target`s to `kind`s.
-        e.g. sets a channel (target) to boss (kind)
+        """Gets configurations, for `get` subcommands.
+
+        e.g. gets channels (target) listed as boss channels (kind)
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return True
 
@@ -762,15 +775,16 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_channel(self, ctx):
-        """
-        :func:`g_channel` gets channels of `kind`.
+        """Gets Discord channels of a kind/type.
+
         e.g. gets a channel (target) of boss (kind)
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
         ctx.channel_kind = ctx.invoked_subcommand.name
         return True
@@ -779,14 +793,14 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gc_settings(self, ctx):
-        """
-        :func:`gc_settings` gets channels that are `settings`.
+        """Gets Discord channels that are `settings` channels.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
         return await channel_getter(ctx, ctx.channel_kind)
 
@@ -794,14 +808,14 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gc_boss(self, ctx):
-        """
-        :func:`gc_boss` gets channels that are `boss`.
+        """Gets Discord channels that are `boss` channels.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
         return await channel_getter(ctx, ctx.channel_kind)
 
@@ -809,32 +823,34 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_role(self, ctx):
-        """
-        :func:`g_role` gets `role`s of `kind`.
+        """Gets Discord members/roles of a given Vaivora role.
+
         e.g. gets a member (target) of role boss (kind)
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
-        ctx.role_kind = ctx.invoked_subcommand.name
+        ctx.role_type = ctx.invoked_subcommand.name
         return True
 
     @g_role.command(name='member')
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_member(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`gr_member` gets members of role `member`.
+        """Gets Discord members/roles marked `member`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            mentions: an optional mention as a raw id
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await role_getter(ctx, mentions)
 
@@ -842,15 +858,16 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_auth(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`gr_auth` gets members of role `authorized`.
+        """Gets Discord members/roles marked `authorized`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            mentions: an optional mention as a raw id
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await role_getter(ctx, mentions)
 
@@ -858,15 +875,33 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def gr_boss(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`gr_boss` gets members of role `boss`.
+        """Gets Discord members/roles marked `boss`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            mentions: an optional mention as a raw id
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
+        """
+        return await role_getter(ctx, mentions)
+
+    @g_role.command(name='events')
+    @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def gr_events(self, ctx, mentions: commands.Greedy[int] = None):
+        """Gets Discord members/roles marked `events`.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
+
+        Returns:
+            bool: True if successful; False otherwise
+            
         """
         return await role_getter(ctx, mentions)
 
@@ -878,16 +913,20 @@ class SettingsCog(commands.Cog):
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_talt(self, ctx, mentions: commands.Greedy[int] = None,
                      _range = None):
-        """
-        :func:`g_talt` gets contribution record.
-        Ignores the 'remainder' (uncreditable) amount.
+        """Gets contribution record.
+
+        Ignores the 'remainder' (unattributable) amount.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
-            mentions: an optional mention as a raw id
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
+            _range: a range to slice the results;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         first = 0
         last = 0
@@ -958,14 +997,14 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_guild(self, ctx):
-        """
-        :func:`g_guild` gets guild level and points.
+        """Gets guild level and points.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         vdb = vaivora.db.Database(ctx.guild.id)
         try:
@@ -995,16 +1034,17 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def add(self, ctx):
-        """
-        :func:`add` is only to be used for contributions.
-        Instead of :func:`set` which directly sets the value,
-        :func:`add` increments.
+        """Adds to contributions.
+
+        Instead of `set` which directly sets the value,
+        `add` increments.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
         return True
 
@@ -1012,22 +1052,24 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def a_talt(self, ctx, points: int, member: commands.Greedy[int] = None):
-        """
-        :func:`a_talt` adds contribution points,
-        appending to the existing record.
-        Optionally, if a member is mentioned, then the member's record
+    async def a_talt(self, ctx, points: int,
+        member: commands.Greedy[int] = None):
+        """Adds contribution points, using Talt as the unit.
+
+        Optionally, if a member is mentioned, then that member's record
         will be modified instead.
-        If using the `member` variable, take care to fill in all arguments.
+
         e.g. $settings add talt 20 @someone
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
             points (int): the points to add; i.e. 1 talt = 20 points, etc
-            member: (default: None) the optional member's record to modify
+            member (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         if points < 1:
             return False
@@ -1041,22 +1083,24 @@ class SettingsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role(constants.settings.ROLE_MEMBER)
-    async def a_point(self, ctx, points: int, member: commands.Greedy[int] = None):
-        """
-        :func:`s_point` adds contribution points,
-        appending to the existing record.
-        Optionally, if a member is mentioned, then the member's record
+    async def a_point(self, ctx, points: int,
+        member: commands.Greedy[int] = None):
+        """Adds contribution points.
+
+        Optionally, if a member is mentioned, then that member's record
         will be modified instead.
-        If using the `member` variable, take care to fill in all arguments.
-        e.g. $settings set point 20 @someone
+
+        e.g. $settings add point 20 @someone
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
             points (int): the points to add; i.e. 1 talt = 20 points, etc
-            member: (default: None) the optional member's record to modify
+            member (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         if points < 1:
             return False
@@ -1074,14 +1118,14 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def delete(self, ctx):
-        """
-        :func:`delete` is the prototype for deletion subcommands.
+        """Deletes configurations, for `set` subcommands.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
         return True
 
@@ -1090,16 +1134,16 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def d_role(self, ctx):
-        """
-        :func:`d_role` deletes roles.
+        """Deletes Discord members/roles from Vaivora roles.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
-        ctx.role_kind = ctx.invoked_subcommand.name
+        ctx.role_type = ctx.invoked_subcommand.name
         return True
 
     @d_role.command(name='member')
@@ -1107,14 +1151,14 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def dr_member(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`dr_member` deletes members from `member`.
+        """Deletes Discord members/roles from `member`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await role_deleter(ctx, mentions)
 
@@ -1123,14 +1167,16 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def dr_auth(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`dr_auth` deletes members from `authorized`.
+        """Deletes Discord members/roles from `authorized`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await role_deleter(ctx, mentions)
 
@@ -1139,14 +1185,16 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def dr_boss(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`dr_boss` deletes members from `boss`.
+        """Deletes Discord members/roles from `boss`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await role_deleter(ctx, mentions)
 
@@ -1155,14 +1203,16 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def dr_events(self, ctx, mentions: commands.Greedy[int] = None):
-        """
-        :func:`dr_boss` deletes members from `boss`.
+        """Deletes Discord members/roles from `events`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
+            mentions (commands.Greedy[int], optional): a mention as a raw id;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await role_deleter(ctx, mentions)
 
@@ -1171,14 +1221,14 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def d_channel(self, ctx):
-        """
-        :func:`d_channel` deletes channels.
+        """Deletes Discord channels from a given kind/type.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
         ctx.channel_kind = ctx.invoked_subcommand.name
         pass
@@ -1188,14 +1238,14 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def dc_settings(self, ctx):
-        """
-        :func:`dc_settings` deletes channels from `settings`.
+        """Deletes Discord channels from `settings`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await channel_deleter(ctx, ctx.channel_kind)
 
@@ -1204,14 +1254,14 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def dc_boss(self, ctx):
-        """
-        :func:`dc_boss` deletes channels from `boss`.
+        """Deletes Discord channels from `boss`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await channel_deleter(ctx, ctx.channel_kind)
 
@@ -1220,14 +1270,14 @@ class SettingsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def dc_events(self, ctx):
-        """
-        :func:`dc_events` deletes channels from `events`.
+        """Deletes Discord channels from `events`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+            
         """
         return await channel_deleter(ctx, ctx.channel_kind)
 

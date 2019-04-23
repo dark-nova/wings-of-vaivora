@@ -47,31 +47,31 @@ rgx_user = re.compile(r'@')
 
 @bot.event
 async def on_ready():
-    """
-    :func:`on_ready` handles file prep before the bot is ready.
+    """Handles whenever the bot is ready.
 
     Returns:
-        True
+        bool: True
+
     """
     print("Logging in...")
-    print('Successsfully logged in as: {}#{}. Ready!'.format(bot.user.name, bot.user.id))
-    await bot.change_presence(status=discord.Status.dnd)
+    #await bot.change_presence(status=discord.Status.dnd)
     await bot.change_presence(activity=discord.Game(name=("in {} guilds. [$help] for info"
                                                           .format(str(len(bot.guilds))))),
                               status=discord.Status.online)
+    print('Successsfully logged in as: {}#{}. Ready!'.format(bot.user.name, bot.user.id))
     return True
 
 
 @bot.event
 async def on_guild_join(guild):
-    """
-    :func:`on_guild_join` handles what to do when a guild adds Wings of Vaivora.
+    """Handles what to do when a guild adds Wings of Vaivora.
 
     Args:
         guild (discord.Guild): the guild which this client has joined
 
     Returns:
-        True if successful; False otherwise
+        bool: True if successful; False otherwise
+
     """
     #vaivora_version = vaivora.version.get_current_version()
 
@@ -90,14 +90,14 @@ async def on_guild_join(guild):
 
 @bot.command(aliases=['halp'])
 async def help(ctx):
-    """
-    :func:`help` handles "$help" commands.
+    """Retrieves the help pages for `$help`.
 
     Args:
         ctx (discord.ext.commands.context): context of the message
 
     Returns:
-        True if successful; False otherwise
+        bool: True if successful; False otherwise
+
     """
     try:
         await ctx.author.send(constants.main.MSG_HELP)
@@ -107,14 +107,14 @@ async def help(ctx):
     return True
 
 
-async def process_record(boss, status, time, diff, boss_map, channel, guild_id):
-    """
-    :func:`process_records` processes a record to print out
+async def process_record(boss: str, status: str, time, diff: timedelta,
+    boss_map: str, channel: int, guild_id: int):
+    """Processes a record to print out.
 
     Args:
         boss (str): the boss in question
         status (str): the status of the boss
-        time (datetime): the `datetime` of the target
+        time (pendulum.datetime): the `datetime` of the target
             set to its next approximate spawn
         diff (timedelta): the difference in time from server to local
         boss_map (str): the map containing the last recorded spawn
@@ -122,7 +122,8 @@ async def process_record(boss, status, time, diff, boss_map, channel, guild_id):
         guild_id (int): the guild's id
 
     Returns:
-        str: a formatted markdown message containing the records
+        str: a formatted message containing the records
+
     """
     if boss_map == constants.boss.CMD_ARG_QUERY_MAPS_NOT:
         # use all maps for Demon Lord if not previously known
@@ -176,15 +177,15 @@ async def process_record(boss, status, time, diff, boss_map, channel, guild_id):
 
 
 async def get_time_diff(server_tz):
-    """
-    :func:`get_time_diff` retrieves the time difference between local
-    and `server_tz`, to process the time difference.
+    """Retrieves the time difference between local and `server_tz`,
+    to process the time difference.
 
     Args:
         server_tz (str): the time zone representing the in-game server
 
     Returns:
-        tuple: (hours, minutes) where both are ints
+        tuple of int: (hours, minutes)
+
     """
     try:
         server_time = pendulum.now(tz=server_tz)
@@ -197,9 +198,10 @@ async def get_time_diff(server_tz):
 
 
 async def check_databases():
-    """
-    :func:`check_databases` checks the database for entries roughly every minute.
+    """Checks the database for entries roughly every minute.
+
     Records are output to the relevant Discord channels.
+
     """
     await bot.wait_until_ready()
     print('Startup completed; starting check_databases')
@@ -211,6 +213,8 @@ async def check_databases():
     for guild in bot.guilds:
         if not guild.unavailable:
             vdbs[guild.id] = vaivora.db.Database(guild.id)
+            # try:
+            #     await vdbs[guild.id].init_events()
             try:
                 if not await vdbs[guild.id].update_user_sauth(
                         guild.owner.id, owner=True):

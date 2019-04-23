@@ -10,6 +10,7 @@ import constants.events
 
 
 class EventsCog(commands.Cog):
+    """Interface for `$event` commands."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -19,8 +20,10 @@ class EventsCog(commands.Cog):
         pass
 
     async def name_checker(self, ctx, name):
-        """
-        :func:`name_checker` makes sure a name is valid.
+        """Checks that an event name is valid.
+
+        Called by `add` and `update`.
+
         The only times a name may not be valid is if it's empty space or
         the name overlaps with a permanent event.
 
@@ -30,7 +33,8 @@ class EventsCog(commands.Cog):
 
         Returns:
             str: if valid
-            False otherwise
+            bool: False otherwise
+
         """
         name = await vaivora.utils.sanitize_nonalnum(name)
         if name in vaivora.db.permanent_events:
@@ -46,19 +50,23 @@ class EventsCog(commands.Cog):
         return name
 
     async def add_handler(self, ctx, name: str, date: str, time: Optional[str] = None):
-        """
-        :func:`add` adds a custom event for a Discord guild, with
-        an ending `date` and an optional ending `time` on that date.
-        Note that the command will fail if an event exists with the same name.
+        """Adds a custom event for a Discord guild.
+
+        Called by `add` and `update`.
+
+        Note that the command will fail if
+        an event exists with the same name.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
             name (str): name of the custom event
             date (str): the ending date, in the format of YYYY/MM/DD
-            time (Optional[str]): (default: None) the ending time
+            time (Optional[str]): the ending time;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         date = await vaivora.utils.validate_date(date)
         if date is None:
@@ -99,19 +107,20 @@ class EventsCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def add(self, ctx, name: str, date: str, time: Optional[str] = None):
-        """
-        :func:`add` adds a custom event for a Discord guild, with
-        an ending `date` and an optional ending `time` on that date.
-        Note that the command will fail if an event exists with the same name.
+        """Adds a custom event for a Discord guild.
+
+        See `add_handler`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
             name (str): name of the custom event
             date (str): the ending date, in the format of YYYY/MM/DD
-            time (Optional[str]): (default: None) the ending time
+            time (Optional[str]): the ending time;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         name = await self.name_checker(ctx, name)
         if not name:
@@ -122,20 +131,22 @@ class EventsCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
-    async def update(self, ctx, name: str, date: str, time: Optional[str] = None):
-        """
-        :func:`update` updates a custom event for a Discord guild, with
-        an ending `date` and an optional ending `time` on that date.
-        Note that if no event exists with the given name, the command will fail.
+    async def update(self, ctx, name: str, date: str,
+        time: Optional[str] = None):
+        """Updates a custom event for a Discord guild.
+
+        See `add_handler`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
             name (str): name of the custom event
             date (str): the ending date, in the format of YYYY/MM/DD
-            time (Optional[str]): (default: None) the ending time
+            time (Optional[str]): the ending time;
+                defaults to None
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         name = await self.name_checker(ctx, name)
         if not name:

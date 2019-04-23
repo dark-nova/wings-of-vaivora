@@ -10,16 +10,16 @@ nonalnum = re.compile('[^A-Za-z0-9 -]')
 
 
 async def validate_time(time):
-    """
-    :func:`validate_time` validates whether a string representing time is valid
-    or not, returning a standardized one.
+    """Validates whether a string representing time is valid,
+    returning a standardized one.
 
     Args:
         time (str): the time str to check
 
     Returns:
-        str: a standardized time unit, e.g. 0:00 (midnight) or 13:00 (1 PM); or
-        None if invalid
+        str: a standardized time unit, e.g. 0:00 (midnight) or 13:00 (1 PM)
+        None: if invalid
+
     """
     if not constants.boss.REGEX_TIME.match(time):
         return None
@@ -54,16 +54,16 @@ async def validate_time(time):
 
 
 async def validate_date(date):
-    """
-    :func:`validate_date` validates whether a string representing date is valid
-    or not, returning a standardized one.
+    """Validates whether a string representing date is valid,
+    returning a standardized one.
 
     Args:
         date (str): the date str to check
 
     Returns:
-        dict: of ints (year, month, day); or
-        None if invalid
+        dict: of ints (year, month, day)
+        None: if invalid
+
     """
     delims = ['.', '/', '-']
     for delim in delims:
@@ -90,8 +90,8 @@ async def validate_date(date):
 
 
 async def sanitize_nonalmum(text: str):
-    """
-    :func:`sanitize_nonalnum` removes all non-alphanumeric characters.
+    """Removes all non-alphanumeric characters.
+
     Spaces and hyphens are valid.
 
     Args:
@@ -99,5 +99,6 @@ async def sanitize_nonalmum(text: str):
 
     Returns:
         str: a sanitized string
+
     """
     return nonalnum.sub('', text)

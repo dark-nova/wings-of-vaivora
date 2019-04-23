@@ -19,6 +19,14 @@ numbered_tz = [('[{}] {}'.format(x,y)) for (x, y)
                in zip(range(len(server_tz)), server_tz)]
 
 class OffsetCog(commands.Cog):
+    """Interface for the `$offset` commands.
+
+    Note that any changes set here will permanently affect
+    the `$boss` command!
+
+    `$offset` is an extension to `$settings`.
+
+    """
 
     def __init__(self, bot):
         self.bot = bot
@@ -30,14 +38,14 @@ class OffsetCog(commands.Cog):
 
     @offset.command(name='help')
     async def _help(self, ctx):
-        """
-        :func:`_help` retrieves help pages for `$offset`.
+        """Retrieves help pages for `$offset`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True
+            bool: True
+
         """
         _help = constants.offset.HELP
         for _h in _help:
@@ -53,15 +61,15 @@ class OffsetCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def s_tz(self, ctx, tz):
-        """
-        :func:`s_tz` sets the time zone for the guild.
+        """Sets the guild time zone.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
             tz: a timezone; could be an index of `server_tz`, or a tzstr
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         try:
             tz = server_tz[int(tz)]
@@ -92,8 +100,8 @@ class OffsetCog(commands.Cog):
     @checks.check_channel(constants.settings.MODULE_NAME)
     @checks.check_role()
     async def s_offset(self, ctx, offset: int):
-        """
-        :func:`s_offset` sets the offset from the time zone for the guild.
+        """Sets the offset from the guild time zone.
+
         Note that offset is not the same as time zone; rather,
         offset is the actual offset from the guild time zone.
 
@@ -102,7 +110,8 @@ class OffsetCog(commands.Cog):
             offset (int): the offset to use; -23 <= offset <= 23
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         if offset > 23 or offset < -23:
             await ctx.send('{} {}'
@@ -132,14 +141,14 @@ class OffsetCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_tz(self, ctx):
-        """
-        :func:`g_tz` gets the guild's time zone.
+        """Retrieves the guild time zone.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         vdb = vaivora.db.Database(ctx.guild.id)
         tz = await vdb.get_tz()
@@ -161,15 +170,14 @@ class OffsetCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
     async def g_offset(self, ctx):
-        """
-        :func:`g_offset` gets the guild's offset from the time zone
-        for the guild.
+        """Retrieves the guild's offset from the guild time zone.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         vdb = vaivora.db.Database(ctx.guild.id)
         offset = await vdb.get_offset()
@@ -189,15 +197,16 @@ class OffsetCog(commands.Cog):
 
     @offset.command(name='list')
     async def _list(self, ctx):
-        """
-        :func:`_list` lists the available time zones for servers.
+        """Lists the available time zones for servers.
+
         Note that this is locked to the international version of TOS ("ITOS").
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True always
+            bool: True always
+
         """
         await ctx.send('{} {}'
                        .format(ctx.author.mention,

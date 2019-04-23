@@ -149,85 +149,91 @@ dummy_dates = (0, 0, 0)
 
 
 async def get_dbs(kind):
-    """
-    :func:`get_dbs` returns a _d_ata_b_ase _s_ignature
-    of the table of a given `kind`.
+    """Gets a _d_ata_b_ase _s_ignature of the table of a given `kind`.
 
     Args:
-        kind (str): to generate a table signature
+        kind (str): a `kind` of table, with an associated signature
 
     Returns:
-        tuple: a tuple of tuples with (field name, sql type)
+        tuple: a tuple of str with column name and type
+        separated by a space
+
     """
     return tuple('{} {}'
                  .format(*t) for t in zip(columns[kind], types[kind]))
 
 
 async def construct_SQL(*, args):
-    """
-    :func:`construct_SQL` creates a SQLite statement.
+    """Creates a SQLite statement.
 
     Args:
         args (tuple): the statements to use into one statement
 
     Returns:
         str: a full SQLite statement
+
     """
     return ' '.join(args)
 
 
 async def construct_filters(*, filters):
-    """
-    :func:`construct_filters` creates a compound SQLite filter
-    in string form.
+    """Creates a compound SQLite filter in string form.
 
     Args:
         args (tuple): the filters
 
     Returns:
         str: a compound SQLite filter
+
     """
     return 'where {}'.format(' {} '.format('and').join(filters))
 
 
 class Database:
-    """:class:`Database` serves as the backend for all of the Vaivora modules."""
+    """Serves as the backend for all of the Vaivora modules."""
 
     def __init__(self, db_id: str):
-        """
-        :func:`__init__` initializes the db module.
+        """Initializes the db module.
+
+        Assigns a db file associated with the Discord guild.
 
         Args:
             db_id (str): the db id for the guild
+
         """
         self.db_id = db_id
         self.db_name = '{}{}{}'.format('db/', self.db_id, '.db')
 
     async def init_events(self):
         """Creates an events table if it doesn't exist.
+
         In addition, inserts permanent events if not present.
 
         Returns:
             bool: True if successful; False only if an exception occurs
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             pass
 
     def get_id(self):
-        """
-        :func:`get_id` returns the database id.
+        """Gets the database id.
 
         Returns:
             str: this database id
+
         """
         return self.db_id
 
     async def create_all(self, owner_id):
-        """
-        :func:`create_all` restores the entire db structure if it's corrupt.
+        """Restores the entire db structure if it's corrupt.
+
+        Will also attempt to update the 'super-authorized' role, using
+        the current
 
         Args:
             owner_id (int): the guild owner's id
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             for table in tables:
@@ -241,12 +247,11 @@ class Database:
         return
 
     async def create_db(self, kind):
-        """
-        :func:`create_db` creates a db when none (or invalid) exists,
-        on the spec for `kind`.
+        """Ceates a table when none (or invalid) exists.
 
         Args:
-            kind (str): see :func:`get_dbs`
+            kind (str): see `get_dbs`
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             await _db.execute('drop table if exists {}'.format(kind))
@@ -280,7 +285,7 @@ class Database:
                                     args=('select * from',
                                           _s)))
                 except Exception as e:
-                    print('check_if_vaild', e)
+                    print('check_if_vaild', self.db_id, '\n', e)
                     return False
 
                 r = await cursor.fetchone()
@@ -297,15 +302,18 @@ class Database:
         return True
 
     async def check_db_boss(self, bosses=constants.boss.ALL_BOSSES, channel=0):
-        """
-        :func:`check_db_boss` checks the database for the conditions in argument
+        """Checks the boss table using the arguments as filters.
 
         Args:
-            bosses (list): (default: constants.boss.ALL_BOSSES) the bosses to check
-            channel (int): (default: 0) channels to filter
+            bosses (list, optional): the bosses to check;
+                defaults to `constants.boss.ALL_BOSSES`
+            channel (int, optional): the map channel to filter;
+                defaults to 0
 
         Returns:
-            list: records or list of None
+            list: records
+            list: None, if no records were found
+
         """
         db_record = []
         async with aiosqlite.connect(self.db_name) as _db:
@@ -334,34 +342,32 @@ class Database:
             await cursor.close()
         return await self.sort_db_boss_record(db_record)
 
-    async def sort_db_boss_record(self, db_record):
-        """
-        :func:`sort_db_record` sorts the db records
-        by chronological order, for bosses.
+    async def sort_db_boss_record(self, record):
+        """Sorts the boss db records by descending chronological order.
 
         Args:
-            db_record (list): the records to sort
+            record (list): the records to sort
 
         Returns:
             list: the sorted records
-        """
-        return sorted(db_record, key=itemgetter(5,6,7,8,9), reverse=True)
 
-    async def update_db_boss(self, boss_dict):
         """
-        :func:`update_db_boss` updates the record with a new entry.
+        return sorted(record, key=itemgetter(5,6,7,8,9), reverse=True)
+
+    async def update_db_boss(self, record):
+        """Updates the boss table with a new entry.
 
         Args:
-            boss_dict (dict): the boss dictionary
-                containing the new record
+            record (dict): the boss record to add/update
 
         Returns:
             bool: True if successful; False otherwise
+
         """
         contents = []
 
-        boss_name = boss_dict['name']
-        boss_channel = boss_dict['channel']
+        boss_name = record['name']
+        boss_channel = record['channel']
 
         # handle channels
         if boss_channel:
@@ -388,29 +394,28 @@ class Database:
             contents.extend(await cursor.fetchall())
 
             if contents and ((int(contents[0][5])
-                              == boss_dict['year']) and
+                              == record['year']) and
                              (int(contents[0][6])
-                              == boss_dict['month']) and
+                              == record['month']) and
                              (int(contents[0][7])
-                              == boss_dict['day'])and
+                              == record['day'])and
                              (int(contents[0][8])
-                              > boss_dict['hour'])):
+                              > record['hour'])):
                 await cursor.close()
                 return False
             elif contents and ((int(contents[0][5])
-                                <= boss_dict['year']) or
+                                <= record['year']) or
                                (int(contents[0][6])
-                                <= boss_dict['month']) or
+                                <= record['month']) or
                                (int(contents[0][7])
-                                <= boss_dict['day']) or
+                                <= record['day']) or
                                (int(contents[0][8])
-                                <= boss_dict['hour'])):
-
+                                <= record['hour'])):
                 if boss_channel:
-                    await self.rm_entry_db_boss(boss_list=[boss_name,],
-                                                boss_ch=boss_channel)
+                    await self.rm_entry_db_boss(bosses=[boss_name,],
+                                                channel=boss_channel)
                 else:
-                    await self.rm_entry_db_boss(boss_list=[boss_name,])
+                    await self.rm_entry_db_boss(bosses=[boss_name,])
 
             try:
                 # boss database structure
@@ -418,47 +423,46 @@ class Database:
                     'insert into boss values (?,?,?,?,?,?,?,?,?,?)',
                     (str(boss_name),
                      int(boss_channel),
-                     str(boss_dict['map']),
-                     str(boss_dict['status']),
-                     str(boss_dict['text_channel']),
-                     int(boss_dict['year']),
-                     int(boss_dict['month']),
-                     int(boss_dict['day']),
-                     int(boss_dict['hour']),
-                     int(boss_dict['minute'])))
+                     str(record['map']),
+                     str(record['status']),
+                     str(record['text_channel']),
+                     int(record['year']),
+                     int(record['month']),
+                     int(record['day']),
+                     int(record['hour']),
+                     int(record['minute'])))
                 await _db.commit()
                 return True
             except Exception as e:
-                print('update_db_boss', e)
+                print('update_db_boss', self.db_id, '\n', e)
                 return False
 
-    async def rm_entry_db_boss(self, boss_list=constants.boss.ALL_BOSSES, boss_ch=0):
-        """
-        :func:`rm_entry_db_boss` removes records based on
-        the conditions supplied.
+    async def rm_entry_db_boss(self, bosses=constants.boss.ALL_BOSSES, channel=0):
+        """Removes records filtered by the arguments.
 
         Args:
-            boss_list (list): the list containing boss names (str)
-                with records to erase
-            boss_ch (int): (default: 0) the boss channel filter,
-                if specified
+            bosses (list, optional): list of boss names (str) to filter;
+                defaults to `constants.boss.ALL_BOSSES`
+            channel (int, optional): the map channel to filter;
+                defaults to 0
 
         Returns:
             list: a list containing the records that were removed
+
         """
         records = []
-        if not boss_list:
-            boss_list = constants.boss.ALL_BOSSES
+        if not bosses:
+            bosses = constants.boss.ALL_BOSSES
 
         async with aiosqlite.connect(self.db_name) as _db:
             _db.row_factory = aiosqlite.Row
 
-            for boss in boss_list:
+            for boss in bosses:
                 conditions = ('boss where name = "{}"'
                                .format(boss))
-                if boss_ch:
+                if channel:
                     conditions += (' and channel = "{}"'
-                                   .format(boss_ch))
+                                   .format(channel))
 
                 select = 'select * from ' + conditions
                 delete = 'delete from ' + conditions
@@ -475,31 +479,33 @@ class Database:
                     await _db.commit()
                     records.append(boss) # guaranteed to be only one entry as per this loop
                 except Exception as e: # in case of sqlite3 exceptions
-                    print('rm_entry_db_boss', self.db_id, e)
+                    print('rm_entry_db_boss', self.db_id, '\n', e)
                     continue
             await cursor.close()
 
         return records # return an implicit bool for how many were deleted
 
-    async def get_users(self, kind, users=None):
-        """
-        :func:`get_users` gets users of a `kind`.
+    async def get_users(self, role, users=None):
+        """Gets users by filtering from arguments.
+
         Users are defined to be either Discord Members or Roles,
-        hence not using "get_members" as the function name.
+        hence why the function isn't called "get_members".
 
         Args:
-            kind (str): the kind of user desired
-            users: (default: None) a list of optional users to filter results
+            role (str): the Vaivora role to filter
+            users (list, optional): a list of optional users to filter results;
+                defaults to None
 
         Returns:
             list: a list of users by id
             None: if no such users were configured
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
                             'select mention from roles where role = "{}"'
-                            .format(kind))
+                            .format(role))
                 results = [_row[0] for _row in await cursor.fetchall()]
 
                 if users:
@@ -510,19 +516,24 @@ class Database:
                 print(e)
                 return None
 
-    async def set_users(self, kind, users):
-        """
-        :func:`set_users` sets users to a `kind` of role.
+    async def set_users(self, role, users):
+        """Sets users to a Vaivora role.
+
         Users are defined to be either Discord Members or Roles,
-        hence not using "get_members" as the function name.
+        hence why the function isn't called "set_members".
+
+        Note that individual users cannot be assigned the boss role.
 
         Args:
-            kind (str): the kind of user desired
+            role (str): the role of user desired
             users (list): the users to set
 
         Returns:
             list: a list of users not processed
-            list(None): if successful
+
+            If all users were successfullly processed,
+            a list of None will be returned instead.
+
         """
         errs = []
         async with aiosqlite.connect(self.db_name) as _db:
@@ -531,28 +542,31 @@ class Database:
                     cursor = await _db.execute(
                                 """insert into roles values
                                    ('{}', '{}')"""
-                                .format(kind, user))
+                                .format(role, user))
                 except Exception as e:
                     await _db.execute('ROLLBACK')
-                    print('set_users', e)
+                    print('set_users', self.db_id, '\n', e)
                     errs.append(user)
                     continue
             await _db.commit()
         return errs
 
-    async def remove_users(self, kind, users):
-        """
-        :func:`remove_users` removes users from a `kind` of role.
+    async def remove_users(self, role, users):
+        """Removes users from a Vaivora role.
+
         Users are defined to be either Discord Members or Roles,
-        hence not using "remove_members" as the function name.
+        hence why the function isn't called "remove_members".
 
         Args:
-            kind (str): the kind of user desired
+            role (str): the role of user desired
             users (list): the users to set
 
         Returns:
             list: a list of users not processed
-            list(None): if successful
+
+            If all users were successfullly processed,
+            a list of None will be returned instead.
+
         """
         errs = []
         async with aiosqlite.connect(self.db_name) as _db:
@@ -561,26 +575,28 @@ class Database:
                     cursor = await _db.execute(
                                 """delete from roles where role='{}'
                                    and mention='{}'"""
-                                .format(kind, user))
+                                .format(role, user))
                 except Exception as e:
                     await _db.execute('ROLLBACK')
-                    print('remove_users', e)
+                    print('remove_users', self.db_id, '\n', e)
                     errs.append(user)
                     continue
             await _db.commit()
         return errs
 
     async def update_user_sauth(self, user_id: int, owner=True):
-        """
-        :func:`update_user_sauth` updates owner to `s`uper `auth`orized
-        after each boot.
+        """Updates the current guild owner to `s`uper-`auth`orized.
+
+        Also used to update bot owner to 'super-authorized'.
 
         Args:
-            user_id (int): the id of the owner
-            owner: (default: True) optional: True if owner
+            user_id (int): the id of the user
+            owner (bool, optional): whether the user is the guild owner;
+                defaults to True
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             if owner:
@@ -596,14 +612,14 @@ class Database:
                         .format(constants.settings.ROLE_SUPER_AUTH,
                                 old_owner))
                 except: #Exception as e:
-                    #print('Exception caught & ignored:', e)
+                    #print('Exception caught & ignored:', self.db_id, '\n', e)
                     pass
 
                 try:
                     await _db.execute('create table owner(id text)')
                 except: #Exception as e:
                     # table owner might already exist
-                    #print('Exception caught & ignored:', e)
+                    #print('Exception caught & ignored:', self.db_id, '\n', e)
                     pass
 
             try:
@@ -620,16 +636,18 @@ class Database:
                 return True
             except Exception as e:
                 await _db.execute('ROLLBACK')
-                print('Exception caught:', e)
+                print('Exception caught:', self.db_id, '\n', e)
                 return False
 
     async def clean_duplicates(self):
-        """
-        :func:`clean_duplicates` gets rid of duplicates from all tables.
+        """Removes duplicates from all tables.
 
         Returns:
-            list: containing table names that could not be cleaned, or
-                None if all tables could be cleaned
+            list: containing table names that could not be cleaned
+
+            If all tables were successfully processed,
+            a list of None will be returned instead.
+
         """
         errs = []
         async with aiosqlite.connect(self.db_name) as _db:
@@ -640,21 +658,20 @@ class Database:
                                       .format(_table, spec[_table]))
                 except Exception as e:
                     errs.append(_table)
-                    print('clean_duplicates', e)
+                    print('clean_duplicates', self.db_id, '\n', e)
                     continue
             await _db.commit()
         return errs
 
     async def purge(self):
-        """
-        :func:`purge` is a last-resort subcommand that
-        resets the channels table.
+        """Resets the channels table as a last resort.
 
-        Args:
-            guild_id (int): the id of the guild to purge tables
+        Used if no channels can be used for commands due to configuration
+        malfunction.
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -670,16 +687,16 @@ class Database:
                 return False
 
     async def get_channel(self, kind):
-        """
-        :func:`get_channel` gets channel(s) of a given `kind`.
+        """Gets channel(s) of a given `kind`, or Vaivora channel.
 
         Args:
-            kind (str): the kind of channel to filter
+            kind (str): the kind of channel to filter;
                 e.g. 'boss', 'management'
 
         Returns:
             list: a list of channels of `kind`
             None: if no such channels were configured
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -702,7 +719,8 @@ class Database:
             channel (int): the id of a channel to set
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -713,20 +731,20 @@ class Database:
                 return True
             except Exception as e:
                 await _db.execute('ROLLBACK')
-                print('set_channel', e)
+                print('set_channel', self.db_id, '\n', e)
                 return False
 
     async def remove_channel(self, kind, channel):
-        """
-        :func:`remove_channel` removes a channel from `kind`.
+        """Removes a channel from `kind`.
 
         Args:
-            kind (str): the kind of channel to filter
+            kind (str): the kind of channel to filter;
                 e.g. 'boss', 'management'
             channel (int): the id of a channel to remove
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -737,7 +755,7 @@ class Database:
                 return True
             except Exception as e:
                 await _db.execute('ROLLBACK')
-                print('remove_channel', e)
+                print('remove_channel', self.db_id, '\n', e)
                 return False
 
     async def get_contribution(self, users=None):
@@ -745,11 +763,13 @@ class Database:
         :func:`get_contribution` gets contribution.
 
         Args:
-            users: (default: None) an optional list of users to retrieve
+            users (list, optional): a list of users to filter results;
+                defaults to None
 
         Returns:
             list: of tuples, containing user id and contribution points
             None: if none exist
+
         """
         results = []
         async with aiosqlite.connect(self.db_name) as _db:
@@ -776,16 +796,17 @@ class Database:
                 return results
 
     async def set_contribution(self, user, points, append=False):
-        """
-        :func:`set_contribution` sets a user contribution.
+        """Sets a user contribution using points as the unit.
 
         Args:
             user (int): the user to set contributions
             points (int): the points of contribution
-            append (bool): (default: False) whether to add or not
+            append (bool. optional): whether to add instead of set;
+                defaults to False
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         g_level = 0
         g_points = 0
@@ -836,16 +857,16 @@ class Database:
                 return True
             except Exception as e:
                 await _db.execute('ROLLBACK')
-                print(e)
+                print('set_contribution', self.db_id, '\n', e)
                 return False
 
     async def get_guild_info(self):
-        """
-        :func:`get_guild_info` returns guild level and points.
+        """Retrieves guild level and points.
 
         Returns:
-            tuple: (guild level, guild points)
+            tuple: (guild level: int, guild points: int)
             None: if unsuccessful
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -856,15 +877,16 @@ class Database:
                 return None
 
     async def set_guild_points(self, points):
-        """
-        :func:`set_guild_points` sets the guild info by rebasing points.
+        """Sets the guild points by rebasing points.
+
         This should be used last, after inputting records.
 
         Args:
             points (int): the points of the guild
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         level = 1
         while constants.settings.G_LEVEL[level] < points:
@@ -872,7 +894,8 @@ class Database:
 
         async with aiosqlite.connect(self.db_name) as _db:
             try:
-                # use sentinel value 0 for "remaining"
+                # use sentinel value 0 for "remaining",
+                # unattributable points
                 cursor = await _db.execute(
                             """select points from contribution
                                where mention != '0'""")
@@ -907,35 +930,37 @@ class Database:
                         .format(level, points))
                 await _db.commit()
                 return True
-            except:
+            except Exception as e:
+                print('set_guild_points', self.db_id, '\n', e)
                 await _db.execute('ROLLBACK')
                 return False
 
     async def get_tz(self):
-        """
-        :func:`get_tz` gets the guild's time zone.
+        """Retrieves the guild's time zone.
 
         Returns:
             str: the time zone e.g America/New_York
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute('select * from tz')
                 return (await cursor.fetchone())[0]
-            except:
+            except Exception as e:
+                print('get_tz', self.db_id, '\n', e)
                 await _db.execute('drop table if exists tz')
                 await self.create_db('tz')
                 return None
 
     async def set_tz(self, tz: str):
-        """
-        :func:`set_tz` sets the guild's time zone to use for records.
+        """Sets the guild's time zone to use for records.
 
         Args:
             tz (str): the time zone to use
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -952,33 +977,35 @@ class Database:
                                   .format(tz))
                 await _db.commit()
                 return True
-            except:
+            except Exception as e:
+                print('set_tz', self.db_id, '\n', e)
                 return False
 
     async def get_offset(self):
-        """
-        :func:`get_offset` gets the guild's offset from the time zone.
+        """Retrieves the guild's offset from the time zone.
 
         Returns:
-            str: the time zone e.g America/New_York
+            int: the offset
+            None: if no offset was found
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute('select * from offset')
                 return (await cursor.fetchone())[0]
-            except:
+            except Exception as e:
+                print('get_offset', self.db_id, '\n', e)
                 return None
 
     async def set_offset(self, offset: int):
-        """
-        :func:`set_offset` sets the guild's offset from time zone
-        to use for records.
+        """Sets the guild's offset from time zone.
 
         Args:
             offset (int): the offset to use
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -995,13 +1022,15 @@ class Database:
                                   .format(offset))
                 await _db.commit()
                 return True
-            except:
+            except Exception as e:
+                print('set_offset', self.db_id, '\n', e)
                 return False
 
     async def add_custom_event(self, name: str, date: dict, time: dict):
-        """
-        :func:`add_custom_event` adds a custom event to timers.
-        If an event already exists, the command fails.
+        """Adds a custom event to timers.
+
+        If an event with the same name already exists,
+        the command fails.
 
         Args:
             name (str): the name of the event to add
@@ -1009,7 +1038,8 @@ class Database:
             time (dict): with hour, minutes; the ending time
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -1029,16 +1059,17 @@ class Database:
                     return False
             except sqlite3.OperationalError as e:
                 await self.create_db('events')
-                print('add_custom_event', e)
+                print('add_custom_event', self.db_id, '\n', e)
                 return False
             except Exception as e:
-                print('add_custom_event', 'unknown exception:', e)
+                print('add_custom_event', 'unknown exception:', self.db_id, '\n', e)
                 return False
 
     async def verify_existing_custom_event(self, name: str):
-        """
-        :func:`verify_existing_custom_event` is called prior to updating
-        a custom event.
+        """Verifies whether an event already exists.
+
+        Called prior to updating a custom event.
+
         If the event did not exist already, the command fails.
         Otherwise, the existing event is destroyed and the command proceeds.
 
@@ -1046,7 +1077,8 @@ class Database:
             name (str): the name of the event to check
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -1067,20 +1099,23 @@ class Database:
             except sqlite3.OperationalError:
                 await self.create_db('events')
                 return False
-            except:
+            except Exception as e:
+                print('verify_existing_custom_event', self.db_id, '\n', e)
                 return False
 
     async def del_custom_event(self, name: str):
-        """
-        :func:`del_custom_event` deletes a custom event from timers.
+        """Deletes a custom event from timers.
+
         Note that the command will successfully run even if
         nothing was deleted.
 
         Args:
-            name (str): the name of the event to delete; MUST MATCH EXISTING
+            name (str): the name of the event to delete;
+                MUST MATCH EXISTING - case/punctuation sensitive
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
@@ -1090,21 +1125,21 @@ class Database:
                     )
                 return True
             except Exception as e:
-                print('del_custom_event', e)
+                print('del_custom_event', self.db_id, '\n', e)
                 return False
 
     async def toggle_event(self, name: str, toggle: int):
-        """
-        :func:`toggle_event` handles the logic for:
-            :func:`enable_event`
-            :func:`disable_event`
+        """Toggles permanent event states.
+
+        Called by `enable_event` and `disable_event`.
 
         Args:
             name (str): the name of the permanent event to use
             toggle (int): the toggle state, 1 being enabled; 0 disabled
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         toggle_name = 'enable_event' if toggle != 0 else 'disable_event'
         async with aiosqlite.connect(self.db_name) as _db:
@@ -1119,53 +1154,58 @@ class Database:
                 await _db.commit()
                 return True
             except Exception as e:
-                print(toggle_name, e)
+                print(toggle_name, self.db_id, '\n', e)
                 return False
 
     async def enable_event(self, name: str):
-        """
-        :func:`enable_event` enables a permanent in-game event timer.
-        Note that this function makes no attempt to check the previous state
-        of the event.
+        """Enables a permanent in-game event timer.
+
+        Note that this function makes no attempt to check
+        the previous state of the event.
+
         Permanent event dates will use dummy values.
 
         Args:
             name (str): the name of the permanent event to use
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await self.toggle_event(name, 1)
 
     async def disable_event(self, name: str):
-        """
-        :func:`disable_event` disables a permanent in-game event timer.
-        Note that this function makes no attempt to check the previous state
-        of the event.
+        """Disables a permanent in-game event timer.
+
+        Note that this function makes no attempt to check
+        the previous state of the event.
 
         Args:
             name (str): the name of the permanent event to use
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         return await self.toggle_event(name, 0)
 
     async def list_all_events(self):
-        """
-        :func:`list_all_events` prints all events custom or permanent.
+        """Retrieves all events, custom or permanent.
+
         Custom event timers will show time remaining.
         Permanent events may do the same, if they are enabled.
+
         The state of all permanent event timers will be listed as well.
 
         Returns:
             list: of tuples (event name, date and time, enabled/disabled)
-            False if unsuccessful
+            bool: False if unsuccessful
+
         """
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute('select * from events')
                 return await cursor.fetchall()
             except Exception as e:
-                print('list_all_events', e)
+                print('list_all_events', self.db_id, '\n', e)
                 return False

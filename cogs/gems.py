@@ -15,6 +15,7 @@ abrasives = gems[:-1]
 
 
 class GemsCog(commands.Cog):
+    """Interface for the `$gems` commands."""
 
     def __init__(self, bot):
         self.bot = bot
@@ -26,14 +27,14 @@ class GemsCog(commands.Cog):
 
     @gems.command(name='help')
     async def _help(self, ctx):
-        """
-        :func:`_help` retrieves help pages for `$settings`.
+        """Retrieves help pages for `$gems`.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
 
         Returns:
-            True
+            bool: True
+
         """
         _help = constants.gems.HELP
         for _h in _help:
@@ -42,8 +43,7 @@ class GemsCog(commands.Cog):
 
     @gems.command(aliases=['experience', 'abrasives', 'abrasive'])
     async def exp(self, ctx, *abrs: str):
-        """
-        :func:`exp` calculates the exp obtained from abrasives.
+        """Calculates the experience obtained from abrasives.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
@@ -52,7 +52,8 @@ class GemsCog(commands.Cog):
                 'x' or '.'
 
         Returns:
-            True always
+            bool: True always
+
         """
         gem_exp = 0
         errs = []
@@ -113,9 +114,12 @@ class GemsCog(commands.Cog):
 
     @gems.command(name='gem2lv', aliases=['gem2level'])
     async def gem_to_level(self, ctx, level: int, exp: int, final_level: int):
-        """
-        :func:`gem_to_level` calculates experience needed
-        from a given gem level and experience to a `final_level`.
+        """Calculates experience needed from a given gem level
+        and experience to a `final_level`.
+
+        `level` must always be less than `final_level`.
+
+        `final_level` cannot exceed 10. `level` cannot be under 1.
 
         Args:
             ctx (discord.ext.commands.Context): context of the message
@@ -124,7 +128,8 @@ class GemsCog(commands.Cog):
             final_level (int): the intended level
 
         Returns:
-            True if successful; False otherwise
+            bool: True if successful; False otherwise
+
         """
         if level > 9 or final_level > 10 or level < 1 or final_level < 1:
             await ctx.send(constants.gems.INVALID_GLEVEL
