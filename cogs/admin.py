@@ -27,7 +27,7 @@ class AdminCog(commands.Cog):
     @admin.command(aliases=['reloadAll', 'reloadall'])
     async def reload_all(self, ctx):
         return await self.reloader(ctx, _cogs)
-        
+
     async def reloader(self, ctx, cogs):
         failed = []
         for cog in cogs:

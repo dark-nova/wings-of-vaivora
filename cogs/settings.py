@@ -602,7 +602,7 @@ class SettingsCog(commands.Cog):
                 defaults to None
 
         Returns:
-            bool: True if successful; False otherwise    
+            bool: True if successful; False otherwise
 
         """
         return await role_setter(ctx, mentions)
@@ -620,7 +620,7 @@ class SettingsCog(commands.Cog):
                 defaults to None
 
         Returns:
-            bool: True if successful; False otherwise      
+            bool: True if successful; False otherwise
         """
         return await role_setter(ctx, mentions)
 
@@ -637,7 +637,7 @@ class SettingsCog(commands.Cog):
                 defaults to None
 
         Returns:
-            True if successful; False otherwise      
+            True if successful; False otherwise
         """
         return await role_setter(ctx, mentions)
 
@@ -905,7 +905,7 @@ class SettingsCog(commands.Cog):
 
         Returns:
             bool: True if successful; False otherwise
-            
+
         """
         return await role_getter(ctx, mentions)
 
@@ -1281,7 +1281,7 @@ class SettingsCog(commands.Cog):
 
         Returns:
             bool: True if successful; False otherwise
-            
+
         """
         return await channel_deleter(ctx, ctx.channel_kind)
 
