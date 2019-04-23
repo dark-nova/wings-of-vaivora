@@ -52,4 +52,6 @@ Time zones: <https://en.wikipedia.org/wiki/List_of_tz_database_time_zones>
 
 `$offset` can be considered an optional plugin to `$settings`. Therefore, it can only be used only in channels marked as `settings`.
 
-#### File last modified: 2019-03-19 20:20 (UTC-7)
+`$offset` **permanently** changes the default behavior of `$boss` records! If you are comfortable with changes, feel free to use this module.
+
+#### File last modified: 2019-04-23 09:20 (UTC-7)
