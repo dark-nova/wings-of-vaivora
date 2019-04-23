@@ -243,7 +243,7 @@ class Database:
 
                 await _db.execute(
                     'insert into events values({})'
-                    .format(','.join(str(col) for col in event_row)))
+                    .format(','.join('"{}"'.format(col) for col in event_row)))
 
             await _db.commit()
 
