@@ -6,18 +6,26 @@ import constants.boss
 import constants.settings
 
 
-def check_channel(kind):
-    """
-    :func:`check_channel` checks whether a channel is allowed
-    to interact with Wings of Vaivora.
+def check_channel(kind: str):
+    """Checks whether a channel is allowed to
+    interact with Wings of Vaivora.
+
+    Once a channel type has even one channel set,
+    commands will fail if run outside those channels.
+
+    If the guild is in a state where no channel can be used,
+    whether because the old channel was deleted, etc.,
+    the guild's `authorized` can run `$settings purge` to
+    reset the channel table anew.
 
     Args:
         kind (str): the type (name) of the channel
 
     Returns:
-        True if successful; False otherwise
-            Note that this means if no channels have registered,
-            *all* channels are valid.
+        bool: True if successful; False otherwise
+        Note that this means if no channels have registered,
+        *all* channels are valid.
+
     """
     @commands.check
     async def check(ctx):
@@ -32,15 +40,18 @@ def check_channel(kind):
 
 
 def check_role(lesser_role=None):
-    """
-    :func:`check_role` sees whether the user is authorized
-    to run a settings command.
+    """Checks whether the user is authorized to run a settings command.
+
+    In the default case (`lesser_role` is None), the author must be
+    authorized.
 
     Args:
-        lesser_role: (default: None) an optional role to check
+        lesser_role (str, optional): use this role instead of authorized;
+            defaults to None
 
     Returns:
-        True if the user is authorized; False otherwise
+        bool: True if the user is authorized; False otherwise
+
     """
     @commands.check
     async def check(ctx):
@@ -77,16 +88,22 @@ def check_role(lesser_role=None):
     return check
 
 
-async def iterate_roles(author, users):
-    """
-    :func:`iterate_roles` is a helper function for :func:`check_roles`.
+async def iterate_roles(author, users: list):
+    """Iterates through the author's Discord roles.
+
+    Checks whether any of the author's Discord roles or
+    the author's id itself are in a list of
+    authorized `users`.
+
+    Called by `check_roles`.
 
     Args:
         author (discord.Member): the command user
         users (list): users to iterate through
 
     Returns:
-        True if author is authorized; False otherwise
+        bool: True if author is authorized; False otherwise
+
     """
     if users and author.id in users:
         return True
@@ -101,11 +118,14 @@ async def iterate_roles(author, users):
 
 
 def only_in_guild():
-    """
-    :func:`only_in_guild` checks whether a command can run.
+    """Checks whether the command was called in a Discord guild.
+
+    If the command was not sent in a guild, e.g. DM,
+    the command is not run.
 
     Returns:
-        True if guild; False otherwise
+        bool: True if guild; False otherwise
+
     """
     @commands.check
     async def check(ctx):
@@ -117,12 +137,11 @@ def only_in_guild():
 
 
 def has_channel_mentions():
-    """
-    :func:`has_channel_mentions` checks whether
-    a command has channel mentions. How creative
+    """Checks whether a command has channel mentions. How creative
 
     Returns:
-        True if message has channel mentions; False otherwise
+        bool: True if message has channel mentions; False otherwise
+
     """
     @commands.check
     async def check(ctx):
