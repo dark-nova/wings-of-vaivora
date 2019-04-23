@@ -130,7 +130,7 @@ FAIL_NO_ROLES = 'No users were found associated with the {} role type.'
 FAIL_NOT_AUTH = 'You are not authorized to do this!'
 FAIL_PURGED = 'Your channel records could not be purged.'
 FAIL_NO_MENTIONS = 'No mentions were added.'
-FAIL_NO_USER_BOSS = "Members can't be set as the boss role!"
+FAIL_NO_USER = "Members can't be set as the {} role!"
 FAIL_TOO_MANY_MENTIONS = 'You mentioned too many users!'
 FAIL_INVALID_MENTION = 'You typed an invalid mention!'
 FAIL_INVALID_POINTS = 'You entered an invalid amount of points! Check unit or value (divisible by 20).'
@@ -163,6 +163,7 @@ G_TNL =      [0,   0,    1000,    1500,    2500,    4000,
              1054520, 2109040, 4218080, 8436160,16872320]
 
 ROLE_BOSS = 'boss'
+ROLE_EVENTS = 'events'
 ROLE_NONE = 'none'
 ROLE_MEMBER = 'member'
 ROLE_AUTH = 'authorized'

@@ -34,7 +34,8 @@ async def get_mention_ids(ctx, mentions):
                                      + ctx.guild.roles)]
     rids = [member.id for member in ctx.guild.roles]
     try:
-        if ctx.role_type == constants.settings.ROLE_BOSS:
+        if (ctx.role_type == constants.settings.ROLE_BOSS
+            or ctx.role_type == constants.settings.ROLE_EVENTS):
             for mention in mentions:
                 # do not allow regular users for `$boss`
                 if mention in rids:
@@ -70,15 +71,17 @@ async def combine_mention_ids(ctx, mentions=None):
             _mentions.append(mention.id)
 
     # do not allow regular users for $boss
-    if ctx.role_type != constants.settings.ROLE_BOSS:
+    if (ctx.role_type == constants.settings.ROLE_BOSS
+        or ctx.role_type == constants.settings.ROLE_EVENTS):
+        if ctx.message.mentions:
+            await ctx.send(
+                constants.settings.FAIL_NO_USER
+                .format(ctx.role_type)
+                )
+    else:
         if ctx.message.mentions:
             for mention in ctx.message.mentions:
                 _mentions.append(mention.id)
-    elif ctx.role_type == constants.settings.ROLE_BOSS:
-        if ctx.message.mentions:
-            await ctx.send('{} {}'
-                           .format(ctx.author.mention,
-                                   constants.settings.FAIL_NO_USER_BOSS))
 
     # uid mode; parse if they're actually id's and not nonsense
     if mentions:
