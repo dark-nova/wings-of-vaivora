@@ -163,32 +163,6 @@ async def get_dbs(kind):
                  .format(*t) for t in zip(columns[kind], types[kind]))
 
 
-async def construct_SQL(*, args):
-    """Creates a SQLite statement.
-
-    Args:
-        args (tuple): the statements to use into one statement
-
-    Returns:
-        str: a full SQLite statement
-
-    """
-    return ' '.join(args)
-
-
-async def construct_filters(*, filters):
-    """Creates a compound SQLite filter in string form.
-
-    Args:
-        args (tuple): the filters
-
-    Returns:
-        str: a compound SQLite filter
-
-    """
-    return 'where {}'.format(' {} '.format('and').join(filters))
-
-
 class Database:
     """Serves as the backend for all of the Vaivora modules."""
 
@@ -239,7 +213,7 @@ class Database:
                         'delete from events where name = "{}"'
                         .format(event))
 
-                event_row = (event, 0, 0, 0) + event_times[event] + (0,)
+                event_row = (event,) + dummy_dates + event_times[event] + (0,)
 
                 await _db.execute(
                     'insert into events values({})'
@@ -248,7 +222,6 @@ class Database:
             await _db.commit()
 
         return True
-
 
     def get_id(self):
         """Gets the database id.
@@ -306,18 +279,18 @@ class Database:
             bool: True if valid; False otherwise
         """
         if module == 'boss':
-            select = tables[0:1]
+            _tables = tables[0:1]
         elif module == 'settings':
-            select = tables[1:]
+            _tables = tables[1:]
 
         async with aiosqlite.connect(self.db_name) as _db:
             _db.row_factory = aiosqlite.Row
-            for _s in select:
+            for table in _tables:
                 try:
                     cursor = await _db.execute(
-                                await construct_SQL(
-                                    args=('select * from',
-                                          _s)))
+                        'select * from {}'
+                        .format(table)
+                        )
                 except Exception as e:
                     print('check_if_vaild', self.db_id, '\n', e)
                     return False
@@ -355,19 +328,14 @@ class Database:
             for boss in bosses:
                 if channel:
                     cursor = await _db.execute(
-                                await construct_SQL(
-                                    args=('select * from boss',
-                                          await construct_filters(filters=
-                                                ('name=?',
-                                                 'channel=?')))),
-                                               (boss, channel,))
+                        'select * from boss where name="{}" and channel="{}"'
+                        .format(boss, channel)
+                        )
                 else:
                     cursor = await _db.execute(
-                                await construct_SQL(
-                                    args=('select * from boss',
-                                          await construct_filters(filters=(
-                                                'name=?',)))),
-                                               (boss,))
+                        'select * from boss where name="{}"'
+                        .format(boss)
+                        )
 
                 records = await cursor.fetchall()
                 for record in records:
@@ -400,31 +368,23 @@ class Database:
         """
         contents = []
 
-        boss_name = record['name']
-        boss_channel = record['channel']
-
-        # handle channels
-        if boss_channel:
-            sel_statement = await construct_SQL(
-                                args=('select * from boss',
-                                      await construct_filters(
-                                            filters=(
-                                                'name=?',
-                                                'channel=?'))))
-            sql_condition = (boss_name, boss_channel)
-        # handle everything else
-        else:
-            sel_statement = await construct_SQL(
-                                args=('select * from boss',
-                                      await construct_filters(
-                                            filters=(
-                                                'name=?',))))
-            sql_condition = (boss_name,)
+        boss = record['name']
+        channel = record['channel']
 
         async with aiosqlite.connect(self.db_name) as _db:
             _db.row_factory = aiosqlite.Row
 
-            cursor = await _db.execute(sel_statement, sql_condition)
+            if channel:
+                cursor = await _db.execute(
+                    'select * from boss where name="{}" and channel="{}"'
+                    .format(boss, channel)
+                    )
+            else:
+                cursor = await _db.execute(
+                    'select * from boss where name="{}"'
+                    .format(boss)
+                    )
+
             contents.extend(await cursor.fetchall())
 
             if contents and ((int(contents[0][5])
@@ -445,18 +405,18 @@ class Database:
                                 <= record['day']) or
                                (int(contents[0][8])
                                 <= record['hour'])):
-                if boss_channel:
-                    await self.rm_entry_db_boss(bosses=[boss_name,],
-                                                channel=boss_channel)
+                if channel:
+                    await self.rm_entry_db_boss(bosses=[boss,],
+                                                channel=channel)
                 else:
-                    await self.rm_entry_db_boss(bosses=[boss_name,])
+                    await self.rm_entry_db_boss(bosses=[boss,])
 
             try:
                 # boss database structure
                 await _db.execute(
                     'insert into boss values (?,?,?,?,?,?,?,?,?,?)',
-                    (str(boss_name),
-                     int(boss_channel),
+                    (str(boss),
+                     int(channel),
                      str(record['map']),
                      str(record['status']),
                      str(record['text_channel']),
