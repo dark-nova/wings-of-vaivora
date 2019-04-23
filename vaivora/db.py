@@ -226,7 +226,7 @@ class Database:
             for event in permanent_events:
                 try:
                     cursor = await _db.execute(
-                        'select * from events where name = {}'
+                        'select * from events where name = "{}"'
                         .format(event))
                     result = await cursor.fetchall()
                     if len(result) != 1:
