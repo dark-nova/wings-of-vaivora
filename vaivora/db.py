@@ -210,11 +210,45 @@ class Database:
         In addition, inserts permanent events if not present.
 
         Returns:
-            bool: True if successful; False only if an exception occurs
+            bool: True if successful; False only if
+            a fatal exception occurs
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
-            pass
+            try:
+                await _db.execute(
+                    'create table if not exists events({})'
+                    .format(','.join(await get_dbs(kind))))
+            except Exception as e:
+                print('init_events', self.db_id, '\n', e)
+                return False
+
+            for event in permanent_events:
+                try:
+                    cursor = await _db.execute(
+                        'select * from events where name = {}'
+                        .format(event))
+                    result = await cursor.fetchall()
+                    if len(result) != 1:
+                        raise Exception
+                    else:
+                        continue
+                except:
+                    # even if no event exists, this command will succed
+                    await _db.execute(
+                        'delete from events where name = "{}"'
+                        .format(event))
+
+                event_row = (event, 0, 0, 0) + event_times[event] + (0,)
+
+                await _db.execute(
+                    'insert into events values({})'
+                    .format(','.join(str(col) for col in event_row)))
+
+            await _db.commit()
+
+        return True
+
 
     def get_id(self):
         """Gets the database id.
