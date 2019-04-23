@@ -203,6 +203,16 @@ class Database:
         self.db_id = db_id
         self.db_name = '{}{}{}'.format('db/', self.db_id, '.db')
 
+    async def init_events(self):
+        """Creates an events table if it doesn't exist.
+        In addition, inserts permanent events if not present.
+
+        Returns:
+            bool: True if successful; False only if an exception occurs
+        """
+        async with aiosqlite.connect(self.db_name) as _db:
+            pass
+
     def get_id(self):
         """
         :func:`get_id` returns the database id.
