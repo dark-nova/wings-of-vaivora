@@ -121,6 +121,7 @@ async def check_databases():
 
     print('Attempting to check user permissions and event config...')
 
+    # Check guild databases
     for guild in bot.guilds:
         if not guild.unavailable:
             print('Checking guild {}...'.format(guild.id))
@@ -166,14 +167,13 @@ async def check_databases():
                 await vdbs[guild.id].create_all(guild.owner.id)
                 del vdbs[guild.id] # do not use corrupt/invalid db
 
-    results = {}
     minutes = {}
     records = []
-    today = pendulum.now() # check on first launch
 
     while not bot.is_closed():
         await asyncio.sleep(59)
-        print(pendulum.now().strftime("%Y/%m/%d %H:%M"),
+        loop_time = pendulum.now()
+        print(loop_time.strftime("%Y/%m/%d %H:%M"),
               "- Valid DBs:", len(vdbs))
 
         # prune records once they're no longer alert-able
@@ -183,9 +183,9 @@ async def check_databases():
                 mins_now = pendulum.now().minute
                 # e.g. 48 > 03 (if record was 1:03
                 # and time now is 12:48), passes conds 1 & 2 but fails cond 3
-                if ((rec_mins < mins_now) and
-                        ((mins_now-rec_mins) > 0) and
-                        ((mins_now-rec_mins+15+1) < 60)):
+                if ((rec_mins < mins_now)
+                    and ((mins_now-rec_mins) > 0)
+                    and ((mins_now-rec_mins+15+1) < 60)):
                     records.remove(rec_hash)
                     purged.append(rec_hash)
 
@@ -195,13 +195,11 @@ async def check_databases():
             except:
                 continue
 
-        # iterate through database results
+        # iterate through database results_boss
         for vdb_id, valid_db in vdbs.items():
-            loop_time = pendulum.now()
             print(loop_time.strftime("%H:%M"), "- in DB:", vdb_id)
-            results[vdb_id] = []
-            if today.day != loop_time.day:
-                today = loop_time
+            results_boss = []
+
 
             # check all timers
             message_to_send = []
@@ -209,10 +207,11 @@ async def check_databases():
             if not await valid_db.check_if_valid(constants.settings.ROLE_BOSS):
                 await valid_db.create_db(constants.settings.ROLE_BOSS)
                 continue
-            results[vdb_id] = await valid_db.check_db_boss()
+            results_boss = await valid_db.check_db_boss()
+            results_events = await valid_db.list_all_events()
 
             # empty record; dismiss
-            if not results[vdb_id]:
+            if not (results_boss and results_events):
                 continue
 
             tz = await valid_db.get_tz()
@@ -227,10 +226,10 @@ async def check_databases():
             full_diff = timedelta(hours=(diff_h + offset), minutes=diff_m)
 
             # sort by time - yyyy, mm, dd, hh, mm
-            results[vdb_id].sort(key=itemgetter(5,6,7,8,9))
+            results_boss.sort(key=itemgetter(5,6,7,8,9))
 
-            # iterate through all results
-            for result in results[vdb_id]:
+            # iterate through all results_boss
+            for result in results_boss:
                 discord_channel = result[4]
                 list_time = [ int(t) for t in result[5:10] ]
                 record_info = [ str(r) for r in result[0:4] ]
@@ -240,9 +239,9 @@ async def check_databases():
                 current_time = record_info[2]
                 current_status = record_info[3]
 
-                entry_time = pendulum.datetime(*list_time,
-                                               tz=pendulum.now()
-                                                  .timezone_name)
+                entry_time = pendulum.datetime(
+                    *list_time,
+                    tz=pendulum.now().timezone_name)
 
                 # process time difference
                 time_diff = entry_time - (loop_time + full_diff)
@@ -265,7 +264,8 @@ async def check_databases():
                     current_boss,
                     entry_time
                     .strftime(
-                        "%Y/%m/%d %H:%M"),
+                        "%Y/%m/%d %H:%M"
+                        ),
                     current_channel
                     )
 
@@ -283,6 +283,9 @@ async def check_databases():
                     records.append(hashed_record)
                     message_to_send.append([record, discord_channel,])
                     minutes[str(hashed_record)] = entry_time.minute
+
+            for result in results_events:
+
 
             # empty record for this server
             if len(message_to_send) == 0:
