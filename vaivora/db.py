@@ -218,7 +218,7 @@ class Database:
             try:
                 await _db.execute(
                     'create table if not exists events({})'
-                    .format(','.join(await get_dbs(kind))))
+                    .format(','.join(await get_dbs('events'))))
             except Exception as e:
                 print('init_events', self.db_id, '\n', e)
                 return False
@@ -979,7 +979,11 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute('select * from tz')
-                return (await cursor.fetchone())[0]
+                result = await cursor.fetchone()
+                if not result:
+                    return None
+                else:
+                    return result[0]
             except Exception as e:
                 print('get_tz', self.db_id, '\n', e)
                 await _db.execute('drop table if exists tz')
