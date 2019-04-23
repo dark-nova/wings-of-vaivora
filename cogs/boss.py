@@ -67,9 +67,9 @@ async def boss_helper(boss: str, time: str, map_or_channel):
 
 
 async def what_status(status: str):
-    """Checks what "status" the input may be.
+    """Checks what `status` the input may be.
 
-    "Statuses" are defined to be `died` and `anchored`.
+    `status` subcommands are defined to be `died` and `anchored`.
 
     Args:
         status (str): the string to check for `status`
@@ -451,7 +451,7 @@ async def process_cmd_entry(guild_id: int, txt_channel: str, bosses: list,
                             *[int(rec) for rec
                               in boss_record[5:10]], tz=tz)
 
-            time_diff = record_date - pendulum.now()
+            time_diff = record_date - pendulum.now() - timedelta(hours=offset)
 
             if int(time_diff.hours) < 0:
                 spawn_msg = constants.boss.TIME_SPAWN_MISSED
