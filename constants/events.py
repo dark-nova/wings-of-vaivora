@@ -1,6 +1,8 @@
 MODULE_NAME = 'events'
 COMMAND = '$' + MODULE_NAME
 
+NO_CHANNELS = 'Please ensure you add at least 1 channel marked as "events". Otherwise, alerts will not show.'
+
 SUCCESS_EVENT_ADD = 'Your custom event **{}** was added with an ending date of **{}**.'
 
 FAIL_EVENT_ADD = 'Your custom event could not be added. Verify if it already exists.\nYou may also be at the limit of 15 events.'

@@ -792,9 +792,26 @@ class Database:
                 print('remove_channel', self.db_id, '\n', e)
                 return False
 
-    async def get_contribution(self, users=None):
+    async def check_events_channel(self):
+        """Checks whether an events channel exists.
+
+        Returns:
+            bool: True if one or more exist; False otherwise
+
         """
-        :func:`get_contribution` gets contribution.
+        async with aiosqlite.connect(self.db_name) as _db:
+            try:
+                cursor = await _db.execute(
+                    'select * from channels where type="events"'
+                    )
+                return len(await cursor.fetchall()) > 0
+            except Exception as e:
+                print('check_events_channel', self.db_id, '\n', e)
+                return False
+
+
+    async def get_contribution(self, users=None):
+        """Gets contribution(s), filtered by `users`.
 
         Args:
             users (list, optional): a list of users to filter results;

@@ -100,6 +100,8 @@ class EventsCog(commands.Cog):
                                    constants.events.FAIL_EVENT_ADD))
             return False
         else:
+            if not await vdb.check_events_channel():
+                await ctx.send(constants.events.NO_CHANNELS)
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
                                    constants.events.SUCCESS_EVENT_ADD
