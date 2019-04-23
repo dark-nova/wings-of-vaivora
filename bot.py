@@ -15,6 +15,7 @@ import pendulum
 import checks
 import secrets
 import vaivora.db
+import vaivora.utils
 import constants.main
 import constants.boss
 import constants.settings
@@ -103,104 +104,6 @@ async def help(ctx):
         return False
 
     return True
-
-
-async def process_record(boss: str, status: str, time, diff: timedelta,
-    boss_map: str, channel: int, guild_id: int):
-    """Processes a record to print out.
-
-    Args:
-        boss (str): the boss in question
-        status (str): the status of the boss
-        time (pendulum.datetime): the `datetime` of the target
-            set to its next approximate spawn
-        diff (timedelta): the difference in time from server to local
-        boss_map (str): the map containing the last recorded spawn
-        channel (int): the channel of the world boss if applicable; else, 1
-        guild_id (int): the guild's id
-
-    Returns:
-        str: a formatted message containing the records
-
-    """
-    if boss_map == constants.boss.CMD_ARG_QUERY_MAPS_NOT:
-        # use all maps for Demon Lord if not previously known
-        if boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
-            boss_map = '\n'.join([constants.boss.RECORD
-                                  .format(constants.boss.EMOJI_LOC,
-                                          loc, channel)
-                                  for loc in constants.boss.BOSS_MAPS[boss]])
-        # this should technically not be possible
-        else:
-            boss_map = (constants.boss.RECORD
-                        .format(constants.boss.EMOJI_LOC,
-                                constants.boss.BOSS_MAPS[boss], channel))
-    # use all other maps for Demon Lord if already known
-    elif boss in constants.boss.BOSSES[constants.boss.KW_DEMON]:
-        boss_map = '\n'.join(['{} {}'.format(constants.boss.EMOJI_LOC, loc)
-                              for loc in constants.boss.BOSS_MAPS[boss]
-                              if loc != boss_map])
-    elif boss == constants.boss.BOSS_W_KUBAS:
-        # valid while Crystal Mine Lot 2 - 2F has 2 channels
-        channel = str(int(channel) % 2 + 1)
-        boss_map = (constants.boss.RECORD_KUBAS
-                    .format(constants.boss.EMOJI_LOC, boss_map, channel))
-    else:
-        boss_map = (constants.boss.RECORD
-                    .format(constants.boss.EMOJI_LOC, boss_map, channel))
-
-    local = pendulum.now()
-
-    minutes = floor(diff.seconds / 60)
-    minutes = '{} minutes'.format(str(minutes))
-
-    # set time difference based on status and type of boss
-    # takes the negative (additive complement) to get the original time
-    time_diff = get_offset(boss, status, coefficient=-1)
-    # and add it back to get the reported time
-    report_time = time + time_diff
-
-    if status == constants.boss.CMD_ARG_STATUS_ANCHORED:
-        plus_one = time + timedelta(hours=1)
-        time_fmt = '**{}** ({}) to {}'.format(time.strftime("%Y/%m/%d %H:%M"),
-                                              minutes, plus_one.strftime("%Y/%m/%d %H:%M"))
-    else:
-        time_fmt = '**{}** ({})'.format(time.strftime("%Y/%m/%d %H:%M"), minutes)
-
-    return ('**{}**\n- {} at {}\n- should spawn at {} in:\n{}\n\n'
-            .format(boss, status, report_time.strftime("%Y/%m/%d %H:%M"), time_fmt, boss_map))
-    # boss, status at, dead time, timefmt, maps with newlines
-
-    return ret_message
-
-
-async def get_time_diff(server_tz):
-    """Retrieves the time difference between local and `server_tz`,
-    to process the time difference.
-
-    Args:
-        server_tz (str): the time zone representing the in-game server
-
-    Returns:
-        tuple of int: (hours, minutes)
-
-    """
-    try:
-        local_time = pendulum.today()
-        server_time = local_time.in_timezone(tz=server_tz)
-        day_diff = server_time.day - local_time.day
-        hours = server_time.hour - local_time.hour
-        minutes = server_time.minute - local_time.minute
-        # The greatest day difference will always be 2:
-        # e.g. compare the time difference between
-        # 'Pacific/Kiritimati' (UTC+14) and 'Pacific/Pago_Pago' (UTC-11)
-        # A new day starting in the former will be 2 calendar days ahead.
-        if abs(day_diff) > 2 or day_diff >= 1:
-            hours += days_diff * 24
-
-        return (hours, minutes)
-    except:
-        return (0, 0)
 
 
 async def check_databases():
@@ -303,7 +206,7 @@ async def check_databases():
             if not offset:
                 offset = 0
 
-            diff_h, diff_m = await get_time_diff(tz)
+            diff_h, diff_m = await vaivora.utils.get_time_diff(tz)
             full_diff = timedelta(hours=(diff_h + offset), minutes=diff_m)
 
             # sort by time - yyyy, mm, dd, hh, mm
@@ -331,20 +234,24 @@ async def check_databases():
                 if time_diff.hours < 0 or time_diff.minutes < 0:
                     continue
 
-                record =  await process_record(current_boss,
-                                               current_status,
-                                               entry_time,
-                                               time_diff,
-                                               current_time,
-                                               current_channel,
-                                               vdb_id)
+                record =  await vaivora.utils.process_record(
+                    current_boss,
+                    current_status,
+                    entry_time,
+                    time_diff,
+                    current_time,
+                    current_channel,
+                    vdb_id
+                    )
 
                 record2byte = "{}:{}:{}:{}".format(discord_channel,
-                                                   current_boss,
-                                                   entry_time
-                                                   .strftime(
-                                                        "%Y/%m/%d %H:%M"),
-                                                   current_channel)
+                    current_boss,
+                    entry_time
+                    .strftime(
+                        "%Y/%m/%d %H:%M"),
+                    current_channel
+                    )
+
                 record2byte = bytearray(record2byte, 'utf-8')
                 hashedblake = blake2b(digest_size=48)
                 hashedblake.update(record2byte)
