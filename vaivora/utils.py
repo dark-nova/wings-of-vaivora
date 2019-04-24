@@ -253,5 +253,5 @@ async def hash_object(channel_id: str, obj: str, time: str,
 
     record = bytearray(record, 'utf-8')
     hashedblake = blake2b(digest_size=48)
-    hashedblake.update(record2byte)
+    hashedblake.update(record)
     return hashedblake.hexdigest()

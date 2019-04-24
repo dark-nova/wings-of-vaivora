@@ -276,8 +276,11 @@ async def check_databases():
                     message_to_send.append([record, discord_channel,])
                     minutes[str(hashed_record)] = entry_time.minute
 
-            for result in results_events:
-
+            if vdb_id not in skip_events:
+                for result in results_events:
+                    events_channels = await valid_db.get_channel('events')
+                    if not event_channels:
+                        pass
 
             # empty record for this server
             if len(message_to_send) == 0:
@@ -300,7 +303,7 @@ async def check_databases():
                             constants.settings.ROLE_BOSS,
                             (boss_role,))
 
-            role_str = ' '.join(roles)
+            roles = ' '.join(roles)
 
             discord_channel = None
             discord_message = None
@@ -310,13 +313,14 @@ async def check_databases():
                         try:
                             await (guild.get_channel(discord_channel)
                                    .send(discord_message))
-                        except:
-                            pass
+                        except Exception as e:
+                            # eventually handle removing invalid channels
+                            print('check_databases', guild.id, '\n', e)
                         discord_message = None
 
                     discord_channel = int(message[-1])
                     discord_message = (constants.main.BOSS_ALERT
-                                       .format(role_str))
+                                       .format(roles))
 
                 discord_message = '{} {}'.format(discord_message,
                                                  message[0])

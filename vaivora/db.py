@@ -300,9 +300,9 @@ class Database:
                     await cursor.close()
                     return True
 
-                if sorted(tuple(r.keys())) != sorted(columns[_s]):
+                if sorted(tuple(r.keys())) != sorted(columns[table]):
                     await cursor.close()
-                    print(r.keys(), sorted(columns[_s]))
+                    print(r.keys(), sorted(columns[table]))
                     return False
 
             await cursor.close()
@@ -318,7 +318,9 @@ class Database:
                 defaults to 0
 
         Returns:
-            list: records
+            list: records;
+                (boss, channel, map, status, Discord channel,
+                 year, month, day, hour, minute)
             list: None, if no records were found
 
         """
