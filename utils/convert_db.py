@@ -33,6 +33,28 @@ def get_dirs():
     return db_dir, ss_dir
 
 
+queries = [
+    'drop table if exists permissions',
+    'drop table if exists reminders',
+    'drop table if exists talt',
+    'drop table if exists boss',
+    'drop table if exists roles',
+    'drop table if exists owner',
+    'drop table if exists contribution',
+    'create table contribution(mention integer, points integer',
+    'create table owner(mention integer)',
+    'create table offset(hours integer)',
+    'create table guild(level integer, points integer)',
+    'create table roles(role text, mention integer)',
+    'create table channels(type text, channel integer)',
+    """create table boss(name text,channel {0},
+    map text,status text,text_channel text,
+    year {0},month {0},day {0},
+    hour {0},minute {0},"""
+    .format('integer',)
+    ]
+
+
 def update_db(db_dir: str):
     """Updates databases in a `db_dir`.
 
@@ -53,36 +75,21 @@ def update_db(db_dir: str):
                 db_fp = os.path.join(os.path.abspath(db_dir), db)
                 conn = sqlite3.connect(db_fp)
                 cursor = conn.cursor()
-                cursor.execute('drop table if exists permissions')
-                cursor.execute('drop table if exists reminders')
-                cursor.execute('drop table if exists talt')
-                cursor.execute('drop table if exists boss')
-                cursor.execute('drop table if exists roles')
-                cursor.execute('drop table if exists owner')
-                cursor.execute('drop table if exists contribution')
-                cursor.execute(
-                    'create table contribution(mention integer, points integer)')
-                cursor.execute(
-                    'create table owner(mention integer)')
-                cursor.execute(
-                    'create table offset(hours integer)')
-                cursor.execute(
-                    'create table guild(level integer, points integer)')
-                cursor.execute(
-                    'create table roles(role text, mention integer)')
-                cursor.execute(
-                    'create table channels(type text, channel integer)')
-                cursor.execute(
-                    """create table boss(name text,channel {0},
-                                   map text,status text,text_channel text,
-                                   year {0},month {0},day {0},
-                                   hour {0},minute {0})"""
-                    .format('integer'))
-                conn.commit()
-                conn.close()
             except Exception as e:
-                print('Exception handled:', e, 'in', db)
-                errs.append(db)
+                errs.append(db, e)
+                print('Could not open file:', db)
+                return errs
+
+            for query in queries:
+                try:
+                    cursor.execute(query)
+                except Exception as e:
+                    print('Exception handled:', e, 'in', db)
+                    errs.append(db, query)
+
+            conn.commit()
+            conn.close()
+            
     return errs
 
 
