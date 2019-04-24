@@ -521,7 +521,10 @@ class SettingsCog(commands.Cog):
             bool: True always
 
         """
-        ctx.channel_kind = ctx.invoked_subcommand.name
+        try:
+            ctx.channel_kind = ctx.invoked_subcommand.name
+        except AttributeError:
+            return False
         return True
 
     @s_channel.command(name='settings')
@@ -589,7 +592,10 @@ class SettingsCog(commands.Cog):
         Returns:
             bool: True always
         """
-        ctx.role_type = ctx.invoked_subcommand.name
+        try:
+            ctx.role_type = ctx.invoked_subcommand.name
+        except AttributeError:
+            return False
         return True
 
     @s_role.command(name='member')
@@ -793,7 +799,10 @@ class SettingsCog(commands.Cog):
             bool: True always
 
         """
-        ctx.channel_kind = ctx.invoked_subcommand.name
+        try:
+            ctx.channel_kind = ctx.invoked_subcommand.name
+        except AttributeError:
+            return False
         return True
 
     @g_channel.command(name='settings')
@@ -856,7 +865,10 @@ class SettingsCog(commands.Cog):
             bool: True always
 
         """
-        ctx.role_type = ctx.invoked_subcommand.name
+        try:
+            ctx.role_type = ctx.invoked_subcommand.name
+        except AttributeError:
+            return False
         return True
 
     @g_role.command(name='member')
@@ -1165,7 +1177,10 @@ class SettingsCog(commands.Cog):
             bool: True always
 
         """
-        ctx.role_type = ctx.invoked_subcommand.name
+        try:
+            ctx.role_type = ctx.invoked_subcommand.name
+        except AttributeError:
+            return False
         return True
 
     @d_role.command(name='member')
@@ -1252,8 +1267,11 @@ class SettingsCog(commands.Cog):
             bool: True always
 
         """
-        ctx.channel_kind = ctx.invoked_subcommand.name
-        pass
+        try:
+            ctx.channel_kind = ctx.invoked_subcommand.name
+        except AttributeError:
+            return False
+        return True
 
     @d_channel.command(name='settings')
     @checks.only_in_guild()
