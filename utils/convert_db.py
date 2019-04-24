@@ -4,11 +4,12 @@ import os
 
 
 def get_dirs():
-    """
-    :func:`get_dirs` checks whether the directories exist, and gets their paths.
+    """Checks whether the directories exist, and gets their paths.
 
     Returns:
-        tuple if successful; False otherwise
+        tuple of str: if successful
+        bool: False otherwise
+
     """
     in_utils = False
 
@@ -32,16 +33,17 @@ def get_dirs():
     return db_dir, ss_dir
 
 
-def update_db(db_dir):
-    """
-    :func:`update_db` amends databases given a `db_dir`.
+def update_db(db_dir: str):
+    """Updates databases in a `db_dir`.
+
     This assumes the existing databases, if they exist at all, are valid.
 
     Args:
         db_dir (str): the location of the database files
 
     Returns:
-        list: len of 0 for no errors, +1 for each additional error
+        list of str: Exceptions
+
     """
     errs = []
 
@@ -85,16 +87,21 @@ def update_db(db_dir):
 
 
 def transfer_data(db_dir, ss_dir, skips=None):
-    """
-    :func:`transfer_data` moves data existing from files in `ss_dir` to `db_dir`.
+    """Transfers data existing from files in `ss_dir` to `db_dir`.
+
+    `ss_dir` contains the legacy `server_settings` JSON files.
+
+    `db_dir` contains the sqlite3 db files.
 
     Args:
         db_dir (str): the location of the database files
         ss_dir (str): the location of the existing server settings files
-        skips: (default: None) the invalid databases to skip
+        skips (list, optional): a list of invalid databases to skip;
+            defaults to None
 
     Returns:
-        list: len of 0 of no errors, +1 for each additional error
+        list: containing file names of files that produced errors
+
     """
     errs = []
 

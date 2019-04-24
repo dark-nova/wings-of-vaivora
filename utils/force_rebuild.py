@@ -3,11 +3,11 @@ import os
 
 
 def get_dirs():
-    """
-    :func:`get_dirs` checks whether the directories exist, and gets their paths.
+    """Checks whether the db directory exist, and gets its path.
 
     Returns:
-        tuple if successful; False otherwise
+        str: the file name of the directory
+
     """
     if os.path.isdir('db'):
         db_dir = 'db'
@@ -20,16 +20,17 @@ def get_dirs():
     return db_dir
 
 
-def rebuild_dbs(db_dir):
-    """
-    :func:`update_db` amends databases given a `db_dir`.
+def rebuild_dbs(db_dir: str):
+    """Updates databases in a `db_dir`.
+
     This assumes the existing databases, if they exist at all, are valid.
 
     Args:
         db_dir (str): the location of the database files
 
     Returns:
-        list: len of 0 for no errors, +1 for each additional error
+        list of str: Exceptions
+
     """
     errs = []
 
