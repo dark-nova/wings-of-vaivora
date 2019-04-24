@@ -103,7 +103,7 @@ async def combine_channel_ids(ctx):
 
     """
     channels = []
-    if not ctx.message.channels_mentions:
+    if not ctx.message.channel_mentions:
         channels.append(ctx.channel.id)
     else:
         for channel_mention in ctx.message.channel_mentions:
