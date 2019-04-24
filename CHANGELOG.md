@@ -6,9 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 ### Added
 - New command [`$events`](cogs/events.py) and [doc](docs/EVENTS.md)
+- By extension, `$settings` can now add/set/remove users/roles/channels as `events`.
 
 ### Changed
 - Boss constants were cleaned up to be more readable.
+- Docstrings were simplified.
+- Type hints are now used in every situation without ambiguous arguments.
+- Some variable names were made more uniform.
+- `get_time_diff` was made more versatile and should handle even edge cases.
+- Moved both `process_record` and `get_time_diff` from [bot.py](bot.py) to reduce clutter.
+- Moved `get_offset` from `$boss` and renamed it `get_boss_offset` to make it less ambiguous.
+
+### Fixed
+- Boss role mentions should no longer be erroneously removed from alerts.
+- Listing boss results should now accurately conform to a guild offset and time zone.
+- Getting Vaivora-set channels should now work again.
+- `$settings` commands now have proper exception catching for commands.
 
 ## [3.5] - 2019-04-09
 ### Changed
@@ -166,7 +179,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [i1.8d] - 2017-08-24
 ### Fixed
 - Boss role mention
-    
+
 ### Upcoming
 - Duplicate guild changelogs if person is server owner of more than 1 server
 
@@ -328,7 +341,7 @@ Thank you.
 ### Changed
 - Alerts will no longer use a redundant measure of text files in raw info to prevent repeat of duplicate mentions. And... (see Fixed)
 - Caveat to new alert/periodic check system: if bot goes offline and you had a record still valid, you will receive at least one duplicate mention.
-  
+
 ### Fixed
 - Alerts are now fixed. Sorry. This was long overdue and I've had issues and was occupied today. This was a couple issues:
     1. not converting local time (Pacific Daylight Time) to server time (Eastern Daylight Time) - solved using `timedelta(hours=-3)`
@@ -499,7 +512,7 @@ Thank you.
 - Corrected issue with some commands not printing.
 - Subsequently, you may receive more than 1 message/response when you ask for help on a command.
 
-### Acknowledgment      
+### Acknowledgment
 - Thanks to **Onesan** for the bug report.
 
 ## [m1.5c] - 2017-05-08
