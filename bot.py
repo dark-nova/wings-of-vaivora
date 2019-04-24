@@ -167,7 +167,7 @@ async def check_databases():
                 del vdbs[guild.id] # do not use corrupt/invalid db
 
     minutes = {}
-    records = []
+    hashed_records = []
 
     while not bot.is_closed():
         await asyncio.sleep(59)
@@ -175,7 +175,7 @@ async def check_databases():
         print(loop_time.strftime("%Y/%m/%d %H:%M"),
               "- Valid DBs:", len(vdbs))
 
-        # prune records once they're no longer alert-able
+        # prune hashed_records once they're no longer alert-able
         purged = []
         if len(minutes) > 0:
             for rec_hash, rec_mins in minutes.items():
@@ -185,7 +185,7 @@ async def check_databases():
                 if ((rec_mins < mins_now)
                     and ((mins_now-rec_mins) > 0)
                     and ((mins_now-rec_mins+15+1) < 60)):
-                    records.remove(rec_hash)
+                    hashed_records.remove(rec_hash)
                     purged.append(rec_hash)
 
         for purge in purged:
@@ -194,15 +194,12 @@ async def check_databases():
             except:
                 continue
 
-        # iterate through database results_boss
+        # iterate through every valid database
         for vdb_id, valid_db in vdbs.items():
             print(loop_time.strftime("%H:%M"), "- in DB:", vdb_id)
-            results_boss = []
-
 
             # check all timers
-            message_to_send = []
-            discord_channel = None
+            messages = []
             if not await valid_db.check_if_valid(constants.settings.ROLE_BOSS):
                 await valid_db.create_db(constants.settings.ROLE_BOSS)
                 continue
@@ -224,23 +221,17 @@ async def check_databases():
             diff_h, diff_m = await vaivora.utils.get_time_diff(tz)
             full_diff = timedelta(hours=(diff_h + offset), minutes=diff_m)
 
-            # sort by time - yyyy, mm, dd, hh, mm
+            # sort by time - YYYY, MM, DD, hh, mm
             results_boss.sort(key=itemgetter(5,6,7,8,9))
 
-            # iterate through all results_boss
             for result in results_boss:
                 discord_channel = result[4]
-                list_time = [ int(t) for t in result[5:10] ]
-                record_info = [ str(r) for r in result[0:4] ]
-
-                current_boss = record_info[0]
-                current_channel = record_info[1]
-                current_time = record_info[2]
-                current_status = record_info[3]
+                time = [int(t) for t in result[5:10]]
+                boss, channel, _map, status = [str(r) for r in result[0:4]]
 
                 entry_time = pendulum.datetime(
-                    *list_time,
-                    tz=pendulum.now().timezone_name)
+                    *time, tz=pendulum.now().timezone_name
+                    )
 
                 # process time difference
                 time_diff = entry_time - (loop_time + full_diff)
@@ -249,92 +240,174 @@ async def check_databases():
                 if time_diff.hours < 0 or time_diff.minutes < 0:
                     continue
 
-                record =  await vaivora.utils.process_record(
-                    current_boss,
-                    current_status,
+                record = await vaivora.utils.process_record(
+                    boss,
+                    status,
                     entry_time,
                     time_diff,
-                    current_time,
-                    current_channel,
+                    _map,
+                    channel,
                     vdb_id
                     )
 
                 hashed_record = await vaivora.utils.hash_object(
                     discord_channel,
-                    current_boss,
+                    boss,
                     entry_time,
-                    current_channel
+                    channel
                     )
 
                 # don't add a record that is already stored
-                if hashed_record in records:
+                if hashed_record in hashed_records:
                     continue
 
                 # record is within range of alert
                 if time_diff.seconds <= 900 and time_diff.seconds > 0:
-                    records.append(hashed_record)
-                    message_to_send.append([record, discord_channel,])
+                    hashed_records.append(hashed_record)
+                    messages.append({
+                        'record': record,
+                        'type': constants.settings.ROLE_BOSS,
+                        'discord_channel': discord_channel
+                        })
                     minutes[str(hashed_record)] = entry_time.minute
 
+            # only check for events if the db passed the earlier check
             if vdb_id not in skip_events:
                 for result in results_events:
-                    events_channels = await valid_db.get_channel('events')
-                    if not event_channels:
+                    events_channels = await valid_db.get_channel(
+                        constants.settings.ROLE_EVENTS
+                        )
+                    if not events_channels:
                         pass
 
-            # empty record for this server
-            if len(message_to_send) == 0:
+            # empty record for this guild
+            if len(messages) == 0:
                 continue
 
-            roles = []
-
-            # compare roles against server
-            guild = bot.get_guild(vdb_id)
-            guild_boss_roles = await vdbs[vdb_id].get_users(
-                                    constants.settings.ROLE_BOSS)
-            for boss_role in guild_boss_roles:
-                try:
-                    idx = [role.id for role in guild.roles].index(boss_role)
-                    roles.append(guild.roles[idx].mention)
-                except Exception as e:
-                    # Discord role no longer exists
-                    print(e)
-                    await vdbs[vdb_id].remove_users(
-                            constants.settings.ROLE_BOSS,
-                            (boss_role,))
-
-            roles = ' '.join(roles)
-
-            discord_channel = None
-            discord_message = None
-            for message in message_to_send:
-                if discord_channel != int(message[-1]):
-                    if discord_channel:
-                        try:
-                            await (guild.get_channel(discord_channel)
-                                   .send(discord_message))
-                        except Exception as e:
-                            # eventually handle removing invalid channels
-                            print('check_databases', guild.id, '\n', e)
-                        discord_message = None
-
-                    discord_channel = int(message[-1])
-                    discord_message = (constants.main.BOSS_ALERT
-                                       .format(roles))
-
-                discord_message = '{} {}'.format(discord_message,
-                                                 message[0])
-
-            try:
-                await guild.get_channel(discord_channel).send(discord_message)
-            except Exception as e:
-                print('check_databases', e)
-                pass
+            await send_messages(messages, bot.get_guild(vdb_id))
 
         #await client.process_commands(message)
         await asyncio.sleep(1)
-####
-# end of periodic database check
+
+
+async def send_messages(messages: list, guild):
+    """Sends messages compiled by the background loop.
+
+    Args:
+        messages (list of dict): messages to send, in a structure:
+            - 'record': the actual content
+            - 'type': the channel and role type
+            - 'discord_channel': the Discord channel to send to
+        guild: the Discord guild
+
+    Returns:
+        bool: True if run successfully regardless of result
+
+    """
+    roles = {}
+    channels_in = {}
+    can_send = True
+    v_roles = [constants.settings.ROLE_BOSS, constants.settings.ROLE_EVENTS]
+    for v_role in v_roles:
+        roles[v_role] = await get_roles(guild, v_role)
+        channels_in[v_role] = [
+            int(message['discord_channel']) for message in messages
+            if message['type'] == v_role
+            ]
+
+    channels = [int(message['discord_channel']) for message in messages]
+
+    for channel in channels:
+        # before attempting to send messages, make sure to
+        # check it can receive messages
+        try:
+            guild_channel = guild.get_channel(channel)
+            guild_channel.name
+        except AttributeError as e:
+            # remove invalid channel
+            print('check_databases', guild.id, '\n', e)
+            for v_role in v_roles:
+                if channel in channels_in[v_role]:
+                    await vdbs[guild.id].remove_channel(
+                        v_role, channel
+                        )
+            continue
+        except:
+            # can't retrieve channel definitively; abort
+            print('check_databases', guild.id, '\n', e)
+            continue
+
+        only_ch_messages = [message for message in messages
+                            if int(message['discord_channel']) == channel]
+        for v_role in v_roles:
+            messages_for = [message['record'] for message in only_ch_messages
+                            if message['type'] == v_role]
+            if len(messages_for) == 0:
+                # skip if the channel has no records for a given type
+                continue
+            discord_message = messages_for[0]
+            for message in messages_for[1:]:
+                # maximum Discord message length is 2000
+                if len(discord_message) >= 1600:
+                    try:
+                        await (
+                            guild.get_channel(channel)
+                            .send(discord_message)
+                            )
+                    except:
+                        # message could not be sent; ignore
+                        can_send = False
+                        break
+                    discord_message = message
+                else:
+                    discord_message = '{} {}'.format(
+                        discord_message,
+                        message
+                        )
+            if not can_send:
+                break
+            if discord_message:
+                await (
+                    guild.get_channel(channel)
+                    .send(discord_message)
+                    )
+
+        can_send = True
+
+    return True
+
+
+async def get_roles(guild, role: str):
+    """Gets roles from a guild.
+
+    Invalid roles will be purged during this process.
+
+    Args:
+        guild: the Discord guild
+        role (str): the Vaivora role to get
+
+    Returns:
+        str: a space delimited string of mentionable roles
+
+    """
+    mentionable = []
+    invalid = []
+    role_ids = await vdbs[guild.id].get_users(role)
+    for role_id in role_ids:
+        try:
+            idx = [role.id for role in guild.roles].index(role_id)
+            mentionable.append(guild.roles[idx].mention)
+        except Exception as e:
+            # Discord role no longer exists
+            print('get_roles', e)
+            invalid.append(role_id)
+
+    if invalid:
+        await vdbs[guild_id].remove_users(
+            role, invalid
+            )
+
+    return ' '.join(mentionable)
 
 
 # begin everything
