@@ -826,6 +826,21 @@ class SettingsCog(commands.Cog):
         """
         return await channel_getter(ctx, ctx.channel_kind)
 
+    @g_channel.command(name='events')
+    @checks.only_in_guild()
+    @checks.check_role(constants.settings.ROLE_MEMBER)
+    async def gc_events(self, ctx):
+        """Gets Discord channels that are `events` channels.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+
+        Returns:
+            bool: True always
+
+        """
+        return await channel_getter(ctx, ctx.channel_kind)
+
     @_get.group(name='role', aliases=['roles', 'user', 'users'])
     @checks.only_in_guild()
     @checks.check_role(constants.settings.ROLE_MEMBER)
