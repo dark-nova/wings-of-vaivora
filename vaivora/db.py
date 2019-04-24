@@ -269,8 +269,7 @@ class Database:
         return
 
     async def check_if_valid(self, module):
-        """
-        :func:`check_if_valid_boss` checks if the database is valid.
+        """Checks if tables are valid, based on `module`.
 
         Args:
             module (str): the module name
@@ -686,7 +685,7 @@ class Database:
                 return False
 
     async def get_channel(self, kind):
-        """Gets channel(s) of a given `kind`, or Vaivora channel.
+        """Gets all Discord channels of a Vaivora type, or `kind`.
 
         Args:
             kind (str): the kind of channel to filter;
@@ -709,8 +708,7 @@ class Database:
                 return None
 
     async def set_channel(self, kind, channel):
-        """
-        :func:`set_channel` adds a channel as a `kind`
+        """Sets a Discord channel to Vaivora type, or `kind`.
 
         Args:
             kind (str): the kind of channel to filter
@@ -735,7 +733,7 @@ class Database:
                 return False
 
     async def remove_channel(self, kind, channel):
-        """Removes a channel from `kind`.
+        """Removes a Discord channel from a Vaivora type, or `kind`.
 
         Args:
             kind (str): the kind of channel to filter;

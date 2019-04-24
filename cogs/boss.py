@@ -378,9 +378,7 @@ async def process_cmd_status(guild_id: int, txt_channel: str, boss: str,
 
 async def process_cmd_entry(guild_id: int, txt_channel: str, bosses: list,
     entry: str, channel=None):
-    """
-    :func:`process_cmd_entry` processes a specific boss subcommand:
-    entry to retrieve records.
+    """Processes boss `entry` subcommand.
 
     Args:
         guild_id (int): the id of the Discord guild of the originating message

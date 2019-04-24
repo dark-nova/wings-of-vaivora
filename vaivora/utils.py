@@ -203,14 +203,14 @@ async def sanitize_nonalmum(text: str):
 
 
 async def get_boss_offset(boss: str, status: str, coefficient: int=1):
-    """
-    :func:`get_boss_offset` returns the timedelta offset
-    for a given boss.
+    """Gets the timedelta offset for a given boss.
 
     Args:
         boss (str): the name of the boss
         status (str): the status code for the boss
-        coefficient (int): either 1 or -1 to use for calculating offset
+        coefficient (int): either 1 or -1 depending on
+            - 1: calculating the spawn time
+            - -1: recreating kill time
 
     Returns:
         datetime.timedelta: an appropriate timedelta
