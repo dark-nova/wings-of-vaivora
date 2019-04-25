@@ -213,7 +213,7 @@ class Database:
                     else:
                         continue
                 except:
-                    # even if no event exists, this command will succed
+                    # even if no event exists, this command will succeed
                     await _db.execute(
                         'delete from events where name = "{}"'
                         .format(event))
@@ -1171,6 +1171,7 @@ class Database:
                     'delete from events where name = "{}"'
                     .format(name)
                     )
+                await _db.commit()
                 return True
             except Exception as e:
                 print('del_custom_event', self.db_id, '\n', e)
@@ -1204,7 +1205,7 @@ class Database:
                     toggle
                     )
 
-                await _db.commit(
+                await _db.execute(
                     'insert into events({} {} {} {} {} {} {})'
                     .format(','.join(
                         ['"{}"'.format(field) for field in event]
