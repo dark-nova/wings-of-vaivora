@@ -234,6 +234,16 @@ class EventsCog(commands.Cog):
             status = result[-1]
             name = result[0]
             time = result[1:-1]
+
+            if time[:-2] == vaivora.db.dummy_dates:
+                time = [
+                    now.year,
+                    now.month,
+                    now.day,
+                    0,
+                    0
+                    ]
+
             entry_time = pendulum.datetime(
                 *time, tz=now.timezone_name
                 )
