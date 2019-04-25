@@ -1,3 +1,4 @@
+import re
 from typing import Optional
 from datetime import timedelta
 from math import floor
@@ -58,7 +59,33 @@ class EventsCog(commands.Cog):
             return False
         return name
 
-    async def add_handler(self, ctx, name: str, date: str, time: Optional[str] = None):
+    async def silent_name_checker(self, name):
+        """Checks that a permanent event was matched.
+
+        Called by `enable` and `disable`.
+
+        Serves as the opposite as `name_checker`.
+
+        Args:
+            name (str): permanent event name
+
+        Returns:
+            str: the matched name
+            bool: False if unmatched
+
+        """
+        if name in vaivora.db.permanent_events:
+            names = vaivora.db.permanent_events
+            return names[names.index(name)]
+
+        for event, regex in vaivora.db.aliases:
+            if regex.search(name):
+                return event
+
+        return False
+
+    async def add_handler(self, ctx, name: str, date: str,
+        time: Optional[str] = None):
         """Adds a custom event for a Discord guild.
 
         Called by `add` and `update`.
@@ -312,6 +339,76 @@ class EventsCog(commands.Cog):
             await ctx.send(combined_message)
 
         return True
+
+    @events.command(aliases=['en'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def enable(self, ctx, name: str):
+        """Enables a permanent event.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            name (str): the name of the permanent event
+
+        Returns:
+            bool: True if successful; False otherwise
+
+        """
+        name = await silent_name_checker(name)
+        if not name:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.FAIL_EVENT_NAME_PERM)
+                           )
+        vdb = vaivora.db.Database(ctx.guild.id)
+        if not await vdb.enable_event(name):
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.FAIL_EVENT_TOGGLE)
+                           )
+            return False
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.SUCCESS_ENABLED)
+                           )
+            return True
+
+    @events.command(aliases=['dis'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def disable(self, ctx, name: str):
+        """Disables a permanent event.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            name (str): the name of the permanent event
+
+        Returns:
+            bool: True if successful; False otherwise
+
+        """
+        name = await silent_name_checker(name)
+        if not name:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.FAIL_EVENT_NAME_PERM)
+                           )
+        vdb = vaivora.db.Database(ctx.guild.id)
+        if not await vdb.disable_event(name):
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.FAIL_EVENT_TOGGLE)
+                           )
+            return False
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.SUCCESS_DISABLED)
+                           )
+            return True
 
 
 def setup(bot):
