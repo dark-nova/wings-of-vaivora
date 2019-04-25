@@ -143,7 +143,12 @@ permanent_events = [
 event_times = {}
 event_times[permanent_events[0]] = (19, 0)
 event_times[permanent_events[1]] = (20, 0)
-event_times[permanent_events[2]] = (0, 0)
+event_times[permanent_events[2]] = (6, 0)
+
+event_days = {}
+event_days[permanent_events[0]] = 1
+event_days[permanent_events[1]] = 0
+event_days[permanent_events[2]] = 1
 
 dummy_dates = (0, 0, 0)
 
