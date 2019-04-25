@@ -5,7 +5,7 @@
 
 **Wings of Vaivora** runs on the [discord.py][discord.py] [API][api].
 
-This repository contains 3 branches:
+## Branches
 - `master`, the stable version. You should expect the bot to work if configured correctly.
 - `rewrite`, the development version. The bot may **not** run. You should not use this.
 - `asyncio_archive`, the archived version built on discord.py "asyncio".
@@ -46,7 +46,7 @@ Note: this setup has only been tested on Debian-like distros.
 - Read [here](docs/CONTRIBUTING.md)
 
 
-#### File last modified: 2019-04-24 17:38 (UTC-7)
+#### File last modified: 2019-04-24 17:42 (UTC-7)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
