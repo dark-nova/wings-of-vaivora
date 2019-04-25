@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Unreleased]
+## [3.6] - 2019-04-24
 ### Added
 - New command [`$events`](cogs/events.py) and [doc](docs/EVENTS.md)
 - By extension, `$settings` can now add/set/remove users/roles/channels as `events`.
@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `get_time_diff` was made more versatile and should handle even edge cases.
 - Moved both `process_record` and `get_time_diff` from [bot.py](bot.py) to reduce clutter.
 - Moved `get_offset` from `$boss` and renamed it `get_boss_offset` to make it less ambiguous.
+- The background loop in [bot.py](bot.py) has been broken into smaller chunks.
+- Combined some offset/tz calculating functions into one in [vaivora.utils](vaivora/utils.py)
 
 ### Fixed
 - Boss role mentions should no longer be erroneously removed from alerts.
