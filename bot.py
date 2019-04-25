@@ -294,9 +294,13 @@ async def check_databases():
                         status = constants.events.EMOJI_ALERT
                         name = '{} {}'.format(name, status)
 
-                    entry_time = pendulum.datetime(
-                        *time, tz=loop_time.timezone_name
-                        )
+                    try:
+                        entry_time = pendulum.datetime(
+                            *time, tz=loop_time.timezone_name
+                            )
+                    except ValueError as e:
+                        print('check_databases', vdb_id, '\n', e)
+                        continue
 
                     time_diff = entry_time - (loop_time + full_diff)
 
