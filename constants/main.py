@@ -1,6 +1,7 @@
 from disclaimer import disclaimer
 
 BOSS_ALERT = '{} The following bosses will spawn within 15 minutes:\n\n'
+EVENTS_ALERT = '{} The following events will conclude within 60 minutes:\n\n'
 
 MSG_HELP = """
 Here are commands. Valid prefixes are `$` (dollar sign) and `Vaivora,<space>`,

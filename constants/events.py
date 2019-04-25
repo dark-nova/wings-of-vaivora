@@ -1,6 +1,8 @@
 MODULE_NAME = 'events'
 COMMAND = '$' + MODULE_NAME
 
+EMOJI_ALERT = '<:alert:532316827259502612>'
+
 NO_CHANNELS = 'Please ensure you add at least 1 channel marked as "events". Otherwise, alerts will not show.'
 
 SUCCESS_EVENT_ADD = 'Your custom event **{}** was added with an ending date of **{}**.'

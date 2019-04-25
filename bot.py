@@ -18,6 +18,7 @@ import vaivora.utils
 import constants.main
 import constants.boss
 import constants.settings
+import constants.events
 
 
 bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
@@ -233,7 +234,7 @@ async def check_databases():
                 if time_diff.hours < 0 or time_diff.minutes < 0:
                     continue
 
-                record = await vaivora.utils.process_record(
+                record = await vaivora.utils.process_boss_record(
                     boss,
                     status,
                     entry_time,
@@ -271,7 +272,73 @@ async def check_databases():
                         constants.settings.ROLE_EVENTS
                         )
                     if not events_channels:
-                        pass
+                        continue
+
+                    status = ''
+                    name = result[0]
+                    time = result[1:-1]
+
+                    if name in vaivora.db.permanent_events:
+                        # don't even try if it's disabled
+                        if result[-1] == 0:
+                            continue
+                        today = pendulum.today()
+                        to_add = (vaivora.db.event_days[name] - today.day_of_week) % 7
+                        next_day = today + timedelta(days=to_add)
+                        time = [
+                            next_day.year,
+                            next_day.month,
+                            next_day.day,
+                            *vaivora.db.event_times[name]
+                            ]
+                        status = "enabled" if result[-1] == 1 else "disabled"
+                        name = '{} ({})'.format(name, status)
+
+                    entry_time = pendulum.datetime(
+                        *time, tz=loop_time.timezone_name
+                        )
+
+                    time_diff = entry_time - (loop_time + full_diff)
+
+                    # record is in the past
+                    if time_diff.hours < 0 or time_diff.minutes < 0:
+                        continue
+
+                    if time_diff.minutes == 1:
+                        minutes = '{} minute'.format(time_diff.minutes)
+                    else:
+                        minutes = '{} minutes'.format(time_diff.minutes)
+
+                    ending = 'ends'
+
+                    if name in vaivora.db.permanent_events:
+                        ending = 'resets'
+
+                    end_date = entry_time.strftime("%Y/%m/%d %H:%M")
+
+                    record = ('**{}**\n- {} at **{}** ({})'
+                              .format(name, ending, end_date,
+                                      minutes))
+
+                    hashed_record = await vaivora.utils.hash_object(
+                        discord_channel,
+                        name,
+                        entry_time
+                        )
+
+                    # don't add a record that is already stored
+                    if hashed_record in hashed_records:
+                        continue
+
+                    # record is within range of alert
+                    if time_diff.seconds <= 3600 and time_diff.seconds > 0:
+                        hashed_records.append(hashed_record)
+                        messages.append({
+                            'record': record,
+                            'type': constants.settings.ROLE_EVENTS,
+                            'discord_channel': discord_channel
+                            })
+                        minutes[str(hashed_record)] = entry_time.minute
 
             # empty record for this guild
             if len(messages) == 0:
@@ -338,8 +405,14 @@ async def send_messages(messages: list, guild):
             if len(messages_for) == 0:
                 # skip if the channel has no records for a given type
                 continue
-            discord_message = messages_for[0]
-            for message in messages_for[1:]:
+
+            if v_role == 'boss':
+                alert = constants.main.BOSS_ALERT
+            else:
+                alert = constants.main.EVENTS_ALERT
+
+            discord_message = alert.format(roles[v_role])
+            for message in messages_for:
                 # maximum Discord message length is 2000
                 if len(discord_message) >= 1600:
                     try:
