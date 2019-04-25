@@ -291,8 +291,8 @@ async def check_databases():
                             next_day.day,
                             *vaivora.db.event_times[name]
                             ]
-                        status = "enabled" if result[-1] == 1 else "disabled"
-                        name = '{} ({})'.format(name, status)
+                        status = constants.events.EMOJI_ALERT
+                        name = '{} {}'.format(name, status)
 
                     entry_time = pendulum.datetime(
                         *time, tz=loop_time.timezone_name
