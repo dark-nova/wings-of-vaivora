@@ -170,7 +170,6 @@ async def check_databases():
     hashed_records = []
 
     while not bot.is_closed():
-        await asyncio.sleep(59)
         loop_time = pendulum.now()
         print(loop_time.strftime("%Y/%m/%d %H:%M"),
               "- Valid DBs:", len(vdbs))
@@ -287,7 +286,7 @@ async def check_databases():
             await send_messages(messages, bot.get_guild(vdb_id))
 
         #await client.process_commands(message)
-        await asyncio.sleep(1)
+        await asyncio.sleep(59)
 
 
 async def send_messages(messages: list, guild):
