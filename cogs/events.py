@@ -288,11 +288,14 @@ class EventsCog(commands.Cog):
             if diff_days:
                 time_since = '{}, {}'.format(days, time_since)
 
-            ending = 'ing' if int(time_diff.seconds) >= 0 else 'ed'
+            ending = 'ending' if int(time_diff.seconds) >= 0 else 'ended'
+
+            if name in vaivora.db.permanent_events:
+                ending = 'resets'
 
             end_date = entry_time.strftime("%Y/%m/%d %H:%M")
 
-            message = ('**{}**\n- end{} at **{}** ({})'
+            message = ('**{}**\n- {} at **{}** ({})'
                        .format(name, ending, end_date,
                                time_since))
 
