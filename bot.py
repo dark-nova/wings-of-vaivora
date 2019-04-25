@@ -319,7 +319,7 @@ async def check_databases():
 
                     ending = 'ends'
 
-                    if name in vaivora.db.permanent_events:
+                    if status:
                         ending = 'resets'
 
                     end_date = entry_time.strftime("%Y/%m/%d %H:%M")

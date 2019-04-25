@@ -321,7 +321,7 @@ class EventsCog(commands.Cog):
 
             ending = 'ending' if int(time_diff.seconds) >= 0 else 'ended'
 
-            if name in vaivora.db.permanent_events:
+            if status:
                 ending = 'resets'
 
             end_date = entry_time.strftime("%Y/%m/%d %H:%M")
