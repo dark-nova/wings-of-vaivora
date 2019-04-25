@@ -43,11 +43,22 @@
 + `<obj>`
     - This is the object to modify. For users, "roles". For channels, "channels".
 
++ `<role>`
+    - A Vaivora role, used for mentions or record manipulation.
+    - This can be "authorized", "member", "boss", or "events". Sets channels (and restricts others).
+    - Options:
+        * "authorized": can use all `$settings`, `$offset`, and `$events` commands. Ideal for mods.
+        * "member": can use some of the aforementioned commands. Ideal for guild members.
+        * "boss": Get mentions for boss alerts.
+        * "events": Get mentions for event alerts.
+    - See `<channel>` for similar interaction.
+
 + `<channel>`
-    - This can be "settings" or "boss". Sets channels (and restricts others).
+    - This can be "settings", "boss", or "events". Sets channels (and restricts others).
     - Options:
         * "settings": Adds a channel to allow all settings commands. 'get'ters will still be unrestricted.
         * "boss": Adds a channel to accept boss record manipulation.
+        * "events": Adds a channel for Wings of Vaivora to output event notices.
     - Once a channel is set (and none were, before), many commands are no longer read outside the allowed channels.
 
 + `<contribution>`
@@ -81,6 +92,6 @@
 + help
     - Prints this page.
 
-#### File last modified: 2019-03-05 16:15 (UTC-8)
+#### File last modified: 2019-04-24 22:38 (UTC-7)
 
 [role]: . "Discord roles are different from Wings of Vaivora's Roles."

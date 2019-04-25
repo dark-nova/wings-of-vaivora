@@ -15,6 +15,7 @@
 - [`$settings` for Guild Settings](docs/SETTINGS.md)
 - [`$gems` for Gem Calculations](docs/GEMS.md)
 - [`$offset` for Time Zones and Offsets](docs/OFFSET.md)
+- [`$events` for Event Tracking](docs/EVENTS.md)
 - [`$admin` for (limited) administration commands](docs/ADMIN.md)
 
 ## Requirements
@@ -46,7 +47,7 @@ Note: this setup has only been tested on Debian-like distros.
 - Read [here](docs/CONTRIBUTING.md)
 
 
-#### File last modified: 2019-04-24 17:42 (UTC-7)
+#### File last modified: 2019-04-24 22:33 (UTC-7)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
