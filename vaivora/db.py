@@ -1,4 +1,5 @@
 import sqlite3
+import re
 
 import asyncio
 import aiosqlite
@@ -137,7 +138,7 @@ spec['contribution'] = 'mention, points'
 permanent_events = [
     'Boruta',
     'Guild Territory War',
-    'Irredian Shelter'
+    'Weeklies'
     ]
 
 event_times = {}
@@ -149,6 +150,11 @@ event_days = {}
 event_days[permanent_events[0]] = 1
 event_days[permanent_events[1]] = 0
 event_days[permanent_events[2]] = 1
+
+aliases = {}
+aliases[permanent_events[0]] = re.compile(r'^borut', re.IGNORECASE)
+aliases[permanent_events[1]] = re.compile(r'(gw|tw|war)', re.IGNORECASE)
+#aliases[permanent_events[2]] = None
 
 dummy_dates = (0, 0, 0)
 
