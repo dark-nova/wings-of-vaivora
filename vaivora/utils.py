@@ -13,9 +13,9 @@ import vaivora.db
 nonalnum = re.compile('[^A-Za-z0-9 -]')
 
 
-async def process_record(boss: str, status: str, time, diff: timedelta,
+async def process_boss_record(boss: str, status: str, time, diff: timedelta,
     boss_map: str, channel: int, guild_id: int):
-    """Processes a record to print out.
+    """Processes a boss record to print out.
 
     Args:
         boss (str): the boss in question
