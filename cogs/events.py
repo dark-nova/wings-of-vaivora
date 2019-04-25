@@ -371,7 +371,8 @@ class EventsCog(commands.Cog):
         else:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
-                                   constants.events.SUCCESS_ENABLED)
+                                   constants.events.SUCCESS_ENABLED
+                                   .format(name))
                            )
             return True
 
@@ -400,7 +401,8 @@ class EventsCog(commands.Cog):
         if not await vdb.disable_event(name):
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
-                                   constants.events.FAIL_EVENT_TOGGLE)
+                                   constants.events.FAIL_EVENT_TOGGLE
+                                   .format(name))
                            )
             return False
         else:

@@ -1212,7 +1212,7 @@ class Database:
                     )
 
                 await _db.execute(
-                    'insert into events({} {} {} {} {} {} {})'
+                    'insert into events values({})'
                     .format(','.join(
                         ['"{}"'.format(field) for field in event]
                         ))
