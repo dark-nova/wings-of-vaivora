@@ -1078,9 +1078,28 @@ class Database:
                     'select count(name) from events'
                     )
                 event_count = (await cursor.fetchone())[0]
-                print(event_count)
                 if event_count >= 15:
                     return False
+
+                event = (
+                    name,
+                    date['year'],
+                    date['month'],
+                    date['day'],
+                    time['hour'],
+                    time['minutes'],
+                    1
+                    )
+
+                await _db.execute(
+                    'insert into events values({})'
+                    .format(','.join(
+                        ['"{}"'.format(field) for field in event]
+                        ))
+                    )
+
+                await _db.commit()
+                return True
             except sqlite3.OperationalError as e:
                 await self.create_db('events')
                 print('add_custom_event', self.db_id, '\n', e)
