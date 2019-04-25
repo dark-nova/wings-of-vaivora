@@ -216,7 +216,7 @@ class EventsCog(commands.Cog):
 
         """
         vdb = vaivora.db.Database(ctx.guild.id)
-        results = await vdb.list_all_events(name)
+        results = await vdb.list_all_events()
         if not results:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
@@ -268,7 +268,8 @@ class EventsCog(commands.Cog):
             time_since = '{} {}'.format(minutes, when)
             if hours:
                 time_since = '{}, {}'.format(hours, time_since)
-            if days:
+            # use diff_days since days may not be instantiated
+            if diff_days:
                 time_since = '{}, {}'.format(days, time_since)
 
             ending = 'ending at' if int(time_diff.seconds) >= 0 else 'ended at'
