@@ -152,7 +152,7 @@ event_days[permanent_events[1]] = 0
 event_days[permanent_events[2]] = 1
 
 aliases = {}
-aliases[permanent_events[0]] = re.compile(r'^borut', re.IGNORECASE)
+aliases[permanent_events[0]] = re.compile(r'^bor', re.IGNORECASE)
 aliases[permanent_events[1]] = re.compile(r'(gw|tw|war)', re.IGNORECASE)
 #aliases[permanent_events[2]] = None
 
