@@ -309,9 +309,9 @@ async def check_databases():
                         continue
 
                     if time_diff.minutes == 1:
-                        minutes = '{} minute'.format(time_diff.minutes)
+                        mins = '{} minute'.format(time_diff.minutes)
                     else:
-                        minutes = '{} minutes'.format(time_diff.minutes)
+                        mins = '{} minutes'.format(time_diff.minutes)
 
                     ending = 'ends'
 
@@ -322,7 +322,7 @@ async def check_databases():
 
                     record = ('**{}**\n- {} at **{}** ({})'
                               .format(name, ending, end_date,
-                                      minutes))
+                                      mins))
 
                     hashed_record = await vaivora.utils.hash_object(
                         discord_channel,
