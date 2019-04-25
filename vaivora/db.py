@@ -1191,9 +1191,21 @@ class Database:
                     'delete from events where name = "{}"'
                     .format(name)
                     )
+
+                event = (
+                    name,
+                    *dummy_dates,
+                    *event_times[name],
+                    toggle
+                    )
+
                 await _db.commit(
                     'insert into events({} {} {} {} {} {} {})'
-                    .format(name, *dummy_dates, *event_times[name], toggle))
+                    .format(','.join(
+                        ['"{}"'.format(field) for field in event]
+                        ))
+                    )
+
                 await _db.commit()
                 return True
             except Exception as e:
