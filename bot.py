@@ -223,9 +223,13 @@ async def check_databases():
                 time = [int(t) for t in result[5:10]]
                 boss, channel, _map, status = [str(r) for r in result[0:4]]
 
-                entry_time = pendulum.datetime(
-                    *time, tz=loop_time.timezone_name
-                    )
+                try:
+                    entry_time = pendulum.datetime(
+                        *time, tz=loop_time.timezone_name
+                        )
+                except ValueError as e:
+                    print('check_databases', vdb_id, '\n', e)
+                    continue
 
                 # process time difference
                 time_diff = entry_time - (loop_time + full_diff)

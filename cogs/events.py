@@ -276,9 +276,13 @@ class EventsCog(commands.Cog):
                 status = '✅' if result[-1] == 1 else '❌'
                 name = '{} ({})'.format(name, status)
 
-            entry_time = pendulum.datetime(
-                *time, tz=now.timezone_name
-                )
+            try:
+                entry_time = pendulum.datetime(
+                    *time, tz=now.timezone_name
+                    )
+            except ValueError as e:
+                print('event _list', vdb_id, '\n', e)
+                continue
 
             time_diff = entry_time - (now + full_diff)
 
