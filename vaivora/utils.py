@@ -118,9 +118,23 @@ async def get_time_diff(guild_id):
         return (0, 0)
 
 
-    
+async def get_tz(guild_id):
+    """Gets the guild (per `guild_id`) time zone.
 
-    
+    Args:
+        guild_id (int): the guild id, of course
+
+    Returns:
+        str: a tz str
+
+    """
+    vdb = vaivora.db.Database(guild_id)
+
+    tz = await vdb.get_tz()
+    if not tz:
+        tz = constants.offset.DEFAULT
+
+    return tz
 
 
 async def validate_time(time):
