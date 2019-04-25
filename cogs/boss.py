@@ -492,9 +492,6 @@ async def process_cmd_entry(guild_id: int, txt_channel: str, bosses: list,
             if diff_days:
                 time_since = '{}, {}'.format(days, time_since)
 
-            ending = 'ending at' if int(time_diff.seconds) >= 0 else 'ended at'
-
-
             last_map = 'last known map: {} {}'.format(
                 constants.boss.EMOJI_LOC, boss_prev_map
                 )
