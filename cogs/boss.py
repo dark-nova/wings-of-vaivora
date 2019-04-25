@@ -452,50 +452,52 @@ async def process_cmd_entry(guild_id: int, txt_channel: str, bosses: list,
             else:
                 spawn_msg = constants.boss.TIME_SPAWN_ONTIME
 
-            minutes = abs(floor(time_diff.seconds/60))
+            diff_minutes = abs(floor(time_diff.seconds/60))
 
             # absolute date and time for spawn
             # e.g. 2017/07/06 "14:47"
             spawn_time = record_date.strftime("%Y/%m/%d %H:%M")
 
             # print day or days conditionally
-            msg_days = None
+            days = None
 
-            days = abs(time_diff.days)
+            diff_days = abs(time_diff.days)
 
-            if days == 1:
-                msg_days = '1 day'
-            elif days > 1:
-                msg_days = '{} days'.format(days)
+            if diff_days == 1:
+                days = '1 day'
+            elif diff_days > 1:
+                days = '{} days'.format(diff_days)
 
             # print hour or hours conditionally
-            msg_hours = None
+            hours = None
 
-            if minutes > 119:
-                msg_hours = '{} hours'.format(floor((minutes % 86400)/60))
-            elif minutes > 59:
-                msg_hours = '1 hour'
+            if diff_minutes > 119:
+                hours = '{} hours'.format(floor((diff_minutes % 86400)/60))
+            elif diff_minutes > 59:
+                hours = '1 hour'
 
             # print minutes unconditionally
             # e.g.              0 minutes from now
             # e.g.              59 minutes ago
-            msg_minutes = '{} minutes'.format(floor(minutes % 60))
-            msg_when = 'from now' if int(time_diff.seconds) >= 0 else "ago"
+            minutes = '{} minutes'.format(floor(diff_minutes % 60))
+            when = 'from now' if int(time_diff.seconds) >= 0 else 'ago'
 
-            if msg_days is None and msg_hours is None:
-                msg_time = '{} {}'.format(msg_minutes, msg_when)
-            elif msg_days is None:
-                msg_time = '{}, {} {}'.format(msg_hours, msg_minutes, msg_when)
-            elif msg_hours is None:
-                msg_time = '{}, {} {}'.format(msg_days, msg_minutes, msg_when)
+            if days is None and hours is None:
+                time_since = '{} {}'.format(minutes, when)
+            elif days is None:
+                time_since = '{}, {} {}'.format(hours, minutes, when)
+            elif hours is None:
+                time_since = '{}, {} {}'.format(days, minutes, when)
             else:
-                msg_time = '{}, {}, {} {}'.format(msg_days, msg_hours, msg_minutes, msg_when)
+                time_since = '{}, {}, {} {}'.format(days, hours, minutes, when)
 
-            last_map = 'last known map: {} {}'.format(constants.boss.EMOJI_LOC, boss_prev_map)
+            last_map = 'last known map: {} {}'.format(
+                constants.boss.EMOJI_LOC, boss_prev_map
+                )
 
             message = ('**{}**\n- {} **{}** ({})\n- {} CH {}'
                        .format(boss_name, spawn_msg, spawn_time,
-                               msg_time, last_map, boss_channel))
+                               time_since, last_map, boss_channel))
 
             valid_boss_records.append(message)
 
