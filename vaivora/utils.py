@@ -7,6 +7,7 @@ from hashlib import blake2b
 import pendulum
 
 import constants.boss
+import vaivora.db
 
 
 nonalnum = re.compile('[^A-Za-z0-9 -]')
@@ -78,20 +79,30 @@ async def process_record(boss: str, status: str, time, diff: timedelta,
             .format(boss, status, report_time.strftime("%Y/%m/%d %H:%M"), time_fmt, boss_map))
 
 
-async def get_time_diff(server_tz):
+async def get_time_diff(guild_id):
     """Retrieves the time difference between local and `server_tz`,
     to process the time difference.
 
     Args:
-        server_tz (str): the time zone representing the in-game server
+        guild_id (int): the guild id, of course
 
     Returns:
         tuple of int: (hours, minutes)
 
     """
+    vdb = vaivora.db.Database(guild_id)
+
+    tz = await vdb.get_tz()
+    if not tz:
+        tz = constants.offset.DEFAULT
+
+    offset = await vdb.get_offset()
+    if not offset:
+        offset = 0
+
     try:
         local_time = pendulum.today()
-        server_time = local_time.in_timezone(tz=server_tz)
+        server_time = local_time.in_timezone(tz=tz)
         day_diff = server_time.day - local_time.day
         hours = server_time.hour - local_time.hour
         minutes = server_time.minute - local_time.minute
@@ -102,9 +113,14 @@ async def get_time_diff(server_tz):
         if abs(day_diff) > 2 or day_diff >= 1:
             hours += days_diff * 24
 
-        return (hours, minutes)
+        return (hours + offset, minutes)
     except:
         return (0, 0)
+
+
+    
+
+    
 
 
 async def validate_time(time):

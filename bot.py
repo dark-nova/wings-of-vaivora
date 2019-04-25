@@ -27,7 +27,9 @@ initial_extensions = ['cogs.admin',
                       'cogs.boss',
                       'cogs.meme',
                       'cogs.gems',
-                      'cogs.offset']
+                      'cogs.offset',
+                      'cogs.events'
+                      ]
 
 # snippet from https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be
 if __name__ == '__main__':
@@ -209,16 +211,8 @@ async def check_databases():
             if not (results_boss and results_events):
                 continue
 
-            tz = await valid_db.get_tz()
-            if not tz:
-                tz = constants.offset.DEFAULT
-
-            offset = await valid_db.get_offset()
-            if not offset:
-                offset = 0
-
-            diff_h, diff_m = await vaivora.utils.get_time_diff(tz)
-            full_diff = timedelta(hours=(diff_h + offset), minutes=diff_m)
+            diff_h, diff_m = await vaivora.utils.get_time_diff(vdb_id)
+            full_diff = timedelta(hours=diff_h, minutes=diff_m)
 
             # sort by time - YYYY, MM, DD, hh, mm
             results_boss.sort(key=itemgetter(5,6,7,8,9))
