@@ -3,8 +3,12 @@
 
 ## Overview
 
-_Wings of Vaivora_ runs on the [discord.py][discord.py] [API][api] ("rewrite").
-The previous version built on `discord.py` "asyncio" has been frozen in branch `asyncio_archive`.
+**Wings of Vaivora** runs on the [discord.py][discord.py] [API][api].
+
+This repository contains 3 branches:
+- `master`, the stable version. You should expect the bot to work if configured correctly.
+- `rewrite`, the development version. The bot may **not** run. You should not use this.
+- `asyncio_archive`, the archived version built on discord.py "asyncio".
 
 ## Usage
 - [`$boss` for Boss Tracking](docs/BOSS.md)
@@ -16,7 +20,7 @@ The previous version built on `discord.py` "asyncio" has been frozen in branch `
 ## Requirements
 _subject to change_
 
-- latest Python 3 (`3.6` to `3.7` are fine, but `3.6` is suggested)
+- latest Python 3 (`3.6` to `3.7`)
 - [discord.py][discord.py] and all of its dependencies
 - dependencies in [requirements.txt](requirements.txt)
 - setup with [Discord Developer Apps][dev]; use `pynt` (see Setup) to add your bot token
@@ -27,6 +31,7 @@ Python virtualenv is highly recommended for managing your files, including depen
 Like so:
 
 ```
+$ mkdir -p venv
 $ python -m virtualenv venv
 $ . venv/bin/activate
 $ pip install -r requirements.txt
@@ -41,7 +46,7 @@ Note: this setup has only been tested on Debian-like distros.
 - Read [here](docs/CONTRIBUTING.md)
 
 
-#### File last modified: 2019-04-09 10:41 (UTC-7)
+#### File last modified: 2019-04-24 17:38 (UTC-7)
 
 [tos]: https://treeofsavior.com/
 [discord]: https://discordapp.com/
