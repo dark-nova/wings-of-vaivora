@@ -167,6 +167,37 @@ class EventsCog(commands.Cog):
             return False
         return await self.add_handler(ctx, name, date, time)
 
+    @events.command(aliases=['del', 'rm'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def delete(self, ctx, name: str):
+        """Deletes a custom event for a Discord guild.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            name (str): the name of the custom event
+
+        Returns:
+            bool: True if successful; False otherwise
+
+        """
+        name = await self.name_checker(ctx, name)
+        if not name:
+            return False
+        vdb = vaivora.db.Database(ctx.guild.id)
+        if not await vdb.del_custom_event(name):
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.FAIL_EVENT_UPDATE))
+            return False
+        else:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.SUCCESS_EVENT_DEL
+                                   .format(name)))
+            return False
+
 
 def setup(bot):
     bot.add_cog(EventsCog(bot))

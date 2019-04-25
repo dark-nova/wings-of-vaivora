@@ -1078,6 +1078,7 @@ class Database:
                     'select count(name) from events'
                     )
                 event_count = (await cursor.fetchone())[0]
+                print(event_count)
                 if event_count >= 15:
                     return False
             except sqlite3.OperationalError as e:
