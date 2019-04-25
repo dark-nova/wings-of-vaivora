@@ -8,7 +8,9 @@ _cogs = ['cogs.settings',
          'cogs.boss',
          'cogs.meme',
          'cogs.gems',
-         'cogs.offset']
+         'cogs.offset',
+         'cogs.events'
+         ]
 
 
 class AdminCog(commands.Cog):
