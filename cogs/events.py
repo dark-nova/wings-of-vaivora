@@ -232,22 +232,27 @@ class EventsCog(commands.Cog):
         now = pendulum.now()
 
         for result in results:
-            status = result[-1]
+            status = ''
             name = result[0]
             time = result[1:-1]
 
-            if time[:-2] == vaivora.db.dummy_dates:
+            if name in vaivora.db.permanent_events:
+                today = pendulum.today()
+                to_add = (vaivora.db.event_days[name] - today.day_of_week) % 7
+                next_day = today + timedelta(days=to_add)
                 time = [
-                    now.year,
-                    now.month,
-                    now.day,
-                    0,
-                    0
+                    next_day.year,
+                    next_day.month,
+                    next_day.day,
+                    *vaivora.db.event_times[name]
                     ]
+                status = "enabled" if result[-1] == 1 else "disabled"
+                name = '{} ({})'.format(name, status)
 
             entry_time = pendulum.datetime(
                 *time, tz=now.timezone_name
                 )
+
             time_diff = entry_time - (now + full_diff)
 
             diff_days = abs(time_diff.days)
@@ -283,19 +288,19 @@ class EventsCog(commands.Cog):
             if diff_days:
                 time_since = '{}, {}'.format(days, time_since)
 
-            ending = 'ending at' if int(time_diff.seconds) >= 0 else 'ended at'
+            ending = 'ing' if int(time_diff.seconds) >= 0 else 'ed'
 
             end_date = entry_time.strftime("%Y/%m/%d %H:%M")
 
-            message = ('**{}**\n- {} at **{}** ({})'
+            message = ('**{}**\n- end{} at **{}** ({})'
                        .format(name, ending, end_date,
                                time_since))
 
             output.append(message)
-            
+
         await ctx.send('{}\n\n{}'.format(ctx.author.mention, 'Results:'))
         combined_message = ''
-        for _output, i in zip(output, range(len(output)-1)):
+        for _output, i in zip(output, range(len(output))):
             combined_message = '{}\n\n{}'.format(combined_message, _output)
             if i % 5 == 4:
                 await ctx.send(combined_message)
