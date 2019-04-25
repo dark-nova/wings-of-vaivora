@@ -246,7 +246,7 @@ class EventsCog(commands.Cog):
                     next_day.day,
                     *vaivora.db.event_times[name]
                     ]
-                status = "enabled" if result[-1] == 1 else "disabled"
+                status = '✅' if result[-1] == 1 else '❌'
                 name = '{} ({})'.format(name, status)
 
             entry_time = pendulum.datetime(
