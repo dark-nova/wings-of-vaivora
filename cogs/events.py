@@ -281,7 +281,7 @@ class EventsCog(commands.Cog):
                     *time, tz=now.timezone_name
                     )
             except ValueError as e:
-                print('event _list', vdb_id, '\n', e)
+                print('event _list', ctx.guild.id, '\n', e)
                 continue
 
             time_diff = entry_time - (now + full_diff)
