@@ -187,7 +187,7 @@ async def validate_date(date):
     return None
 
 
-async def sanitize_nonalmum(text: str):
+async def sanitize_nonalnum(text: str):
     """Removes all non-alphanumeric characters.
 
     Spaces and hyphens are valid.
