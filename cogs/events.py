@@ -293,9 +293,17 @@ class EventsCog(commands.Cog):
 
             output.append(message)
             
+        await ctx.send('{}\n\n{}'.format(ctx.author.mention, 'Results:'))
+        combined_message = ''
+        for _output, i in zip(output, range(len(output)-1)):
+            combined_message = '{}\n\n{}'.format(combined_message, _output)
+            if i % 5 == 4:
+                await ctx.send(combined_message)
+                combined_message = ''
+        if combined_message:
+            await ctx.send(combined_message)
 
-
-
+        return True
 
 
 def setup(bot):
