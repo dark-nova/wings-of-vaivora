@@ -428,15 +428,10 @@ async def process_cmd_entry(guild_id: int, txt_channel: str, bosses: list,
         if not boss_records: # empty
             return [constants.boss.FAIL_ENTRY_LIST,]
 
-        vdb = vaivora.db.Database(guild_id)
+        now = pendulum.now()
 
-        tz = await vdb.get_tz()
-        if not tz:
-            tz = constants.offset.DEFAULT
-
-        offset = await vdb.get_offset()
-        if not offset:
-            offset = 0
+        diff_h, diff_m = await vaivora.utils.get_time_diff(guild_id)
+        full_diff = timedelta(hours=diff_h, minutes=diff_m)
 
         for boss_record in boss_records:
             boss_name = boss_record[0]
@@ -446,10 +441,11 @@ async def process_cmd_entry(guild_id: int, txt_channel: str, bosses: list,
 
             # year, month, day, hour, minutes
             record_date = pendulum.datetime(
-                            *[int(rec) for rec
-                              in boss_record[5:10]], tz=tz)
+                *[int(rec) for rec in boss_record[5:10]],
+                tz=now.timezone_name
+                )
 
-            time_diff = record_date - pendulum.now() - timedelta(hours=offset)
+            time_diff = record_date - (now + full_diff)
 
             if int(time_diff.minutes) < 0:
                 spawn_msg = constants.boss.TIME_SPAWN_MISSED
