@@ -223,7 +223,7 @@ async def check_databases():
                 boss, channel, _map, status = [str(r) for r in result[0:4]]
 
                 entry_time = pendulum.datetime(
-                    *time, tz=pendulum.now().timezone_name
+                    *time, tz=loop_time.timezone_name
                     )
 
                 # process time difference
