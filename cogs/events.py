@@ -240,40 +240,44 @@ class EventsCog(commands.Cog):
             time_diff = entry_time - (now + full_diff)
 
             diff_days = abs(time_diff.days)
+            diff_minutes = abs(floor(time_diff.seconds/60))
 
             if diff_days == 1:
                 days = '1 day'
             elif diff_days > 1:
                 days = '{} days'.format(diff_days)
 
-            # print hour or hours conditionally
-            hours = None
-
             if diff_minutes > 119:
                 hours = '{} hours'.format(floor((diff_minutes % 86400)/60))
             elif diff_minutes > 59:
                 hours = '1 hour'
+            else:
+                hours = ''
 
             # print minutes unconditionally
-            # e.g.              0 minutes from now
-            # e.g.              59 minutes ago
-            minutes = '{} minutes'.format(floor(diff_minutes % 60))
+            # e.g. 0 minutes from now
+            # e.g. 59 minutes ago
+            diff_minutes = floor(diff_minutes % 60)
+            if diff_minutes == 1:
+                minutes = '{} minute'.format(diff_minutes)
+            else:
+                minutes = '{} minutes'.format(diff_minutes)
+
             when = 'from now' if int(time_diff.seconds) >= 0 else 'ago'
 
-            if days is None and hours is None:
-                time_since = '{} {}'.format(minutes, when)
-            elif days is None:
-                time_since = '{}, {} {}'.format(hours, minutes, when)
-            elif hours is None:
-                time_since = '{}, {} {}'.format(days, minutes, when)
-            else:
-                time_since = '{}, {}, {} {}'.format(days, hours, minutes, when)
+            time_since = '{} {}'.format(minutes, when)
+            if hours:
+                time_since = '{}, {}'.format(hours, time_since)
+            if days:
+                time_since = '{}, {}'.format(days, time_since)
+
+            ending = 'ending at' if int(time_diff.seconds) >= 0 else 'ended at'
 
             end_date = entry_time.strftime("%Y/%m/%d %H:%M")
 
             message = ('**{}**\n- {} at **{}** ({})'
-                       .format(name, spawn_msg, end_date,
-                               msg_time))
+                       .format(name, ending, end_date,
+                               time_since))
 
             output.append(message)
             
