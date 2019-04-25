@@ -355,7 +355,7 @@ class EventsCog(commands.Cog):
             bool: True if successful; False otherwise
 
         """
-        name = await silent_name_checker(name)
+        name = await self.silent_name_checker(name)
         if not name:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
@@ -390,7 +390,7 @@ class EventsCog(commands.Cog):
             bool: True if successful; False otherwise
 
         """
-        name = await silent_name_checker(name)
+        name = await self.silent_name_checker(name)
         if not name:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
