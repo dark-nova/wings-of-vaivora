@@ -1,7 +1,9 @@
 from typing import Optional
+from datetime import timedelta
 
 import discord
 from discord.ext import commands
+import pendulum
 
 import checks
 import vaivora.db
@@ -197,6 +199,87 @@ class EventsCog(commands.Cog):
                                    constants.events.SUCCESS_EVENT_DEL
                                    .format(name)))
             return False
+
+    @events.command(name='list', aliases=['ls'])
+    @checks.only_in_guild()
+    @checks.check_channel(constants.settings.MODULE_NAME)
+    @checks.check_role()
+    async def _list(self, ctx):
+        """Lists all events for a Discord guild.
+
+        Args:
+            ctx (discord.ext.commands.Context): context of the message
+            name (str): the name of the custom event
+
+        Returns:
+            bool: True if successful; False otherwise
+
+        """
+        vdb = vaivora.db.Database(ctx.guild.id)
+        results = await vdb.list_all_events(name)
+        if not results:
+            await ctx.send('{} {}'
+                           .format(ctx.author.mention,
+                                   constants.events.FAIL_NO_EVENTS))
+            return False
+
+        output = []
+
+        diff_h, diff_m = await vaivora.utils.get_time_diff(ctx.guild.id)
+        full_diff = timedelta(hours=diff_h, minutes=diff_m)
+
+        now = pendulum.now()
+
+        for result in results:
+            status = result[-1]
+            name = result[0]
+            time = result[1:-1]
+            entry_time = pendulum.datetime(
+                *time, tz=now.timezone_name
+                )
+            time_diff = entry_time - (now + full_diff)
+
+            diff_days = abs(time_diff.days)
+
+            if diff_days == 1:
+                days = '1 day'
+            elif diff_days > 1:
+                days = '{} days'.format(diff_days)
+
+            # print hour or hours conditionally
+            hours = None
+
+            if diff_minutes > 119:
+                hours = '{} hours'.format(floor((diff_minutes % 86400)/60))
+            elif diff_minutes > 59:
+                hours = '1 hour'
+
+            # print minutes unconditionally
+            # e.g.              0 minutes from now
+            # e.g.              59 minutes ago
+            minutes = '{} minutes'.format(floor(diff_minutes % 60))
+            when = 'from now' if int(time_diff.seconds) >= 0 else 'ago'
+
+            if days is None and hours is None:
+                time_since = '{} {}'.format(minutes, when)
+            elif days is None:
+                time_since = '{}, {} {}'.format(hours, minutes, when)
+            elif hours is None:
+                time_since = '{}, {} {}'.format(days, minutes, when)
+            else:
+                time_since = '{}, {}, {} {}'.format(days, hours, minutes, when)
+
+            end_date = entry_time.strftime("%Y/%m/%d %H:%M")
+
+            message = ('**{}**\n- {} at **{}** ({})'
+                       .format(name, spawn_msg, end_date,
+                               msg_time))
+
+            output.append(message)
+            
+
+
+
 
 
 def setup(bot):
