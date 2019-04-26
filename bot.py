@@ -170,6 +170,7 @@ async def check_databases():
                 del vdbs[guild.id] # do not use corrupt/invalid db
 
     minutes = {}
+    hours = {}
     hashed_records = []
 
     while not bot.is_closed():
@@ -181,7 +182,7 @@ async def check_databases():
         purged = []
         if len(minutes) > 0:
             for rec_hash, rec_mins in minutes.items():
-                mins_now = pendulum.now().minute
+                mins_now = loop_time.minute
                 # e.g. 48 > 03 (if record was 1:03
                 # and time now is 12:48), passes conds 1 & 2 but fails cond 3
                 if ((rec_mins < mins_now)
@@ -329,7 +330,7 @@ async def check_databases():
                                       mins))
 
                     hashed_record = await vaivora.utils.hash_object(
-                        discord_channel,
+                        events_channels,
                         name,
                         entry_time
                         )
@@ -340,13 +341,14 @@ async def check_databases():
 
                     # record is within range of alert
                     if time_diff.seconds <= 3600 and time_diff.seconds > 0:
-                        hashed_records.append(hashed_record)
-                        messages.append({
-                            'record': record,
-                            'type': constants.settings.ROLE_EVENTS,
-                            'discord_channel': discord_channel
-                            })
-                        minutes[str(hashed_record)] = entry_time.minute
+                        for events_channel in events_channels:
+                            hashed_records.append(hashed_record)
+                            messages.append({
+                                'record': record,
+                                'type': constants.settings.ROLE_EVENTS,
+                                'discord_channel': events_channel
+                                })
+                            minutes[str(hashed_record)] = entry_time.minute
 
             # empty record for this guild
             if len(messages) == 0:
