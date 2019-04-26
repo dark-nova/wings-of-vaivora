@@ -313,6 +313,9 @@ async def check_databases():
                     if time_diff.hours < 0 or time_diff.minutes < 0:
                         continue
 
+                    if time_diff.days != 0:
+                        continue
+
                     if time_diff.minutes == 1:
                         mins = '{} minute'.format(time_diff.minutes)
                     else:
@@ -349,6 +352,7 @@ async def check_databases():
                                 'discord_channel': events_channel
                                 })
                             minutes[str(hashed_record)] = entry_time.minute
+                            hours[str(hashed_record)] = entry_time.hour
 
             # empty record for this guild
             if len(messages) == 0:
