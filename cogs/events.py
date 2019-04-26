@@ -78,7 +78,7 @@ class EventsCog(commands.Cog):
             names = vaivora.db.permanent_events
             return names[names.index(name)]
 
-        for event, regex in vaivora.db.aliases:
+        for event, regex in vaivora.db.aliases.items():
             if regex.search(name):
                 return event
 
@@ -412,7 +412,8 @@ class EventsCog(commands.Cog):
         else:
             await ctx.send('{} {}'
                            .format(ctx.author.mention,
-                                   constants.events.SUCCESS_DISABLED)
+                                   constants.events.SUCCESS_DISABLED
+                                   .format(name))
                            )
             return True
 
