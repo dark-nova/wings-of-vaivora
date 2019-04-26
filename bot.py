@@ -179,23 +179,22 @@ async def check_databases():
               "- Valid DBs:", len(vdbs))
 
         # prune hashed_records once they're no longer alert-able
-        purged = []
         if len(minutes) > 0:
-            for rec_hash, rec_mins in minutes.items():
-                mins_now = loop_time.minute
-                # e.g. 48 > 03 (if record was 1:03
-                # and time now is 12:48), passes conds 1 & 2 but fails cond 3
-                if ((rec_mins < mins_now)
-                    and ((mins_now-rec_mins) > 0)
-                    and ((mins_now-rec_mins+15+1) < 60)):
+            for rec_hash, rec_time in minutes.items():
+                # `boss` records
+                rec_diff = loop_time - rec_time
+                if rec_hash not in hours:
+                    if rec_diff.minutes > 15:
+                        hashed_records.remove(rec_hash)
+                        del minutes[rec_hash]
+                # `events` records
+                else:
+                    if rec_diff.hours < 1 or (
+                        rec_diff.hours == 1 and rec_diff.minutes < 1):
+                        continue
                     hashed_records.remove(rec_hash)
-                    purged.append(rec_hash)
-
-        for purge in purged:
-            try:
-                del minutes[purge]
-            except:
-                continue
+                    del hours[rec_hash]
+                    del minutes[rec_hash]
 
         # iterate through every valid database
         for vdb_id, valid_db in vdbs.items():
@@ -268,7 +267,7 @@ async def check_databases():
                         'type': constants.settings.ROLE_BOSS,
                         'discord_channel': discord_channel
                         })
-                    minutes[str(hashed_record)] = entry_time.minute
+                    minutes[str(hashed_record)] = entry_time
 
             # only check for events if the db passed the earlier check
             if vdb_id not in skip_events:
@@ -351,7 +350,8 @@ async def check_databases():
                                 'type': constants.settings.ROLE_EVENTS,
                                 'discord_channel': events_channel
                                 })
-                            minutes[str(hashed_record)] = entry_time.minute
+                            minutes[str(hashed_record)] = entry_time
+                            # somewhat of a dummy value
                             hours[str(hashed_record)] = entry_time.hour
 
             # empty record for this guild
