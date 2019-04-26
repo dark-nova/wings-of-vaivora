@@ -6,9 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [3.6.1] - 2019-04-25
 ### Fixed
 - Critical/major issues listed on the repo, in particular:
-- Events alerts output to repeatedly #14
-- Events outputs to the wrong channel #15
-- Permanent events ignore the day they're supposed to run #16
+    - Events alerts output to repeatedly #14
+    - Events outputs to the wrong channel #15
+    - Permanent events ignore the day they're supposed to run #16
+- Events should now be addable. #17
 
 ## [3.6] - 2019-04-24
 ### Added

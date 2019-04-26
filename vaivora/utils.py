@@ -202,7 +202,7 @@ async def validate_date(date):
             date_list = [int(_d) for _d in split_date]
             end = pendulum.datetime(*date_list)
             now = pendulum.now()
-            time_diff = now - end
+            time_diff = end - end
             # reject events that have already ended
             if time_diff.seconds <= 0:
                 return None
