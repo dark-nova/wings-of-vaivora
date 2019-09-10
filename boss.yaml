@@ -1,0 +1,347 @@
+bosses:
+  all: [
+    'world',
+    'event',
+    'field',
+    'demon'
+  ]
+  world: [
+    'Abomination',
+    'Earth Templeshooter',
+    'Earth Canceril',
+    'Earth Archon',
+    'Necroventer',
+    'Kubas Event',
+    'Marionette',
+    'Dullahan Event'
+  ]
+  event: [
+    'Alemeth Yellow-Eyed Flower Petal',
+    'Legwyn Giant Star Stone'
+  ]
+  field: [
+    'Bleak Chapparition',
+    'Rugged Glackuman',
+    'Alluring Succubus',
+    'Hungry Velnia Monkey',
+    'Blasphemous Deathweaver',
+    'Noisy Mineloader',
+    'Burning Fire Lord',
+    'Forest Keeper Ferret Marauder',
+    'Starving Ellaganos',
+    'Violent Cerberus',
+    'Wrathful Harpeia',
+    'Prison Manager Prison Cutter',
+    'Frantic Molich'
+  ]
+  demon: [
+    '[Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox]',
+    '[Demon Lords: Nuaele, Zaura, Blut]'
+  ]
+
+spawns:
+  'short': 120
+  'field': 130
+  'world': 240
+  'demon': 390
+
+aliases: {
+  'Abomination': [
+    'abom'
+  ],
+  'Earth Templeshooter': [
+    'temple shooter',
+    'ts',
+    'ets',
+    'templeshooter'
+  ],
+  'Earth Canceril': [
+    'canceril',
+    'ec',
+    'crab'
+  ],
+  'Earth Archon': [
+    'archon'
+  ],
+  'Necroventer': [
+    'nv',
+    'necro'
+  ],
+  'Kubas Event': [
+    'kubas'
+  ],
+  'Marionette': [
+    'marionette',
+    'mario',
+    'luigi'
+  ],
+  'Dullahan Event': [
+    'dull',
+    'dulla',
+    'dullachan'
+  ],
+  'Alemeth Yellow-Eyed Flower Petal': [
+    'flower'
+  ],
+  'Legwyn Giant Star Stone': [
+    'legwyn',
+    'crystal'
+  ],
+  'Bleak Chapparition': [
+    'chap',
+    'chapparition'
+  ],
+  'Rugged Glackuman': [
+    'glackuman',
+    'glack'
+  ],
+  'Alluring Succubus': [
+    'succubus',
+    'succ'
+  ],
+  'Hungry Velnia Monkey': [
+    'velnia monkey',
+    'monkey',
+    'velnia',
+    'velniamonkey'
+  ],
+  'Blasphemous Deathweaver': [
+    'deathweaver',
+    'dw',
+    'spider'
+  ],
+  'Noisy Mineloader': [
+    'ml',
+    'mineloader'
+  ],
+  'Burning Fire Lord': [
+    'fire lord',
+    'fl',
+    'firelord'
+  ],
+  'Forest Keeper Ferret Marauder': [
+    'ferret marauder',
+    'ferret',
+    'marauder'
+  ],
+  'Starving Ellaganos': [
+    'ellaganos',
+    'ella'
+  ],
+  'Violent Cerberus': [
+    'cerberus',
+    'dog',
+    'cerb',
+    'doge'
+  ],
+  'Wrathful Harpeia': [
+    'harpeia',
+    'harp',
+    'harpy',
+    'harpie'
+  ],
+  'Prison Manager Prison Cutter': [
+    'prison cutter',
+    'prison',
+    'cutter',
+    'pcutter'
+  ],
+  'Frantic Molich': [
+    'molich',
+    'molick',
+    'mo''lick'
+  ],
+  '[Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox]': [
+    'mirtis',
+    'helgasercle',
+    'helga',
+    'footballhead',
+    'marnox',
+    'marn',
+    'rexipher',
+    'rex',
+    'goth',
+    'rexifer',
+    'racksifur',
+    'sexipher'
+  ],
+  '[Demon Lords: Nuaele, Zaura, Blut]': [
+    'nuaele',
+    'nuwhale',
+    'zaura',
+    'blut',
+    'butt'
+  ],
+}
+
+maps: {
+  'Abomination': [
+    'Guards'' Graveyard'
+  ],
+  'Earth Templeshooter': [
+    'Royal Mausoleum Workers'' Lodge'
+  ],
+  'Earth Canceril': [
+    'Royal Mausoleum Constructors'' Chapel'
+  ],
+  'Earth Archon': [
+    'Royal Mausoleum Storage'
+  ],
+  'Necroventer': [
+    'Residence of the Fallen Legwyn Family'
+  ],
+  'Kubas Event': [
+    'Crystal Mine Lot 2 - 2F'
+  ],
+  'Marionette': [
+    'Roxona Reconstruction Agency East Building'
+  ],
+  'Dullahan Event': [
+    'Roxona Reconstruction Agency West Building'
+  ],
+  'Alemeth Yellow-Eyed Flower Petal': [
+    'Alemeth Forest'
+  ],
+  'Legwyn Giant Star Stone': [
+    'Residence of the Fallen Legwyn Family'
+  ],
+  'Bleak Chapparition': [
+    'Novaha Institute'
+  ],
+  'Rugged Glackuman': [
+    'King''s Plateau'
+  ],
+  'Alluring Succubus': [
+    'Feretory Hills'
+  ],
+  'Hungry Velnia Monkey': [
+    'Tenants'' Farm'
+  ],
+  'Blasphemous Deathweaver': [
+    'Demon Prison District 4'
+  ],
+  'Noisy Mineloader': [
+    'Pilgrim Path'
+  ],
+  'Burning Fire Lord': [
+    'Mage Tower 5F'
+  ],
+  'Forest Keeper Ferret Marauder': [
+    'Uskis Arable Land'
+  ],
+  'Starving Ellaganos': [
+    'Verkti Square'
+  ],
+  'Violent Cerberus': [
+    'Mokusul Chamber'
+  ],
+  'Wrathful Harpeia': [
+    'Nahash Forest'
+  ],
+  'Prison Manager Prison Cutter': [
+    'Investigation Room'
+  ],
+  'Frantic Molich': [
+    'Tevhrin Stalactite Cave Section 4'
+  ],
+  '[Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox],': [
+    'City Wall District 8',
+    'Inner Wall District 8',
+    'Inner Wall District 9',
+    'Jeromel Park',
+    'Jonael Memorial',
+    'Outer Wall District 9'
+  ],
+  '[Demon Lords: Nuaele, Zaura, Blut],': [
+    'Emmet Forest',
+    'Pystis Forest',
+    'Syla Forest',
+    'Mishekan Forest'
+  ],
+}
+
+# Defined behavior for nearest_warps:
+# Key: [Value1, Value2], where
+#   Value1 is Nearest Warp Map (same if map has it)
+#   Value2 is number of maps away or 0 if same
+nearest_warps: {
+  'Abomination': [
+    ('Guards'' Graveyard', 0)
+  ],
+  'Earth Templeshooter': [
+    ('Royal Mausoleum Constructors'' Chapel', 1)
+  ],
+  'Earth Canceril': [
+    ('Royal Mausoleum Constructors'' Chapel', 0)
+  ],
+  'Earth Archon': [
+    ('Royal Mausoleum Constructors'' Chapel', 1)
+  ],
+  'Necroventer': [
+    ('Residence of the Fallen Legwyn Family', 0)
+  ],
+  'Kubas Event': [
+    ('Crystal Mine 3F', 2)
+  ],
+  'Marionette': [
+    ('Roxona Reconstruction Agency East Building', 0)
+  ],
+  'Dullahan Event': [
+    ('Roxona Reconstruction Agency East Building', 1)
+  ],
+  'Alemeth Yellow-Eyed Flower Petal': [
+    ('Forest of Prayer', 1)
+  ],
+  'Legwyn Giant Star Stone': [
+    ('Residence of the Fallen Legwyn Family', 0)
+  ],
+  'Bleak Chapparition': [
+    ('Novaha Institute', 0)
+  ],
+  'Rugged Glackuman': [
+    ('King''s Plateau', 0)
+  ],
+  'Alluring Succubus': [
+    ('Mochia Forest', 1)
+  ],
+  'Hungry Velnia Monkey': [
+    ('Tenants'' Farm', 0)
+  ],
+  'Blasphemous Deathweaver': [
+    ('Demon Prison District 2', 2)
+  ],
+  'Noisy Mineloader': [
+    ('Saalus Convent', 1)
+  ],
+  'Burning Fire Lord': [
+    ('Mage Tower 5F', 0)
+  ],
+  'Forest Keeper Ferret Marauder': [
+    ('Dina Bee Farm', 1)
+  ],
+  'Starving Ellaganos': [
+    ('Ruklys Street', 1)
+  ],
+  'Violent Cerberus': [
+    ('Mokusul Chamber', 0)
+  ],
+  'Wrathful Harpeia': [
+    ('Nahash Forest', 0)
+  ],
+  'Prison Manager Prison Cutter': [
+    ('Workshop', 1)
+  ],
+  'Frantic Molich': [
+    ('Tevhrin Stalactite Cave Section 5', 1)
+  ],
+  '[Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox],': [
+    ('Inner Wall District 8', 0),
+    ('Lanko 26 Waters', 1)
+  ],
+  '[Demon Lords: Nuaele, Zaura, Blut],': [
+    ('Pystis Forest', 0)
+  ],
+  # '[Demon Lords: Nuaele, Zaura, Blut],': [('Izoliacjia Plateau', 1),
+  #         ('Pystis Forest', 0)
+  #],
+}

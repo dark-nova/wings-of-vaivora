@@ -1,0 +1,7 @@
+# (optional) Rename or copy this file to emoji.yaml.
+# If you want to use custom emoji, you must create emoji.yaml.
+
+# Custom emoji: replace with emoji id in quotes
+alert: '⚠'
+location: '🌐'
+warp: '⚪'

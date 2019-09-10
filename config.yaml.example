@@ -1,0 +1,7 @@
+# Rename this file to config.yaml to use the script.
+
+# Replace 'token' with your own token in quotes
+discord_token: 'token'
+# Replace 0 with your own Discord user ID. Adds superuser
+# functionality across all guilds used by your bot.
+discord_user_id: 0

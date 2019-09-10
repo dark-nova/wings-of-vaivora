@@ -1,0 +1,16 @@
+# Sublime Text
+*.sublime-*
+
+# config YAMLs
+config.yaml
+emoji.yaml
+
+db/*
+*.db
+
+vaivora.log
+
+# Python files
+venv
+*__pycache__/*
+*.pyc
