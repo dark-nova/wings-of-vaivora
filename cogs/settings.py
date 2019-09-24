@@ -169,7 +169,7 @@ logger.addHandler(ch)
 
 
 with open('guild.yaml', 'r') as f:
-    guild_conf = yaml.load(f, Loader = yaml.Loader)
+    guild_conf = yaml.safe_load(f, Loader = yaml.Loader)
 
 
 async def get_mention_ids(ctx, mentions):

@@ -32,14 +32,6 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-try:
-    with open('emoji.yaml', 'r') as f:
-        emoji = yaml.load(f, Loader = yaml.Loader)
-except FileNotFoundError:
-    # Fallback on default
-    with open('emoji.yaml.example', 'r') as f:
-        emoji = yaml.load(f, Loader = yaml.Loader)
-
 
 class EventsCog(commands.Cog):
     """Interface for `$events` commands.
@@ -52,6 +44,7 @@ class EventsCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.emoji = self.bot.emoji
         self.event_timer_check.start()
 
     @commands.group(
@@ -611,7 +604,7 @@ class EventsCog(commands.Cog):
                         next_occurrence.day,
                         *vaivora.db.event_times[name]
                         ]
-                    name = f"""{name} {emoji['alert']}"""
+                    name = f"""{name} {self.emoji['alert']}"""
 
                 record = cleandoc(
                     f"""**{name}**

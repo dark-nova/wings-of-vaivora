@@ -164,21 +164,13 @@ logger.addHandler(ch)
 
 
 with open('boss.yaml', 'r') as f:
-    boss_conf = yaml.load(f, Loader = yaml.Loader)
+    boss_conf = yaml.safe_load(f, Loader = yaml.Loader)
     all_bosses = []
     for kind in boss_conf['bosses']['all']:
         if kind == 'event':
             continue
         else:
             all_bosses.extend(boss_conf['bosses'][kind])
-
-try:
-    with open('emoji.yaml', 'r') as f:
-        emoji = yaml.load(f, Loader = yaml.Loader)
-except FileNotFoundError:
-    # Fallback on default
-    with open('emoji.yaml.example', 'r') as f:
-        emoji = yaml.load(f, Loader = yaml.Loader)
 
 
 async def boss_helper(boss: str, kill_time: str, map_or_channel):
@@ -416,11 +408,11 @@ async def get_maps(boss):
         str: a formatted message with maps for a boss
 
     """
-    line_join = f"""\n{emoji['location']} """
+    line_join = f"""\n{self.emoji['location']} """
     all_maps = cleandoc(
         f"""**{boss}** can be found in the following maps:
 
-        {emoji['location']} {line_join.join(boss_conf['maps'][boss])}
+        {self.emoji['location']} {line_join.join(boss_conf['maps'][boss])}
         """
         )
     warps = boss_conf['nearest_warps'][boss]
@@ -435,7 +427,7 @@ async def get_maps(boss):
                 else f'{distance} map away'
                 )
         all_warps.append(
-            f"""{emoji['location']} **{warp_map}** ({away})"""
+            f"""{self.emoji['location']} **{warp_map}** ({away})"""
             )
     return cleandoc(
         f"""Nearest map(s) with Vakarine statue:
@@ -546,7 +538,7 @@ async def process_cmd_status(guild_id: int, text_channel: str, boss: str,
 
             **{boss}**
             - {status} at **{time}**
-            - {emoji['location']} {kill_map} CH {channel}
+            - {self.emoji['location']} {kill_map} CH {channel}
             """
             )
     else:
@@ -686,7 +678,7 @@ async def process_cmd_entry_list(guild_id: int, txt_channel: str, bosses: list,
         message = cleandoc(
             f"""**{name}**
             - {spawn_message} **{spawn_time}** ({time_since})
-            - last known map: {emoji['location']} {prev_map} CH {channel}
+            - last known map: {self.emoji['location']} {prev_map} CH {channel}
             """
             )
 
@@ -724,6 +716,7 @@ class BossCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.emoji = self.bot.emoji
         self.boss_timer_check.start()
 
     @commands.group()

@@ -58,14 +58,14 @@ logger.addHandler(ch)
 
 try:
     with open('emoji.yaml', 'r') as f:
-        emoji = yaml.load(f, Loader = yaml.Loader)
+        location_emoji = yaml.safe_load(f, Loader = yaml.Loader)['location']
 except FileNotFoundError:
     # Fallback on default
     with open('emoji.yaml.example', 'r') as f:
-        emoji = yaml.load(f, Loader = yaml.Loader)
+        location_emoji = yaml.safe_load(f, Loader = yaml.Loader)['location']
 
 with open('boss.yaml', 'r') as f:
-    boss_conf = yaml.load(f, Loader = yaml.Loader)
+    boss_conf = yaml.safe_load(f, Loader = yaml.Loader)
 
 
 async def process_boss_record(boss: str, status: str, time, diff: timedelta,
@@ -90,14 +90,14 @@ async def process_boss_record(boss: str, status: str, time, diff: timedelta,
         # If previous map isn't known, just list all possible spawn maps
         map_fmt = '\n'.join(
             [
-                f"""{emoji['location']} {loc} CH {channel}"""
+                f"""{location_emoji} {loc} CH {channel}"""
                 for loc in boss_conf['maps'][boss]
                 ]
             )
     elif boss in boss_conf['bosses']['demon']:
         map_fmt = '\n'.join(
             [
-                f"""{emoji['location']} {loc} CH {channel})"""
+                f"""{location_emoji} {loc} CH {channel})"""
                 for loc in boss_conf['maps'][boss]
                 if loc != boss_map
                 ]
@@ -106,12 +106,12 @@ async def process_boss_record(boss: str, status: str, time, diff: timedelta,
         # valid while Crystal Mine Lot 2 - 2F has 2 channels
         channel = str(int(channel) % 2 + 1)
         map_fmt = (
-            f"""{emoji['location']} {boss_map}; """
+            f"""{location_emoji} {boss_map}; """
             f"""Machine of Riddles CH {channel}"""
             )
     else:
         map_fmt = (
-            f"""{emoji['location']} {boss_map} CH {channel}"""
+            f"""{location_emoji} {boss_map} CH {channel}"""
             )
 
     minutes = floor(diff.seconds / 60)

@@ -31,21 +31,22 @@ initial_extensions = [
 
 # snippet from https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be
 if __name__ == '__main__':
+    with open('config.yaml', 'r') as f:
+        conf = yaml.safe_load(f, Loader = yaml.Loader)
+
+    try:
+        with open('emoji.yaml', 'r') as f:
+            bot.emoji = yaml.safe_load(f, Loader = yaml.Loader)
+    except FileNotFoundError:
+        # Fallback on default
+        with open('emoji.yaml.example', 'r') as f:
+            bot.emoji = yaml.safe_load(f, Loader = yaml.Loader)
+
     for extension in initial_extensions:
         try:
             bot.load_extension(extension)
         except Exception as e:
             print(f'Failed to load extension {extension}.', file = sys.stderr)
-    with open('config.yaml', 'r') as f:
-        conf = yaml.load(f, Loader = yaml.Loader)
-
-    try:
-        with open('emoji.yaml', 'r') as f:
-            emoji = yaml.load(f, Loader = yaml.Loader)
-    except FileNotFoundError:
-        # Fallback on default
-        with open('emoji.yaml.example', 'r') as f:
-            emoji = yaml.load(f, Loader = yaml.Loader)
 
 bot.remove_command('help')
 

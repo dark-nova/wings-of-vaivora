@@ -177,7 +177,7 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 with open('boss.yaml', 'r') as f:
-    bosses = yaml.load(f, Loader = yaml.Loader)['bosses']
+    bosses = yaml.safe_load(f, Loader = yaml.Loader)['bosses']
     all_bosses = []
     for kind in bosses['all']:
         if kind == 'event':
@@ -186,7 +186,7 @@ with open('boss.yaml', 'r') as f:
             all_bosses.extend(bosses[kind])
 
 with open('guild.yaml', 'r') as f:
-    exp_for_level = yaml.load(f, Loader = yaml.Loader)['exp_for_level']
+    exp_for_level = yaml.safe_load(f, Loader = yaml.Loader)['exp_for_level']
 
 
 async def get_dbs(kind):
