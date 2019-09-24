@@ -37,7 +37,7 @@ def check_channel(kind: str):
     return check
 
 
-def check_role(lesser_role=None):
+def check_role(lesser_role = None):
     """Checks whether the user is authorized to run a settings command.
 
     In the default case (`lesser_role` is None), the author must be
@@ -68,23 +68,23 @@ def check_role(lesser_role=None):
         if lesser_role:
             users = await vdb.get_users('member')
         else:
-            await ctx.send(
-                f"""{ctx.author.mention}
+            # await ctx.send(
+            #     f"""{ctx.author.mention}
 
-                You are not authorized to do this!
-                """
-                )
+            #     You are not authorized to do this!
+            #     """
+            #     )
             return False
 
         if await iterate_roles(ctx.author, users):
             return True
 
-        await ctx.send(
-                f"""{ctx.author.mention}
+        # await ctx.send(
+        #     f"""{ctx.author.mention}
 
-                You are not authorized to do this!
-                """
-                )
+        #     You are not authorized to do this!
+        #     """
+        #     )
         return False
     return check
 
@@ -130,10 +130,10 @@ def only_in_guild():
     """
     @commands.check
     async def check(ctx):
-        if ctx.guild == None: # not a guild
-            await ctx.send(
-                'This command is not available in Direct Messages.'
-                )
+        if ctx.guild is None: # not a guild
+            # await ctx.send(
+            #     'This command is not available in Direct Messages.'
+            #     )
             return False
         return True
     return check
@@ -149,14 +149,14 @@ def has_channel_mentions():
     @commands.check
     async def check(ctx):
         if not ctx.message.channel_mentions: # not a guild
-            await ctx.send(
-                f"""{ctx.author.mention}
+            # await ctx.send(
+            #     f"""{ctx.author.mention}
 
-                Too few or many arguments for `$settings`.
+            #     Too few or many arguments for `$settings`.
 
-                Usage: """
-                '`$settings set channel <type> <#channel> [<#channel> ...]`'
-                )
+            #     Usage: """
+            #     '`$settings set channel <type> <#channel> [<#channel> ...]`'
+            #     )
             return False
         return True
     return check
