@@ -169,7 +169,7 @@ logger.addHandler(ch)
 
 
 with open('guild.yaml', 'r') as f:
-    guild_conf = yaml.load(f, Loader=yaml.Loader)
+    guild_conf = yaml.load(f, Loader = yaml.Loader)
 
 
 async def get_mention_ids(ctx, mentions):
@@ -212,7 +212,7 @@ async def get_mention_ids(ctx, mentions):
     return valid_mentions
 
 
-async def combine_mention_ids(ctx, mentions=None):
+async def combine_mention_ids(ctx, mentions = None):
     """Combines all mentions and valid IDs.
 
     Called by `role_setter`, `role_getter`, and `role_deleter`.
@@ -418,7 +418,7 @@ async def channel_deleter(ctx, kind):
     return True
 
 
-async def role_getter(ctx, mentions=None):
+async def role_getter(ctx, mentions = None):
     """Gets Discord members/roles of a given Vaivora role.
 
     Called by `gr_member`, `gr_auth`, `gr_boss`, and `gr_events`.
@@ -492,7 +492,7 @@ async def role_getter(ctx, mentions=None):
         return False
 
 
-async def role_setter(ctx, mentions=None):
+async def role_setter(ctx, mentions = None):
     """Sets Discord members/roles with a given Vaivora role.
 
     Called by `sr_member`, `sr_auth`, `sr_boss`, and `sr_events`.
@@ -548,7 +548,7 @@ async def role_setter(ctx, mentions=None):
         return False
 
 
-async def role_deleter(ctx, mentions=None):
+async def role_deleter(ctx, mentions = None):
     """Deletes Discord members/roles from a given Vaivora role.
 
     Called by `dr_member`, `dr_auth`, `dr_boss`, and `dr_events`.
@@ -603,7 +603,7 @@ async def role_deleter(ctx, mentions=None):
         return False
 
 
-async def contribution_setter(ctx, points: int, member=None, append=False):
+async def contribution_setter(ctx, points: int, member = None, append = False):
     """Sets contribution for a Discord member.
 
     Cannot be used on Discord roles.
@@ -1287,7 +1287,7 @@ class SettingsCog(commands.Cog):
         if records:
             output = []
             records = sorted(
-                records, key=lambda record: record[1], reverse=True
+                records, key = lambda record: record[1], reverse = True
                 )
             if first and last:
                 records = records[first-1:last]
@@ -1423,7 +1423,7 @@ class SettingsCog(commands.Cog):
             return False
         points *= 20
 
-        return await contribution_setter(ctx, points, member, append=True)
+        return await contribution_setter(ctx, points, member, append = True)
 
     @add.command(
         name = 'point',
@@ -1462,7 +1462,7 @@ class SettingsCog(commands.Cog):
                 )
             return False
 
-        return await contribution_setter(ctx, points, member, append=True)
+        return await contribution_setter(ctx, points, member, append = True)
 
     @settings.group(
         name = 'delete',

@@ -58,14 +58,14 @@ logger.addHandler(ch)
 
 try:
     with open('emoji.yaml', 'r') as f:
-        emoji = yaml.load(f, Loader=yaml.Loader)
+        emoji = yaml.load(f, Loader = yaml.Loader)
 except FileNotFoundError:
     # Fallback on default
     with open('emoji.yaml.example', 'r') as f:
-        emoji = yaml.load(f, Loader=yaml.Loader)
+        emoji = yaml.load(f, Loader = yaml.Loader)
 
 with open('boss.yaml', 'r') as f:
-    boss_conf = yaml.load(f, Loader=yaml.Loader)
+    boss_conf = yaml.load(f, Loader = yaml.Loader)
 
 
 async def process_boss_record(boss: str, status: str, time, diff: timedelta,
@@ -118,13 +118,13 @@ async def process_boss_record(boss: str, status: str, time, diff: timedelta,
 
     # Calculate the original reported time from spawn time
     # to use in message
-    time_diff = await get_boss_offset(boss, status, coefficient=-1)
+    time_diff = await get_boss_offset(boss, status, coefficient = -1)
     report_time = time + time_diff
 
     time_fmt = f'**{time.strftime("%Y/%m/%d %H:%M")}** ({minutes} minutes)'
 
     if status == 'anchored':
-        plus_one = time + timedelta(hours=1)
+        plus_one = time + timedelta(hours = 1)
         time_fmt = f'{time_fmt} to {plus_one.strftime("%Y/%m/%d %H:%M")}'
 
     return cleandoc(
@@ -159,7 +159,7 @@ async def get_time_diff(guild_id):
 
     try:
         local_time = pendulum.today()
-        server_time = local_time.in_timezone(tz=tz)
+        server_time = local_time.in_timezone(tz = tz)
         days = server_time.day - local_time.day
         hours = server_time.hour - local_time.hour
         minutes = server_time.minute - local_time.minute
@@ -290,7 +290,7 @@ async def sanitize_nonalnum(text: str):
     return regex_nonalnum.sub('', text)
 
 
-async def get_boss_offset(boss: str, status: str, coefficient: int=1):
+async def get_boss_offset(boss: str, status: str, coefficient: int = 1):
     """Gets the timedelta offset for a given boss.
 
     Args:
@@ -313,7 +313,7 @@ async def get_boss_offset(boss: str, status: str, coefficient: int=1):
     else:
         minutes = boss_conf['spawns']['world']
 
-    return timedelta(minutes=(coefficient * minutes))
+    return timedelta(minutes = (coefficient * minutes))
 
 
 async def hash_object(channel_id: str, obj: str, time: str,

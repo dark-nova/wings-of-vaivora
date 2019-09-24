@@ -177,7 +177,7 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 with open('boss.yaml', 'r') as f:
-    bosses = yaml.load(f, Loader=yaml.Loader)['bosses']
+    bosses = yaml.load(f, Loader = yaml.Loader)['bosses']
     all_bosses = []
     for kind in bosses['all']:
         if kind == 'event':
@@ -186,7 +186,7 @@ with open('boss.yaml', 'r') as f:
             all_bosses.extend(bosses[kind])
 
 with open('guild.yaml', 'r') as f:
-    exp_for_level = yaml.load(f, Loader=yaml.Loader)['exp_for_level']
+    exp_for_level = yaml.load(f, Loader = yaml.Loader)['exp_for_level']
 
 
 async def get_dbs(kind):
@@ -371,7 +371,7 @@ class Database:
             await cursor.close()
         return True
 
-    async def check_db_boss(self, bosses=all_bosses, channel=0):
+    async def check_db_boss(self, bosses = all_bosses, channel = 0):
         """Checks the boss table using the arguments as filters.
 
         Args:
@@ -419,7 +419,7 @@ class Database:
             list: the sorted records
 
         """
-        return sorted(record, key=itemgetter(5,6,7,8,9), reverse=True)
+        return sorted(record, key = itemgetter(5,6,7,8,9), reverse = True)
 
     async def update_db_boss(self, record):
         """Updates the boss table with a new entry.
@@ -471,10 +471,10 @@ class Database:
                                (int(contents[0][8])
                                 <= record['hour'])):
                 if channel:
-                    await self.rm_entry_db_boss(bosses=[boss,],
-                                                channel=channel)
+                    await self.rm_entry_db_boss(bosses = [boss,],
+                                                channel = channel)
                 else:
-                    await self.rm_entry_db_boss(bosses=[boss,])
+                    await self.rm_entry_db_boss(bosses = [boss,])
 
             try:
                 # boss database structure
@@ -503,7 +503,7 @@ class Database:
                     )
                 return False
 
-    async def rm_entry_db_boss(self, bosses=all_bosses, channel=0):
+    async def rm_entry_db_boss(self, bosses = all_bosses, channel = 0):
         """Removes records filtered by the arguments.
 
         Args:
@@ -564,7 +564,7 @@ class Database:
 
         return records # return an implicit bool for how many were deleted
 
-    async def get_users(self, role, users=None):
+    async def get_users(self, role, users = None):
         """Gets users by filtering from arguments.
 
         Users are defined to be either Discord Members or Roles,
@@ -684,7 +684,7 @@ class Database:
             await _db.commit()
         return errs
 
-    async def update_user_sauth(self, user_id: int, owner=True):
+    async def update_user_sauth(self, user_id: int, owner = True):
         """Updates the current guild owner to `s`uper-`auth`orized.
 
         Also used to update bot owner to 'super-authorized'.
@@ -924,7 +924,7 @@ class Database:
         async with aiosqlite.connect(self.db_name) as _db:
             try:
                 cursor = await _db.execute(
-                    'select * from channels where type="events"'
+                    'select * from channels where type = "events"'
                     )
                 return len(await cursor.fetchall()) > 0
             except Exception as e:
@@ -935,7 +935,7 @@ class Database:
                 return False
 
 
-    async def get_contribution(self, users=None):
+    async def get_contribution(self, users = None):
         """Gets contribution(s), filtered by `users`.
 
         Args:
@@ -976,7 +976,7 @@ class Database:
                             )
                 return results
 
-    async def set_contribution(self, user, points, append=False):
+    async def set_contribution(self, user, points, append = False):
         """Sets a user contribution using points as the unit.
 
         Args:

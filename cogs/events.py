@@ -34,11 +34,11 @@ logger.addHandler(ch)
 
 try:
     with open('emoji.yaml', 'r') as f:
-        emoji = yaml.load(f, Loader=yaml.Loader)
+        emoji = yaml.load(f, Loader = yaml.Loader)
 except FileNotFoundError:
     # Fallback on default
     with open('emoji.yaml.example', 'r') as f:
-        emoji = yaml.load(f, Loader=yaml.Loader)
+        emoji = yaml.load(f, Loader = yaml.Loader)
 
 
 class EventsCog(commands.Cog):
@@ -338,7 +338,7 @@ class EventsCog(commands.Cog):
         output = []
 
         diff_h, diff_m = await vaivora.common.get_time_diff(ctx.guild.id)
-        full_diff = timedelta(hours=diff_h, minutes=diff_m)
+        full_diff = timedelta(hours = diff_h, minutes = diff_m)
 
         now = pendulum.now()
 
@@ -350,7 +350,7 @@ class EventsCog(commands.Cog):
             if name in vaivora.db.permanent_events:
                 today = pendulum.today()
                 to_add = (vaivora.db.event_days[name] - today.day_of_week) % 7
-                next_day = today + timedelta(days=to_add)
+                next_day = today + timedelta(days = to_add)
                 time = [
                     next_day.year,
                     next_day.month,
@@ -362,7 +362,7 @@ class EventsCog(commands.Cog):
 
             try:
                 entry_time = pendulum.datetime(
-                    *time, tz=now.timezone_name
+                    *time, tz = now.timezone_name
                     )
             except ValueError as e:
                 logger.error(
@@ -559,16 +559,16 @@ class EventsCog(commands.Cog):
                 continue
 
             diff_h, diff_m = await vaivora.common.get_time_diff(guild_id)
-            full_diff = timedelta(hours=diff_h, minutes=diff_m)
+            full_diff = timedelta(hours = diff_h, minutes = diff_m)
 
             # Sort by time - year, month, day, hour, minute
-            results.sort(key=itemgetter(5,6,7,8,9))
+            results.sort(key = itemgetter(5,6,7,8,9))
 
             for result in results:
                 try:
                     entry_time = pendulum.datetime(
                         *[int(t) for t in result[1:-1]],
-                        tz=loop_time.timezone_name
+                        tz = loop_time.timezone_name
                         )
                 except ValueError as e:
                     logger.error(
@@ -604,7 +604,7 @@ class EventsCog(commands.Cog):
                         - today.day_of_week
                         + 7
                         ) % 7
-                    next_occurrence = today + timedelta(days=to_add)
+                    next_occurrence = today + timedelta(days = to_add)
                     time = [
                         next_occurrence.year,
                         next_occurrence.month,

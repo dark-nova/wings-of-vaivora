@@ -17,7 +17,7 @@ import vaivora.common
 import vaivora.db
 
 
-bot = commands.Bot(command_prefix=['$','Vaivora, ','vaivora ','vaivora, '])
+bot = commands.Bot(command_prefix = ['v!'])
 
 initial_extensions = [
     'cogs.admin',
@@ -35,17 +35,17 @@ if __name__ == '__main__':
         try:
             bot.load_extension(extension)
         except Exception as e:
-            print(f'Failed to load extension {extension}.', file=sys.stderr)
+            print(f'Failed to load extension {extension}.', file = sys.stderr)
     with open('config.yaml', 'r') as f:
-        conf = yaml.load(f, Loader=yaml.Loader)
+        conf = yaml.load(f, Loader = yaml.Loader)
 
     try:
         with open('emoji.yaml', 'r') as f:
-            emoji = yaml.load(f, Loader=yaml.Loader)
+            emoji = yaml.load(f, Loader = yaml.Loader)
     except FileNotFoundError:
         # Fallback on default
         with open('emoji.yaml.example', 'r') as f:
-            emoji = yaml.load(f, Loader=yaml.Loader)
+            emoji = yaml.load(f, Loader = yaml.Loader)
 
 bot.remove_command('help')
 
@@ -100,9 +100,10 @@ async def on_ready():
     """
     print("Logging in...")
     await bot.change_presence(
-        activity=discord.Game(
-            name=(f'in {len(bot.guilds)} guilds. [$help] for info'),
-            status=discord.Status.online)
+        activity = discord.Game(
+            name = (f'in {len(bot.guilds)} guilds. [$help] for info')
+        ),
+        status = discord.Status.online,
         )
     print(
         cleandoc(
@@ -139,7 +140,7 @@ async def on_guild_join(guild):
     return True
 
 
-@bot.command(aliases=['halp'])
+@bot.command(aliases = ['halp'])
 async def help(ctx):
     """Retrieves the help pages for `$help`.
 

@@ -164,7 +164,7 @@ logger.addHandler(ch)
 
 
 with open('boss.yaml', 'r') as f:
-    boss_conf = yaml.load(f, Loader=yaml.Loader)
+    boss_conf = yaml.load(f, Loader = yaml.Loader)
     all_bosses = []
     for kind in boss_conf['bosses']['all']:
         if kind == 'event':
@@ -174,11 +174,11 @@ with open('boss.yaml', 'r') as f:
 
 try:
     with open('emoji.yaml', 'r') as f:
-        emoji = yaml.load(f, Loader=yaml.Loader)
+        emoji = yaml.load(f, Loader = yaml.Loader)
 except FileNotFoundError:
     # Fallback on default
     with open('emoji.yaml.example', 'r') as f:
-        emoji = yaml.load(f, Loader=yaml.Loader)
+        emoji = yaml.load(f, Loader = yaml.Loader)
 
 
 async def boss_helper(boss: str, kill_time: str, map_or_channel):
@@ -505,13 +505,13 @@ async def process_cmd_status(guild_id: int, text_channel: str, boss: str,
     if not offset:
         offset = 0
 
-    local = pendulum.now() + timedelta(hours=offset)
+    local = pendulum.now() + timedelta(hours = offset)
     server_date = local.in_tz(tz)
 
     if hours > int(server_date.hour):
         # Adjust to one day before,
         # e.g. record on 23:59, July 31st but recorded on August 1st
-        server_date += timedelta(days=-1)
+        server_date += timedelta(days = -1)
 
     # dates handled like above example,
     # e.g. record on 23:59, December 31st but recorded on New Years Day
@@ -525,7 +525,7 @@ async def process_cmd_status(guild_id: int, text_channel: str, boss: str,
         }
 
     # Reconstruct boss kill time
-    record_date = pendulum.datetime(*record.values(), tz=tz)
+    record_date = pendulum.datetime(*record.values(), tz = tz)
     record_date += time_offset
 
     # reassign to target data
@@ -580,9 +580,9 @@ async def process_cmd_entry_erase(guild_id: int, txt_channel: str, bosses: list,
     vdb = vaivora.db.Database(guild_id)
 
     if channel and bosses in boss_conf['bosses']['world']:
-        records = await vdb.rm_entry_db_boss(bosses=bosses, channel=channel)
+        records = await vdb.rm_entry_db_boss(bosses = bosses, channel = channel)
     else:
-        records = await vdb.rm_entry_db_boss(bosses=bosses)
+        records = await vdb.rm_entry_db_boss(bosses = bosses)
 
     if records:
         records = [f'**{record}**' for record in records]
@@ -620,7 +620,7 @@ async def process_cmd_entry_list(guild_id: int, txt_channel: str, bosses: list,
 
     vdb = vaivora.db.Database(guild_id)
 
-    records = await vdb.check_db_boss(bosses=bosses, channel=channel_filter)
+    records = await vdb.check_db_boss(bosses = bosses, channel = channel_filter)
 
     if not records:
         return 'No results found! Try a different boss.'
@@ -631,14 +631,14 @@ async def process_cmd_entry_list(guild_id: int, txt_channel: str, bosses: list,
     now = pendulum.now()
 
     diff_h, diff_m = await vaivora.common.get_time_diff(guild_id)
-    full_diff = timedelta(hours=diff_h, minutes=diff_m)
+    full_diff = timedelta(hours = diff_h, minutes = diff_m)
 
     for record in records:
         name, channel, prev_map = [str(field) for field in record[:3]]
 
         record_date = pendulum.datetime(
             *[int(rec) for rec in record[5:10]],
-            tz=now.timezone_name
+            tz = now.timezone_name
             )
 
         time_diff = record_date - (now + full_diff)
@@ -828,7 +828,7 @@ class BossCog(commands.Cog):
         )
     @checks.only_in_guild()
     @checks.check_channel('boss')
-    async def entry(self, ctx, channel=None):
+    async def entry(self, ctx, channel = None):
         """Manipulates boss table records.
 
         Possible `entry` subcommands: `list`, `erase`
@@ -1042,10 +1042,10 @@ class BossCog(commands.Cog):
                 continue
 
             diff_h, diff_m = await vaivora.common.get_time_diff(guild_id)
-            full_diff = timedelta(hours=diff_h, minutes=diff_m)
+            full_diff = timedelta(hours = diff_h, minutes = diff_m)
 
             # Sort by time - year, month, day, hour, minute
-            results.sort(key=itemgetter(5,6,7,8,9))
+            results.sort(key = itemgetter(5,6,7,8,9))
 
             for result in results:
                 discord_channel = result[4]
@@ -1054,7 +1054,7 @@ class BossCog(commands.Cog):
                 try:
                     entry_time = pendulum.datetime(
                         *[int(t) for t in result[5:10]],
-                        tz=loop_time.timezone_name
+                        tz = loop_time.timezone_name
                         )
                 except ValueError as e:
                     logger.error(
