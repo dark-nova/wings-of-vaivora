@@ -131,19 +131,6 @@ bullet_point = '\n- '
 regex_channel = re.compile(r'(ch?)*.?([1-4])$', re.IGNORECASE)
 regex_map_floor = re.compile('.*([0-9]).*')
 
-regex_status_died = re.compile(r'(di|kill)(ed)?', re.IGNORECASE)
-regex_status_anchored = re.compile(r'anch(or(ed)?)?', re.IGNORECASE)
-
-regex_entry_list = re.compile(r'(show|li?st?)', re.IGNORECASE)
-regex_entry_erase = re.compile(r'(erase|del(ete))?', re.IGNORECASE)
-
-regex_query_maps = re.compile(r'maps?', re.IGNORECASE)
-regex_query_alias = re.compile(r'(syn(onym)?s?|alias(es)?)', re.IGNORECASE)
-
-regex_type_world = re.compile(r'w(orld)?', re.IGNORECASE)
-regex_type_field = re.compile(r'f(ield)?', re.IGNORECASE)
-regex_type_demon = re.compile(r'd(emon)?', re.IGNORECASE)
-
 default_tz = 'America/New_York'
 
 logger = logging.getLogger('vaivora.cogs.boss')
@@ -233,16 +220,13 @@ async def what_status(status: str):
         status (str): the string to check for `status`
 
     Returns:
-        str: the correct "status" if successful
-        None: if invalid
+        str: the correct "status"
 
     """
-    if regex_status_died.match(status):
+    if status.startswith('d'):
         return 'died'
-    elif regex_status_anchored.match(status):
-        return 'anchored'
     else:
-        return None
+        return 'anchored'
 
 
 async def what_entry(entry: str):
@@ -254,16 +238,13 @@ async def what_entry(entry: str):
         entry (str): the string to check for `entry`
 
     Returns:
-        str: the correct "entry" if successful
-        None: if invalid
+        str: the correct "entry"
 
     """
-    if regex_entry_list.search(entry):
+    if entry.startswith('l'):
         return 'list'
-    elif regex_entry_erase.search(entry):
-        return 'erase'
     else:
-        return None
+        return 'erase'
 
 
 async def what_query(query: str):
@@ -275,16 +256,13 @@ async def what_query(query: str):
         query (str): the string to check for `query`
 
     Returns:
-        str: the correct "query" if successful
-        None: if invalid
+        str: the correct "query"
 
     """
-    if regex_query_maps.match(query):
+    if query.startswith('m'):
         return 'maps'
-    elif regex_query_alias.match(query):
-        return 'alias'
     else:
-        return None
+        return 'alias'
 
 
 async def what_type(kind):
@@ -297,18 +275,15 @@ async def what_type(kind):
         kind (str): the string to check for `type`
 
     Returns:
-        str: the correct "type" if successful
-        None: if invalid
+        str: the correct "type"
 
     """
-    if regex_type_world.search(kind):
+    if kind.startswith('w'):
         return 'world'
-    elif regex_type_field.search(kind):
+    elif kind.startswith('f'):
         return 'field'
-    elif regex_type_demon.search(kind):
-        return 'demon'
     else:
-        return None
+        return 'demon'
 
 
 async def check_boss(entry):
@@ -752,6 +727,7 @@ class BossCog(commands.Cog):
         )
     @checks.only_in_guild()
     @checks.check_channel('boss')
+    @checks.is_boss_valid()
     async def status(self, ctx, time: str, map_or_channel = None):
         """Stores valid data into a database about a boss kill.
 
@@ -915,6 +891,7 @@ class BossCog(commands.Cog):
             'aliases',
             ]
         )
+    @checks.is_boss_valid()
     async def query(self, ctx):
         """Supplies information about bosses.
 
@@ -936,7 +913,8 @@ class BossCog(commands.Cog):
                 cleandoc(
                     f"""{ctx.author.mention}
 
-                    **{ctx.boss}** is invalid for the `{subcommand}` subcommand.
+                    **all** is invalid for the `{subcommand}` subcommand.
+                    Do not use **all**.
                     """
                     )
                 )
@@ -978,6 +956,7 @@ class BossCog(commands.Cog):
             'f',
             ]
         )
+    @checks.is_boss_valid(all_valid = True)
     async def _type(self, ctx):
         """Supplies a list of bosses given a kind.
 
@@ -1000,6 +979,7 @@ class BossCog(commands.Cog):
                     f"""{ctx.author.mention}
 
                     **{ctx.boss}** is invalid for the `subcomamand` subcommand.
+                    Use **all**.
                     """
                     )
                 )

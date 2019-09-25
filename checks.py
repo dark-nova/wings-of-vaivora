@@ -162,6 +162,23 @@ def has_channel_mentions():
     return check
 
 
+def is_boss_valid(all_valid: bool = False):
+    """Checks if the boss arg is valid.
+
+    Args:
+        all_valid (bool, optional): whether 'all' is valid; defaults to False
+
+    Returns:
+        bool: True if valid given `all_valid`; False otherwise
+
+    """
+    @commands.check
+    async def check(ctx):
+        return ctx.boss == 'all' if all_valid else ctx.boss != 'all'
+
+    return check
+
+
 async def is_bot_owner(user: discord.User, bot):
     """NOT A DECORATOR CHECK! Checks whether `user` owns `bot`.
 
