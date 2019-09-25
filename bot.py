@@ -100,12 +100,6 @@ async def on_ready():
 
     """
     print("Logging in...")
-    await bot.change_presence(
-        activity = discord.Game(
-            name = (f'in {len(bot.guilds)} guilds. [$help] for info')
-        ),
-        status = discord.Status.online,
-        )
     print(
         cleandoc(
             f"""Successsfully logged in as:
