@@ -8,12 +8,12 @@ from typing import Optional
 
 import discord
 import pendulum
-import yaml
 from discord.ext import commands, tasks
 
 import checks
 import vaivora.common
 import vaivora.db
+from vaivora.config import EMOJI
 
 
 logger = logging.getLogger('vaivora.cogs.events')
@@ -44,7 +44,6 @@ class EventsCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.emoji = self.bot.emoji
         self.event_timer_check.start()
 
     @commands.group(
@@ -604,7 +603,7 @@ class EventsCog(commands.Cog):
                         next_occurrence.day,
                         *vaivora.db.event_times[name]
                         ]
-                    name = f"""{name} {self.emoji['alert']}"""
+                    name = f"""{name} {EMOJI['alert']}"""
 
                 record = cleandoc(
                     f"""**{name}**

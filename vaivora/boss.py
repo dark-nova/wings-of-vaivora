@@ -1,19 +1,9 @@
 import asyncio
 import re
 
-import yaml
-
 import vaivora.common
+from vaivora.config import BOSS, ALL_BOSSES
 
-
-with open('boss.yaml', 'r') as f:
-    BOSS_CONF = yaml.safe_load(f)
-    ALL_BOSSES = []
-    for kind in BOSS_CONF['bosses']['all']:
-        if kind == 'event':
-            continue
-        else:
-            ALL_BOSSES.extend(BOSS_CONF['bosses'][kind])
 
 CHANNEL_MAX = 4
 

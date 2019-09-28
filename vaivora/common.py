@@ -9,9 +9,9 @@ from math import floor
 
 import discord
 import pendulum
-import yaml
 
 import vaivora.db
+from vaivora.config import BOSS, EMOJI
 
 
 default_tz = 'America/New_York'
@@ -56,17 +56,6 @@ ch.setFormatter(formatter)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-try:
-    with open('emoji.yaml', 'r') as f:
-        location_emoji = yaml.safe_load(f)['location']
-except FileNotFoundError:
-    # Fallback on default
-    with open('emoji.yaml.example', 'r') as f:
-        location_emoji = yaml.safe_load(f)['location']
-
-with open('boss.yaml', 'r') as f:
-    boss_conf = yaml.safe_load(f)
-
 
 async def process_boss_record(boss: str, status: str, time, diff: timedelta,
     boss_map: str, channel: int, guild_id: int):
@@ -90,15 +79,15 @@ async def process_boss_record(boss: str, status: str, time, diff: timedelta,
         # If previous map isn't known, just list all possible spawn maps
         map_fmt = '\n'.join(
             [
-                f"""{location_emoji} {loc} CH {channel}"""
-                for loc in boss_conf['maps'][boss]
+                f"""{EMOJI['location']} {loc} CH {channel}"""
+                for loc in BOSS['maps'][boss]
                 ]
             )
-    elif boss in boss_conf['bosses']['demon']:
+    elif boss in BOSS['bosses']['demon']:
         map_fmt = '\n'.join(
             [
-                f"""{location_emoji} {loc} CH {channel})"""
-                for loc in boss_conf['maps'][boss]
+                f"""{EMOJI['location']} {loc} CH {channel})"""
+                for loc in BOSS['maps'][boss]
                 if loc != boss_map
                 ]
             )
@@ -106,12 +95,12 @@ async def process_boss_record(boss: str, status: str, time, diff: timedelta,
         # valid while Crystal Mine Lot 2 - 2F has 2 channels
         channel = str(int(channel) % 2 + 1)
         map_fmt = (
-            f"""{location_emoji} {boss_map}; """
+            f"""{EMOJI['location']} {boss_map}; """
             f"""Machine of Riddles CH {channel}"""
             )
     else:
         map_fmt = (
-            f"""{location_emoji} {boss_map} CH {channel}"""
+            f"""{EMOJI['location']} {boss_map} CH {channel}"""
             )
 
     minutes = floor(diff.seconds / 60)
@@ -305,13 +294,13 @@ async def get_boss_offset(boss: str, status: str, coefficient: int = 1):
 
     """
     if boss == 'Abominaton' or boss == 'Dullahan Event':
-        minutes = boss_conf['spawns']['short']
-    if boss in boss_conf['bosses']['demon']:
-        minutes = boss_conf['spawns']['demon']
-    elif boss in boss_conf['bosses']['field']:
-        minutes = boss_conf['spawns']['field']
+        minutes = BOSS['spawns']['short']
+    if boss in BOSS['bosses']['demon']:
+        minutes = BOSS['spawns']['demon']
+    elif boss in BOSS['bosses']['field']:
+        minutes = BOSS['spawns']['field']
     else:
-        minutes = boss_conf['spawns']['world']
+        minutes = BOSS['spawns']['world']
 
     return timedelta(minutes = (coefficient * minutes))
 

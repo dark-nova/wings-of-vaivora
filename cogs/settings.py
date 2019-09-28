@@ -5,11 +5,11 @@ from inspect import cleandoc
 from math import floor
 
 import discord
-import yaml
 from discord.ext import commands
 
 import checks
 import vaivora.db
+from vaivora.config import GUILD
 
 
 HELP = []
@@ -166,10 +166,6 @@ ch.setFormatter(formatter)
 
 logger.addHandler(fh)
 logger.addHandler(ch)
-
-
-with open('guild.yaml', 'r') as f:
-    guild_conf = yaml.safe_load(f)
 
 
 async def get_mention_ids(ctx, mentions):
@@ -1359,7 +1355,7 @@ class SettingsCog(commands.Cog):
             return False
 
         bars_level = f"""[{'|' * level}{' ' * (20 - level)}]"""
-        percent = floor(points*100/guild_conf['exp_per_level'][level+1])
+        percent = floor(points*100/GUILD['exp_per_level'][level+1])
         points_progress = floor(percent*0.4)
         bars_points = (
             f"""[ {percent:02}%"""

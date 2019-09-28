@@ -8,10 +8,10 @@ from operator import itemgetter
 
 import discord
 import pendulum
-import yaml
 from discord.ext import commands, tasks
 
 import checks
+import vaivora.boss
 import vaivora.common
 import vaivora.db
 
@@ -148,16 +148,6 @@ ch.setFormatter(formatter)
 
 logger.addHandler(fh)
 logger.addHandler(ch)
-
-
-with open('boss.yaml', 'r') as f:
-    boss_conf = yaml.safe_load(f)
-    all_bosses = []
-    for kind in boss_conf['bosses']['all']:
-        if kind == 'event':
-            continue
-        else:
-            all_bosses.extend(boss_conf['bosses'][kind])
 
 
 

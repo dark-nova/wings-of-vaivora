@@ -34,14 +34,6 @@ if __name__ == '__main__':
     with open('config.yaml', 'r') as f:
         conf = yaml.safe_load(f)
 
-    try:
-        with open('emoji.yaml', 'r') as f:
-            bot.emoji = yaml.safe_load(f)
-    except FileNotFoundError:
-        # Fallback on default
-        with open('emoji.yaml.example', 'r') as f:
-            bot.emoji = yaml.safe_load(f)
-
     for extension in initial_extensions:
         try:
             bot.load_extension(extension)

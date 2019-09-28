@@ -5,7 +5,8 @@ import sqlite3
 from operator import itemgetter
 
 import aiosqlite
-import yaml
+
+from vaivora.config import ALL_BOSSES, GUILD
 
 
 columns = {}
@@ -175,18 +176,6 @@ ch.setFormatter(formatter)
 
 logger.addHandler(fh)
 logger.addHandler(ch)
-
-with open('boss.yaml', 'r') as f:
-    bosses = yaml.safe_load(f)['bosses']
-    all_bosses = []
-    for kind in bosses['all']:
-        if kind == 'event':
-            continue
-        else:
-            all_bosses.extend(bosses[kind])
-
-with open('guild.yaml', 'r') as f:
-    exp_for_level = yaml.safe_load(f)['exp_for_level']
 
 
 async def get_dbs(kind):
@@ -371,12 +360,12 @@ class Database:
             await cursor.close()
         return True
 
-    async def check_db_boss(self, bosses = all_bosses, channel = 0):
+    async def check_db_boss(self, bosses = ALL_BOSSES, channel = 0):
         """Checks the boss table using the arguments as filters.
 
         Args:
             bosses (list, optional): the bosses to check;
-                defaults to `all_bosses`
+                defaults to `ALL_BOSSES`
             channel (int, optional): the map channel to filter;
                 defaults to 0
 
@@ -503,12 +492,12 @@ class Database:
                     )
                 return False
 
-    async def rm_entry_db_boss(self, bosses = all_bosses, channel = 0):
+    async def rm_entry_db_boss(self, bosses = ALL_BOSSES, channel = 0):
         """Removes records filtered by the arguments.
 
         Args:
             bosses (list, optional): list of boss names (str) to filter;
-                defaults to `all_bosses`
+                defaults to `ALL_BOSSES`
             channel (int, optional): the map channel to filter;
                 defaults to 0
 
@@ -518,7 +507,7 @@ class Database:
         """
         records = []
         if not bosses:
-            bosses = all_bosses
+            bosses = ALL_BOSSES
 
         async with aiosqlite.connect(self.db_name) as _db:
             _db.row_factory = aiosqlite.Row
@@ -1016,7 +1005,7 @@ class Database:
                     )
                 g_level, g_points = await cursor.fetchone()
                 g_points -= old_points
-                while exp_for_level[g_level] > g_points:
+                while GUILD['exp_for_level'][g_level] > g_points:
                     g_level -= 1
                 await _db.execute(
                     'delete from guild'
@@ -1050,7 +1039,7 @@ class Database:
                 await _db.commit()
 
                 g_points += points
-                while exp_for_level[g_level] < g_points:
+                while GUILD['exp_for_level'][g_level] < g_points:
                     g_level += 1
 
                 await _db.execute(
@@ -1105,7 +1094,7 @@ class Database:
 
         """
         level = 1
-        while exp_for_level[level] < points:
+        while GUILD['exp_for_level'][level] < points:
             level += 1
 
         async with aiosqlite.connect(self.db_name) as _db:
