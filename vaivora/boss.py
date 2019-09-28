@@ -58,6 +58,8 @@ class Boss:
 
     def __init__(self, boss: str):
         self.boss = boss
+
+    async def populate(self):
         if self.boss not in ALL_BOSSES:
             await self.validate_boss()
 
