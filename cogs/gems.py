@@ -354,7 +354,7 @@ class GemsCog(commands.Cog):
         pass
 
     @gems.command(
-        name = 'help'
+        name='help',
         )
     async def _help(self, ctx):
         """Retrieves help pages for `$gems`.
@@ -371,11 +371,11 @@ class GemsCog(commands.Cog):
         return True
 
     @gems.command(
-        aliases = [
+        aliases=[
             'abrasive',
             'abrasives',
             'experience',
-            ]
+            ],
         )
     async def exp(self, ctx, *abrs: str):
         """Calculates the experience obtained from abrasives.
@@ -465,7 +465,7 @@ class GemsCog(commands.Cog):
             await ctx.send('\nAdditionally, errors were detected:')
 
             for err in await vaivora.common.chunk_messages(
-                errs, 20, newlines = 1
+                errs, 20, newlines=1
                 ):
                 async with ctx.typing():
                     await asyncio.sleep(1)
@@ -474,10 +474,10 @@ class GemsCog(commands.Cog):
         return True
 
     @gems.command(
-        aliases = [
+        aliases=[
             'lv',
             'lvl',
-            ]
+            ],
         )
     async def level(self, ctx, level: int, exp: int, final_level: int):
         """Calculates experience needed from a given gem level
@@ -552,10 +552,10 @@ class GemsCog(commands.Cog):
         await ctx.send('\n'.join(valid_abrasives))
 
     @gems.command(
-        aliases = [
+        aliases=[
             'val',
             'value',
-            ]
+            ],
         )
     async def values(self, ctx, color: str, equip: Optional[str] = None):
         """Gets values of a gem given `color` and `equip` slot.
@@ -607,9 +607,9 @@ class GemsCog(commands.Cog):
             return False
 
     @gems.command(
-        aliases = [
+        aliases=[
             'eff',
-            ]
+            ],
         )
     async def efficiency(self, ctx, color: str, equip: Optional[str] = None):
         """Gets efficiency of values of a gem given `color` and `equip` slot.

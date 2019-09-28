@@ -48,11 +48,11 @@ class EventsCog(commands.Cog):
         self.event_timer_check.start()
 
     @commands.group(
-        aliases = [
+        aliases=[
             'alert',
             'alerts',
             'event',
-            ]
+            ],
         )
     @checks.only_in_guild()
     @checks.check_channel('settings')
@@ -257,10 +257,10 @@ class EventsCog(commands.Cog):
         return await self.add_handler(ctx, name, date, time)
 
     @events.command(
-        aliases = [
+        aliases=[
             'del',
             'rm',
-            ]
+            ],
         )
     async def delete(self, ctx, name: str):
         """Deletes a custom event for a Discord guild.
@@ -299,10 +299,10 @@ class EventsCog(commands.Cog):
             return False
 
     @events.command(
-        name = 'list',
-        aliases = [
+        name='list',
+        aliases=[
             'ls',
-            ]
+            ],
         )
     async def _list(self, ctx):
         """Lists all events for a Discord guild.
@@ -331,7 +331,7 @@ class EventsCog(commands.Cog):
         output = []
 
         diff_h, diff_m = await vaivora.common.get_time_diff(ctx.guild.id)
-        full_diff = timedelta(hours = diff_h, minutes = diff_m)
+        full_diff = timedelta(hours=diff_h, minutes=diff_m)
 
         now = pendulum.now()
 
@@ -343,7 +343,7 @@ class EventsCog(commands.Cog):
             if name in vaivora.db.permanent_events:
                 today = pendulum.today()
                 to_add = (vaivora.db.event_days[name] - today.day_of_week) % 7
-                next_day = today + timedelta(days = to_add)
+                next_day = today + timedelta(days=to_add)
                 time = [
                     next_day.year,
                     next_day.month,
@@ -355,7 +355,7 @@ class EventsCog(commands.Cog):
 
             try:
                 entry_time = pendulum.datetime(
-                    *time, tz = now.timezone_name
+                    *time, tz=now.timezone_name
                     )
             except ValueError as e:
                 logger.error(
@@ -428,9 +428,9 @@ class EventsCog(commands.Cog):
         return True
 
     @events.command(
-        aliases = [
+        aliases=[
             'en',
-            ]
+            ],
         )
     async def enable(self, ctx, name: str):
         """Enables a permanent event.
@@ -477,9 +477,9 @@ class EventsCog(commands.Cog):
             return True
 
     @events.command(
-        aliases = [
+        aliases=[
             'dis',
-            ]
+            ],
         )
     async def disable(self, ctx, name: str):
         """Disables a permanent event.
@@ -525,7 +525,7 @@ class EventsCog(commands.Cog):
                 )
             return True
 
-    @tasks.loop(minutes = 1)
+    @tasks.loop(minutes=1)
     async def event_timer_check(self):
         loop_time = pendulum.now()
         for rec_hash, rec_time in self.records.items():
@@ -552,16 +552,16 @@ class EventsCog(commands.Cog):
                 continue
 
             diff_h, diff_m = await vaivora.common.get_time_diff(guild_id)
-            full_diff = timedelta(hours = diff_h, minutes = diff_m)
+            full_diff = timedelta(hours=diff_h, minutes=diff_m)
 
             # Sort by time - year, month, day, hour, minute
-            results.sort(key = itemgetter(5,6,7,8,9))
+            results.sort(key=itemgetter(5,6,7,8,9))
 
             for result in results:
                 try:
                     entry_time = pendulum.datetime(
                         *[int(t) for t in result[1:-1]],
-                        tz = loop_time.timezone_name
+                        tz=loop_time.timezone_name
                         )
                 except ValueError as e:
                     logger.error(
@@ -597,7 +597,7 @@ class EventsCog(commands.Cog):
                         - today.day_of_week
                         + 7
                         ) % 7
-                    next_occurrence = today + timedelta(days = to_add)
+                    next_occurrence = today + timedelta(days=to_add)
                     time = [
                         next_occurrence.year,
                         next_occurrence.month,

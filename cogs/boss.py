@@ -151,7 +151,7 @@ logger.addHandler(ch)
 
 
 with open('boss.yaml', 'r') as f:
-    boss_conf = yaml.safe_load(f, Loader = yaml.Loader)
+    boss_conf = yaml.safe_load(f)
     all_bosses = []
     for kind in boss_conf['bosses']['all']:
         if kind == 'event':
@@ -464,9 +464,9 @@ async def process_cmd_entry_erase(guild_id: int, txt_channel: str, bosses: list,
     vdb = vaivora.db.Database(guild_id)
 
     if channel and bosses in boss_conf['bosses']['world']:
-        records = await vdb.rm_entry_db_boss(bosses = bosses, channel = channel)
+        records = await vdb.rm_entry_db_boss(bosses=bosses, channel=channel)
     else:
-        records = await vdb.rm_entry_db_boss(bosses = bosses)
+        records = await vdb.rm_entry_db_boss(bosses=bosses)
 
     if records:
         records = [f'**{record}**' for record in records]
@@ -504,7 +504,7 @@ async def process_cmd_entry_list(guild_id: int, txt_channel: str, bosses: list,
 
     vdb = vaivora.db.Database(guild_id)
 
-    records = await vdb.check_db_boss(bosses = bosses, channel = channel_filter)
+    records = await vdb.check_db_boss(bosses=bosses, channel=channel_filter)
 
     if not records:
         return 'No results found! Try a different boss.'
@@ -515,14 +515,14 @@ async def process_cmd_entry_list(guild_id: int, txt_channel: str, bosses: list,
     now = pendulum.now()
 
     diff_h, diff_m = await vaivora.common.get_time_diff(guild_id)
-    full_diff = timedelta(hours = diff_h, minutes = diff_m)
+    full_diff = timedelta(hours=diff_h, minutes=diff_m)
 
     for record in records:
         name, channel, prev_map = [str(field) for field in record[:3]]
 
         record_date = pendulum.datetime(
             *[int(rec) for rec in record[5:10]],
-            tz = now.timezone_name
+            tz=now.timezone_name
             )
 
         time_diff = record_date - (now + full_diff)
@@ -633,14 +633,14 @@ class BossCog(commands.Cog):
 
     # $boss <boss> <status> <time> [channel]
     @boss.command(
-        name = 'died',
-        aliases = [
+        name='died',
+        aliases=[
             'die',
             'dead',
             'anch',
             'anchor',
             'anchored',
-            ]
+            ],
         )
     @checks.only_in_guild()
     @checks.check_channel('boss')
@@ -704,14 +704,14 @@ class BossCog(commands.Cog):
         return True
 
     @boss.command(
-        name = 'list',
-        aliases = [
+        name='list',
+        aliases=[
             'ls',
             'erase',
             'del',
             'delete',
             'rm',
-            ]
+            ],
         )
     @checks.only_in_guild()
     @checks.check_channel('boss')
@@ -802,12 +802,12 @@ class BossCog(commands.Cog):
             return True
 
     @boss.command(
-        name = 'maps',
-        aliases = [
+        name='maps',
+        aliases=[
             'map',
             'alias',
             'aliases',
-            ]
+            ],
         )
     @checks.is_boss_valid()
     async def query(self, ctx):
@@ -864,17 +864,17 @@ class BossCog(commands.Cog):
         return True
 
     @boss.command(
-        name = 'world',
-        aliases = [
+        name='world',
+        aliases=[
             'w',
             'demon',
             'd',
             'dl',
             'field',
             'f',
-            ]
+            ],
         )
-    @checks.is_boss_valid(all_valid = True)
+    @checks.is_boss_valid(all_valid=True)
     async def _type(self, ctx):
         """Supplies a list of bosses given a kind.
 
@@ -914,7 +914,7 @@ class BossCog(commands.Cog):
                 )
             )
 
-    @tasks.loop(minutes = 1)
+    @tasks.loop(minutes=1)
     async def boss_timer_check(self):
         loop_time = pendulum.now()
         for rec_hash, rec_time in self.records.items():

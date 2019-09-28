@@ -32,10 +32,10 @@ class AdminCog(commands.Cog):
         return await self.reloader(ctx, cogs)
 
     @admin.command(
-        aliases = [
+        aliases=[
             'reloadall',
             'reloadAll',
-            ]
+            ],
         )
     async def reload_all(self, ctx):
         return await self.reloader(ctx, reload_cogs)
@@ -71,11 +71,11 @@ class AdminCog(commands.Cog):
             return False
 
     @admin.command(
-        aliases = [
+        aliases=[
             'getID',
             'getIDs',
             'get_id'
-            ]
+            ],
         )
     async def get_ids(self, ctx):
         try:

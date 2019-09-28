@@ -28,7 +28,7 @@ class MemeCog(commands.Cog):
         self.bot = bot
 
     @commands.command(
-        aliases = [
+        aliases=[
             'ples',
             'pls',
             'plz',

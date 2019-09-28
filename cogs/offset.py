@@ -107,7 +107,7 @@ class OffsetCog(commands.Cog):
         pass
 
     @offset.command(
-        name = 'help'
+        name='help',
         )
     async def _help(self, ctx):
         """Retrieves help pages for `$offset`.
@@ -124,7 +124,7 @@ class OffsetCog(commands.Cog):
         return True
 
     @offset.group(
-        name = 'set'
+        name='set',
         )
     @checks.only_in_guild()
     @checks.check_channel('settings')
@@ -133,11 +133,11 @@ class OffsetCog(commands.Cog):
         pass
 
     @_set.command(
-        name = 'tz',
-        aliases = [
+        name='tz',
+        aliases=[
             'timezone',
             'timezones',
-            ]
+            ],
         )
     async def s_tz(self, ctx, tz):
         """Sets the guild time zone.
@@ -188,7 +188,7 @@ class OffsetCog(commands.Cog):
             return False
 
     @_set.command(
-        name = 'offset'
+        name='offset',
         )
     async def s_offset(self, ctx, offset: int):
         """Sets the offset from the guild time zone.
@@ -238,7 +238,7 @@ class OffsetCog(commands.Cog):
             return False
 
     @offset.group(
-        name = 'get'
+        name='get',
         )
     @checks.only_in_guild()
     @checks.check_role('member')
@@ -246,11 +246,11 @@ class OffsetCog(commands.Cog):
         pass
 
     @_get.command(
-        name = 'tz',
-        aliases = [
+        name='tz',
+        aliases=[
             'timezone',
             'timezones',
-            ]
+            ],
         )
     async def g_tz(self, ctx):
         """Retrieves the guild time zone.
@@ -287,7 +287,7 @@ class OffsetCog(commands.Cog):
             return False
 
     @_get.command(
-        name = 'offset'
+        name='offset',
         )
     async def g_offset(self, ctx):
         """Retrieves the guild's offset from the guild time zone.
@@ -324,7 +324,7 @@ class OffsetCog(commands.Cog):
             return False
 
     @offset.command(
-        name = 'list'
+        name='list',
         )
     async def _list(self, ctx):
         """Lists the available time zones for servers.

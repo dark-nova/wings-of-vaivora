@@ -177,7 +177,7 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 with open('boss.yaml', 'r') as f:
-    bosses = yaml.safe_load(f, Loader = yaml.Loader)['bosses']
+    bosses = yaml.safe_load(f)['bosses']
     all_bosses = []
     for kind in bosses['all']:
         if kind == 'event':
@@ -186,7 +186,7 @@ with open('boss.yaml', 'r') as f:
             all_bosses.extend(bosses[kind])
 
 with open('guild.yaml', 'r') as f:
-    exp_for_level = yaml.safe_load(f, Loader = yaml.Loader)['exp_for_level']
+    exp_for_level = yaml.safe_load(f)['exp_for_level']
 
 
 async def get_dbs(kind):
@@ -419,7 +419,7 @@ class Database:
             list: the sorted records
 
         """
-        return sorted(record, key = itemgetter(5,6,7,8,9), reverse = True)
+        return sorted(record, key=itemgetter(5,6,7,8,9), reverse=True)
 
     async def update_db_boss(self, record):
         """Updates the boss table with a new entry.
@@ -471,10 +471,10 @@ class Database:
                                (int(contents[0][8])
                                 <= record['hour'])):
                 if channel:
-                    await self.rm_entry_db_boss(bosses = [boss,],
-                                                channel = channel)
+                    await self.rm_entry_db_boss(bosses=[boss,],
+                                                channel=channel)
                 else:
-                    await self.rm_entry_db_boss(bosses = [boss,])
+                    await self.rm_entry_db_boss(bosses=[boss,])
 
             try:
                 # boss database structure

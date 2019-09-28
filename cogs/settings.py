@@ -169,7 +169,7 @@ logger.addHandler(ch)
 
 
 with open('guild.yaml', 'r') as f:
-    guild_conf = yaml.safe_load(f, Loader = yaml.Loader)
+    guild_conf = yaml.safe_load(f)
 
 
 async def get_mention_ids(ctx, mentions):
@@ -711,7 +711,7 @@ class SettingsCog(commands.Cog):
         pass
 
     @settings.command(
-        name = 'help'
+        name='help',
         )
     async def _help(self, ctx):
         """Retrieves help pages for `$settings`.
@@ -762,7 +762,7 @@ class SettingsCog(commands.Cog):
 
     # $settings set <target> <kind> <discord object>
     @settings.group(
-        name = 'set'
+        name='set',
         )
     @checks.only_in_guild()
     @checks.check_channel('settings')
@@ -779,8 +779,8 @@ class SettingsCog(commands.Cog):
         return True
 
     @_set.group(
-        name = 'channel',
-        aliases = aliases_channel
+        name='channel',
+        aliases=aliases_channel,
         )
     @checks.check_role()
     @checks.has_channel_mentions()
@@ -803,7 +803,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @s_channel.command(
-        name = 'settings'
+        name='settings',
         )
     async def sc_settings(self, ctx):
         """Sets Discord channels to `settings`.
@@ -817,7 +817,7 @@ class SettingsCog(commands.Cog):
         return await channel_setter(ctx, ctx.channel_kind)
 
     @s_channel.command(
-        name = 'boss'
+        name='boss',
         )
     async def sc_boss(self, ctx):
         """Sets Discord channels to `boss`.
@@ -832,7 +832,7 @@ class SettingsCog(commands.Cog):
         return await channel_setter(ctx, ctx.channel_kind)
 
     @s_channel.command(
-        name = 'events'
+        name='events',
         )
     async def sc_events(self, ctx):
         """Sets Discord channels to `events`.
@@ -847,8 +847,8 @@ class SettingsCog(commands.Cog):
         return await channel_setter(ctx, ctx.channel_kind)
 
     @_set.group(
-        name = 'role',
-        aliases = aliases_role
+        name='role',
+        aliases=aliases_role,
         )
     @checks.check_role()
     async def s_role(self, ctx):
@@ -869,7 +869,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @s_role.command(
-        name = 'member'
+        name='member',
         )
     async def sr_member(self, ctx, mentions: commands.Greedy[int] = None):
         """Sets Discord members/roles to `member`.
@@ -886,8 +886,8 @@ class SettingsCog(commands.Cog):
         return await role_setter(ctx, mentions)
 
     @s_role.command(
-        name = 'authorized',
-        aliases = aliases_authorized
+        name='authorized',
+        aliases=aliases_authorized,
         )
     async def sr_auth(self, ctx, mentions: commands.Greedy[int] = None):
         """Sets Discord members/roles to `authorized`.
@@ -903,7 +903,7 @@ class SettingsCog(commands.Cog):
         return await role_setter(ctx, mentions)
 
     @s_role.command(
-        name = 'boss'
+        name='boss',
         )
     async def sr_boss(self, ctx, mentions: commands.Greedy[int] = None):
         """Sets Discord members/roles to `boss`.
@@ -919,7 +919,7 @@ class SettingsCog(commands.Cog):
         return await role_setter(ctx, mentions)
 
     @s_role.command(
-        name = 'events'
+        name='events',
         )
     async def sr_events(self, ctx, mentions: commands.Greedy[int] = None):
         """Sets Discord members/roles to `events`.
@@ -936,7 +936,7 @@ class SettingsCog(commands.Cog):
         return await role_setter(ctx, mentions)
 
     @_set.group(
-        name = 'talt'
+        name='talt',
         )
     @checks.check_role('member')
     async def s_talt(self, ctx, points: int,
@@ -965,8 +965,8 @@ class SettingsCog(commands.Cog):
         return await contribution_setter(ctx, points, member)
 
     @_set.group(
-        name = 'point',
-        aliases = aliases_points
+        name='point',
+        aliases=aliases_points,
         )
     @checks.check_role('member')
     async def s_point(self, ctx, points: int,
@@ -1005,7 +1005,7 @@ class SettingsCog(commands.Cog):
         return await contribution_setter(ctx, points, member)
 
     @_set.command(
-        name = 'guild'
+        name='guild',
         )
     async def s_guild(self, ctx, points: int):
         """Sets guild points.
@@ -1048,7 +1048,7 @@ class SettingsCog(commands.Cog):
 
     # $settings get <target> <kind> <discord object>
     @settings.group(
-        name = 'get'
+        name='get',
         )
     @checks.only_in_guild()
     @checks.check_channel('settings')
@@ -1068,8 +1068,8 @@ class SettingsCog(commands.Cog):
         return True
 
     @_get.group(
-        name = 'channel',
-        aliases = aliases_channel
+        name='channel',
+        aliases=aliases_channel,
         )
     async def g_channel(self, ctx):
         """Gets Discord channels of a kind/type.
@@ -1090,7 +1090,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @g_channel.command(
-        name = 'settings'
+        name='settings',
         )
     async def gc_settings(self, ctx):
         """Gets Discord channels that are `settings` channels.
@@ -1105,7 +1105,7 @@ class SettingsCog(commands.Cog):
         return await channel_getter(ctx, ctx.channel_kind)
 
     @g_channel.command(
-        name = 'boss'
+        name='boss',
         )
     async def gc_boss(self, ctx):
         """Gets Discord channels that are `boss` channels.
@@ -1120,7 +1120,7 @@ class SettingsCog(commands.Cog):
         return await channel_getter(ctx, ctx.channel_kind)
 
     @g_channel.command(
-        name = 'events'
+        name='events',
         )
     async def gc_events(self, ctx):
         """Gets Discord channels that are `events` channels.
@@ -1135,8 +1135,8 @@ class SettingsCog(commands.Cog):
         return await channel_getter(ctx, ctx.channel_kind)
 
     @_get.group(
-        name = 'role',
-        aliases = aliases_role
+        name='role',
+        aliases=aliases_role,
         )
     async def g_role(self, ctx):
         """Gets Discord members/roles of a given Vaivora role.
@@ -1157,7 +1157,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @g_role.command(
-        name = 'member'
+        name='member',
         )
     async def gr_member(self, ctx, mentions: commands.Greedy[int] = None):
         """Gets Discord members/roles marked `member`.
@@ -1174,8 +1174,8 @@ class SettingsCog(commands.Cog):
         return await role_getter(ctx, mentions)
 
     @g_role.command(
-        name = 'authorized',
-        aliases = aliases_authorized
+        name='authorized',
+        aliases=aliases_authorized,
         )
     async def gr_auth(self, ctx, mentions: commands.Greedy[int] = None):
         """Gets Discord members/roles marked `authorized`.
@@ -1192,7 +1192,7 @@ class SettingsCog(commands.Cog):
         return await role_getter(ctx, mentions)
 
     @g_role.command(
-        name = 'boss'
+        name='boss',
         )
     async def gr_boss(self, ctx, mentions: commands.Greedy[int] = None):
         """Gets Discord members/roles marked `boss`.
@@ -1209,7 +1209,7 @@ class SettingsCog(commands.Cog):
         return await role_getter(ctx, mentions)
 
     @g_role.command(
-        name = 'events'
+        name='events',
         )
     async def gr_events(self, ctx, mentions: commands.Greedy[int] = None):
         """Gets Discord members/roles marked `events`.
@@ -1226,8 +1226,8 @@ class SettingsCog(commands.Cog):
         return await role_getter(ctx, mentions)
 
     @_get.command(
-        name = 'talt',
-        aliases = aliases_points
+        name='talt',
+        aliases=aliases_points,
         )
     async def g_talt(self, ctx, mentions: commands.Greedy[int] = None,
                      record_range = None):
@@ -1287,7 +1287,7 @@ class SettingsCog(commands.Cog):
         if records:
             output = []
             records = sorted(
-                records, key = lambda record: record[1], reverse = True
+                records, key=lambda record: record[1], reverse=True
                 )
             if first and last:
                 records = records[first-1:last]
@@ -1310,7 +1310,7 @@ class SettingsCog(commands.Cog):
                 )
 
             for message in await vaivora.common.chunk_messages(
-                output, 15, newlines = 1
+                output, 15, newlines=1
                 ):
                 async with ctx.typing():
                     await asyncio.sleep(1)
@@ -1332,7 +1332,7 @@ class SettingsCog(commands.Cog):
             return False
 
     @_get.command(
-        name = 'guild'
+        name='guild',
         )
     async def g_guild(self, ctx):
         """Gets guild level and points.
@@ -1380,7 +1380,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @settings.group(
-        name = 'add'
+        name='add',
         )
     async def add(self, ctx):
         """Adds to contributions.
@@ -1398,7 +1398,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @add.command(
-        name = 'talt'
+        name='talt',
         )
     async def a_talt(self, ctx, points: int,
         member: commands.Greedy[int] = None):
@@ -1423,11 +1423,11 @@ class SettingsCog(commands.Cog):
             return False
         points *= 20
 
-        return await contribution_setter(ctx, points, member, append = True)
+        return await contribution_setter(ctx, points, member, append=True)
 
     @add.command(
-        name = 'point',
-        aliases = aliases_points
+        name='point',
+        aliases=aliases_points,
         )
     async def a_point(self, ctx, points: int,
         member: commands.Greedy[int] = None):
@@ -1462,11 +1462,11 @@ class SettingsCog(commands.Cog):
                 )
             return False
 
-        return await contribution_setter(ctx, points, member, append = True)
+        return await contribution_setter(ctx, points, member, append=True)
 
     @settings.group(
-        name = 'delete',
-        aliases = aliases_delete
+        name='delete',
+        aliases=aliases_delete,
         )
     @checks.only_in_guild()
     @checks.check_channel('settings')
@@ -1484,7 +1484,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @delete.group(
-        name = 'role'
+        name='role',
         )
     async def d_role(self, ctx):
         """Deletes Discord members/roles from Vaivora roles.
@@ -1503,7 +1503,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @d_role.command(
-        name = 'member'
+        name='member',
         )
     async def dr_member(self, ctx, mentions: commands.Greedy[int] = None):
         """Deletes Discord members/roles from `member`.
@@ -1518,8 +1518,8 @@ class SettingsCog(commands.Cog):
         return await role_deleter(ctx, mentions)
 
     @d_role.command(
-        name = 'authorized',
-        aliases = aliases_authorized
+        name='authorized',
+        aliases=aliases_authorized,
         )
     async def dr_auth(self, ctx, mentions: commands.Greedy[int] = None):
         """Deletes Discord members/roles from `authorized`.
@@ -1536,7 +1536,7 @@ class SettingsCog(commands.Cog):
         return await role_deleter(ctx, mentions)
 
     @d_role.command(
-        name = 'boss'
+        name='boss',
         )
     async def dr_boss(self, ctx, mentions: commands.Greedy[int] = None):
         """Deletes Discord members/roles from `boss`.
@@ -1553,7 +1553,7 @@ class SettingsCog(commands.Cog):
         return await role_deleter(ctx, mentions)
 
     @d_role.command(
-        name = 'events'
+        name='events',
         )
     async def dr_events(self, ctx, mentions: commands.Greedy[int] = None):
         """Deletes Discord members/roles from `events`.
@@ -1570,7 +1570,7 @@ class SettingsCog(commands.Cog):
         return await role_deleter(ctx, mentions)
 
     @delete.group(
-        name = 'channel'
+        name='channel',
         )
     async def d_channel(self, ctx):
         """Deletes Discord channels from a given kind/type.
@@ -1589,7 +1589,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @d_channel.command(
-        name = 'settings'
+        name='settings',
         )
     async def dc_settings(self, ctx):
         """Deletes Discord channels from `settings`.
@@ -1604,7 +1604,7 @@ class SettingsCog(commands.Cog):
         return await channel_deleter(ctx, ctx.channel_kind)
 
     @d_channel.command(
-        name = 'boss'
+        name='boss',
         )
     async def dc_boss(self, ctx):
         """Deletes Discord channels from `boss`.
@@ -1619,7 +1619,7 @@ class SettingsCog(commands.Cog):
         return await channel_deleter(ctx, ctx.channel_kind)
 
     @d_channel.command(
-        name = 'events'
+        name='events',
         )
     async def dc_events(self, ctx):
         """Deletes Discord channels from `events`.
