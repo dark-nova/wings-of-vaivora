@@ -160,56 +160,6 @@ with open('boss.yaml', 'r') as f:
             all_bosses.extend(boss_conf['bosses'][kind])
 
 
-async def boss_helper(boss: str, kill_time: str, map_or_channel):
-    """Processes for `status` subcommands.
-
-    Args:
-        boss (str): the boss to check
-        kill_time (str): time when the boss died
-        map_or_channel: the map xor channel in which the boss died;
-            can be None from origin function
-
-    Returns:
-        tuple: (boss_idx: int, kill_time: str, kill_map: str, channel: int)
-        bool: False, if the arguments were invalid
-
-    """
-    channel = 1
-    map_idx = None
-
-    boss_idx = await check_boss(boss)
-
-    if boss_idx == -1:
-        return False
-
-    kill_time = await vaivora.common.validate_time(time)
-
-    if not time:
-        return False
-
-    boss = all_bosses[boss_idx]
-
-    if len(boss_conf['maps'][boss]) == 1:
-        map_idx = 0
-
-    if map_or_channel and type(map_or_channel) is int:
-        if map_or_channel <= 4 or map_or_channel > 1:
-            # Use user-input channel only if valid
-            channel = map_or_channel
-    elif map_or_channel and regex_channel.match(map_or_channel):
-        channel = regex_channel.match(map_or_channel)
-        # Channel will always be 1 through 4 inclusive
-        channel = int(channel.group(2))
-    elif type(map_or_channel) is str and map_idx != 0: # possibly map
-        map_idx = await check_maps(boss_idx, map_or_channel)
-
-    if (not map_idx and map_idx != 0) or map_idx == -1:
-        kill_map = None
-    else:
-        kill_map = boss_conf['maps'][boss][map_idx]
-
-    return (boss, time, kill_map, channel)
-
 
 async def what_status(status: str):
     """Checks what `status` the input may be.
@@ -284,39 +234,6 @@ async def what_type(kind):
         return 'field'
     else:
         return 'demon'
-
-
-async def check_boss(entry):
-    """Checks whether an input is a valid boss.
-
-    Args:
-        entry (str): the string to check for valid boss
-
-    Returns:
-        int: the boss index if valid and matching just one;
-        otherwise, -1 for invalid input
-
-    """
-    match = None
-
-    for boss in boss_conf['aliases']:
-        for boss_syn in boss_conf['aliases'][boss]:
-            if entry == boss_syn:
-                # synonyms are unique and exact match only
-                return all_bosses.index(boss)
-
-    for boss in all_bosses:
-        if re.search(entry, boss, re.IGNORECASE):
-            if not match:
-                match = boss
-            else:
-                # duplicate or too ambiguous
-                return -1
-
-    if not match:
-        return -1
-
-    return all_bosses.index(match)
 
 
 async def check_maps(boss_idx, maps):
@@ -760,6 +677,7 @@ class BossCog(commands.Cog):
             boss, kill_time, kill_map, channel = await boss_helper(
                 ctx.boss, time, map_or_channel
                 )
+            kill_time = await vaivora.common.validate_time(time)
         except ValueError:
             await ctx.send(
                 cleandoc(
