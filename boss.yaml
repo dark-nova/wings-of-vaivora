@@ -40,10 +40,31 @@ bosses:
   ]
 
 spawns:
-  'short': 120
-  'field': 130
-  'world': 240
-  'demon': 390
+  'Abomination': 120
+  'Earth Templeshooter': 240
+  'Earth Canceril': 240
+  'Earth Archon': 240
+  'Necroventer': 240
+  'Kubas Event': 240
+  'Marionette': 240
+  'Dullahan Event': 120
+  'Alemeth Yellow-Eyed Flower Petal': 240
+  'Legwyn Giant Star Stone': 240
+  'Bleak Chapparition': 130
+  'Rugged Glackuman': 130
+  'Alluring Succubus': 130
+  'Hungry Velnia Monkey': 130
+  'Blasphemous Deathweaver': 130
+  'Noisy Mineloader': 130
+  'Burning Fire Lord': 130
+  'Forest Keeper Ferret Marauder': 130
+  'Starving Ellaganos': 130
+  'Violent Cerberus': 130
+  'Wrathful Harpeia': 130
+  'Prison Manager Prison Cutter': 130
+  'Frantic Molich': 130
+  '[Demon Lords: Mirtis, Rexipher, Helgasercle, Marnox]': 390
+  '[Demon Lords: Nuaele, Zaura, Blut]': 390
 
 aliases: {
   'Abomination': [
