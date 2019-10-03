@@ -30,14 +30,16 @@ def check_channel(kind: str):
         vdb = vaivora.db.Database(ctx.guild.id)
         chs = await vdb.get_channels(kind)
 
+        # Silently ignore wrong channel
         if chs and ctx.channel.id not in chs:
-            return False # silently ignore wrong channel
-        else: # in the case of `None` chs, all channels are valid
+            raise InvalidChannelError(kind)
+        # In the case of `None` chs, all channels are valid
+        else:
             return True
     return check
 
 
-def check_role(lesser_role = None):
+def check_role(lesser_role: str = None):
     """Checks whether the user is authorized to run a settings command.
 
     In the default case (`lesser_role` is None), the author must be
@@ -68,23 +70,26 @@ def check_role(lesser_role = None):
         if lesser_role:
             users = await vdb.get_users('member')
         else:
-            # await ctx.send(
-            #     f"""{ctx.author.mention}
+            raise NotAuthorizedError(
+                f"""{ctx.author.mention}
 
-            #     You are not authorized to do this!
-            #     """
-            #     )
-            return False
+                You are not authorized to do this!
+
+                Minimum role: authorized
+                """
+                )
 
         if await iterate_roles(ctx.author, users):
             return True
 
-        # await ctx.send(
-        #     f"""{ctx.author.mention}
+        raise NotAuthorizedError(
+            f"""{ctx.author.mention}
 
-        #     You are not authorized to do this!
-        #     """
-        #     )
+            You are not authorized to do this!
+
+            Minimum role: member
+            """
+            )
         return False
     return check
 
@@ -110,11 +115,8 @@ async def iterate_roles(author, users: list):
         return True
     elif author.roles:
         for role in author.roles:
-            try:
-                if role.id in users:
-                    return True
-            except:
-                pass
+            if role.id in users:
+                return True
     return False
 
 
@@ -149,15 +151,14 @@ def has_channel_mentions():
     @commands.check
     async def check(ctx):
         if not ctx.message.channel_mentions: # not a guild
-            # await ctx.send(
-            #     f"""{ctx.author.mention}
+            raise NoChannelMentionsError(
+                f"""{ctx.author.mention}
 
-            #     Too few or many arguments for `$settings`.
+                Too few or many arguments for `$settings`.
 
-            #     Usage: """
-            #     '`$settings set channel <type> <#channel> [<#channel> ...]`'
-            #     )
-            return False
+                Usage: """
+                '`$settings set channel <type> <#channel> [<#channel> ...]`'
+                )
         return True
     return check
 
@@ -174,8 +175,31 @@ def is_boss_valid(all_valid: bool = False):
     """
     @commands.check
     async def check(ctx):
-        return ctx.boss == 'all' if all_valid else ctx.boss != 'all'
+        subcommand = ctx.subcommand_passed
+        if all_valid:
+            if ctx.boss == 'all':
+                return True
+            else:
+                raise InvalidBossError(
+                    f"""{ctx.author.mention}
 
+                    **{ctx.boss}** is invalid for the `{subcommand}` subcommand.
+
+                    Only use **all**.
+                    """
+                    )
+        else:
+            if ctx.boss != 'all':
+                return True
+            else:
+                raise InvalidBossError(
+                    f"""{ctx.author.mention}
+
+                    **{ctx.boss}** is invalid for the `{subcommand}` subcommand.
+
+                    Do not use **all**.
+                    """
+                    )
     return check
 
 
@@ -191,3 +215,38 @@ async def is_bot_owner(user: discord.User, bot):
 
     """
     return user == (await bot.application_info()).owner
+
+
+class Error(commands.CheckError):
+    """Base exception derived from commands.CommandError
+    for checks.
+
+    """
+    pass
+
+
+class NoChannelMentionsError(Error):
+    """No channel mentions were found."""
+    pass
+
+class NotAuthorizedError(Error):
+    """User does not have the Wings of Vaivora role
+    to call the command.
+
+    """
+    pass
+
+class InvalidChannelError(Error):
+    """User called the command in a channel not registered
+    for that command.
+
+    """
+    pass
+
+class InvalidBossError(Error):
+    """User chose the wrong boss target for a command.
+    "Status", "Query" subcommands: must only use boss
+    "Type" subcommands: "all" only
+
+    """
+    pass
