@@ -3,6 +3,19 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.9] - Unreleased
+### Added
+- [`vaivora.boss`](vaivora/boss.py) now contains most of the data handling for the [boss cog](cogs/boss.py). Subsequently, many functions were migrated from the cog to the new class.
+- [`vaivora.config`](vaivora/config.py) is now used for one-time loading configuration files
+- Exception handling added to [`checks.py`](checks.py), to replace sending messages from the checks themselves
+
+### Changed
+- Prefix changed to `v!`. `$` is too common, and the others were extraneous.
+- Use `yaml.safe_load` instead of `yaml.load`
+
+### Removed
+- Presence setting in `on_ready` in [`bot.py`](bot.py)
+
 ## [3.8.1] - 2019-08-21
 ### Added
 - Used `inspect.cleandoc` to format triple-quoted strings

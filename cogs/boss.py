@@ -14,6 +14,7 @@ import checks
 import vaivora.boss
 import vaivora.common
 import vaivora.db
+from vaivora.config import BOSS, EMOJI
 
 
 HELP = []
@@ -235,18 +236,18 @@ async def check_maps(boss_idx, maps):
 
     Returns:
         int: the map index if valid and matching just one;
-        otherwise, -1 for invalind input
+        otherwise, -1 for invalid input
 
     """
     map_idx = -1
     map_floor = regex_map_floor.search(maps)
-    boss = all_bosses[boss_idx]
+    boss = ALL_BOSSES[boss_idx]
 
     if map_floor:
         map_floor = map_floor.group(1)
         maps = re.sub(map_floor, '', maps).strip()
 
-    for boss_map in boss_conf['maps'][boss]:
+    for boss_map in BOSS['maps'][boss]:
         if re.search(maps, boss_map, re.IGNORECASE):
             if map_floor and not re.search(map_floor, boss_map, re.IGNORECASE):
                 # similar name; wrong number
@@ -255,68 +256,10 @@ async def check_maps(boss_idx, maps):
                 # multiple matched; invalid
                 return -1
             else:
-                map_idx = boss_conf['maps'][boss].index(boss_map)
+                map_idx = BOSS['maps'][boss].index(boss_map)
 
     return map_idx
 
-
-async def get_syns(boss):
-    """Retrieves the synonyms of a valid boss.
-
-    Args:
-        boss (str): the string to get the boss's synonyms
-
-    Returns:
-        str: a formatted message with synonyms
-
-    """
-    return cleandoc(
-        f"""**{boss}** can be called using the following aliases:
-
-        - {bullet_point.join(boss_conf['aliases'][boss])}
-        """
-        )
-
-
-async def get_maps(boss):
-    """Retrieves the maps of a valid boss.
-
-    Also retrieves the maps with the nearest warps.
-
-    Args:
-        boss (str): the valid boss to get maps
-
-    Returns:
-        str: a formatted message with maps for a boss
-
-    """
-    line_join = f"""\n{self.emoji['location']} """
-    all_maps = cleandoc(
-        f"""**{boss}** can be found in the following maps:
-
-        {self.emoji['location']} {line_join.join(boss_conf['maps'][boss])}
-        """
-        )
-    warps = boss_conf['nearest_warps'][boss]
-    all_warps = []
-    for (warp_map, distance) in warps:
-        if distance == 0:
-            away = 'same map'
-        else:
-            away = (
-                f'{distance} maps away'
-                if distance > 1
-                else f'{distance} map away'
-                )
-        all_warps.append(
-            f"""{self.emoji['location']} **{warp_map}** ({away})"""
-            )
-    return cleandoc(
-        f"""Nearest map(s) with Vakarine statue:
-
-        {newline.join(all_warps)}
-        """
-        )
 
 
 async def get_bosses(kind):
@@ -332,40 +275,35 @@ async def get_bosses(kind):
     return cleandoc(
         f"""The following bosses are considered "**{kind}**" bosses:
 
-        - {bullet_point.join(boss_conf['bosses'][kind])}
+        - {bullet_point.join(BOSS['bosses'][kind])}
         """
         )
 
 
-async def process_cmd_status(guild_id: int, text_channel: str, boss: str,
-    status: str, time: str, kill_map: str, channel: int):
+async def process_cmd_status(guild_id: int, text_channel: str, status: str,
+    boss: vaivora.boss.Boss
+    ):
     """Processes boss `status` subcommand.
 
     Args:
         guild_id (int): the ID of the Discord guild of the originating message
         text_channel (str): the ID of the channel of the originating message,
             belonging to Discord guild of `guild_id`
-        boss (str): the boss in question
         status (str): the boss's status, or the status subcommand
-        time (str): time represented for the associated event
-        kill_map (str): where the boss was killed
-        channel (int): the channel in which the boss was killed
+        boss (vaivora.boss.Boss): the boss in question
 
     Returns:
         str: an appropriate message for success or fail of command,
         e.g. boss data recorded
 
     """
-    offset = 0
     target = {
-        'name': boss,
+        'name': boss.boss,
         'text_channel': text_channel,
-        'channel': channel,
-        'map': kill_map,
+        'channel': boss.channel,
+        'map': boss.map,
         'status': status
         }
-
-    time_offset = await vaivora.common.get_boss_offset(boss, status)
 
     hours, minutes = [int(t) for t in time.split(':')]
 
@@ -400,7 +338,7 @@ async def process_cmd_status(guild_id: int, text_channel: str, boss: str,
 
     # Reconstruct boss kill time
     record_date = pendulum.datetime(*record.values(), tz = tz)
-    record_date += time_offset
+    record_date += boss.offset
 
     # reassign to target data
     target = {
@@ -420,7 +358,7 @@ async def process_cmd_status(guild_id: int, text_channel: str, boss: str,
 
             **{boss}**
             - {status} at **{time}**
-            - {self.emoji['location']} {kill_map} CH {channel}
+            - {EMOJI['location']} {kill_map} CH {channel}
             """
             )
     else:
@@ -453,7 +391,7 @@ async def process_cmd_entry_erase(guild_id: int, txt_channel: str, bosses: list,
 
     vdb = vaivora.db.Database(guild_id)
 
-    if channel and bosses in boss_conf['bosses']['world']:
+    if channel and bosses in BOSS['bosses']['world']:
         records = await vdb.rm_entry_db_boss(bosses=bosses, channel=channel)
     else:
         records = await vdb.rm_entry_db_boss(bosses=bosses)
@@ -560,7 +498,7 @@ async def process_cmd_entry_list(guild_id: int, txt_channel: str, bosses: list,
         message = cleandoc(
             f"""**{name}**
             - {spawn_message} **{spawn_time}** ({time_since})
-            - last known map: {self.emoji['location']} {prev_map} CH {channel}
+            - last known map: {EMOJI['location']} {prev_map} CH {channel}
             """
             )
 
@@ -598,7 +536,7 @@ class BossCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.emoji = self.bot.emoji
+        EMOJI = self.bot.emoji
         self.boss_timer_check.start()
 
     @commands.group()
@@ -635,7 +573,7 @@ class BossCog(commands.Cog):
     @checks.only_in_guild()
     @checks.check_channel('boss')
     @checks.is_boss_valid()
-    async def status(self, ctx, time: str, map_or_channel = None):
+    async def status(self, ctx, time: str, map_or_channel: str = None):
         """Stores valid data into a database about a boss kill.
 
         Possible `status` subcommands: `died`, `anchored`
@@ -652,33 +590,25 @@ class BossCog(commands.Cog):
         """
         subcommand = await what_status(ctx.subcommand_passed)
 
-        if ctx.boss == 'all':
-            await ctx.send(
-                cleandoc(
-                    f"""{ctx.author.mention}
-
-                    **{ctx.boss}** is invalid for the `{subcommand}` subcommand.
-                    """
-                    )
-                )
-            return False
-
+        boss = vaivora.boss.Boss(ctx.boss)
         try:
-            boss, kill_time, kill_map, channel = await boss_helper(
-                ctx.boss, time, map_or_channel
-                )
-            kill_time = await vaivora.common.validate_time(time)
-        except ValueError:
+            await boss.populate()
+        except vaivora.boss.InvalidBossError as e:
             await ctx.send(
                 cleandoc(
                     f"""{ctx.author.mention}
 
-                    Your command could not be parsed. Please check for errors.
+                    **{ctx.boss}** is an invalid boss.
                     """
                     )
                 )
             return False
 
+        kill_time = await vaivora.common.validate_time(time)
+        e = await boss.parse_map_or_channel(map_or_channel)
+        if e:
+            await ctx.send(e)
+ 
         message = await process_cmd_status(
             ctx.guild.id, ctx.channel.id, boss, subcommand, kill_time,
             kill_map, channel
@@ -692,6 +622,11 @@ class BossCog(commands.Cog):
                 )
             )
         return True
+
+    @status.error
+    async def status_error(ctx, error):
+        if isinstance(error, checks.InvalidBossError):
+            await ctx.send(cleandoc(error))
 
     @boss.command(
         name='list',
@@ -721,8 +656,10 @@ class BossCog(commands.Cog):
 
         """
         if ctx.boss != 'all':
-            boss_idx = await check_boss(ctx.boss)
-            if boss_idx == -1:
+            boss = vaivora.boss.Boss(ctx.boss)
+            try:
+                await boss.populate()
+            except vaivora.boss.InvalidBossError as e:
                 await ctx.send(
                     cleandoc(
                         f"""{ctx.author.mention}
@@ -732,13 +669,13 @@ class BossCog(commands.Cog):
                         )
                     )
                 return False
-            boss = all_bosses[boss_idx]
         else:
-            boss = all_bosses
+            boss = ALL_BOSSES
 
-        if channel is not None:
-            channel = regex_channel.match(channel)
-            channel = int(channel.group(2))
+        try:
+            channel = await vaivora.boss.ext_validate_channel(channel)
+        except InvalidChannelError as e:
+            await ctx.send(e)
 
         subcommand = await what_entry(ctx.subcommand_passed)
 
@@ -816,30 +753,19 @@ class BossCog(commands.Cog):
         """
         subcommand = await what_query(ctx.subcommand_passed)
 
-        if ctx.boss == 'all':
+        boss = vaivora.boss.Boss(ctx.boss)
+        try:
+            await boss.populate()
+        except vaivora.boss.InvalidBossError as e:
             await ctx.send(
                 cleandoc(
                     f"""{ctx.author.mention}
 
-                    **all** is invalid for the `{subcommand}` subcommand.
-                    Do not use **all**.
+                    **{ctx.boss}** is an invalid boss.
                     """
                     )
                 )
             return False
-        else:
-            boss_idx = await check_boss(ctx.boss)
-            if boss_idx == -1:
-                await ctx.send(
-                    cleandoc(
-                        f"""{ctx.author.mention}
-
-                        **{ctx.boss}** is an invalid boss.
-                        """
-                        )
-                    )
-                return False
-            boss = all_bosses[boss_idx]
 
         message = await process_cmd_query(boss, subcommand)
 
@@ -852,6 +778,11 @@ class BossCog(commands.Cog):
                 )
             )
         return True
+
+    @query.error
+    async def query_error(ctx, error):
+        if isinstance(error, checks.InvalidBossError):
+            await ctx.send(cleandoc(error))
 
     @boss.command(
         name='world',
@@ -879,21 +810,9 @@ class BossCog(commands.Cog):
             bool: True if success; False otherwise
 
         """
-        subcmd = await what_type(ctx.subcommand_passed)
+        subcommand = await what_type(ctx.subcommand_passed)
 
-        if ctx.boss != 'all':
-            await ctx.send(
-                cleandoc(
-                    f"""{ctx.author.mention}
-
-                    **{ctx.boss}** is invalid for the `subcomamand` subcommand.
-                    Use **all**.
-                    """
-                    )
-                )
-            return False
-
-        message = await get_bosses(subcmd)
+        message = await get_bosses(subcommand)
 
         await ctx.send(
             cleandoc(
@@ -903,6 +822,11 @@ class BossCog(commands.Cog):
                 """
                 )
             )
+
+    @_type.error
+    async def type_error(ctx, error):
+        if isinstance(error, checks.InvalidBossError):
+            await ctx.send(cleandoc(error))
 
     @tasks.loop(minutes=1)
     async def boss_timer_check(self):
@@ -923,10 +847,10 @@ class BossCog(commands.Cog):
                 continue
 
             diff_h, diff_m = await vaivora.common.get_time_diff(guild_id)
-            full_diff = timedelta(hours = diff_h, minutes = diff_m)
+            full_diff = timedelta(hours=diff_h, minutes=diff_m)
 
             # Sort by time - year, month, day, hour, minute
-            results.sort(key = itemgetter(5,6,7,8,9))
+            results.sort(key=itemgetter(5,6,7,8,9))
 
             for result in results:
                 discord_channel = result[4]
@@ -935,7 +859,7 @@ class BossCog(commands.Cog):
                 try:
                     entry_time = pendulum.datetime(
                         *[int(t) for t in result[5:10]],
-                        tz = loop_time.timezone_name
+                        tz=loop_time.timezone_name
                         )
                 except ValueError as e:
                     logger.error(

@@ -8,7 +8,7 @@
 
 - `master`, the stable version: [3.8.1]
     - You should expect the bot to work if configured correctly.
-- `rewrite`, the development version: [3.8.1]
+- `rewrite`, the development version: [3.9] [Unreleased]
     - The bot may **not** run. You should not use this.
 - `asyncio_archive`, the archived version: [n1.9g]
     - You should not use this. Built on `discord.py` "asyncio".

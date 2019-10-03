@@ -724,7 +724,7 @@ class SettingsCog(commands.Cog):
         return True
 
     @settings.command()
-    @checks.only_in_guild()
+    @commands.guild_only()
     @checks.check_role()
     async def purge(self, ctx):
         """Resets the channels table as a last resort.
@@ -756,11 +756,16 @@ class SettingsCog(commands.Cog):
                 )
             return False
 
+    @purge.error
+    async def purge_error(ctx, error):
+        if isinstance(error, checks.NotAuthorizedError):
+            await ctx.send(cleandoc(error))
+
     # $settings set <target> <kind> <discord object>
     @settings.group(
         name='set',
         )
-    @checks.only_in_guild()
+    @commands.guild_only()
     @checks.check_channel('settings')
     async def _set(self, ctx):
         """Sets configuration, for  `set` subcommands.
@@ -773,6 +778,11 @@ class SettingsCog(commands.Cog):
 
         """
         return True
+
+    @_set.error
+    async def get_error(ctx, error):
+        if isinstance(error, checks.InvalidChannelError):
+            pass
 
     @_set.group(
         name='channel',
@@ -797,6 +807,13 @@ class SettingsCog(commands.Cog):
         except AttributeError:
             return False
         return True
+
+    @s_channel.error
+    async def s_channel_error(ctx, error):
+        if isinstance(error, checks.NoChannelMentionsError):
+            await ctx.send(cleandoc(error))
+        elif isinstance(error, checks.NotAuthorizedError):
+            await ctx.send(cleandoc(error))
 
     @s_channel.command(
         name='settings',
@@ -863,6 +880,11 @@ class SettingsCog(commands.Cog):
         except AttributeError:
             return False
         return True
+
+    @s_role.error
+    async def s_role_error(ctx, error):
+        if isinstance(error, checks.NotAuthorizedError):
+            await ctx.send(cleandoc(error))
 
     @s_role.command(
         name='member',
@@ -960,6 +982,11 @@ class SettingsCog(commands.Cog):
 
         return await contribution_setter(ctx, points, member)
 
+    @s_talt.error
+    async def s_talt_error(ctx, error):
+        if isinstance(error, checks.NotAuthorizedError):
+            await ctx.send(cleandoc(error))
+
     @_set.group(
         name='point',
         aliases=aliases_points,
@@ -999,6 +1026,11 @@ class SettingsCog(commands.Cog):
             return False
 
         return await contribution_setter(ctx, points, member)
+
+    @s_point.error
+    async def s_point_error(ctx, error):
+        if isinstance(error, checks.NotAuthorizedError):
+            await ctx.send(cleandoc(error))
 
     @_set.command(
         name='guild',
@@ -1046,7 +1078,7 @@ class SettingsCog(commands.Cog):
     @settings.group(
         name='get',
         )
-    @checks.only_in_guild()
+    @commands.guild_only()
     @checks.check_channel('settings')
     @checks.check_role('member')
     async def _get(self, ctx):
@@ -1062,6 +1094,13 @@ class SettingsCog(commands.Cog):
 
         """
         return True
+
+    @_get.error
+    async def get_error(ctx, error):
+        if isinstance(error, checks.NotAuthorizedError):
+            await ctx.send(cleandoc(error))
+        elif isinstance(error, checks.InvalidChannelError):
+            pass
 
     @_get.group(
         name='channel',
@@ -1464,7 +1503,7 @@ class SettingsCog(commands.Cog):
         name='delete',
         aliases=aliases_delete,
         )
-    @checks.only_in_guild()
+    @commands.guild_only()
     @checks.check_channel('settings')
     @checks.check_role()
     async def delete(self, ctx):
@@ -1478,6 +1517,13 @@ class SettingsCog(commands.Cog):
 
         """
         return True
+
+    @delete.error
+    async def delete_error(ctx, error):
+        if isinstance(error, checks.NotAuthorizedError):
+            await ctx.send(cleandoc(error))
+        elif isinstance(error, checks.InvalidChannelError):
+            pass
 
     @delete.group(
         name='role',
