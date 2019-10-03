@@ -2,8 +2,11 @@ import asyncio
 import re
 
 import vaivora.common
-from vaivora.config import BOSS, ALL_BOSSES
+from vaivora.config import BOSS, ALL_BOSSES, EMOJI
 
+
+NEWLINE = '\n'
+BULLET_POINT = '\n- '
 
 CHANNEL_MAX = 4
 
@@ -28,7 +31,8 @@ class InvalidMapError(Error):
     def __init__(self, a_map, boss):
         self.message = (
             f'{a_map} is an invalid map for {boss}; '
-            'no map was assumed.')
+            'no map was assumed.'
+            )
         super().__init__(self.message) 
 
 
@@ -37,9 +41,35 @@ class InvalidChannelError(Error):
     def __init__(self, channel):
         self.message = (
             f'{channel} is not a number between 1 and {CHANNEL_MAX}; '
-            'channel 1 was assumed.'
+            'channel 1 was assumed if called by a `status` subcommand.'
             )
         super().__init__(self.message)
+
+
+async def ext_validate_channel(channel: str):
+    """Validates channel, outside of the `Boss` class.
+
+    Args:
+        channel (str): a user-inputted channel
+
+    Returns:
+        int: the channel number only, if valid
+
+    Raises:
+        InvalidChannelError: if invalid
+
+    """
+
+    if channel.isdigit() and int(channel) in range(
+        1, CHANNEL_MAX + 1
+        ):
+        return int(channel)
+    else:
+        match = REGEX_CHANNEL.match(channel)
+        try:
+            return int(match.group(2))
+        except AttributeError:
+            raise InvalidChannelError(channel)
 
 
 class Boss:
@@ -67,6 +97,13 @@ class Boss:
         self.maps = BOSS_CONF['maps'][boss]
         self.nearest_warps = BOSS_CONF['nearest_warps'][boss]
         self.channel = 1
+        self.type = [
+            t
+            for t, bosses
+            in BOSS_CONF['bosses'].items()
+            if self.boss in bosses
+            ][0]
+        self.offset = BOSS_CONF['spawns'][self.boss]
 
     async def validate_boss(self):
         """Validates whether `self.boss` is actually a boss.
@@ -120,16 +157,7 @@ class Boss:
         CHANNEL_MAX, inclusive.
 
         """
-        if self.channel.isdigit() and int(self.channel) in range(
-            1, CHANNEL_MAX + 1
-            ):
-            self.channel = int(self.channel)
-        else:
-            match = REGEX_CHANNEL.match(self.channel)
-            try:
-                self.channel = int(match.group(2))
-            except AttributeError:
-                raise InvalidChannelError(self.channel)
+        self.channel = await ext_validate_channel(self.channel)
 
     async def parse_map_or_channel(self, map_or_channel: str = None):
         """Processes for `status` subcommands. Assigns the attributes
@@ -167,7 +195,7 @@ class Boss:
             # Command example: v!boss mirtis died 12:00
             if not map_or_channel:
                 if len(self.maps) > 1:
-                    self.map = None
+                    self.map = 'N/A'
                 else:
                     self.map = self.maps[0]
             else:
@@ -175,5 +203,55 @@ class Boss:
                     self.map = map_or_channel
                     await self.validate_map()
                 except InvalidMapError as e:
-                    self.map = None
+                    self.map = 'N/A'
                     return e
+
+    async def get_synonyms(self):
+        """Retrieves the synonyms of a valid boss, as a message.
+
+        Returns:
+            str: a formatted message with synonyms
+
+        """
+        return cleandoc(
+            f"""**{boss}** can be called using the following aliases:
+
+            - {BULLET_POINT.join(self.aliases)}
+            """
+            )
+
+    async def get_maps(self):
+        """Retrieves the maps of a valid boss, as a message.
+
+        Also retrieves the maps with the nearest warps.
+
+        Returns:
+            str: a formatted message with maps for a boss
+
+        """
+        line_join = f"""\n{EMOJI['location']} """
+        all_maps = cleandoc(
+            f"""**{self.boss}** can be found in the following maps:
+
+            {EMOJI['location']} {line_join.join(self.maps)}
+            """
+            )
+        all_warps = []
+        for (warp_map, distance) in self.nearest_warps:
+            if distance == 0:
+                away = 'same map'
+            else:
+                away = (
+                    f'{distance} maps away'
+                    if distance > 1
+                    else f'{distance} map away'
+                    )
+            all_warps.append(
+                f"""{EMOJI['location']} **{warp_map}** ({away})"""
+                )
+        return cleandoc(
+            f"""Nearest map(s) with Vakarine statue:
+
+            {NEWLINE.join(all_warps)}
+            """
+            )
