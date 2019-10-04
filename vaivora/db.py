@@ -1291,7 +1291,7 @@ class Database:
                     f'guild: {self.db_id}; '
                     'table recreated'
                     )
-                return NoGuildTZError
+                raise NoGuildTZError
 
     async def set_tz(self, tz: str):
         """Sets the guild's time zone to use for records.
