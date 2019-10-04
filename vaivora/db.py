@@ -282,6 +282,20 @@ class NoSuchEventError(SettingsError):
         super().__init__(self.message)
 
 
+class NoGuildTZError(SettingsError):
+    """No guild time zone was detected."""
+    def __init__(self):
+        self.message = "No time zone was set for this guild."
+        super().__init__(self.message)
+
+
+class NoGuildOffsetError(SettingsError):
+    """No guild time offset was detected."""
+    def __init__(self):
+        self.message = "No time offset was set for this guild."
+        super().__init__(self.message)
+
+
 class Database:
     """Serves as the backend for all of the Vaivora modules."""
 
@@ -1359,6 +1373,12 @@ class Database:
                     f'guild: {self.db_id}'
                     )
                 raise GuildDatabaseError(e)
+            except (KeyError, IndexError) as e:
+                logger.error(
+                    f'Caught {e} in vaivora.db: get_offset; '
+                    f'guild: {self.db_id}'
+                    )
+                raise NoGuildOffsetError
 
     async def set_offset(self, offset: int):
         """Sets the guild's offset from time zone.
