@@ -196,6 +196,92 @@ async def get_dbs(kind):
         )
 
 
+class Error(Exception):
+    """Base exception for vaivora.db"""
+    pass
+
+
+class InvalidGuildConfigError(Error):
+    """The guild config is damaged."""
+    def __init__(self, table):
+        self.message = "The guild config is damaged."
+        super().__init__(self.message)
+
+
+class DatabaseError(Exception):
+    """Base exception for all database issues"""
+    pass
+
+
+class InvalidDBError(DatabaseError):
+    """The table structure was invalid."""
+    def __init__(self, table):
+        self.message = f"The **{table}** table was corrupt and will be rebuilt."
+        super().__init__(self.message)
+
+
+class MultipleEventsError(DatabaseError):
+    """Multiple event listings were found for a given event."""
+    def __init__(self, event):
+        self.message = f"**{event}** has more than one listing in the table."
+        super().__init__(self.message)
+
+
+class GuildDatabaseError(DatabaseError):
+    """A sqlite3.OperationalError was encountered while attempting
+    to update the database. This is a general exception.
+
+    """
+    def __init__(self, error):
+        super().__init__(error)
+
+
+class UserInputError(Error):
+    """Base exception for invalid user input"""
+    pass
+
+
+class InvalidGuildPointError(UserInputError):
+    """Inputted guild points were invalid."""
+    def __init__(self, points):
+        self.message = f"**{points}** is invalid."
+        super().__init__(self.message)
+
+
+class BossError(Error):
+    """Base exception for the boss table for vaivora.db"""
+    pass
+
+
+class BossCollisionError(BossError):
+    """A boss record is too close in time with the stored record."""
+    def __init__(self):
+        self.message = (
+            "Your command could not be processed. "
+            "It appears this record overlaps too closely with another."
+            )
+        super().__init__(self.message)
+
+
+class MultipleBossRecordsError(BossError):
+    """Too many boss records for the given filters were found."""
+    def __init__(self, boss):
+        self.message = f"There are too many records for **{boss}**."
+        super().__init__(self.message)
+
+
+class SettingsError(Error):
+    """Base exception for the settings table for vaivora.db"""
+    pass
+
+
+class NoSuchEventError(SettingsError):
+    """No custom event found given a `name`."""
+    def __init__(self, name):
+        self.message = f"No such custom event named **{name}** was found."
+        super().__init__(self.message)
+
+
 class Database:
     """Serves as the backend for all of the Vaivora modules."""
 
@@ -216,9 +302,8 @@ class Database:
 
         In addition, inserts permanent events if not present.
 
-        Returns:
-            bool: True if successful; False only if
-            a fatal exception occurs
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -227,12 +312,12 @@ class Database:
                 await _db.execute(
                     f'create table if not exists events({cols})'
                     )
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: init_events; '
                     f'guild: {self.db_id}'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
             for event in permanent_events:
                 try:
@@ -242,11 +327,13 @@ class Database:
                         )
                     result = await cursor.fetchall()
                     if len(result) != 1:
-                        raise Exception
+                        raise MultipleEventsError
                     else:
                         continue
-                except Exception:
-                    # even if no event exists, this command will succeed
+                except MultipleEventsError as e:
+                    # Even if no event exists, this command will succeed.
+                    # Since MultipleEventsError can actually happen with
+                    # 0 events listed, that is an important distinction.
                     await _db.execute(
                         'delete from events where name = ?',
                         (event,)
@@ -265,17 +352,6 @@ class Database:
                     )
 
             await _db.commit()
-
-        return True
-
-    def get_id(self):
-        """Gets the database id.
-
-        Returns:
-            str: this database id
-
-        """
-        return self.db_id
 
     async def create_all(self, owner_id):
         """Restores the entire db structure if it's corrupt.
@@ -300,8 +376,6 @@ class Database:
         await self.update_user_sauth(owner_id)
         await self.init_events()
 
-        return
-
     async def create_db(self, table):
         """Ceates a table when none (or invalid) exists.
 
@@ -317,7 +391,6 @@ class Database:
                 f"""create table {table}({comma.join(await get_dbs(table))})"""
                 )
             await _db.commit()
-        return
 
     async def check_if_valid(self, module):
         """Checks if tables are valid, based on `module`.
@@ -325,8 +398,9 @@ class Database:
         Args:
             module (str): the module name
 
-        Returns:
-            bool: True if valid; False otherwise
+        Raises:
+            InvalidDBError: if invalid
+
         """
         if module == 'boss':
             tables = all_tables[0:1]
@@ -340,25 +414,24 @@ class Database:
                     cursor = await _db.execute(
                         f'select * from {table}'
                         )
-                except Exception as e:
+                except sqlite3.OperationalError as e:
                     logger.error(
                         f'Caught {e} in vaivora.db: check_if_valid; '
                         f'module: {module}'
                         f'guild: {self.db_id}'
                         )
-                    return False
+                    raise InvalidDBError(module)
 
                 r = await cursor.fetchone()
                 if not r:
                     await cursor.close()
-                    return True
+                    return
 
                 if sorted(tuple(r.keys())) != sorted(columns[table]):
                     await cursor.close()
-                    return False
+                    raise InvalidDBError(module)
 
             await cursor.close()
-        return True
 
     async def check_db_boss(self, bosses = ALL_BOSSES, channel = 0):
         """Checks the boss table using the arguments as filters.
@@ -416,11 +489,14 @@ class Database:
         Args:
             record (dict): the boss record to add/update
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            BossCollisionError: if the entry overlaps too closely with
+                the record in the table
+            MultipleBossRecordsError: if the boss somehow has more than one
+                record in the table
+            GuildDatabaseError: if unsuccessful
 
         """
-        contents = []
 
         boss = record['name']
         channel = record['channel']
@@ -439,34 +515,36 @@ class Database:
                     (boss,)
                     )
 
-            contents.extend(await cursor.fetchall())
+            contents = await cursor.fetchall()
 
-            if contents and ((int(contents[0][5])
-                              == record['year']) and
-                             (int(contents[0][6])
-                              == record['month']) and
-                             (int(contents[0][7])
-                              == record['day'])and
-                             (int(contents[0][8])
-                              > record['hour'])):
+            if len(contents) > 1:
                 await cursor.close()
-                return False
-            elif contents and ((int(contents[0][5])
-                                <= record['year']) or
-                               (int(contents[0][6])
-                                <= record['month']) or
-                               (int(contents[0][7])
-                                <= record['day']) or
-                               (int(contents[0][8])
-                                <= record['hour'])):
-                if channel:
-                    await self.rm_entry_db_boss(bosses=[boss,],
-                                                channel=channel)
+                raise MultipleBossRecordsError(boss)
+            elif len(contents) == 0:
+                pass
+            else:
+                db_time = pendulum.datetime(*contents[0][5:9])
+                rec_time = pendulum.datetime(
+                    record['year'],
+                    record['month'],
+                    record['day'],
+                    record['hour']
+                    )
+                if db_time > rec_time:
+                    await cursor.close()
+                    raise BossCollisionError
                 else:
-                    await self.rm_entry_db_boss(bosses=[boss,])
+                    if channel:
+                        await self.rm_entry_db_boss(
+                            bosses=[boss,],
+                            channel=channel
+                            )
+                    else:
+                        await self.rm_entry_db_boss(
+                            bosses=[boss,]
+                            )
 
             try:
-                # boss database structure
                 await _db.execute(
                     'insert into boss values (?,?,?,?,?,?,?,?,?,?)',
                     (
@@ -483,14 +561,14 @@ class Database:
                         )
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
+                await cursor.close()
                 logger.error(
                     f'Caught {e} in vaivora.db: update_db_boss; '
                     f'guild: {self.db_id}; '
                     f'record: {record}'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def rm_entry_db_boss(self, bosses = ALL_BOSSES, channel = 0):
         """Removes records filtered by the arguments.
@@ -526,7 +604,7 @@ class Database:
 
                 results = await cursor.fetchall()
 
-                # no records to delete
+                # No records to delete
                 if len(results) == 0:
                     continue
 
@@ -543,7 +621,8 @@ class Database:
                             )
                     await _db.commit()
                     records.append(boss)
-                except Exception as e: # in case of sqlite3 exceptions
+                # Allow iteration in spite of error.
+                except sqlite3.OperationalError as e:
                     logger.error(
                         f'Caught {e} in vaivora.db: rm_entry_db_boss; '
                         f'guild: {self.db_id}'
@@ -551,7 +630,7 @@ class Database:
                     continue
             await cursor.close()
 
-        return records # return an implicit bool for how many were deleted
+        return records
 
     async def get_users(self, role, users = None):
         """Gets users by filtering from arguments.
@@ -566,7 +645,9 @@ class Database:
 
         Returns:
             list: a list of users by id
-            None: if no such users were configured
+
+        Raise:
+            GuildDatabaseError: if no such users were configured
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -581,13 +662,13 @@ class Database:
                     results = [result for result in results if result in users]
 
                 return results
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: get_users; '
                     f'role: {role}; '
                     f'guild: {self.db_id}'
                     )
-                return None
+                raise GuildDatabaseError(e)
 
     async def set_users(self, role, users):
         """Sets users to a Vaivora role.
@@ -616,7 +697,8 @@ class Database:
                         'insert into roles values(?, ?)',
                         (role, user)
                         )
-                except Exception as e:
+                # Allow iteration in spite of error.
+                except sqlite3.OperationalError as e:
                     await _db.execute(
                         'ROLLBACK'
                         )
@@ -657,7 +739,8 @@ class Database:
                         'delete from roles where role = ? and mention = ?',
                         (role, user)
                         )
-                except Exception as e:
+                # Allow iteration in spite of error.
+                except sqlite3.OperationalError as e:
                     await _db.execute(
                         'ROLLBACK'
                         )
@@ -683,8 +766,8 @@ class Database:
             owner (bool, optional): whether the user is the guild owner;
                 defaults to True
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -694,8 +777,9 @@ class Database:
                         'select * from owner'
                         )
                     old_owner = (await cursor.fetchone())[0]
+                    # Do not do anything if it's the same owner
                     if user_id == old_owner:
-                        return True # do not do anything if it's the same owner
+                        return
                     await _db.execute(
                         'delete from owner'
                         )
@@ -703,7 +787,7 @@ class Database:
                         'delete from roles where role = ? and mention = ?',
                         ('s-authorized', old_owner)
                         )
-                except Exception as e:
+                except sqlite3.OperationalError as e:
                     logger.warning(
                         f'Caught {e} in vaivora.db: update_user_sauth; '
                         f'guild: {self.db_id}; '
@@ -714,7 +798,7 @@ class Database:
                     await _db.execute(
                         'create table owner(id text)'
                         )
-                except Exception as e:
+                except sqlite3.OperationalError as e:
                     logger.warning(
                         f'Caught {e} in vaivora.db: update_user_sauth; '
                         f'guild: {self.db_id}; '
@@ -736,8 +820,7 @@ class Database:
                     ('s-authorized', user_id)
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'ROLLBACK'
                     )
@@ -746,7 +829,7 @@ class Database:
                     f'guild: {self.db_id}; '
                     'rolled back'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def clean_duplicates(self):
         """Removes duplicates from all tables.
@@ -767,7 +850,8 @@ class Database:
                         (select min(rowid) from {table} group """
                         f"""by {spec[table]})"""
                         )
-                except Exception as e:
+                # Allow iteration in spite of error.
+                except sqlite3.OperationalError as e:
                     errs.append(table)
                     logger.error(
                         f'Caught {e} in vaivora.db: clean_duplicates; '
@@ -784,8 +868,8 @@ class Database:
         Used if no channels can be used for commands due to configuration
         malfunction.
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -798,8 +882,7 @@ class Database:
                     'create table channels(type text, channel integer)'
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'ROLLBACK'
                     )
@@ -808,7 +891,7 @@ class Database:
                     f'guild: {self.db_id}; '
                     'rolled back'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def get_channels(self, kind):
         """Gets all Discord channels of a Vaivora type, or `kind`.
@@ -819,7 +902,9 @@ class Database:
 
         Returns:
             list: a list of channels of `kind`
-            None: if no such channels were configured
+
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -829,13 +914,13 @@ class Database:
                     (kind,)
                     )
                 return [_row[0] for _row in await cursor.fetchall()]
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: get_channels; '
                     f'table: {kind}; '
                     f'guild: {self.db_id}'
                     )
-                return None
+                raise GuildDatabaseError(e)
 
     async def set_channel(self, kind, channel):
         """Sets a Discord channel to Vaivora type, or `kind`.
@@ -845,8 +930,8 @@ class Database:
                 e.g. 'boss', 'management'
             channel (int): the id of a channel to set
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -856,8 +941,7 @@ class Database:
                     (kind, channel)
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'ROLLBACK'
                     )
@@ -868,7 +952,7 @@ class Database:
                     f'channel: {channel}; '
                     'rolled back'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def remove_channel(self, kind, channel):
         """Removes a Discord channel from a Vaivora type, or `kind`.
@@ -878,8 +962,8 @@ class Database:
                 e.g. 'boss', 'management'
             channel (int): the id of a channel to remove
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -889,8 +973,7 @@ class Database:
                     (kind, channel)
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'ROLLBACK'
                     )
@@ -901,13 +984,16 @@ class Database:
                     f'channel: {channel}; '
                     'rolled back'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def check_events_channel(self):
         """Checks whether an events channel exists.
 
         Returns:
-            bool: True if one or more exist; False otherwise
+            bool: True if one or more exist
+
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -916,12 +1002,12 @@ class Database:
                     'select * from channels where type = "events"'
                     )
                 return len(await cursor.fetchall()) > 0
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: check_events_channel; '
                     f'guild: {self.db_id}'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
 
     async def get_contribution(self, users = None):
@@ -974,8 +1060,9 @@ class Database:
             append (bool. optional): whether to add instead of set;
                 defaults to False
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            InvalidGuildConfigError: if the guild config is damaged
+            GuildDatabaseError: if unsuccessful
 
         """
         g_level = 0
@@ -991,7 +1078,7 @@ class Database:
 
                 if append:
                     points += old_points
-            except Exception as e:
+            except (sqlite3.OperationalError, IndexError) as e:
                 logger.warning(
                     f'Caught {e} in vaivora.db: set_contribution; '
                     f'guild: {self.db_id}; '
@@ -1010,20 +1097,25 @@ class Database:
                 await _db.execute(
                     'delete from guild'
                     )
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.warning(
                     f'Caught {e} in vaivora.db: set_contribution; '
                     f'guild: {self.db_id}; '
                     f'user: {user}; '
                     'ignored'
                     )
+            except (KeyError, IndexError) as e:
+                logger.error(
+                    'Guild config is damaged or missing.'
+                    )
+                raise InvalidGuildConfigError
 
             try:
                 await _db.execute(
                     'delete from contribution where mention = ?',
                     (user,)
                     )
-            except:
+            except sqlite3.OperationalError as e:
                 logger.warning(
                     f'Caught {e} in vaivora.db: set_contribution; '
                     f'guild: {self.db_id}; '
@@ -1047,8 +1139,7 @@ class Database:
                     (g_level, g_points)
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'ROLLBACK'
                     )
@@ -1058,14 +1149,16 @@ class Database:
                     f'user: {user}; '
                     'rolled back'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def get_guild_info(self):
         """Retrieves guild level and points.
 
         Returns:
             tuple: (guild level: int, guild points: int)
-            None: if unsuccessful
+
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -1074,12 +1167,13 @@ class Database:
                     'select * from guild'
                     )
                 return await cursor.fetchone()
-            except Exception as e:
+            except sqlite3.OperationalError as e:
+                await cursor.close()
                 logger.error(
                     f'Caught {e} in vaivora.db: get_guild_info; '
                     f'guild: {self.db_id}'
                     )
-                return None
+                raise GuildDatabaseError(e)
 
     async def set_guild_points(self, points):
         """Sets the guild points by rebasing points.
@@ -1089,8 +1183,10 @@ class Database:
         Args:
             points (int): the points of the guild
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            InvalidGuildPointError: if `points` is invalid,
+                e.g. points < 0
+            GuildDatabaseError: if unsuccessful
 
         """
         level = 1
@@ -1106,7 +1202,7 @@ class Database:
                     )
                 g_points = sum(await cursor.fetchall())
                 extra_points = points - g_points
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.info(
                     f'Caught {e} in vaivora.db: set_guild_points; '
                     f'guild: {self.db_id}; '
@@ -1115,13 +1211,13 @@ class Database:
                 extra_points = points
 
             if extra_points < 0:
-                return False
+                raise InvalidGuildPointError(extra_points)
 
             try:
                 await _db.execute(
                     'delete from contribution where mention = "0"'
                     )
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.warning(
                     f'Caught {e} in vaivora.db: set_guild_points; '
                     f'guild: {self.db_id}; '
@@ -1132,7 +1228,7 @@ class Database:
                 await _db.execute(
                     'delete from guild'
                     )
-            except:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'ROLLBACK'
                     )
@@ -1152,8 +1248,7 @@ class Database:
                     (level, points)
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'ROLLBACK'
                     )
@@ -1162,13 +1257,17 @@ class Database:
                     f'guild: {self.db_id}; '
                     'rolled back'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def get_tz(self):
         """Retrieves the guild's time zone.
 
         Returns:
             str: the time zone e.g America/New_York
+
+        Raises:
+            NoGuildTZError: if no guild time zone was set;
+                the `tz` table will be dropped and recreated
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -1178,20 +1277,21 @@ class Database:
                     )
                 result = await cursor.fetchone()
                 if not result:
-                    return None
+                    raise NoGuildTZError
                 else:
                     return result[0]
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'drop table if exists tz'
                     )
+                await cursor.close()
                 await self.create_db('tz')
                 logger.error(
                     f'Caught {e} in vaivora.db: get_tz; '
                     f'guild: {self.db_id}; '
                     'table recreated'
                     )
-                return None
+                return NoGuildTZError
 
     async def set_tz(self, tz: str):
         """Sets the guild's time zone to use for records.
@@ -1199,8 +1299,8 @@ class Database:
         Args:
             tz (str): the time zone to use
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -1213,7 +1313,7 @@ class Database:
                     await _db.execute(
                         'delete from tz'
                         )
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'drop table if exists tz'
                     )
@@ -1230,20 +1330,21 @@ class Database:
                     (tz,)
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: set_tz; '
                     f'guild: {self.db_id}'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def get_offset(self):
         """Retrieves the guild's offset from the time zone.
 
         Returns:
             int: the offset
-            None: if no offset was found
+
+        Raises:
+            GuildDatabaseError: if no offset was found
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -1252,12 +1353,12 @@ class Database:
                     'select * from offset'
                     )
                 return (await cursor.fetchone())[0]
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: get_offset; '
                     f'guild: {self.db_id}'
                     )
-                return None
+                raise GuildDatabaseError(e)
 
     async def set_offset(self, offset: int):
         """Sets the guild's offset from time zone.
@@ -1265,8 +1366,8 @@ class Database:
         Args:
             offset (int): the offset to use
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -1279,7 +1380,7 @@ class Database:
                     await _db.execute(
                         'delete from offset'
                         )
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 await _db.execute(
                     'drop table if exists offset'
                     )
@@ -1296,13 +1397,12 @@ class Database:
                     (offset,)
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: set_offset; '
                     f'guild: {self.db_id}'
                     )
-                return False
+                raise GuildDatabaseError
 
     async def add_custom_event(self, name: str, date: dict, time: dict):
         """Adds a custom event to timers.
@@ -1352,7 +1452,6 @@ class Database:
                     )
 
                 await _db.commit()
-                return True
             except sqlite3.OperationalError as e:
                 await self.create_db('events')
                 logger.error(
@@ -1360,7 +1459,7 @@ class Database:
                     f'guild: {self.db_id}; '
                     'table recreated'
                     )
-                return False
+                raise GuildDatabaseError(e)
             except Exception as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: add_custom_event; '
@@ -1379,8 +1478,9 @@ class Database:
         Args:
             name (str): the name of the event to check
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            NoSuchEventError: if no custom event with `name` was found
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -1396,9 +1496,8 @@ class Database:
                         (name,)
                         )
                     await _db.commit()
-                    return True
                 else:
-                    return False
+                    raise NoSuchEventError(name)
             except sqlite3.OperationalError:
                 await self.create_db('events')
                 logger.error(
@@ -1407,14 +1506,7 @@ class Database:
                     f'guild: {self.db_id}; '
                     'table recreated'
                     )
-                return False
-            except Exception as e:
-                logger.error(
-                    f'Caught {e} in vaivora.db: verify_existing_custom_event; '
-                    f'event: {name}; '
-                    f'guild: {self.db_id}'
-                    )
-                return False
+                raise GuildDatabaseError(e)
 
     async def del_custom_event(self, name: str):
         """Deletes a custom event from timers.
@@ -1426,8 +1518,8 @@ class Database:
             name (str): the name of the event to delete;
                 MUST MATCH EXISTING - case/punctuation sensitive
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -1437,14 +1529,13 @@ class Database:
                     (name,)
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: del_custom_event; '
                     f'event: {name}; '
                     f'guild: {self.db_id}'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def toggle_event(self, name: str, toggle: int):
         """Toggles permanent event states.
@@ -1455,8 +1546,8 @@ class Database:
             name (str): the name of the permanent event to use
             toggle (int): the toggle state, 1 being enabled; 0 disabled
 
-        Returns:
-            bool: True if successful; False otherwise
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         toggle_name = 'enable_event' if toggle != 0 else 'disable_event'
@@ -1479,15 +1570,14 @@ class Database:
                     event
                     )
                 await _db.commit()
-                return True
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: set_contribution; '
                     f'event: {name}; '
                     f'toggle: {toggle}; '
                     f'guild: {self.db_id}'
                     )
-                return False
+                raise GuildDatabaseError(e)
 
     async def enable_event(self, name: str):
         """Enables a permanent in-game event timer.
@@ -1500,11 +1590,8 @@ class Database:
         Args:
             name (str): the name of the permanent event to use
 
-        Returns:
-            bool: True if successful; False otherwise
-
         """
-        return await self.toggle_event(name, 1)
+        await self.toggle_event(name, 1)
 
     async def disable_event(self, name: str):
         """Disables a permanent in-game event timer.
@@ -1515,11 +1602,8 @@ class Database:
         Args:
             name (str): the name of the permanent event to use
 
-        Returns:
-            bool: True if successful; False otherwise
-
         """
-        return await self.toggle_event(name, 0)
+        await self.toggle_event(name, 0)
 
     async def list_all_events(self):
         """Retrieves all events, custom or permanent.
@@ -1531,7 +1615,9 @@ class Database:
 
         Returns:
             list: of tuples (event name, date and time, enabled/disabled)
-            bool: False if unsuccessful
+
+        Raises:
+            GuildDatabaseError: if unsuccessful
 
         """
         async with aiosqlite.connect(self.db_name) as _db:
@@ -1540,9 +1626,9 @@ class Database:
                     'select * from events'
                     )
                 return await cursor.fetchall()
-            except Exception as e:
+            except sqlite3.OperationalError as e:
                 logger.error(
                     f'Caught {e} in vaivora.db: list_all_events; '
                     f'guild: {self.db_id}'
                     )
-                return False
+                raise GuildDatabaseError(e)
