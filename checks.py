@@ -1,10 +1,50 @@
+from typing import Callable, List
+
 import discord
 from discord.ext import commands
 
 import vaivora.db
 
 
-def check_channel(kind: str):
+class Error(commands.CheckError):
+    """Base exception derived from commands.CommandError
+    for checks.
+
+    """
+    pass
+
+
+class NoChannelMentionsError(Error):
+    """No channel mentions were found."""
+    pass
+
+
+class NotAuthorizedError(Error):
+    """User does not have the Wings of Vaivora role
+    to call the command.
+
+    """
+    pass
+
+
+class InvalidChannelError(Error):
+    """User called the command in a channel not registered
+    for that command.
+
+    """
+    pass
+
+
+class InvalidBossError(Error):
+    """User chose the wrong boss target for a command.
+    "Status", "Query" subcommands: must only use boss
+    "Type" subcommands: "all" only
+
+    """
+    pass
+
+
+def check_channel(kind: str) -> Callable[..., bool]:
     """Checks whether a channel is allowed to
     interact with Wings of Vaivora.
 
@@ -20,13 +60,19 @@ def check_channel(kind: str):
         kind (str): the type (name) of the channel
 
     Returns:
-        bool: True if successful; False otherwise
-        Note that this means if no channels have registered,
-        *all* channels are valid.
+        Callable: the inner check function
 
     """
     @commands.check
     async def check(ctx):
+        """The actual check.
+
+        Returns:
+            bool: True if successful; False otherwise
+                Note that this means if no channels have registered,
+                *all* channels are valid.
+
+        """
         vdb = vaivora.db.Database(ctx.guild.id)
         chs = await vdb.get_channels(kind)
 
@@ -39,22 +85,31 @@ def check_channel(kind: str):
     return check
 
 
-def check_role(lesser_role: str = None):
+def check_role(lesser_role: str = None) -> Callable[..., bool]:
     """Checks whether the user is authorized to run a settings command.
 
     In the default case (`lesser_role` is None), the author must be
     authorized.
 
     Args:
-        lesser_role (str, optional): use this role instead of authorized;
-            defaults to None
+        lesser_role (str, optional): use this role instead of
+            authorized; defaults to None
 
     Returns:
-        bool: True if the user is authorized; False otherwise
+        Callable: the inner check function
 
     """
     @commands.check
     async def check(ctx):
+        """The actual check.
+
+        Returns:
+            bool: True if the user is authorized
+
+        Raises:
+            NotAuthorizedError: if unauthorized
+
+        """
         vdb = vaivora.db.Database(ctx.guild.id)
         users = await vdb.get_users('s-authorized')
 
@@ -94,44 +149,24 @@ def check_role(lesser_role: str = None):
     return check
 
 
-async def iterate_roles(author, users: list):
-    """Iterates through the author's Discord roles.
-
-    Checks whether any of the author's Discord roles or
-    the author's id itself are in a list of
-    authorized `users`.
-
-    Called by `check_roles`.
-
-    Args:
-        author (discord.Member): the command user
-        users (list): users to iterate through
-
-    Returns:
-        bool: True if author is authorized; False otherwise
-
-    """
-    if users and author.id in users:
-        return True
-    elif author.roles:
-        for role in author.roles:
-            if role.id in users:
-                return True
-    return False
-
-
-def only_in_guild():
+def only_in_guild() -> Callable[..., bool]:
     """Checks whether the command was called in a Discord guild.
 
     If the command was not sent in a guild, e.g. DM,
     the command is not run.
 
     Returns:
-        bool: True if guild; False otherwise
+        Callable: the inner check function
 
     """
     @commands.check
     async def check(ctx):
+        """The actual check.
+
+        Returns:
+            bool: True if guild; False otherwise
+
+        """
         if ctx.guild is None: # not a guild
             # await ctx.send(
             #     'This command is not available in Direct Messages.'
@@ -141,15 +176,24 @@ def only_in_guild():
     return check
 
 
-def has_channel_mentions():
+def has_channel_mentions() -> Callable[..., bool]:
     """Checks whether a command has channel mentions. How creative
 
     Returns:
-        bool: True if message has channel mentions; False otherwise
+        Callable: the inner check function
 
     """
     @commands.check
     async def check(ctx):
+        """The actual check.
+
+        Returns:
+            bool: True if message has channel mentions
+
+        Raises:
+            NoChannelMentionsError: otherwise
+
+        """
         if not ctx.message.channel_mentions: # not a guild
             raise NoChannelMentionsError(
                 f"""{ctx.author.mention}
@@ -163,18 +207,27 @@ def has_channel_mentions():
     return check
 
 
-def is_boss_valid(all_valid: bool = False):
+def is_boss_valid(all_valid: bool = False) -> Callable[..., bool]:
     """Checks if the boss arg is valid.
 
     Args:
         all_valid (bool, optional): whether 'all' is valid; defaults to False
 
     Returns:
-        bool: True if valid given `all_valid`; False otherwise
+        Callable: the inner check function
 
     """
     @commands.check
     async def check(ctx):
+        """The actual check.
+
+        Returns:
+            bool: True if valid given `all_valid`
+
+        Raises:
+            InvalidBossError: if invalid
+
+        """
         subcommand = ctx.subcommand_passed
         if all_valid:
             if ctx.boss == 'all':
@@ -203,8 +256,39 @@ def is_boss_valid(all_valid: bool = False):
     return check
 
 
-async def is_bot_owner(user: discord.User, bot):
-    """NOT A DECORATOR CHECK! Checks whether `user` owns `bot`.
+def is_db_valid(guild_id: int, table: str) -> Callable[..., bool]:
+    """Checks if the guild's database `table` is valid.
+
+    Returns:
+        Callable: the inner check function
+
+    """
+    @commands.check
+    async def check(ctx):
+        """The actual check.
+
+        Returns:
+            bool: True if valid
+
+        Raises:
+            vaivora.db.InvalidDBError: if invalid
+
+        """
+        vdb = vaivora.db.Database(guild_id)
+        try:
+            await vdb.check_if_valid('boss')
+            return True
+        except vaivora.db.InvalidDBError as e:
+            await vdb.create_db('boss')
+            raise e
+    return check
+
+
+# Non-decorator checks
+# The following are not to be called as discord.py checks.
+
+async def is_bot_owner(user: discord.User, bot) -> bool:
+    """Checks whether `user` owns `bot`.
 
     Args:
         user (discord.User): the user to check
@@ -217,36 +301,29 @@ async def is_bot_owner(user: discord.User, bot):
     return user == (await bot.application_info()).owner
 
 
-class Error(commands.CheckError):
-    """Base exception derived from commands.CommandError
-    for checks.
+# Helper functions
+
+async def iterate_roles(author: discord.Member, users: List[int]) -> bool:
+    """Iterates through the author's Discord roles.
+
+    Checks whether any of the author's Discord roles or
+    the author's id itself are in a list of
+    authorized `users`.
+
+    Called by `check_roles`.
+
+    Args:
+        author (discord.Member): the command user
+        users (list): users to iterate through
+
+    Returns:
+        bool: True if author is authorized; False otherwise
 
     """
-    pass
-
-
-class NoChannelMentionsError(Error):
-    """No channel mentions were found."""
-    pass
-
-class NotAuthorizedError(Error):
-    """User does not have the Wings of Vaivora role
-    to call the command.
-
-    """
-    pass
-
-class InvalidChannelError(Error):
-    """User called the command in a channel not registered
-    for that command.
-
-    """
-    pass
-
-class InvalidBossError(Error):
-    """User chose the wrong boss target for a command.
-    "Status", "Query" subcommands: must only use boss
-    "Type" subcommands: "all" only
-
-    """
-    pass
+    if users and author.id in users:
+        return True
+    elif author.roles:
+        for role in author.roles:
+            if role.id in users:
+                return True
+    return False
