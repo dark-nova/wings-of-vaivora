@@ -1,0 +1,55 @@
+# Acknowledgments
+
+- **Wolfy** 
+    - bug report
+        - [1.3.3] :  with **Jiyuu**
+        - [1.5.2]
+        - [1.6.4]
+        - [1.6.13] :  and additional testing
+        - [1.6.16]
+        - [1.7.10] :  time
+        - [1.7.22]
+        - [1.9.5]
+    - information
+        - [1.7.13] :  lesser field bosses
+        - [1.9.1]
+    - feature request
+        - [1.7.11] :  Abomination
+- **Jiyuu**
+    - bug report
+        - [1.3.1] :  with **Wolfy**
+        - [1.7.21]
+        - [1.7.22]
+        - [1.8.1] :  boss role
+        - [1.8.4]
+    - information
+        - [1.1.3] :  feedback
+    - feature request
+        - [1.3]
+        - [1.4] :  status
+        - [1.8] :  time descending sort
+- **TerminalEssence**
+    - bug report
+        - [1.1.4]
+        - [1.2.2]
+    - information
+        - [1.9] :  confirmed information on boss timers
+- **Kiito**
+    - bug report
+        - [1.2.3]
+        - [1.2.4]
+- **beeju**
+    - bug report
+        - [1.7.22]
+- **Donada**
+    - feature request
+        - [1.7.22] :  world boss timers
+- **Galoal**
+    - bug report
+        - [1.6.11]
+- **Onesan**
+    - bug report
+        - [1.5.4]
+- **Sunshine**
+    - bug report
+        - [1.6.2]

@@ -6,12 +6,12 @@
 
 ## Branches
 
-- `master`, the stable version: [3.8.1]
+- `master`, the stable version: **[3.8.1]**
     - You should expect the bot to work if configured correctly.
-- `rewrite`, the development version: [3.9] [Unreleased]
+- `rewrite`, the development version: **[4.0]** *[Unreleased]*
     - The bot may **not** run. You should not use this.
-- `asyncio_archive`, the archived version: [n1.9g]
-    - You should not use this. Built on `discord.py` "asyncio".
+- `asyncio_archive`, the archived version: *[1.9.7]*
+    - You should not use this. Built on [`discord.py`][discord.py] `asyncio`.
 
 ## Usage
 
@@ -55,15 +55,19 @@ To set up your configuration, copy [`config.yaml.example`](config.yaml.example) 
 
 You may also want to customize [`emoji.yaml`](emoji.yaml.example). Copy from `emoji.yaml.example` to `emoji.yaml` and change the values as you'd like. You may also use custom emojis if you choose.
 
-⚠ Note that this setup has only been tested on Debian-like distros. Other \*nix derivatives should work fine, but no guarantees will be made. **Windows is not supported.**
+⚠️ Note that this setup has only been tested on Debian-like distros. Other *nix derivatives should work fine, but no guarantees will be made. **Windows is not supported.**
 
-⚠ The community of `discord.py` strongly recommends using an init-like management tool, e.g. `systemd`, if you desire to run the script in the background. I leave you to research how to set this up.
+⚠️ The community of `discord.py` strongly recommends using an init-like management tool, e.g. `systemd`, if you desire to run the script in the background. I leave you to research how to set this up.
 
-## Migrating from "asyncio"
+## Migrating from `asyncio`
+
 - Read [here](docs/MIGRATING.md)
 
-## Contributing
-- Read [here](docs/CONTRIBUTING.md)
+## [Acknowledgments](ACKNOWLEDGMENTS.md)
+
+Thanks to the following people for contributing to the project, sorted in order of contributions and alphabet:
+
+- **Wolfy**, **Jiyuu**, **TerminalEssence**, **Kiito**, **beeju**, **Donada**, **Galoal**, **Onesan**, **Sunshine**
 
 ## Disclaimer
 
