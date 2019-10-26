@@ -134,22 +134,6 @@ regex_map_floor = re.compile('.*([0-9]).*')
 
 default_tz = 'America/New_York'
 
-logger = logging.getLogger('vaivora.cogs.boss')
-logger.setLevel(logging.DEBUG)
-
-fh = logging.FileHandler('vaivora.log')
-fh.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-
-logger.addHandler(fh)
-logger.addHandler(ch)
-
 
 async def invalid_boss(ctx, error: str):
     """An exception was detected; check if it was an invalid boss.
@@ -464,7 +448,6 @@ class BossCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        EMOJI = self.bot.emoji
         self.boss_timer_check.start()
 
     @commands.group()
@@ -870,17 +853,15 @@ class BossCog(commands.Cog):
             except vaivora.db.InvalidDBError as e:
                 await guild_db.create_db('boss')
 
-    async def add_new_guild(self, guild_id: int):
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild: discord.Guild) -> None:
         """Add a new guild to background processing.
 
         Args:
             guild_id (int): the Discord guild's ID
 
-        Returns:
-            bool: True
-
         """
-        self.guilds[guild_id] = vaivora.db.Database(guild_id)
+        self.guilds[guild.id] = vaivora.db.Database(guild.id)
 
 
 def setup(bot):

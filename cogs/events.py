@@ -652,17 +652,15 @@ class EventsCog(commands.Cog):
                 del self.guilds[guild_id]
         print(f'Added {len(self.guilds)} guilds to event background check!')
 
-    async def add_new_guild(self, guild_id: int):
+    @commands.Cog.listener()
+    async def on_guild_join(self, guild: discord.Guild) -> None:
         """Add a new guild to background processing.
 
         Args:
             guild_id (int): the Discord guild's ID
 
-        Returns:
-            bool: True
-
         """
-        self.guilds[guild_id] = vaivora.db.Database(guild_id)
+        self.guilds[guild.id] = vaivora.db.Database(guild.id)
 
 
 def setup(bot):

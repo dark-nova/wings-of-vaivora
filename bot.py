@@ -107,7 +107,6 @@ async def on_guild_join(guild: discord.Guild) -> None:
 
     guild_db = vaivora.db.Database(guild.id)
     await guild_db.create_all(guild.owner.id)
-    await cogs.boss.add_new_guild(guild.id)
 
     await guild.owner.send(WELCOME)
 
