@@ -281,7 +281,9 @@ async def process_cmd_status(guild_id: int, text_channel: str, status: str,
         'minute': int(record_date.minute)
         }
 
-    if not await vdb.check_if_valid('boss'):
+    try:
+        await vdb.check_if_valid('boss')
+    except vaivora.db.InvalidDBError as e:
         await vdb.create_db('boss')
 
     if await vdb.update_db_boss(target):
@@ -533,6 +535,7 @@ class BossCog(commands.Cog):
         )
     @checks.only_in_guild()
     @checks.check_channel('boss')
+    @checks.is_db_valid(ctx.guild.id, 'boss')
     async def entry(self, ctx, channel = None):
         """Manipulates boss table records.
 
@@ -561,17 +564,6 @@ class BossCog(commands.Cog):
         subcommand = await what_entry(ctx.subcommand_passed)
 
         vdb = vaivora.db.Database(ctx.guild.id)
-        if not await vdb.check_if_valid('boss'):
-            await vdb.create_db('boss')
-            await ctx.send(
-                cleandoc(
-                    f"""{ctx.author.mention}
-
-                    The boss database was corrupt and subsequently rebuilt.
-                    """
-                    )
-                )
-            return False
 
         function = (
             process_cmd_entry_erase
