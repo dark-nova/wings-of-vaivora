@@ -3,10 +3,11 @@ import logging
 import re
 import sqlite3
 from operator import itemgetter
+from typing import List, Optional, Tuple, Union
 
 import aiosqlite
 
-from vaivora.config import ALL_BOSSES, GUILD
+from vaivora.config import ALL_BOSSES, GUILD, DB_LOGGER as LOGGER
 
 
 columns = {}
@@ -161,22 +162,6 @@ dummy_dates = (0, 0, 0)
 
 comma = ','
 
-logger = logging.getLogger('vaivora.vaivora.db')
-logger.setLevel(logging.DEBUG)
-
-fh = logging.FileHandler('vaivora.log')
-fh.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-
-logger.addHandler(fh)
-logger.addHandler(ch)
-
 
 async def get_dbs(kind):
     """Gets a _d_ata_b_ase _s_ignature of the table of a given `kind`.
@@ -327,7 +312,7 @@ class Database:
                     f'create table if not exists events({cols})'
                     )
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: init_events; '
                     f'guild: {self.db_id}'
                     )
@@ -429,7 +414,7 @@ class Database:
                         f'select * from {table}'
                         )
                 except sqlite3.OperationalError as e:
-                    logger.error(
+                    LOGGER.error(
                         f'Caught {e} in vaivora.db: check_if_valid; '
                         f'module: {module}'
                         f'guild: {self.db_id}'
@@ -577,7 +562,7 @@ class Database:
                 await _db.commit()
             except sqlite3.OperationalError as e:
                 await cursor.close()
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: update_db_boss; '
                     f'guild: {self.db_id}; '
                     f'record: {record}'
@@ -637,7 +622,7 @@ class Database:
                     records.append(boss)
                 # Allow iteration in spite of error.
                 except sqlite3.OperationalError as e:
-                    logger.error(
+                    LOGGER.error(
                         f'Caught {e} in vaivora.db: rm_entry_db_boss; '
                         f'guild: {self.db_id}'
                         )
@@ -677,7 +662,7 @@ class Database:
 
                 return results
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: get_users; '
                     f'role: {role}; '
                     f'guild: {self.db_id}'
@@ -716,7 +701,7 @@ class Database:
                     await _db.execute(
                         'ROLLBACK'
                         )
-                    logger.error(
+                    LOGGER.error(
                         f'Caught {e} in vaivora.db: set_users; '
                         f'role: {role}; '
                         f'guild: {self.db_id}; '
@@ -758,7 +743,7 @@ class Database:
                     await _db.execute(
                         'ROLLBACK'
                         )
-                    logger.error(
+                    LOGGER.error(
                         f'Caught {e} in vaivora.db: remove_users; '
                         f'role: {role}; '
                         f'guild: {self.db_id}; '
@@ -802,7 +787,7 @@ class Database:
                         ('s-authorized', old_owner)
                         )
                 except sqlite3.OperationalError as e:
-                    logger.warning(
+                    LOGGER.warning(
                         f'Caught {e} in vaivora.db: update_user_sauth; '
                         f'guild: {self.db_id}; '
                         'ignored'
@@ -813,7 +798,7 @@ class Database:
                         'create table owner(id text)'
                         )
                 except sqlite3.OperationalError as e:
-                    logger.warning(
+                    LOGGER.warning(
                         f'Caught {e} in vaivora.db: update_user_sauth; '
                         f'guild: {self.db_id}; '
                         'ignored'
@@ -838,7 +823,7 @@ class Database:
                 await _db.execute(
                     'ROLLBACK'
                     )
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: update_user_sauth; '
                     f'guild: {self.db_id}; '
                     'rolled back'
@@ -867,7 +852,7 @@ class Database:
                 # Allow iteration in spite of error.
                 except sqlite3.OperationalError as e:
                     errs.append(table)
-                    logger.error(
+                    LOGGER.error(
                         f'Caught {e} in vaivora.db: clean_duplicates; '
                         f'table: {table}; '
                         f'guild: {self.db_id}'
@@ -900,7 +885,7 @@ class Database:
                 await _db.execute(
                     'ROLLBACK'
                     )
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: purge; '
                     f'guild: {self.db_id}; '
                     'rolled back'
@@ -929,7 +914,7 @@ class Database:
                     )
                 return [_row[0] for _row in await cursor.fetchall()]
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: get_channels; '
                     f'table: {kind}; '
                     f'guild: {self.db_id}'
@@ -959,7 +944,7 @@ class Database:
                 await _db.execute(
                     'ROLLBACK'
                     )
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: set_channel; '
                     f'table: {kind}; '
                     f'guild: {self.db_id}; '
@@ -991,7 +976,7 @@ class Database:
                 await _db.execute(
                     'ROLLBACK'
                     )
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: remove_channel; '
                     f'table: {kind}; '
                     f'guild: {self.db_id}; '
@@ -1017,14 +1002,16 @@ class Database:
                     )
                 return len(await cursor.fetchall()) > 0
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: check_events_channel; '
                     f'guild: {self.db_id}'
                     )
                 raise GuildDatabaseError(e)
 
 
-    async def get_contribution(self, users = None):
+    async def get_contribution(
+        self, users: Optional[List[int]] = None
+        ) -> Union[List[Tuple[int, int]], None]:
         """Gets contribution(s), filtered by `users`.
 
         Args:
@@ -1044,7 +1031,8 @@ class Database:
                         'select * from contribution where mention != "0"'
                         )
                     return await cursor.fetchall()
-                except:
+                except sqlite3.OperationalError:
+                    LOGGER.warn(f'get_contribution - {self.db_id} - {users}')
                     return None
             else:
                 for user in users:
@@ -1056,8 +1044,8 @@ class Database:
                         results.append(
                             await cursor.fetchone()
                             )
-                    except Exception as e:
-                        logger.warning(
+                    except sqlite3.OperationalError as e:
+                        LOGGER.warning(
                             f'Caught {e} in vaivora.db: get_contribution; '
                             f'guild: {self.db_id}; '
                             f'user: {user}; '
@@ -1093,7 +1081,7 @@ class Database:
                 if append:
                     points += old_points
             except (sqlite3.OperationalError, IndexError) as e:
-                logger.warning(
+                LOGGER.warning(
                     f'Caught {e} in vaivora.db: set_contribution; '
                     f'guild: {self.db_id}; '
                     f'user: {user}; '
@@ -1112,14 +1100,14 @@ class Database:
                     'delete from guild'
                     )
             except sqlite3.OperationalError as e:
-                logger.warning(
+                LOGGER.warning(
                     f'Caught {e} in vaivora.db: set_contribution; '
                     f'guild: {self.db_id}; '
                     f'user: {user}; '
                     'ignored'
                     )
             except (KeyError, IndexError) as e:
-                logger.error(
+                LOGGER.error(
                     'Guild config is damaged or missing.'
                     )
                 raise InvalidGuildConfigError
@@ -1130,7 +1118,7 @@ class Database:
                     (user,)
                     )
             except sqlite3.OperationalError as e:
-                logger.warning(
+                LOGGER.warning(
                     f'Caught {e} in vaivora.db: set_contribution; '
                     f'guild: {self.db_id}; '
                     f'user: {user}; '
@@ -1157,7 +1145,7 @@ class Database:
                 await _db.execute(
                     'ROLLBACK'
                     )
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: set_contribution; '
                     f'guild: {self.db_id}; '
                     f'user: {user}; '
@@ -1183,7 +1171,7 @@ class Database:
                 return await cursor.fetchone()
             except sqlite3.OperationalError as e:
                 await cursor.close()
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: get_guild_info; '
                     f'guild: {self.db_id}'
                     )
@@ -1217,7 +1205,7 @@ class Database:
                 g_points = sum(await cursor.fetchall())
                 extra_points = points - g_points
             except sqlite3.OperationalError as e:
-                logger.info(
+                LOGGER.info(
                     f'Caught {e} in vaivora.db: set_guild_points; '
                     f'guild: {self.db_id}; '
                     'ignored'
@@ -1232,7 +1220,7 @@ class Database:
                     'delete from contribution where mention = "0"'
                     )
             except sqlite3.OperationalError as e:
-                logger.warning(
+                LOGGER.warning(
                     f'Caught {e} in vaivora.db: set_guild_points; '
                     f'guild: {self.db_id}; '
                     'ignored'
@@ -1246,7 +1234,7 @@ class Database:
                 await _db.execute(
                     'ROLLBACK'
                     )
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: set_guild_points; '
                     f'guild: {self.db_id}; '
                     'rolled back'
@@ -1266,7 +1254,7 @@ class Database:
                 await _db.execute(
                     'ROLLBACK'
                     )
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: set_guild_points; '
                     f'guild: {self.db_id}; '
                     'rolled back'
@@ -1300,7 +1288,7 @@ class Database:
                     )
                 await cursor.close()
                 await self.create_db('tz')
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: get_tz; '
                     f'guild: {self.db_id}; '
                     'table recreated'
@@ -1332,7 +1320,7 @@ class Database:
                     'drop table if exists tz'
                     )
                 await self.create_db('tz')
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: set_tz; '
                     f'guild: {self.db_id}; '
                     'table recreated'
@@ -1345,7 +1333,7 @@ class Database:
                     )
                 await _db.commit()
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: set_tz; '
                     f'guild: {self.db_id}'
                     )
@@ -1368,13 +1356,13 @@ class Database:
                     )
                 return (await cursor.fetchone())[0]
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: get_offset; '
                     f'guild: {self.db_id}'
                     )
                 raise GuildDatabaseError(e)
             except (KeyError, IndexError) as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: get_offset; '
                     f'guild: {self.db_id}'
                     )
@@ -1405,7 +1393,7 @@ class Database:
                     'drop table if exists offset'
                     )
                 await self.create_db('offset')
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: set_offset; '
                     f'guild: {self.db_id}; '
                     'table recreated'
@@ -1418,7 +1406,7 @@ class Database:
                     )
                 await _db.commit()
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: set_offset; '
                     f'guild: {self.db_id}'
                     )
@@ -1474,18 +1462,12 @@ class Database:
                 await _db.commit()
             except sqlite3.OperationalError as e:
                 await self.create_db('events')
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: add_custom_event; '
                     f'guild: {self.db_id}; '
                     'table recreated'
                     )
                 raise GuildDatabaseError(e)
-            except Exception as e:
-                logger.error(
-                    f'Caught {e} in vaivora.db: add_custom_event; '
-                    f'guild: {self.db_id}'
-                    )
-                return False
 
     async def verify_existing_custom_event(self, name: str):
         """Verifies whether an event already exists.
@@ -1520,7 +1502,7 @@ class Database:
                     raise NoSuchEventError(name)
             except sqlite3.OperationalError:
                 await self.create_db('events')
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: verify_existing_custom_event; '
                     f'event: {name}; '
                     f'guild: {self.db_id}; '
@@ -1550,7 +1532,7 @@ class Database:
                     )
                 await _db.commit()
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: del_custom_event; '
                     f'event: {name}; '
                     f'guild: {self.db_id}'
@@ -1591,7 +1573,7 @@ class Database:
                     )
                 await _db.commit()
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: set_contribution; '
                     f'event: {name}; '
                     f'toggle: {toggle}; '
@@ -1647,7 +1629,7 @@ class Database:
                     )
                 return await cursor.fetchall()
             except sqlite3.OperationalError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in vaivora.db: list_all_events; '
                     f'guild: {self.db_id}'
                     )

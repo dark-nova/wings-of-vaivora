@@ -31,7 +31,7 @@ if __name__ == '__main__':
     for extension in INITIAL_EXTENSIONS:
         try:
             BOT.load_extension(extension)
-        except Exception as e:
+        except vaivora.common.COG_LOAD_ERRORS as e:
             print(
                 f'Failed to load extension {extension}: {e}',
                 file=sys.stderr

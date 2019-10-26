@@ -4,6 +4,8 @@ from inspect import cleandoc
 import discord
 from discord.ext import commands
 
+from vaivora.common import chunk_messages, COG_LOAD_ERRORS
+
 
 reload_cogs = [
     'cogs.settings',
@@ -11,7 +13,7 @@ reload_cogs = [
     'cogs.meme',
     'cogs.gems',
     'cogs.offset',
-    'cogs.events'
+    'cogs.events',
     ]
 
 newline = '\n'
@@ -40,34 +42,37 @@ class AdminCog(commands.Cog):
     async def reload_all(self, ctx):
         return await self.reloader(ctx, reload_cogs)
 
-    async def reloader(self, ctx, cogs):
+    async def reloader(self, ctx, cogs: list) -> bool:
         failed = []
         for cog in cogs:
-            try:
-                if cog == 'cogs.admin':
-                    raise Exception
-                self.bot.unload_extension(cog)
-                self.bot.load_extension(cog)
-            except Exception as e:
-                failed.append(f'{cog}: {e}')
+            if cog == 'cogs.admin':
+                failed.append(f'Cannot reload admin cog.')
+            else:
+                try:
+                    self.bot.unload_extension(cog)
+                except commands.ExtensionNotLoaded:
+                    pass # It's not loaded, so ignore.
+
+                try:
+                    self.bot.load_extension(cog)
+                except COG_LOAD_ERRORS as e:
+                    failed.append(f'{cog}: {e}')
+                except commands.ExtensionAlreadyLoaded:
+                    pass # It's already loaded. Ignore.
+
         if not failed:
             await ctx.message.add_reaction('✅')
             return True
         else:
             await ctx.message.add_reaction('❌')
-            try:
-                await ctx.author.send(
-                    cleandoc(
-                        f"""Could not reload the following cogs:
+            await ctx.author.send(
+                cleandoc(
+                    f"""Could not reload the following cogs:
 
-                        - {bullet_point.join(failed)}
-                        """
-                        )
+                    - {bullet_point.join(failed)}
+                    """
                     )
-            except Exception as e:
-                await ctx.author.send(
-                    f'Exception: {e}'
-                    )
+                )
             return False
 
     @admin.command(
@@ -77,40 +82,21 @@ class AdminCog(commands.Cog):
             'get_id'
             ],
         )
-    async def get_ids(self, ctx):
-        try:
-            members = [
-                f'{member}\t\t\t{member.id}'
-                for member
-                in ctx.guild.members
-                ]
-            while len(members) > 20:
+    async def get_ids(self, ctx) -> None:
+        members = [
+            f'{member}\t\t\t{member.id}'
+            for member
+            in ctx.guild.members
+            ]
+        for chunk in await chunk_messages(members, 20, newlines=1):
+            async with ctx.typing():
+                await asyncio.sleep(1)
                 await ctx.author.send(
                     cleandoc(
-                        f"""```
-                        {newline.join(members[0:20])}
-                        ```
-                        """
+                        f'```{message}```'
                         )
                     )
-                members = members[20:]
-            if len(members) > 0:
-                await ctx.author.send(
-                    cleandoc(
-                        f"""```
-                        {newline.join(members)}
-                        ```
-                        """
-                        )
-                    )
-            await ctx.message.add_reaction('✅')
-            return True
-        except Exception as e:
-            await ctx.message.add_reaction('❌')
-            await ctx.author.send(
-                f'Exception: {e}'
-                )
-            return False
+        await ctx.message.add_reaction('✅')
 
     async def cog_check(self, ctx):
         return ctx.author == (await self.bot.application_info()).owner

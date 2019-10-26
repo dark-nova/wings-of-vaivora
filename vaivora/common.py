@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import re
 from datetime import timedelta
 from hashlib import blake2b
@@ -9,9 +8,14 @@ from math import floor
 
 import discord
 import pendulum
+from discord.ext import (
+    ExtensionFailed,
+    ExtensionNotFound,
+    NoEntryPointError,
+    )
 
 import vaivora.db
-from vaivora.config import BOSS, EMOJI
+from vaivora.config import BOSS, EMOJI, COMMON_LOGGER as LOGGER
 
 
 default_tz = 'America/New_York'
@@ -40,21 +44,12 @@ regex_delim = re.compile(r'[:.]')
 regex_digits = re.compile(r'^[0-9]{3,4}$')
 regex_minutes = re.compile(r'.*([0-9]{2})$')
 
-logger = logging.getLogger('vaivora.vaivora.common')
-logger.setLevel(logging.DEBUG)
 
-fh = logging.FileHandler('vaivora.log')
-fh.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-
-logger.addHandler(fh)
-logger.addHandler(ch)
+COG_LOAD_ERRORS = (
+    ExtensionFailed,
+    ExtensionNotFound,
+    NoEntryPointError
+    )
 
 
 async def process_boss_record(boss: str, status: str, time, diff: timedelta,
@@ -160,7 +155,7 @@ async def get_time_diff(guild_id):
             hours += days_diff * 24
 
         return (hours + offset, minutes)
-    except:
+    except pendulum.tz.zoneinfo.exceptions.InvalidTimezone:
         return (0, 0)
 
 
@@ -327,7 +322,9 @@ async def hash_object(channel_id: str, obj: str, time: str,
     return hashed.hexdigest()
 
 
-async def chunk_messages(iterable, n: int, fillvalue = None, newlines: int = 2):
+async def chunk_messages(
+    iterable, n: int, fillvalue: str = None, newlines: int = 2
+    ):
     """Takes an `iterable` and combines `n` elements to form chunks.
     The chunks are then used to output in a clean way, without
     the need for an accumulator, buffer, or counter.
@@ -337,8 +334,8 @@ async def chunk_messages(iterable, n: int, fillvalue = None, newlines: int = 2):
     Args:
         iterable: the iterable to make into chunks
         n (int): number of elements per chunk
-        fillvalue (optional): the character to pad the last chunk if not full;
-            defaults to None
+        fillvalue (str, optional): the character to pad the last chunk
+            if not full; defaults to None
         newlines (int, optional): number of newlines to join between the
             chunks; defaults to 2
 
@@ -361,7 +358,9 @@ async def chunk_messages(iterable, n: int, fillvalue = None, newlines: int = 2):
     return messages
 
 
-async def send_messages(guild: discord.Guild, messages: list, role: str):
+async def send_messages(
+    guild: discord.Guild, messages: list, role: str
+    ) -> bool:
     """Sends messages compiled by the background loop.
 
     Args:
@@ -372,7 +371,7 @@ async def send_messages(guild: discord.Guild, messages: list, role: str):
         role (str): either 'boss' or 'events'
 
     Returns:
-        bool: True if run successfully regardless of result
+        bool: True if run successfully; False otherwise
 
     """
     channels_in = {}
@@ -393,7 +392,7 @@ async def send_messages(guild: discord.Guild, messages: list, role: str):
             guild_channel.name
         except AttributeError as e:
             # remove invalid channel
-            logger.error(
+            LOGGER.error(
                 f'Caught {e} in vaivora.common: send_messages; '
                 f'guild: {guild.id}; '
                 f'channel: {channel}'
@@ -401,14 +400,6 @@ async def send_messages(guild: discord.Guild, messages: list, role: str):
             await vaivora.db.Database(guild.id).remove_channel(
                 role,
                 channel
-                )
-            continue
-        except Exception as e:
-            # can't retrieve channel definitively; abort
-            logger.error(
-                f'Caught {e} in vaivora.common: send_messages; '
-                f'guild: {guild.id}; '
-                f'channel: {channel}'
                 )
             continue
 
@@ -449,13 +440,13 @@ async def send_messages(guild: discord.Guild, messages: list, role: str):
             await asyncio.sleep(1)
             try:
                 await discord_channel.send(message)
-            except Exception as e:
-                logger.error(
+            except (discord.HTTPException, discord.Forbidden) as e:
+                LOGGER.error(
                     f'Caught {e} in vaivora.common: send_messages; '
                     f'guild: {guild.id}; '
                     f'channel: {channel}'
                     )
-                break
+                return False
 
     return True
 
@@ -487,7 +478,7 @@ async def get_roles(guild: discord.Guild, role: str):
             mentionable.append(guild.roles[idx].mention)
         except ValueError as e:
             # Discord role no longer exists; mark as invalid
-            logger.error(
+            LOGGER.error(
                 f'Caught {e} in vaivora.common: get_roles; '
                 f'guild: {guild.id}'
                 )

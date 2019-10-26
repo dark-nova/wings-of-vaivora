@@ -1,6 +1,7 @@
 import asyncio
 from inspect import cleandoc
 from math import floor
+from typing import Optional
 
 import discord
 from discord.ext import commands
@@ -150,6 +151,19 @@ aliases_points = [
     ]
 
 
+class Error(Exception):
+    """Base exception for cogs.settings"""
+    pass
+
+
+class InvalidRangeError(Error):
+    """An invalid range slice was detected."""
+    def __init__(self, start: int, end: int):
+        super().__init__(
+            f'An invalid range was detected: {start} is not before {end}'
+            )
+
+
 async def get_mention_ids(ctx, mentions):
     """Converts meaningful int input/arguments to mentions.
 
@@ -168,19 +182,12 @@ async def get_mention_ids(ctx, mentions):
         member.id for member in (ctx.guild.members + ctx.guild.roles)
         ]
     rids = [member.id for member in ctx.guild.roles]
-    try:
-        if ctx.role_type == 'boss' or ctx.role_type == 'events':
-            for mention in mentions:
-                # Do not allow regular users for `$boss`
-                if mention in rids:
-                    valid_mentions.append(mention)
-    except Exception as e:
-        LOGGER.error(
-            f'Caught {e} in cogs.settings: get_mention_ids; '
-            f'guild: {ctx.guild.id}; '
-            f'user: {ctx.author.id}; '
-            f'command: {ctx.command}'
-            )
+
+    if ctx.role_type == 'boss' or ctx.role_type == 'events':
+        for mention in mentions:
+            # Do not allow regular users for `$boss`
+            if mention in rids:
+                valid_mentions.append(mention)
 
     for mention in mentions:
         if mention in gids:
@@ -318,7 +325,7 @@ async def channel_setter(ctx, kind):
     for channel in channels:
         try:
             await vdb.set_channel(kind, channel)
-        except:
+        except vaivora.db.GuildDatabaseError:
             errs.append(channel)
 
     if not errs:
@@ -363,7 +370,7 @@ async def channel_deleter(ctx, kind):
     for channel in channels:
         try:
             await vdb.removechannel(kind, channel)
-        except:
+        except vaivora.db.GuildDatabaseError:
             errs.append(channel)
 
     if not errs:
@@ -572,7 +579,9 @@ async def role_deleter(ctx, mentions = None):
         return False
 
 
-async def contribution_setter(ctx, points: int, member = None, append = False):
+async def contribution_setter(
+    ctx, points: int, member = None, append: Optional[bool] = False
+    ) -> bool:
     """Sets contribution for a Discord member.
 
     Cannot be used on Discord roles.
@@ -621,7 +630,7 @@ async def contribution_setter(ctx, points: int, member = None, append = False):
     elif member:
         try:
             mention = (await get_mention_ids(ctx, member))[0]
-        except:
+        except IndexError, TypeError, ValueError:
             await ctx.send(
                 cleandoc(
                     f"""{ctx.author.mention}
@@ -1234,7 +1243,7 @@ class SettingsCog(commands.Cog):
             try:
                 first, last = record_range.split('-')
                 if not (first or last):
-                    raise Exception
+                    raise InvalidRangeError(first, last)
 
                 if first:
                     first = int(first)
@@ -1247,8 +1256,8 @@ class SettingsCog(commands.Cog):
                     last = None
 
                 if (first and last) and first >= last:
-                    raise Exception
-            except Exception:
+                    raise InvalidRangeError(first, last)
+            except InvalidRangeError:
                 # Discard invalid ranges silently
                 pass
 

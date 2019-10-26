@@ -240,12 +240,11 @@ class Boss:
         for (warp_map, distance) in self.nearest_warps:
             if distance == 0:
                 away = 'same map'
+            elif distance == 1:
+                away = f'{distance} map away'
             else:
-                away = (
-                    f'{distance} maps away'
-                    if distance > 1
-                    else f'{distance} map away'
-                    )
+                away = f'{distance} maps away'
+
             all_warps.append(
                 f"""{EMOJI['location']} **{warp_map}** ({away})"""
                 )

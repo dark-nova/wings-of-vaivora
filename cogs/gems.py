@@ -395,17 +395,6 @@ class GemsCog(commands.Cog):
                         f'{abrasive} has an invalid delimiter!'
                         )
                     continue
-                except Exception as e:
-                    LOGGER.error(
-                        f'Caught {e} in cogs.gems: exp; '
-                        f'guild: {ctx.guild.id}; '
-                        f'user: {ctx.author.id}; '
-                        f'command: {ctx.command}'
-                        )
-                    errs.append(
-                        f'{abrasive} is an invalid input and was ignored.'
-                        )
-                    continue
 
             a_qty = int(a_qty)
             a_level = int(a_level)
@@ -415,14 +404,6 @@ class GemsCog(commands.Cog):
             except IndexError:
                 errs.append(
                     f'{a_level} is an invalid abrasive level!'
-                    )
-                continue
-            except Exception as e:
-                LOGGER.error(
-                    f'Caught {e} in cogs.gems: exp; '
-                    f'guild: {ctx.guild.id}; '
-                    f'user: {ctx.author.id}; '
-                    f'command: {ctx.command}'
                     )
                 continue
 
@@ -537,7 +518,9 @@ class GemsCog(commands.Cog):
             'value',
             ],
         )
-    async def values(self, ctx, color: str, equip: Optional[str] = None):
+    async def values(
+        self, ctx, color: str, equip: Optional[str] = None
+        ) -> bool:
         """Gets values of a gem given `color` and `equip` slot.
 
         Args:
@@ -566,24 +549,15 @@ class GemsCog(commands.Cog):
             for equip in values[color]:
                 blocks.append(await format_stats(color, equip))
 
-        try:
-            await ctx.send(
-                cleandoc(
-                    f"""{ctx.author.mention}
+        await ctx.send(
+            cleandoc(
+                f"""{ctx.author.mention}
 
-                    {newline.join(blocks)}
-                    """
-                    )
+                {newline.join(blocks)}
+                """
                 )
-            return True
-        except Exception as e:
-            LOGGER.error(
-                f'Caught {e} in cogs.gems: values; '
-                f'guild: {ctx.guild.id}; '
-                f'user: {ctx.author.id}; '
-                f'command: {ctx.command}'
-                )
-            return False
+            )
+        return True
 
     @gems.command(
         aliases=[
@@ -622,24 +596,15 @@ class GemsCog(commands.Cog):
             for equip in values[color]:
                 blocks.append(await format_efficiency(color, equip))
 
-        try:
-            await ctx.send(
-                cleandoc(
-                    f"""{ctx.author.mention}
+        await ctx.send(
+            cleandoc(
+                f"""{ctx.author.mention}
 
-                    {newline.join(blocks)}
-                    """
-                    )
+                {newline.join(blocks)}
+                """
                 )
-            return True
-        except Exception as e:
-            LOGGER.error(
-                f'Caught {e} in cogs.gems: efficiency; '
-                f'guild: {ctx.guild.id}; '
-                f'user: {ctx.author.id}; '
-                f'command: {ctx.command}'
-                )
-            return False
+            )
+        return True
 
 
 def setup(bot):
