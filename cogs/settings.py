@@ -172,7 +172,6 @@ async def get_mention_ids(ctx, mentions):
     """Converts meaningful int input/arguments to mentions.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         mentions: mentions to test for IDs
 
     Returns:
@@ -214,7 +213,6 @@ async def combine_mention_ids(ctx, mentions = None):
     Called by `role_setter`, `role_getter`, and `role_deleter`.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         mentions (optional): optional mentions that are only IDs;
             defaults to None
 
@@ -257,7 +255,6 @@ async def combine_channel_ids(ctx):
     Called by `channel_setter` and `channel_deleter`.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
 
     Returns:
         list of int: of Discord channel IDs
@@ -278,7 +275,6 @@ async def channel_getter(ctx, kind):
     Called by `gc_settings`, `gc_boss`, and `gc_events`.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         kind (str): the kind/type to use, i.e. subcommand invoked
 
     Returns:
@@ -326,7 +322,6 @@ async def channel_setter(ctx, kind):
     Called by `sc_settings`, `sc_boss`, and `sc_events`.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         kind (str): the kind/type to use, i.e. subcommand invoked
 
     Returns:
@@ -372,7 +367,6 @@ async def channel_deleter(ctx, kind):
     Called by `dc_settings`, `dc_boss`, and `dc_events`.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         kind (str): the kind/type to use, i.e. subcommand invoked
 
     Returns:
@@ -420,7 +414,6 @@ async def role_getter(ctx, mentions = None):
     Called by `gr_member`, `gr_auth`, `gr_boss`, and `gr_events`.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         mentions (optional): optional mentions that are only IDs;
             defaults to None
 
@@ -494,7 +487,6 @@ async def role_setter(ctx, mentions = None):
     Called by `sr_member`, `sr_auth`, `sr_boss`, and `sr_events`.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         mentions (optional): optional mentions that are only IDs;
             defaults to None
 
@@ -550,7 +542,6 @@ async def role_deleter(ctx, mentions = None):
     Called by `dr_member`, `dr_auth`, `dr_boss`, and `dr_events`.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         mentions: optional mentions that are only IDs;
             defaults to None
 
@@ -607,7 +598,6 @@ async def contribution_setter(ctx, points: int, member = None, append = False):
     Called by `s_talt` and `s_point`.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         points (int): the points to set
         member (optional): an optional member to modify;
             defaults to None
@@ -713,7 +703,6 @@ class SettingsCog(commands.Cog):
         """Retrieves help pages for `$settings`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True
@@ -771,7 +760,6 @@ class SettingsCog(commands.Cog):
         """Sets configuration, for  `set` subcommands.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -796,7 +784,6 @@ class SettingsCog(commands.Cog):
         e.g. sets a channel (target) to boss (kind)
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -822,7 +809,6 @@ class SettingsCog(commands.Cog):
         """Sets Discord channels to `settings`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             True if successful; False otherwise
@@ -836,7 +822,6 @@ class SettingsCog(commands.Cog):
         """Sets Discord channels to `boss`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -851,7 +836,6 @@ class SettingsCog(commands.Cog):
         """Sets Discord channels to `events`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -870,7 +854,6 @@ class SettingsCog(commands.Cog):
         e.g. sets a member (target) to role boss (Vaivora role)
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -893,7 +876,6 @@ class SettingsCog(commands.Cog):
         """Sets Discord members/roles to `member`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -911,7 +893,6 @@ class SettingsCog(commands.Cog):
         """Sets Discord members/roles to `authorized`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -927,7 +908,6 @@ class SettingsCog(commands.Cog):
         """Sets Discord members/roles to `boss`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -943,7 +923,6 @@ class SettingsCog(commands.Cog):
         """Sets Discord members/roles to `events`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -967,7 +946,6 @@ class SettingsCog(commands.Cog):
         e.g. $settings set talt 20 @someone
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             points (int): the points to add; i.e. 1 talt = 20 points, etc
             member (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
@@ -1002,7 +980,6 @@ class SettingsCog(commands.Cog):
         e.g. $settings set point 20 @someone
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             points (int): the points to add; i.e. 1 talt = 20 points, etc
             member (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
@@ -1045,7 +1022,6 @@ class SettingsCog(commands.Cog):
         Any extraneous points are allocated to a sentinel value.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             points (int): the current guild points
 
         Returns:
@@ -1087,7 +1063,6 @@ class SettingsCog(commands.Cog):
         e.g. gets channels (target) listed as boss channels (kind)
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -1112,7 +1087,6 @@ class SettingsCog(commands.Cog):
         e.g. gets a channel (target) of boss (kind)
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -1131,7 +1105,6 @@ class SettingsCog(commands.Cog):
         """Gets Discord channels that are `settings` channels.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -1146,7 +1119,6 @@ class SettingsCog(commands.Cog):
         """Gets Discord channels that are `boss` channels.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -1161,7 +1133,6 @@ class SettingsCog(commands.Cog):
         """Gets Discord channels that are `events` channels.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -1179,7 +1150,6 @@ class SettingsCog(commands.Cog):
         e.g. gets a member (target) of role boss (kind)
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -1198,7 +1168,6 @@ class SettingsCog(commands.Cog):
         """Gets Discord members/roles marked `member`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -1216,7 +1185,6 @@ class SettingsCog(commands.Cog):
         """Gets Discord members/roles marked `authorized`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -1233,7 +1201,6 @@ class SettingsCog(commands.Cog):
         """Gets Discord members/roles marked `boss`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -1250,7 +1217,6 @@ class SettingsCog(commands.Cog):
         """Gets Discord members/roles marked `events`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -1271,7 +1237,6 @@ class SettingsCog(commands.Cog):
         Ignores the 'remainder' (unattributable) amount.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
             record_range: a range to slice the results;
@@ -1373,7 +1338,6 @@ class SettingsCog(commands.Cog):
         """Gets guild level and points.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -1424,7 +1388,6 @@ class SettingsCog(commands.Cog):
         `add` increments.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -1445,7 +1408,6 @@ class SettingsCog(commands.Cog):
         e.g. $settings add talt 20 @someone
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             points (int): the points to add; i.e. 1 talt = 20 points, etc
             member (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
@@ -1474,7 +1436,6 @@ class SettingsCog(commands.Cog):
         e.g. $settings add point 20 @someone
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             points (int): the points to add; i.e. 1 talt = 20 points, etc
             member (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
@@ -1510,7 +1471,6 @@ class SettingsCog(commands.Cog):
         """Deletes configurations, for `set` subcommands.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -1532,7 +1492,6 @@ class SettingsCog(commands.Cog):
         """Deletes Discord members/roles from Vaivora roles.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -1551,7 +1510,6 @@ class SettingsCog(commands.Cog):
         """Deletes Discord members/roles from `member`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -1567,7 +1525,6 @@ class SettingsCog(commands.Cog):
         """Deletes Discord members/roles from `authorized`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -1584,7 +1541,6 @@ class SettingsCog(commands.Cog):
         """Deletes Discord members/roles from `boss`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -1601,7 +1557,6 @@ class SettingsCog(commands.Cog):
         """Deletes Discord members/roles from `events`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             mentions (commands.Greedy[int], optional): a mention as a raw id;
                 defaults to None
 
@@ -1618,7 +1573,6 @@ class SettingsCog(commands.Cog):
         """Deletes Discord channels from a given kind/type.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
@@ -1637,7 +1591,6 @@ class SettingsCog(commands.Cog):
         """Deletes Discord channels from `settings`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -1652,7 +1605,6 @@ class SettingsCog(commands.Cog):
         """Deletes Discord channels from `boss`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -1667,7 +1619,6 @@ class SettingsCog(commands.Cog):
         """Deletes Discord channels from `events`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise

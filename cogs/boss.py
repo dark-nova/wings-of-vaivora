@@ -472,7 +472,6 @@ class BossCog(commands.Cog):
         """Handles `$boss` commands.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             arg (str): the boss to check
 
         Returns:
@@ -507,7 +506,6 @@ class BossCog(commands.Cog):
         Possible `status` subcommands: `died`, `anchored`
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             time (str): time when the boss died
             map_or_channel: the map xor channel in which the boss died;
                 can be None from origin function
@@ -558,7 +556,6 @@ class BossCog(commands.Cog):
         Possible `entry` subcommands: `list`, `erase`
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             channel: the channel to show, if supplied;
                 defaults to None
 

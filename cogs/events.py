@@ -68,7 +68,6 @@ class EventsCog(commands.Cog):
         the name overlaps with a permanent event.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             name (str): name of the custom event
 
         Returns:
@@ -134,7 +133,6 @@ class EventsCog(commands.Cog):
         an event exists with the same name.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             name (str): name of the custom event
             date (str): the ending date, in the format of YYYY/MM/DD
             time (Optional[str]): the ending time;
@@ -206,7 +204,6 @@ class EventsCog(commands.Cog):
         See `add_handler`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             name (str): name of the custom event
             date (str): the ending date, in the format of YYYY/MM/DD
             time (Optional[str]): the ending time;
@@ -229,7 +226,6 @@ class EventsCog(commands.Cog):
         See `add_handler`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             name (str): name of the custom event
             date (str): the ending date, in the format of YYYY/MM/DD
             time (Optional[str]): the ending time;
@@ -265,7 +261,6 @@ class EventsCog(commands.Cog):
         """Deletes a custom event for a Discord guild.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             name (str): the name of the custom event
 
         Returns:
@@ -307,7 +302,6 @@ class EventsCog(commands.Cog):
         """Lists all events for a Discord guild.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             name (str): the name of the custom event
 
         Returns:
@@ -435,7 +429,6 @@ class EventsCog(commands.Cog):
         """Enables a permanent event.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             name (str): the name of the permanent event
 
         Returns:
@@ -484,7 +477,6 @@ class EventsCog(commands.Cog):
         """Disables a permanent event.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             name (str): the name of the permanent event
 
         Returns:

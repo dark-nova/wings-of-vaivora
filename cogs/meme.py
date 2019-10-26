@@ -38,7 +38,6 @@ class MemeCog(commands.Cog):
         """Sends a meme image.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise

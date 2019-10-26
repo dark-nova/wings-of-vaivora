@@ -243,7 +243,6 @@ async def which_one(ctx, opt: str, opts: dict, kind: str):
     Options are colors and equips.
 
     Args:
-        ctx (discord.ext.commands.Context): context of the message
         opt (str): the option input by the user
         opts (dict): the valid options
         kind (str): the kind of option to compare
@@ -360,7 +359,6 @@ class GemsCog(commands.Cog):
         """Retrieves help pages for `$gems`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True
@@ -381,7 +379,6 @@ class GemsCog(commands.Cog):
         """Calculates the experience obtained from abrasives.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             abrs: a list of abrasives to calculate, in the format
                 QTY.LVL, where . is a delimiter of either
                 'x' or '.'
@@ -488,7 +485,6 @@ class GemsCog(commands.Cog):
         `final_level` cannot exceed 10. `level` cannot be under 1.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             level (int): the current gem level
             exp (int): the current gem experience
             final_level (int): the intended level
@@ -561,7 +557,6 @@ class GemsCog(commands.Cog):
         """Gets values of a gem given `color` and `equip` slot.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             color (str): the color of the gem
             equip (Optional[str]): an optional equip to filter by;
                 defaults to None
@@ -618,7 +613,6 @@ class GemsCog(commands.Cog):
         smaller = worse.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             color (str): the color of the gem
             equip (Optional[str]): an optional equip to filter by;
                 defaults to None

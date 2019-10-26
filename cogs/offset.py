@@ -113,7 +113,6 @@ class OffsetCog(commands.Cog):
         """Retrieves help pages for `$offset`.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True
@@ -143,7 +142,6 @@ class OffsetCog(commands.Cog):
         """Sets the guild time zone.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             tz: a timezone; could be an index of `server_tz`, or a tzstr
 
         Returns:
@@ -197,7 +195,6 @@ class OffsetCog(commands.Cog):
         offset is the actual offset from the guild time zone.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
             offset (int): the offset to use; -23 <= offset <= 23
 
         Returns:
@@ -256,7 +253,6 @@ class OffsetCog(commands.Cog):
         """Retrieves the guild time zone.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -293,7 +289,6 @@ class OffsetCog(commands.Cog):
         """Retrieves the guild's offset from the guild time zone.
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True if successful; False otherwise
@@ -332,7 +327,6 @@ class OffsetCog(commands.Cog):
         Note that this is locked to the international version of TOS ("ITOS").
 
         Args:
-            ctx (discord.ext.commands.Context): context of the message
 
         Returns:
             bool: True always
