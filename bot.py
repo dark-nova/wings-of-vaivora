@@ -1,49 +1,44 @@
 #!/usr/bin/env python
-import asyncio
 import sys
-from datetime import timedelta
 from inspect import cleandoc
-from operator import itemgetter
-from math import floor
 
 import discord
-import pendulum
 import yaml
 from discord.ext import commands
 
-import checks
 import cogs.boss
 import vaivora.common
 import vaivora.db
 
 
-bot = commands.Bot(command_prefix=['v!'])
+BOT = commands.Bot(command_prefix=['v!'])
 
-initial_extensions = [
+INITIAL_EXTENSIONS = [
     'cogs.admin',
-    'cogs.settings',
     'cogs.boss',
-    'cogs.meme',
+    'cogs.events',
     'cogs.gems',
+    'cogs.meme',
     'cogs.offset',
-    'cogs.events'
+    'cogs.settings',
     ]
 
 # snippet from https://gist.github.com/EvieePy/d78c061a4798ae81be9825468fe146be
 if __name__ == '__main__':
     with open('config.yaml', 'r') as f:
-        conf = yaml.safe_load(f)
+        CONF = yaml.safe_load(f)
 
-    for extension in initial_extensions:
+    for extension in INITIAL_EXTENSIONS:
         try:
-            bot.load_extension(extension)
+            BOT.load_extension(extension)
         except Exception as e:
             print(
                 f'Failed to load extension {extension}: {e}',
                 file=sys.stderr
                 )
 
-bot.remove_command('help')
+# One of these days
+BOT.remove_command('help')
 
 TERMS = """
 By allowing Wings of Vaivora access to your server, you agree to the terms outlined below.
@@ -86,40 +81,29 @@ $help: prints this page in Direct Message
 ```
 """
 
-@bot.event
-async def on_ready():
-    """Handles whenever the bot is ready.
-
-    Returns:
-        bool: True
-
-    """
+@BOT.event
+async def on_ready() -> None:
+    """Handles whenever the bot is ready."""
     print("Logging in...")
     print(
         cleandoc(
             f"""Successsfully logged in as:
-            - {bot.user.name}#{bot.user.discriminator}: ID {bot.user.id}.
+            - {BOT.user.name}#{BOT.user.discriminator}: ID {BOT.user.id}.
             Ready!"""
             )
         )
-    return True
 
 
-@bot.event
-async def on_guild_join(guild):
+@BOT.event
+async def on_guild_join(guild: discord.Guild) -> None:
     """Handles what to do when a guild adds Wings of Vaivora.
 
     Args:
         guild (discord.Guild): the guild which this client has joined
 
-    Returns:
-        bool: True if successful; False otherwise
-
     """
-    #vaivora_version = vaivora.version.get_current_version()
-
     if guild.unavailable:
-        return False
+        return
 
     guild_db = vaivora.db.Database(guild.id)
     await guild_db.create_all(guild.owner.id)
@@ -127,27 +111,12 @@ async def on_guild_join(guild):
 
     await guild.owner.send(WELCOME)
 
-    return True
 
-
-@bot.command(aliases=['halp'])
-async def help(ctx):
-    """Retrieves the help pages for `$help`.
-
-    Args:
-        ctx (discord.ext.commands.context): context of the message
-
-    Returns:
-        bool: True if successful; False otherwise
-
-    """
-    try:
-        await ctx.author.send(HELP)
-    except:
-        return False
-
-    return True
+@BOT.command(aliases=['halp'])
+async def help(ctx) -> None:
+    """Retrieves the help pages for `$help`."""
+    await ctx.author.send(HELP)
 
 
 if __name__ == '__main__':
-    bot.loop.run_until_complete(bot.start(conf['discord_token']))
+    BOT.loop.run_until_complete(BOT.start(CONF['discord_token']))
