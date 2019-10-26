@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import re
 from datetime import timedelta
 from inspect import cleandoc

@@ -1,24 +1,7 @@
-import logging
-
 import discord
 from discord.ext import commands
 
-
-logger = logging.getLogger('vaivora.cogs.meme')
-logger.setLevel(logging.DEBUG)
-
-fh = logging.FileHandler('vaivora.log')
-fh.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-
-logger.addHandler(fh)
-logger.addHandler(ch)
+from vaivora.config import MEME_LOGGER as LOGGER
 
 
 class MemeCog(commands.Cog):
@@ -48,7 +31,7 @@ class MemeCog(commands.Cog):
                 f'{ctx.author.mention} https://i.imgur.com/kW3o6eC.png'
                 )
         except Exception as e:
-            logger.error(
+            LOGGER.error(
                 f'Caught {e} in cogs.meme: please; '
                 f'guild: {ctx.guild.id}; '
                 f'channel: {ctx.channel.id}; '

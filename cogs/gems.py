@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import re
 from math import ceil
 from inspect import cleandoc
@@ -9,6 +8,7 @@ import discord
 from discord.ext import commands
 
 import checks
+from vaivora.config import GEMS_LOGGER as LOGGER
 
 
 HELP = []
@@ -220,22 +220,6 @@ values['White']['Glove/Shoe']['CON'] = [
     0, -1, -2, -3, -4, -5, -6, -7, -8, -9, -10
     ]
 
-logger = logging.getLogger('vaivora.cogs.gems')
-logger.setLevel(logging.DEBUG)
-
-fh = logging.FileHandler('vaivora.log')
-fh.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-
-logger.addHandler(fh)
-logger.addHandler(ch)
-
 
 async def which_one(ctx, opt: str, opts: dict, kind: str):
     """Finds and gets the valid reference given an `opt`ion.
@@ -412,7 +396,7 @@ class GemsCog(commands.Cog):
                         )
                     continue
                 except Exception as e:
-                    logger.error(
+                    LOGGER.error(
                         f'Caught {e} in cogs.gems: exp; '
                         f'guild: {ctx.guild.id}; '
                         f'user: {ctx.author.id}; '
@@ -434,7 +418,7 @@ class GemsCog(commands.Cog):
                     )
                 continue
             except Exception as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in cogs.gems: exp; '
                     f'guild: {ctx.guild.id}; '
                     f'user: {ctx.author.id}; '
@@ -593,7 +577,7 @@ class GemsCog(commands.Cog):
                 )
             return True
         except Exception as e:
-            logger.error(
+            LOGGER.error(
                 f'Caught {e} in cogs.gems: values; '
                 f'guild: {ctx.guild.id}; '
                 f'user: {ctx.author.id}; '
@@ -649,7 +633,7 @@ class GemsCog(commands.Cog):
                 )
             return True
         except Exception as e:
-            logger.error(
+            LOGGER.error(
                 f'Caught {e} in cogs.gems: efficiency; '
                 f'guild: {ctx.guild.id}; '
                 f'user: {ctx.author.id}; '

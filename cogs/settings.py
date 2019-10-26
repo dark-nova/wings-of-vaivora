@@ -1,6 +1,4 @@
 import asyncio
-import logging
-import re
 from inspect import cleandoc
 from math import floor
 
@@ -9,7 +7,7 @@ from discord.ext import commands
 
 import checks
 import vaivora.db
-from vaivora.config import GUILD
+from vaivora.config import GUILD, SETTINGS_LOGGER as LOGGER
 
 
 HELP = []
@@ -151,22 +149,6 @@ aliases_points = [
     'contribution',
     ]
 
-logger = logging.getLogger('vaivora.cogs.settings')
-logger.setLevel(logging.DEBUG)
-
-fh = logging.FileHandler('vaivora.log')
-fh.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-
-logger.addHandler(fh)
-logger.addHandler(ch)
-
 
 async def get_mention_ids(ctx, mentions):
     """Converts meaningful int input/arguments to mentions.
@@ -193,7 +175,7 @@ async def get_mention_ids(ctx, mentions):
                 if mention in rids:
                     valid_mentions.append(mention)
     except Exception as e:
-        logger.error(
+        LOGGER.error(
             f'Caught {e} in cogs.settings: get_mention_ids; '
             f'guild: {ctx.guild.id}; '
             f'user: {ctx.author.id}; '

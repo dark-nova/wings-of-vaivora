@@ -150,10 +150,10 @@ class OffsetCog(commands.Cog):
         """
         try:
             tz = server_tz[int(tz)]
-        except:
+        except (IndexError, TypeError):
             try:
                 tz = pendulum.timezone(tz)
-            except:
+            except pendulum.tz.zoneinfo.exceptions.InvalidTimezone:
                 await ctx.send(
                     cleandoc(
                         f"""{ctx.author.mention}

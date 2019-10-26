@@ -1,6 +1,4 @@
 import asyncio
-import logging
-import re
 from datetime import timedelta
 from inspect import cleandoc
 from math import floor
@@ -13,24 +11,7 @@ from discord.ext import commands, tasks
 import checks
 import vaivora.common
 import vaivora.db
-from vaivora.config import EMOJI
-
-
-logger = logging.getLogger('vaivora.cogs.events')
-logger.setLevel(logging.DEBUG)
-
-fh = logging.FileHandler('vaivora.log')
-fh.setLevel(logging.DEBUG)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.WARNING)
-
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-ch.setFormatter(formatter)
-
-logger.addHandler(fh)
-logger.addHandler(ch)
+from vaivora.config import EMOJI, EVENTS_LOGGER as LOGGER
 
 
 class EventsCog(commands.Cog):
@@ -351,7 +332,7 @@ class EventsCog(commands.Cog):
                     *time, tz=now.timezone_name
                     )
             except ValueError as e:
-                logger.error(
+                LOGGER.error(
                     f'Caught {e} in cogs.events: _list; '
                     f'guild: {ctx.guild.id}; '
                     f'user: {ctx.author.id}; '
@@ -555,7 +536,7 @@ class EventsCog(commands.Cog):
                         tz=loop_time.timezone_name
                         )
                 except ValueError as e:
-                    logger.error(
+                    LOGGER.error(
                         f'Caught {e} in cogs.events: event_timer_check; '
                         f'guild: {guild_id}; '
                         f'user: {ctx.author.id}; '
