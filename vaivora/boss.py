@@ -22,7 +22,7 @@ class Error(Exception):
 class InvalidBossError(Error):
     """An invalid boss was detected."""
     def __init__(self, boss):
-        self.message = f'{boss} is an invalid boss'
+        self.message = f'**{boss}** is an invalid boss'
         super().__init__(self.message)
 
 
@@ -30,7 +30,7 @@ class InvalidMapError(Error):
     """An invalid map was detected."""
     def __init__(self, a_map, boss):
         self.message = (
-            f'{a_map} is an invalid map for {boss}; '
+            f'**{a_map}** is an invalid map for {boss}; '
             'no map was assumed.'
             )
         super().__init__(self.message) 
@@ -40,7 +40,7 @@ class InvalidChannelError(Error):
     """An invalid channel was detected."""
     def __init__(self, channel):
         self.message = (
-            f'{channel} is not a number between 1 and {CHANNEL_MAX}; '
+            f'**{channel}** is not a number between 1 and {CHANNEL_MAX}; '
             'channel 1 was assumed if called by a `status` subcommand.'
             )
         super().__init__(self.message)

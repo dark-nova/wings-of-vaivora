@@ -151,6 +151,26 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 
+async def invalid_boss(ctx, error: str):
+    """An exception was detected; check if it was an invalid boss.
+
+    Not to be confused with `TypeError`.
+
+    Args:
+        error (str): the error message
+
+    """
+    if isinstance(error, checks.InvalidBossError):
+        await ctx.send(
+            cleandoc(
+                f"""
+                {ctx.author.mention}
+
+                {error}
+                """
+                )
+            )
+
 
 async def what_status(status: str):
     """Checks what `status` the input may be.
@@ -188,81 +208,7 @@ async def what_entry(entry: str):
         return 'erase'
 
 
-async def what_query(query: str):
-    """Checks what `query` subcommand the input may be.
-
-    `query` subcommands are defined to be "maps" and "alias".
-
-    Args:
-        query (str): the string to check for `query`
-
-    Returns:
-        str: the correct "query"
-
-    """
-    if query.startswith('m'):
-        return 'maps'
-    else:
-        return 'alias'
-
-
-async def what_type(kind):
-    """Checks what `type` subcommand the input may be.
-
-    `type` subcommands are defined to be "world", "event", "field",
-    and "demon".
-
-    Args:
-        kind (str): the string to check for `type`
-
-    Returns:
-        str: the correct "type"
-
-    """
-    if kind.startswith('w'):
-        return 'world'
-    elif kind.startswith('f'):
-        return 'field'
-    else:
-        return 'demon'
-
-
-async def check_maps(boss_idx, maps):
-    """Checks whether an input refers to a valid map.
-
-    Args:
-        boss_idx (int): the valid boss index to check
-        maps (str): the string to check for valid map
-
-    Returns:
-        int: the map index if valid and matching just one;
-        otherwise, -1 for invalid input
-
-    """
-    map_idx = -1
-    map_floor = regex_map_floor.search(maps)
-    boss = ALL_BOSSES[boss_idx]
-
-    if map_floor:
-        map_floor = map_floor.group(1)
-        maps = re.sub(map_floor, '', maps).strip()
-
-    for boss_map in BOSS['maps'][boss]:
-        if re.search(maps, boss_map, re.IGNORECASE):
-            if map_floor and not re.search(map_floor, boss_map, re.IGNORECASE):
-                # similar name; wrong number
-                continue
-            elif map_idx != -1:
-                # multiple matched; invalid
-                return -1
-            else:
-                map_idx = BOSS['maps'][boss].index(boss_map)
-
-    return map_idx
-
-
-
-async def get_bosses(kind):
+async def get_bosses_by_type(ctx, kind):
     """Retrieves the bosses of a certain boss `kind`, or type.
 
     Args:
@@ -273,7 +219,9 @@ async def get_bosses(kind):
 
     """
     return cleandoc(
-        f"""The following bosses are considered "**{kind}**" bosses:
+        f"""{ctx.author.mention}
+
+        The following bosses are considered "**{kind}**" bosses:
 
         - {bullet_point.join(BOSS['bosses'][kind])}
         """
@@ -507,26 +455,6 @@ async def process_cmd_entry_list(guild_id: int, txt_channel: str, bosses: list,
     return valid_records
 
 
-async def process_cmd_query(boss: str, query: str):
-    """Processes a `query` subcommand relating to bosses.
-
-    Args:
-        boss (str): the boss to query
-        query (str): the query (`synonyms`, `maps`)
-
-    Returns:
-        str: an appropriate message for success or fail of command,
-        i.e. maps or aliases
-
-    """
-    # $boss <target> syns
-    if query == 'alias':
-        return await get_syns(boss)
-    # $boss <target> maps
-    else:
-        return await get_maps(boss)
-
-
 class BossCog(commands.Cog):
     """Interface for the `$boss` commands.
 
@@ -584,25 +512,11 @@ class BossCog(commands.Cog):
             map_or_channel: the map xor channel in which the boss died;
                 can be None from origin function
 
-        Returns:
-            bool: True if run successfully, regardless of result
-
         """
         subcommand = await what_status(ctx.subcommand_passed)
 
         boss = vaivora.boss.Boss(ctx.boss)
-        try:
-            await boss.populate()
-        except vaivora.boss.InvalidBossError as e:
-            await ctx.send(
-                cleandoc(
-                    f"""{ctx.author.mention}
-
-                    **{ctx.boss}** is an invalid boss.
-                    """
-                    )
-                )
-            return False
+        await boss.populate()
 
         kill_time = await vaivora.common.validate_time(time)
         e = await boss.parse_map_or_channel(map_or_channel)
@@ -621,12 +535,10 @@ class BossCog(commands.Cog):
                 """
                 )
             )
-        return True
 
     @status.error
     async def status_error(ctx, error):
-        if isinstance(error, checks.InvalidBossError):
-            await ctx.send(cleandoc(error))
+        await invalid_boss(ctx, error)
 
     @boss.command(
         name='list',
@@ -657,18 +569,7 @@ class BossCog(commands.Cog):
         """
         if ctx.boss != 'all':
             boss = vaivora.boss.Boss(ctx.boss)
-            try:
-                await boss.populate()
-            except vaivora.boss.InvalidBossError as e:
-                await ctx.send(
-                    cleandoc(
-                        f"""{ctx.author.mention}
-
-                        **{ctx.boss}** is an invalid boss.
-                        """
-                        )
-                    )
-                return False
+            await boss.populate()
         else:
             boss = ALL_BOSSES
 
@@ -728,46 +629,29 @@ class BossCog(commands.Cog):
 
             return True
 
+    @entry.error
+    async def entry_error(ctx, error):
+        await invalid_boss(ctx, error)
+
     @boss.command(
-        name='maps',
         aliases=[
             'map',
-            'alias',
-            'aliases',
             ],
         )
     @checks.is_boss_valid()
-    async def query(self, ctx):
+    async def maps(self, ctx):
         """Supplies information about bosses.
 
         Possible `query` subcommands: `maps`, `aliases`
 
         `query` can be used in DMs.
 
-        Args:
-            ctx (discord.ext.commands.Context): context of the message
-
-        Returns:
-            bool: True if successful; False otherwise
-
         """
-        subcommand = await what_query(ctx.subcommand_passed)
 
         boss = vaivora.boss.Boss(ctx.boss)
-        try:
-            await boss.populate()
-        except vaivora.boss.InvalidBossError as e:
-            await ctx.send(
-                cleandoc(
-                    f"""{ctx.author.mention}
+        await boss.populate()
 
-                    **{ctx.boss}** is an invalid boss.
-                    """
-                    )
-                )
-            return False
-
-        message = await process_cmd_query(boss, subcommand)
+        message = await boss.get_maps()
 
         await ctx.send(
             cleandoc(
@@ -777,56 +661,118 @@ class BossCog(commands.Cog):
                 """
                 )
             )
-        return True
 
-    @query.error
-    async def query_error(ctx, error):
-        if isinstance(error, checks.InvalidBossError):
-            await ctx.send(cleandoc(error))
+    # @maps.error
+    # async def maps_error(ctx, error):
+    #     await invalid_boss(ctx, error)
 
     @boss.command(
-        name='world',
         aliases=[
-            'w',
-            'demon',
-            'd',
-            'dl',
-            'field',
-            'f',
+            'alias',
             ],
         )
-    @checks.is_boss_valid(all_valid=True)
-    async def _type(self, ctx):
-        """Supplies a list of bosses given a kind.
+    @checks.is_boss_valid()
+    async def aliases(self, ctx):
+        """Supplies information about bosses.
+
+        Possible `query` subcommands: `maps`, `aliases`
+
+        `query` can be used in DMs.
+
+        """
+
+        boss = vaivora.boss.Boss(ctx.boss)
+        await boss.populate()
+
+        message = await boss.get_synonyms()
+
+        await ctx.send(
+            cleandoc(
+                f"""{ctx.author.mention}
+
+                {message}
+                """
+                )
+            )
+
+    # @aliases.error
+    # async def aliases_error(ctx, error):
+    #     await invalid_boss(ctx, error)
+
+    # Let's see if decorating stacking works
+    @aliases.error
+    @query.error
+    async def query_error(ctx, error):
+        await invalid_boss(ctx, error)
+
+    @boss.command(
+        aliases=[
+            'w',
+            ],
+        )
+    @checks.if_boss_valid(all_valid=True)
+    async def world(self, ctx):
+        """Prints a message with all World Bosses.
 
         Possible `type` subcommands: `world`, `field`, `demon`
 
-        `_type` can be used in DMs.
-
-        Args:
-            ctx (discord.ext.commands.Context): context of the message
-
-        Returns:
-            bool: True if success; False otherwise
+        All `type` commands can be used in DMs.
 
         """
-        subcommand = await what_type(ctx.subcommand_passed)
+        await get_bosses_by_type('world')
 
-        message = await get_bosses(subcommand)
+    # @world.error
+    # async def world_error(ctx, error):
+    #     await invalid_boss(ctx, error)
 
-        await ctx.send(
-            cleandoc(
-                f"""{ctx.author.mention}
+    @boss.command(
+        aliases=[
+            'f',
+            ],
+        )
+    @checks.if_boss_valid(all_valid=True)
+    async def field(self, ctx):
+        """Prints a message with all Field Bosses.
 
-                {message}
-                """
-                )
-            )
+        Possible `type` subcommands: `world`, `field`, `demon`
 
-    @_type.error
-    async def type_error(ctx, error):
-        if isinstance(error, checks.InvalidBossError):
-            await ctx.send(cleandoc(error))
+        All `type` commands can be used in DMs.
+
+        """
+        await get_bosses_by_type('field')
+
+    # @field.error
+    # async def field_error(ctx, error):
+    #     await invalid_boss(ctx, error)
+
+    @boss.command(
+        aliases=[
+            'd',
+            'dl',
+            ],
+        )
+    @checks.if_boss_valid(all_valid=True)
+    async def demon(self, ctx):
+        """Prints a message with all Demon Lord Bosses.
+
+        Possible `type` subcommands: `world`, `field`, `demon`
+
+        All `type` commands can be used in DMs.
+
+        """
+        await get_bosses_by_type('demon')
+
+    # @demon.error
+    # async def demon_error(ctx, error):
+    #     await invalid_boss(ctx, error)
+
+    # I have no idea if decorator stacking is even valid
+    # with .error. TIAS!
+    @world.error
+    @field.error
+    @demon.error
+    async def boss_type_error(ctx, error):
+        await invalid_boss(ctx, error)
 
     @tasks.loop(minutes=1)
     async def boss_timer_check(self):
@@ -838,9 +784,6 @@ class BossCog(commands.Cog):
 
         for guild_id, guild_db in self.guilds.items():
             messages = []
-            if not await guild_db.check_if_valid('boss'):
-                await guild_db.create_db('boss')
-                continue
 
             results = await guild_db.check_db_boss()
             if not results:
@@ -924,6 +867,11 @@ class BossCog(commands.Cog):
             if not guild.unavailable
             }
         print(f'Added {len(self.guilds)} guilds to boss background check!')
+        for guild in self.guilds.items():
+            try:
+                await guild_db.check_if_valid('boss')
+            except vaivora.db.InvalidDBError as e:
+                await guild_db.create_db('boss')
 
     async def add_new_guild(self, guild_id: int):
         """Add a new guild to background processing.
